@@ -19,7 +19,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
-        .pixel-text { font-family: 'VT323', monospace; text-shadow: 2px 2px 0 #000; letter-spacing: 1px; }
+        .pixel-text { font-family: 'VT323', monospace; text-shadow: 2px 2px 0 #000; letter-spacing: 1px; color: #fff;}
         .clear-text { font-family: var(--clear-font); }
         .hidden { display: none !important; }
 
@@ -27,6 +27,7 @@
         .custom-scroll::-webkit-scrollbar { width: 12px; background: #000; border-left: 2px solid #333;}
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--wood-base); border: 2px solid #000; box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
 
+        /* MENUS & MODALS */
         .full-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
         .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 300; }
         .modal-box { background: var(--bg-dark); border: 4px solid var(--accent-glow); padding: 30px; width: 550px; text-align: center; box-shadow: 10px 10px 0 #000; }
@@ -36,17 +37,32 @@
         
         .menu-btn-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .wood-btn { width: 350px; background: var(--wood-base); border: 4px solid var(--wood-dark); color: #fff; padding: 10px 20px; font-size: 28px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; display: flex; justify-content: center; align-items: center; transition: 0.1s; margin-bottom: 15px;}
-        .wood-btn:hover { background: #a06b35; }
+        .wood-btn:hover { filter: brightness(1.1); }
         .wood-btn:active { transform: scale(0.95) translate(2px, 2px); box-shadow: 0 0 0 #000; }
         
         .terms-box { text-align: left; background: #000; padding: 15px; border: 2px solid #475569; font-family: var(--clear-font); font-size: 14px; color: #94a3b8; height: 120px; overflow-y: auto; margin-bottom: 15px; }
         .terms-box strong { color: var(--warning); }
 
-        .color-picker { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        /* PROFILE DYNAMICS */
+        .profile-preview { font-size: 50px; margin-bottom: 10px; text-shadow: 3px 3px 0 #000;}
+        .profile-credits { font-size: 30px; color: var(--success); margin-bottom: 20px; text-shadow: 2px 2px 0 #000;}
+        .color-picker { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
         .color-sq { width: 40px; height: 40px; border: 3px solid #333; cursor: pointer; transition: 0.2s; border-radius: 4px; box-shadow: 2px 2px 0 #000;}
         .color-sq:hover { transform: scale(1.1); }
         .color-sq.selected { border-color: #fff; box-shadow: 0 0 15px #fff; }
 
+        /* DAILY REWARDS MINIGAME */
+        .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+        .reward-box { height: 100px; background: #1e293b; border: 4px solid var(--accent-glow-2); border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
+        .reward-box:hover { background: #3b82f6; transform: translateY(-5px); }
+        .reward-box .inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; }
+        .reward-box.open .inner { transform: rotateY(180deg); }
+        .reward-box .front, .reward-box .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; border-radius: 4px;}
+        .reward-box .front { background: #1e293b; font-size: 40px; }
+        .reward-box .back { background: #000; transform: rotateY(180deg); font-family: 'VT323'; font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
+        .reward-box .back.zero { color: #94a3b8; border-color: #475569; }
+
+        /* GAME LAYOUT & SIDEBAR */
         #game-area { width: 75%; position: relative; background: radial-gradient(circle, #1e293b 0%, #000000 100%); display: flex; flex-direction: column; align-items: center; }
         #sidebar { width: 25%; background: var(--bg-darker); border-left: 4px solid var(--wood-dark); display: flex; flex-direction: column; height: 100%; }
 
@@ -66,25 +82,23 @@
         .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid #333; padding: 0 20px; font-family: 'VT323'; font-size: 24px; cursor: pointer; }
         .chat-input-area button:active { background: #059669; }
 
-        /* PERFECT TABLE (FITS 3 OR 5 SEATS DYNAMICALLY) */
+        /* CASINO TABLE */
         .table-surface { width: 900px; height: 480px; margin-top: 20px; position: relative; background: radial-gradient(ellipse at center, var(--table-green) 0%, var(--table-dark) 100%); border: 24px solid #111; border-radius: 450px 450px 40px 40px; box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.8); border-bottom: 12px solid #111;}
         .banker-station { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
         
         .global-timer { position: absolute; top: 180px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
 
-        /* SEATS */
+        /* SEATS & TURN ANIMATIONS */
+        @keyframes pulse-glow { 0% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } 50% { box-shadow: 0 0 40px #fff; border-color: #fff; } 100% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } }
+        
         .seat { position: absolute; width: 140px; min-height: 180px; padding-bottom: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s;}
         .seat-empty-box { width: 100%; height: 100%; border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); }
 
-        .seat.occupied { background: transparent; }
-        .seat.active-turn .cards-area { filter: drop-shadow(0 0 20px var(--warning)); }
+        .seat.active-turn .cards-area { animation: pulse-glow 1.5s infinite; border-radius: 10px; background: rgba(251, 191, 36, 0.2); padding: 10px; margin-top: 0;}
         
         .seat-header { background: rgba(0,0,0,0.8); color: #fff; font-size: 16px; font-weight: bold; padding: 4px 10px; border-radius: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid #333; margin-bottom: 10px; box-shadow: 2px 2px 0 #000;}
         .seat-bet { color: var(--success); font-size: 16px; font-weight: bold; margin-top: 10px; background: #000; padding: 4px 15px; border-radius: 20px; border: 2px solid var(--success); box-shadow: 2px 2px 0 #000;}
-
-        /* CLASSIC CIRCULAR VALUE BADGES */
-        .hd-badge { position: absolute; top: -15px; left: -15px; width: 34px; height: 34px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10;}
 
         /* IN-SEAT CONTROLS */
         .seat-bet-box { display: flex; width: 100%; gap: 4px; margin-top: 10px; justify-content: center; }
@@ -97,16 +111,26 @@
         .btn-stand { background: #b45309; color: #fff; }
         .btn-double { background: var(--accent-glow-2); color: #fff; }
         .btn-split { background: var(--accent-glow); color: #fff; }
-
         .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; padding: 8px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; margin-top: 10px; font-family: var(--clear-font); box-shadow: 2px 2px 0 #000; }
         .btn-inseat-standup:active { transform: scale(0.95); }
 
-        .cards-area { position: relative; display: flex; justify-content: center; flex-direction: row; width: 100%; min-height: 80px; gap: 10px; }
+        /* CARDS & FLY-OUT ANIMATIONS */
+        @keyframes flyOut { 0% { transform: translateY(-100px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes flipCard { 0% { transform: rotateY(180deg); } 100% { transform: rotateY(0deg); } }
+
+        .cards-area { position: relative; display: flex; justify-content: center; flex-direction: row; width: 100%; min-height: 80px; gap: 10px; transition: 0.3s;}
         .hand-container { position: relative; display: flex; justify-content: center; gap: -25px; }
-        .card { width: 55px; height: 80px; background: #fff; color: #111; border-radius: 5px; display: flex; justify-content: center; align-items: center; text-align: center; font-size: 22px; font-weight: bold; border: 1px solid #666; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -25px; }
+        
+        .card { width: 55px; height: 80px; background: #fff; color: #111; border-radius: 5px; display: flex; justify-content: center; align-items: center; text-align: center; font-size: 22px; font-weight: bold; border: 1px solid #666; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -25px; animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .card:first-child { margin-left: 0; }
         .card.red { color: #dc2626; }
+        
+        .card.dealer-hidden { background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); border: 2px solid #fff; color: transparent; transform: rotateY(180deg); animation: none;}
+        .card.flip-reveal { animation: flipCard 0.6s ease-out forwards; }
 
+        .hd-badge { position: absolute; top: -15px; left: -15px; width: 34px; height: 34px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10;}
+
+        /* LEDGER */
         .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 20px; background: #0f172a; margin-bottom: 5px; border-radius: 4px;}
         .ledger-desc { color: #94a3b8; }
     </style>
@@ -119,14 +143,14 @@
     <div id="arcade-cabinet">
         
         <div id="auth-view" class="full-menu">
-            <h1 class="pixel-text" style="font-size: 80px; color: #fff; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 30px;">NEON ROYALE</h1>
+            <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 30px;">NEON ROYALE</h1>
             
             <div id="panel-login" class="modal-box">
                 <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 15px;">MEMBER LOGIN</h2>
                 <input type="text" id="login-user" class="retro-input" placeholder="USERNAME">
                 <input type="password" id="login-pass" class="retro-input" placeholder="PASSWORD">
                 <div class="menu-btn-container">
-                    <button class="wood-btn pixel-text" style="margin-top: 15px;" onclick="login()">LOGIN</button>
+                    <button class="wood-btn pixel-text" style="margin-top: 15px; background: var(--accent-glow-2);" onclick="login()">LOGIN</button>
                 </div>
                 <p id="login-error" class="pixel-text" style="color: var(--danger); font-size: 20px;"></p>
                 <div class="clear-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px;" onclick="toggleAuth('signup')">New Player? Request Access Here</div>
@@ -145,7 +169,7 @@
                 </label>
 
                 <div class="menu-btn-container">
-                    <button class="wood-btn pixel-text" style="background: #0f766e; border-color: #042f2e;" onclick="signup()">SUBMIT REQUEST</button>
+                    <button class="wood-btn pixel-text" style="background: var(--success);" onclick="signup()">SUBMIT REQUEST</button>
                 </div>
                 <p id="signup-msg" class="pixel-text" style="font-size: 20px;"></p>
                 <div class="clear-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline;" onclick="toggleAuth('login')">Back to Login</div>
@@ -153,23 +177,33 @@
         </div>
 
         <div id="main-menu-view" class="full-menu hidden">
-            <h1 class="pixel-text" style="font-size: 80px; color: #fff; margin-bottom: 40px; text-shadow: 4px 4px 0px #000;">MAIN MENU</h1>
+            <h1 class="pixel-text" style="font-size: 80px; margin-bottom: 40px; text-shadow: 4px 4px 0px #000;">MAIN MENU</h1>
             <div class="menu-btn-container">
-                <button class="wood-btn pixel-text" style="background: var(--success);" onclick="joinRoom('3seat')">PLAY 3-SEAT TABLE</button>
-                <button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="joinRoom('5seat')">PLAY 5-SEAT TABLE</button>
-                <button class="wood-btn pixel-text" onclick="showModal('profile-modal'); loadLedger();">PROFILE</button>
-                <button class="wood-btn pixel-text" onclick="showModal('bank-modal')">BANKING</button>
-                <button class="wood-btn pixel-text" style="background: #0f766e;" onclick="claimReward()">DAILY REWARDS</button>
+                <button class="wood-btn pixel-text" style="background: var(--success);" onclick="showModal('play-modal')">PLAY</button>
+                <button class="wood-btn pixel-text" style="background: var(--accent-glow);" onclick="showProfile()">PROFILE</button>
+                <button class="wood-btn pixel-text" style="background: var(--warning);" onclick="showModal('bank-modal')">BANKING</button>
+                <button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="showRewards()">DAILY REWARDS</button>
                 <button class="wood-btn pixel-text" style="background: var(--danger);" onclick="showModal('logout-modal')">LOGOUT</button>
             </div>
-            <p id="reward-msg" class="pixel-text" style="color: var(--success); font-size: 24px; text-shadow: 2px 2px 0 #000;"></p>
+        </div>
+
+        <div id="play-modal" class="overlay-menu hidden">
+            <div class="modal-box">
+                <h2 class="pixel-text" style="color: #fff; margin-bottom: 20px;">SELECT ROOM</h2>
+                <div class="menu-btn-container">
+                    <button class="wood-btn pixel-text" style="background: var(--accent-glow);" onclick="joinRoom('3seat')">3-SEAT VIP</button>
+                    <button class="wood-btn pixel-text" style="background: var(--success);" onclick="joinRoom('5seat')">5-SEAT CLASSIC</button>
+                    <button class="wood-btn pixel-text" style="background: var(--danger); margin-top: 10px;" onclick="hideModal('play-modal')">CLOSE</button>
+                </div>
+            </div>
         </div>
 
         <div id="profile-modal" class="overlay-menu hidden">
             <div class="modal-box" style="width: 700px; max-height: 90%; display: flex; flex-direction: column;">
-                <h2 class="pixel-text" style="color: #fbbf24;">USER PROFILE</h2>
+                <div class="profile-preview pixel-text" id="profile-username-preview">USERNAME</div>
+                <div class="profile-credits pixel-text">BALANCE: $<span id="profile-credits-preview">0</span></div>
                 
-                <h3 class="pixel-text" style="margin-top: 15px; text-align: left;">USERNAME COLOR</h3>
+                <h3 class="pixel-text" style="margin-top: 10px; text-align: left;">USERNAME COLOR</h3>
                 <div class="color-picker" id="color-picker-ui">
                     <div class="color-sq selected" style="background:#f8fafc" onclick="selectColor('#f8fafc', this)"></div>
                     <div class="color-sq" style="background:#ef4444" onclick="selectColor('#ef4444', this)"></div>
@@ -177,56 +211,90 @@
                     <div class="color-sq" style="background:#10b981" onclick="selectColor('#10b981', this)"></div>
                     <div class="color-sq" style="background:#fbbf24" onclick="selectColor('#fbbf24', this)"></div>
                 </div>
-                <div class="menu-btn-container"><button class="wood-btn pixel-text" onclick="saveColor()">SAVE COLOR</button></div>
+                
+                <div class="menu-btn-container" style="margin-top: 10px;">
+                    <button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="saveColor()">SAVE COLOR</button>
+                    <button class="wood-btn pixel-text" style="background: var(--wood-base);" onclick="toggleLedger()">VIEW FULL LEDGER</button>
+                </div>
 
-                <h3 class="pixel-text" style="text-align: left; margin: 15px 0 5px 0;">CREDIT LEDGER</h3>
-                <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid #475569; text-align: left;"></div>
+                <div id="ledger-container" class="hidden" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; margin-top: 10px;">
+                    <h3 class="pixel-text" style="text-align: left; margin-bottom: 5px;">CREDIT LEDGER</h3>
+                    <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid #475569; text-align: left;"></div>
+                </div>
                 
                 <div class="menu-btn-container"><button class="wood-btn pixel-text" style="margin-top: 15px; background: var(--danger);" onclick="hideModal('profile-modal')">CLOSE</button></div>
             </div>
         </div>
 
+        <div id="reward-modal" class="overlay-menu hidden">
+            <div class="modal-box" style="width: 600px;">
+                <h2 class="pixel-text" style="color: var(--accent-glow-2); font-size: 40px;">DAILY REWARD</h2>
+                
+                <div id="reward-active-view">
+                    <p class="pixel-text" style="font-size: 24px; margin-bottom: 10px;">CHOOSE A CHEST (1:6 CHANCE)</p>
+                    <div class="rewards-grid" id="rewards-grid">
+                        <div class="reward-box" onclick="pickRewardBox(0)"><div class="inner"><div class="front">🎁</div><div class="back" id="box-val-0"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(1)"><div class="inner"><div class="front">🎁</div><div class="back" id="box-val-1"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(2)"><div class="inner"><div class="front">🎁</div><div class="back" id="box-val-2"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(3)"><div class="inner"><div class="front">🎁</div><div class="back" id="box-val-3"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(4)"><div class="inner"><div class="front">🎁</div><div class="back" id="box-val-4"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(5)"><div class="inner"><div class="front">🎁</div><div class="back" id="box-val-5"></div></div></div>
+                    </div>
+                </div>
+
+                <div id="reward-cooldown-view" class="hidden">
+                    <p class="pixel-text" style="font-size: 24px; margin-bottom: 10px;">NEXT REWARD IN:</p>
+                    <div class="pixel-text" id="reward-timer" style="font-size: 60px; color: var(--danger); text-shadow: 4px 4px 0 #000;">00:00:00</div>
+                </div>
+
+                <p id="reward-msg" class="pixel-text" style="font-size: 28px; margin-top: 15px;"></p>
+                <div class="menu-btn-container"><button class="wood-btn pixel-text" style="margin-top: 15px; background: var(--danger);" onclick="hideModal('reward-modal')">CLOSE</button></div>
+            </div>
+        </div>
+
         <div id="bank-modal" class="overlay-menu hidden">
             <div class="modal-box" style="width: 600px;">
-                <h2 class="pixel-text" style="color: #fbbf24; margin-bottom: 20px;">SYSTEM BANKING</h2>
+                <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 20px;">SYSTEM BANKING</h2>
                 
                 <div class="terms-box custom-scroll" style="height: 90px;">
-                    <strong>BANK RULES:</strong> Minimum request amount is 100,000. Maximum deposit per request is strictly 100,000. All transfers pend Admin approval.
+                    <strong style="color: #fff;">BANK RULES:</strong> Minimum request amount is 100,000. Maximum deposit per request is strictly 100,000. All transfers pend Admin approval.
                 </div>
 
                 <div class="input-group">
                     <input type="number" id="bank-amount" class="retro-input" placeholder="ENTER AMOUNT">
                 </div>
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 25px;">
                     <button class="wood-btn pixel-text" style="flex: 1; width:auto; background: var(--accent-glow-2);" onclick="submitBank('deposit')">DEPOSIT</button>
                     <button class="wood-btn pixel-text" style="flex: 1; width:auto; background: var(--warning);" onclick="submitBank('withdrawal')">WITHDRAW</button>
                 </div>
                 
-                <h3 class="pixel-text" style="margin-top: 30px; text-align: left;">REDEEM GIFT CODE</h3>
-                <div class="input-group">
-                    <input type="text" id="gift-code" class="retro-input" placeholder="ENTER CODE">
-                    <button class="wood-btn pixel-text" style="width: 150px; margin-bottom:0; background: var(--success);" onclick="redeemCode()">REDEEM</button>
+                <div style="background: #111; padding: 15px; border: 2px solid var(--success); border-radius: 8px;">
+                    <h3 class="pixel-text" style="color: #fff; margin-bottom: 10px; text-align: left;">REDEEM GIFT CODE</h3>
+                    <div class="input-group" style="margin:0;">
+                        <input type="text" id="gift-code" class="retro-input" placeholder="ENTER CODE">
+                        <button class="wood-btn pixel-text" style="width: 150px; margin-bottom:0; background: var(--success);" onclick="redeemCode()">REDEEM</button>
+                    </div>
                 </div>
                 
-                <p id="bank-msg" class="pixel-text" style="color: var(--success); font-size: 24px; margin-top: 10px;"></p>
+                <p id="bank-msg" class="pixel-text" style="font-size: 24px; margin-top: 15px;"></p>
                 <div class="menu-btn-container"><button class="wood-btn pixel-text" style="margin-top: 15px; background: var(--danger);" onclick="hideModal('bank-modal')">CLOSE</button></div>
             </div>
         </div>
 
         <div id="settings-modal" class="overlay-menu hidden">
             <div class="modal-box">
-                <h2 class="pixel-text" style="color: #fbbf24;">SETTINGS</h2>
+                <h2 class="pixel-text" style="color: #fff;">SETTINGS</h2>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0;">
-                    <span class="pixel-text">MUSIC</span>
+                    <span class="pixel-text" style="font-size: 28px;">MUSIC</span>
                     <button id="btn-music" class="wood-btn pixel-text" style="width: 150px; margin-bottom:0;" onclick="toggleMusic()">🔊 ON</button>
                 </div>
-                <div class="menu-btn-container"><button class="wood-btn pixel-text" style="margin-top: 15px;" onclick="hideModal('settings-modal')">CLOSE</button></div>
+                <div class="menu-btn-container"><button class="wood-btn pixel-text" style="margin-top: 15px; background: var(--danger);" onclick="hideModal('settings-modal')">CLOSE</button></div>
             </div>
         </div>
 
         <div id="logout-modal" class="overlay-menu hidden">
             <div class="modal-box">
-                <h2 class="pixel-text" style="color: #ef4444;">CONFIRM LOGOUT?</h2>
+                <h2 class="pixel-text" style="color: var(--danger);">CONFIRM LOGOUT?</h2>
                 <div style="display: flex; gap: 10px; margin-top: 30px;">
                     <button class="wood-btn pixel-text" style="flex: 1; width:auto; background: var(--danger);" onclick="logout()">YES</button>
                     <button class="wood-btn pixel-text" style="flex: 1; width:auto;" onclick="hideModal('logout-modal')">NO</button>
@@ -239,7 +307,7 @@
             <div id="game-area">
                 <div class="top-hud">
                     <button class="btn-menu" onclick="exitToMenu()">MENU</button>
-                    <div style="font-size: 28px; color: var(--accent-glow-2);" id="phase-display" class="pixel-text">WAITING</div>
+                    <div style="font-size: 32px; color: var(--accent-glow-2);" id="phase-display" class="pixel-text">WAITING</div>
                     <div class="wallet-display pixel-text">CREDITS: $<span id="hud-credits"></span></div>
                 </div>
 
@@ -278,6 +346,7 @@
         const socket = io();
         let currentUser = null; let currentGameState = null; let currentRoomId = null;
         let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let sitTimerInt = null; let mySitTime = 0;
+        let dailyRewardNextClaim = new Date(0); let rewardTimerInt = null; let isPickingReward = false;
 
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
@@ -294,6 +363,7 @@
             if(res.ok) {
                 currentUser = data; document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
                 document.getElementById('hud-credits').innerText = currentUser.credits;
+                dailyRewardNextClaim = new Date(data.nextClaim);
                 selectColor(currentUser.nameColor || '#f8fafc', null);
             } else document.getElementById('login-error').innerText = data.error;
         }
@@ -310,19 +380,28 @@
         }
         function logout() { location.reload(); }
 
-        function claimReward() { socket.emit('claim_daily_reward', { username: currentUser.username }); }
-        socket.on('reward_claimed', (data) => {
-            const msg = document.getElementById('reward-msg');
-            if(data.success) { currentUser.credits = data.credits; document.getElementById('hud-credits').innerText = currentUser.credits; msg.innerText = "+100,000 CREDITS ACQUIRED!"; msg.style.color="var(--success)";} 
-            else { msg.innerText = data.message; msg.style.color="var(--warning)";}
-            setTimeout(()=> msg.innerText='', 3000);
-        });
+        // --- PROFILE LOGIC ---
+        function showProfile() {
+            document.getElementById('profile-username-preview').innerText = currentUser.username;
+            document.getElementById('profile-username-preview').style.color = selectedColor;
+            document.getElementById('profile-credits-preview').innerText = currentUser.credits;
+            document.getElementById('ledger-container').classList.add('hidden');
+            showModal('profile-modal');
+        }
 
         function selectColor(hex, el) {
-            selectedColor = hex; document.querySelectorAll('.color-sq').forEach(sq => sq.classList.remove('selected'));
+            selectedColor = hex; 
+            document.querySelectorAll('.color-sq').forEach(sq => sq.classList.remove('selected'));
             if(el) el.classList.add('selected'); else { const match = Array.from(document.querySelectorAll('.color-sq')).find(s => s.style.background.includes(hex.replace('#',''))); if(match) match.classList.add('selected'); }
+            document.getElementById('profile-username-preview').style.color = hex;
         }
         async function saveColor() { await fetch('/api/profile/color', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, color: selectedColor}) }); currentUser.nameColor = selectedColor; hideModal('profile-modal'); }
+
+        function toggleLedger() {
+            const container = document.getElementById('ledger-container');
+            if (container.classList.contains('hidden')) { container.classList.remove('hidden'); loadLedger(); }
+            else { container.classList.add('hidden'); }
+        }
 
         async function loadLedger() {
             const res = await fetch(`/api/profile/ledger/${currentUser.username}`); const data = await res.json();
@@ -333,6 +412,7 @@
             });
         }
 
+        // --- BANK LOGIC ---
         async function submitBank(type) {
             const amt = parseInt(document.getElementById('bank-amount').value); const msgBox = document.getElementById('bank-msg'); if(!amt || amt <= 0) return;
             const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount: amt}) });
@@ -349,12 +429,68 @@
             setTimeout(()=> msgBox.innerText='', 3000);
         }
 
+        // --- DAILY REWARDS LOGIC ---
+        function showRewards() {
+            showModal('reward-modal');
+            document.getElementById('reward-msg').innerText = '';
+            document.querySelectorAll('.reward-box').forEach(b => b.classList.remove('open'));
+            isPickingReward = false;
+
+            if (new Date() >= dailyRewardNextClaim) {
+                document.getElementById('reward-active-view').classList.remove('hidden');
+                document.getElementById('reward-cooldown-view').classList.add('hidden');
+            } else {
+                document.getElementById('reward-active-view').classList.add('hidden');
+                document.getElementById('reward-cooldown-view').classList.remove('hidden');
+                startRewardTimer();
+            }
+        }
+
+        function startRewardTimer() {
+            clearInterval(rewardTimerInt);
+            rewardTimerInt = setInterval(() => {
+                let left = Math.floor((dailyRewardNextClaim - Date.now()) / 1000);
+                if (left <= 0) { clearInterval(rewardTimerInt); showRewards(); return; }
+                let h = Math.floor(left / 3600); let m = Math.floor((left % 3600) / 60); let s = left % 60;
+                document.getElementById('reward-timer').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }, 1000);
+        }
+
+        function pickRewardBox(index) {
+            if(isPickingReward) return; isPickingReward = true;
+            socket.emit('claim_daily_reward_box', { username: currentUser.username, boxIndex: index });
+        }
+
+        socket.on('reward_box_opened', (data) => {
+            if(data.success) {
+                // Populate all boxes based on server array
+                data.allPrizes.forEach((prize, i) => {
+                    const backEl = document.getElementById(`box-val-${i}`);
+                    backEl.innerText = prize > 0 ? `+${prize}` : 'EMPTY';
+                    if(prize === 0) backEl.classList.add('zero'); else backEl.classList.remove('zero');
+                    
+                    // Flip all boxes
+                    setTimeout(() => document.querySelectorAll('.reward-box')[i].classList.add('open'), i * 100);
+                });
+
+                currentUser.credits = data.credits;
+                document.getElementById('hud-credits').innerText = currentUser.credits;
+                dailyRewardNextClaim = new Date(data.nextClaim);
+                
+                const msg = document.getElementById('reward-msg');
+                if (data.wonAmount > 0) { msg.style.color = "var(--success)"; msg.innerText = `YOU WON ${data.wonAmount} CREDITS!`; }
+                else { msg.style.color = "var(--danger)"; msg.innerText = "BETTER LUCK NEXT TIME!"; }
+                
+                setTimeout(() => { showRewards(); }, 4000); // Reset UI after 4s
+            }
+        });
+
         let bgm = document.getElementById('sfx-bgm'); let musicOn = false;
         function toggleMusic() { musicOn = !musicOn; if(musicOn) bgm.play().catch(()=>{}); else bgm.pause(); document.getElementById('btn-music').innerText = musicOn ? '🔊 ON' : '🔇 OFF'; }
 
         // --- ROOM NAVIGATION ---
         function joinRoom(roomId) { 
-            currentRoomId = roomId;
+            currentRoomId = roomId; hideModal('play-modal');
             document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); 
             socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId });
         }
@@ -394,10 +530,15 @@
             if (!state) return;
             document.getElementById('phase-display').innerText = state.status === 'resolving' ? 'RESULTS' : state.status.toUpperCase();
             
+            // DEALER CARDS (3D FLIP LOGIC)
             const dCards = document.getElementById('dealer-cards'); dCards.innerHTML = ''; const dBadge = document.getElementById('dealer-val');
             state.dealerCards.forEach(c => {
-                if (c.hidden) dCards.innerHTML += `<div class="card" style="background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); border: 2px solid #fff;"></div>`;
-                else dCards.innerHTML += `<div class="card ${['Hearts', 'Diamonds'].includes(c.suit)?'red':''}">${c.value}<br><span style="font-size:24px;">${{'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit]}</span></div>`;
+                if (c.hidden) {
+                    dCards.innerHTML += `<div class="card dealer-hidden"></div>`;
+                } else {
+                    let flipClass = (state.status === 'resolving' && state.dealerCards.length >= 2) ? 'flip-reveal' : '';
+                    dCards.innerHTML += `<div class="card ${flipClass} ${['Hearts', 'Diamonds'].includes(c.suit)?'red':''}">${c.value}<br><span style="font-size:24px;">${{'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit]}</span></div>`;
+                }
             });
             if (state.status === 'playing' || state.status === 'betting' || state.dealerCards.length===0) dBadge.classList.add('hidden');
             else { dBadge.innerText = calculateValue(state.dealerCards); dBadge.classList.remove('hidden'); }
@@ -410,7 +551,7 @@
                  if(mySeatData) { currentUser.credits = mySeatData.credits; document.getElementById('hud-credits').innerText = currentUser.credits; }
             }
 
-            const totalSeats = state.seats.length; // Dynamic for 3 or 5 seats
+            const totalSeats = state.seats.length;
 
             for(let index=0; index<totalSeats; index++) {
                 let seatData = state.seats[index];
@@ -421,7 +562,7 @@
                 if (!seatData) {
                     let sitBtn = !hasSeatAnywhere ? `<button class="s-btn" style="background:var(--success); color:#000; padding:8px 16px; margin-top:20px; box-shadow:2px 2px 0 #000;" onclick="sitDown(${index})">SIT</button>` : '';
                     seatDiv.innerHTML = `<div class="seat-empty-box"><div class="pixel-text" style="font-size:28px; color:#94a3b8;">EMPTY</div>${sitBtn}</div>`;
-                    activeElements.push(seatDiv); // Always show empty boxes to mimic image
+                    activeElements.push(seatDiv);
                 } else {
                     seatDiv.classList.add('occupied'); if (isMySeat) seatDiv.classList.add('my-seat'); if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
 
@@ -504,7 +645,7 @@
             const centerX = 450; const centerY = 130; 
             const radiusX = totalSeats === 5 ? 380 : 320; 
             const radiusY = totalSeats === 5 ? 240 : 220; 
-            const widthOffset = 70; // Half of seat width (140/2)
+            const widthOffset = 70; 
 
             elements.forEach((el, i) => {
                 let angle = totalSeats === 1 ? Math.PI / 2 : (Math.PI * 0.85) - (i * ((Math.PI * 0.70) / (totalSeats - 1)));
