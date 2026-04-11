@@ -34,7 +34,6 @@
         .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; }
         input.retro-input { flex: 1; padding: 12px; margin: 0; background: #000; color: #fff; border: 2px solid var(--accent-glow-2); font-family: 'VT323'; font-size: 24px; text-align: center; outline: none; }
         
-        /* Fixed Stretched Buttons */
         .menu-btn-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .wood-btn { width: 350px; background: var(--wood-base); border: 4px solid var(--wood-dark); color: #fff; padding: 10px 20px; font-size: 28px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; display: flex; justify-content: center; align-items: center; transition: 0.1s; margin-bottom: 15px;}
         .wood-btn:hover { background: #a06b35; }
@@ -59,15 +58,16 @@
         .sidebar-header { background: var(--wood-dark); color: #fff; padding: 10px; text-align: center; font-size: 24px; border-bottom: 2px solid #000; display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000;}
         .lobby-panel { flex: 0.4; border-bottom: 4px solid var(--wood-dark); padding: 10px; overflow-y: auto; }
         .lobby-player { font-size: 24px; margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 5px; text-shadow: 1px 1px 0 #000;}
+        
         .chat-panel { flex: 0.6; display: flex; flex-direction: column; overflow: hidden; }
         .chat-messages { flex: 1; padding: 10px; font-size: 20px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word;}
         .chat-input-area { display: flex; border-top: 2px solid #333; background: #000; }
-        .chat-input-area input { flex: 1; padding: 12px; font-size: 18px; margin:0; border:none; text-align: left; font-family: var(--clear-font); background: transparent; color: #fff; outline: none;}
+        .chat-input-area input { flex: 1; padding: 12px; font-size: 20px; margin:0; border:none; text-align: left; font-family: 'VT323'; background: transparent; color: #fff; outline: none;}
         .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid #333; padding: 0 20px; font-family: 'VT323'; font-size: 24px; cursor: pointer; }
         .chat-input-area button:active { background: #059669; }
 
-        /* WIDENED CASINO TABLE */
-        .table-surface { width: 1050px; height: 520px; margin-top: 20px; position: relative; background: radial-gradient(ellipse at center, var(--table-green) 0%, var(--table-dark) 100%); border: 16px solid var(--table-border); border-radius: 525px 525px 40px 40px; box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.8); }
+        /* PERFECT 3-SEAT TABLE */
+        .table-surface { width: 900px; height: 480px; margin-top: 20px; position: relative; background: radial-gradient(ellipse at center, var(--table-green) 0%, var(--table-dark) 100%); border: 16px solid var(--table-border); border-radius: 450px 450px 40px 40px; box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.8); }
         .banker-station { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
         
         .global-timer { position: absolute; top: 180px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
@@ -77,13 +77,12 @@
         .seat { position: absolute; width: 160px; min-height: 180px; padding-bottom: 10px; background: rgba(0, 0, 0, 0.6); border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; z-index: 5; transition: 0.3s;}
         .seat.occupied { border-style: solid; border-color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.8); box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .seat.active-turn { box-shadow: 0 0 30px var(--warning); border-color: var(--warning); background: rgba(251, 191, 36, 0.15); }
-        .seat:hover:not(.occupied) { border-color: #fff; cursor: pointer; background: rgba(255, 255, 255, 0.1); }
-
+        
         .seat-header { width: 100%; background: #111; color: #fff; font-size: 15px; font-weight: bold; padding: 6px; border-top-left-radius: 6px; border-top-right-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-bottom: 2px solid #333; }
         .seat-bet { color: var(--success); font-size: 14px; font-weight: bold; margin-top: 5px; background: #000; padding: 4px 10px; border-radius: 6px; border: 1px solid #333;}
 
         .seat-bet-box { display: flex; width: 90%; gap: 4px; margin-top: 10px; }
-        .seat-bet-box input { flex: 1; padding: 6px; text-align: center; font-size: 14px; margin: 0; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 4px; font-family: var(--clear-font); outline: none; }
+        .seat-bet-box input { flex: 1; padding: 4px; text-align: center; font-size: 18px; margin: 0; outline: none; width: 110px;}
         .s-btn { flex: 1; padding: 6px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 14px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5);}
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
@@ -133,7 +132,7 @@
                 <input type="password" id="signup-pass" class="retro-input" placeholder="CREATE PASSWORD">
                 
                 <div class="terms-box custom-scroll">
-                    <strong>SYSTEM TERMS:</strong> Strict 1-seat limits apply. Farming rewards via multiple accounts will result in immediate IP bans. All new accounts require Admin approval before logging in. Play fair.
+                    <strong>SYSTEM TERMS:</strong> Play fair. Farming rewards via multiple accounts will result in immediate IP bans. All new accounts require Admin approval before logging in.
                 </div>
                 <label class="clear-text" style="font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; margin-bottom: 15px;">
                     <input type="checkbox" id="tos-checkbox" style="width: 20px; height: 20px; margin:0;"> I ACCEPT THE TERMS
@@ -348,12 +347,24 @@
         function toggleMusic() { musicOn = !musicOn; if(musicOn) bgm.play().catch(()=>{}); else bgm.pause(); document.getElementById('btn-music').innerText = musicOn ? '🔊 ON' : '🔇 OFF'; }
 
         function joinGame() { document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); renderTable(currentGameState); }
-        function exitToMenu() { document.getElementById('game-interface').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden'); ejectSeat(); }
-        function ejectSeat() { if(mySeatIndex !== -1) { socket.emit('leave_seat', { username: currentUser.username, seatIndex: mySeatIndex }); mySeatIndex = -1; clearInterval(sitTimerInt); } }
+        
+        function exitToMenu() { 
+            document.getElementById('game-interface').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden'); 
+            if(mySeatIndex !== -1) { ejectSeat(mySeatIndex); }
+        }
+        
+        function ejectSeat(index) { 
+            socket.emit('leave_seat', { username: currentUser.username, seatIndex: index }); 
+            if (mySeatIndex === index) {
+                mySeatIndex = -1;
+                clearInterval(sitTimerInt);
+                sitTimerInt = null;
+            }
+        }
 
         function sendChat() { const input = document.getElementById('chat-input'); if (input.value.trim() && currentUser) { socket.emit('send_chat', { username: currentUser.username, message: input.value.trim() }); input.value = ''; } }
         document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') sendChat(); });
-        socket.on('receive_chat', data => { const msgs = document.getElementById('chat-messages'); msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span class="clear-text" style="font-size: 18px;">${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; });
+        socket.on('receive_chat', data => { const msgs = document.getElementById('chat-messages'); msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; });
 
         socket.on('game_state_update', (state) => {
             currentGameState = state; 
@@ -379,16 +390,23 @@
             else { dBadge.innerText = calculateValue(state.dealerCards); dBadge.classList.remove('hidden'); }
 
             const seatsArea = document.getElementById('seats-area'); seatsArea.innerHTML = '';
-            mySeatIndex = -1; let activeElements = [];
+            let activeElements = [];
+            
+            if(currentUser) {
+                 const mySeat = state.seats.find(s => s && s.username === currentUser.username);
+                 if(mySeat) { currentUser.credits = mySeat.credits; document.getElementById('hud-credits').innerText = currentUser.credits; mySeatIndex = state.seats.indexOf(mySeat); }
+            }
 
             state.seats.forEach((seatData, index) => {
                 const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
+                let isMySeat = currentUser && seatData && seatData.username === currentUser.username;
+
                 if (!seatData) {
-                    seatDiv.innerHTML = `<div class="pixel-text" style="font-size:28px; color:#94a3b8; margin-top:30px;">EMPTY</div><button class="s-btn" style="background:var(--success); color:#000; padding:8px 16px; margin-top:20px; box-shadow:2px 2px 0 #000;" onclick="sitDown(${index})">SIT</button>`;
+                    let sitBtn = mySeatIndex === -1 ? `<button class="s-btn" style="background:var(--success); color:#000; padding:8px 16px; margin-top:20px; box-shadow:2px 2px 0 #000;" onclick="sitDown(${index})">SIT</button>` : '';
+                    seatDiv.innerHTML = `<div class="pixel-text" style="font-size:28px; color:#94a3b8; margin-top:30px;">EMPTY</div>${sitBtn}`;
                     if (state.status === 'waiting' || state.status === 'betting') activeElements.push(seatDiv);
                 } else {
-                    if (seatData.username === currentUser.username) { mySeatIndex = index; document.getElementById('hud-credits').innerText = seatData.credits; }
-                    seatDiv.classList.add('occupied'); if (mySeatIndex === index) seatDiv.classList.add('my-seat'); if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
+                    seatDiv.classList.add('occupied'); if (isMySeat) seatDiv.classList.add('my-seat'); if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
 
                     let html = `<div class="seat-header" style="color:${seatData.color}">${seatData.username}</div>`;
                     
@@ -400,25 +418,25 @@
                         if (hand.bet > 0) html += `<div class="seat-bet">BET: $${hand.bet}</div>`;
                     });
 
-                    if (mySeatIndex === index && state.status === 'waiting') {
-                        html += `<button class="btn-inseat-standup" onclick="ejectSeat()">STAND UP</button>`;
+                    if (isMySeat && state.status === 'waiting') {
+                        html += `<button class="btn-inseat-standup" onclick="ejectSeat(${index})">STAND UP</button>`;
                     }
-                    if (mySeatIndex === index && state.status === 'betting') {
+                    if (isMySeat && state.status === 'betting') {
                         if (seatData.hands[0].bet === 0) {
-                            html += `<div class="seat-bet-box"><input type="number" id="inseat-bet" value="100000" min="100000"><button class="s-btn" style="background:var(--success); color:#000;" onclick="placeBet()">BET</button></div>`;
-                            html += `<button class="btn-inseat-standup" style="margin-top: 5px;" onclick="ejectSeat()">STAND UP</button>`;
+                            html += `<div class="seat-bet-box"><input type="number" id="inseat-bet-${index}" class="retro-input" value="100000" min="100000" style="padding:4px; font-size:18px; width:110px;"><button class="s-btn" style="background:var(--success); color:#000;" onclick="placeBet(${index})">BET</button></div>`;
+                            html += `<button class="btn-inseat-standup" style="margin-top: 5px;" onclick="ejectSeat(${index})">STAND UP</button>`;
                         }
                     }
-                    if (mySeatIndex === index && state.status === 'playing' && state.activeSeatIndex === index) {
+                    if (isMySeat && state.status === 'playing' && state.activeSeatIndex === index) {
                         html += `<div class="seat-controls">`;
-                        html += `<button class="s-btn btn-hit" onclick="socket.emit('player_action_hit',{username: currentUser.username, seatIndex:${mySeatIndex}})">HIT</button>`;
-                        html += `<button class="s-btn btn-stand" onclick="socket.emit('player_action_stand',{username: currentUser.username, seatIndex:${mySeatIndex}})">STAND</button>`;
+                        html += `<button class="s-btn btn-hit" onclick="socket.emit('player_action_hit',{username: currentUser.username, seatIndex:${index}})">HIT</button>`;
+                        html += `<button class="s-btn btn-stand" onclick="socket.emit('player_action_stand',{username: currentUser.username, seatIndex:${index}})">STAND</button>`;
                         
                         const cHand = seatData.hands[seatData.currentHand];
                         if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) {
-                            html += `<button class="s-btn btn-double" onclick="socket.emit('player_action_double',{username: currentUser.username, seatIndex:${mySeatIndex}})">2X</button>`;
+                            html += `<button class="s-btn btn-double" onclick="socket.emit('player_action_double',{username: currentUser.username, seatIndex:${index}})">2X</button>`;
                             if (cHand.cards[0].weight === cHand.cards[1].weight) {
-                                html += `<button class="s-btn btn-split" onclick="socket.emit('player_action_split',{username: currentUser.username, seatIndex:${mySeatIndex}})">SPLIT</button>`;
+                                html += `<button class="s-btn btn-split" onclick="socket.emit('player_action_split',{username: currentUser.username, seatIndex:${index}})">SPLIT</button>`;
                             }
                         }
                         html += `</div>`;
@@ -453,23 +471,37 @@
                 }, 200);
             } else { nTimerUI.classList.add('hidden'); clearInterval(nextRoundTimerInt); }
 
-            if (mySeatIndex !== -1 && state.seats[mySeatIndex].hands[0].bet === 0 && state.status === 'betting') {
-                if (!sitTimerInt) { sitTimerInt = setInterval(() => { if (Date.now() - mySitTime > 7000) ejectSeat(); }, 1000); }
+            if (mySeatIndex !== -1 && state.status === 'betting' && state.seats[mySeatIndex].hands[0].bet === 0) {
+                if (!sitTimerInt) {
+                    sitTimerInt = setInterval(() => {
+                        if (Date.now() - mySitTime > 7000) ejectSeat(mySeatIndex);
+                    }, 1000);
+                }
             } else { clearInterval(sitTimerInt); sitTimerInt = null; }
         }
 
         function layoutArc(elements) {
             const count = elements.length; if (count === 0) return;
-            const centerX = 525; const centerY = 130; const radiusX = 380; const radiusY = 240; 
+            const centerX = 450; const centerY = 130; const radiusX = 320; const radiusY = 220; 
             elements.forEach((el, i) => {
-                let angle = count === 1 ? Math.PI / 2 : (Math.PI * 0.85) - (i * ((Math.PI * 0.7) / (count - 1)));
+                let angle = count === 1 ? Math.PI / 2 : (Math.PI * 0.80) - (i * ((Math.PI * 0.60) / (count - 1)));
                 el.style.left = `${centerX + Math.cos(angle) * radiusX - 80}px`; el.style.top = `${centerY + Math.sin(angle) * radiusY - 90}px`;
             });
         }
         function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
 
-        function sitDown(index) { socket.emit('join_seat', { username: currentUser.username, seatIndex: index }); mySitTime = Date.now(); }
-        function placeBet() { const amt = parseInt(document.getElementById('inseat-bet').value); socket.emit('place_bet', { username: currentUser.username, seatIndex: mySeatIndex, betAmount: amt }); clearInterval(sitTimerInt); }
+        function sitDown(index) { 
+            if (mySeatIndex !== -1) return alert("Strict 1-Seat Limit per player.");
+            socket.emit('join_seat', { username: currentUser.username, seatIndex: index }); 
+            mySitTime = Date.now(); 
+        }
+        
+        function placeBet(index) { 
+            const amt = parseInt(document.getElementById(`inseat-bet-${index}`).value); 
+            socket.emit('place_bet', { username: currentUser.username, seatIndex: index, betAmount: amt }); 
+            clearInterval(sitTimerInt); 
+            sitTimerInt = null;
+        }
     </script>
 </body>
 </html>
