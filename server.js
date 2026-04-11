@@ -37,14 +37,14 @@ const GiftCode = mongoose.model('GiftCode', new mongoose.Schema({
 const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
 const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
-// Added 'lobby' array to accurately track everyone in the room
+// 3 SEATS ONLY
 let gameState = {
-    seats: [null, null, null, null, null], dealerCards: [], deck: [],
+    seats: [null, null, null], dealerCards: [], deck: [],
     status: 'waiting', activeSeatIndex: -1, betEndTime: 0, nextRoundTime: 0, 
     lobby: [] 
 };
 
-const socketUserMap = {}; // Maps socket.id to username for disconnect cleanup
+const socketUserMap = {}; 
 
 function getNewDeck() {
     let deck = [];
@@ -119,7 +119,6 @@ let nextRoundInterval = null;
 
 io.on('connection', (socket) => {
     
-    // Accurate Lobby Tracking
     socket.on('enter_lobby', async ({ username }) => {
         socketUserMap[socket.id] = username;
         const user = await User.findOne({ username });
@@ -130,15 +129,17 @@ io.on('connection', (socket) => {
     });
 
     socket.on('join_seat', async ({ username, seatIndex }) => {
-        if (seatIndex < 0 || seatIndex > 4 || gameState.seats[seatIndex]) return;
+        // STRICT 1 SEAT LIMIT
+        if (gameState.seats.some(s => s && s.username === username)) return; 
+        if (seatIndex < 0 || seatIndex > 2 || gameState.seats[seatIndex]) return;
+
         const user = await User.findOne({ username });
         if (!user) return;
-        gameState.seats[seatIndex] = { username: user.username, color: user.nameColor, credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0 };
+        gameState.seats[seatIndex] = { username: user.username, color: user.nameColor, socketId: socket.id, credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0 };
         if (gameState.status === 'waiting') gameState.status = 'betting';
         emitGameState();
     });
 
-    // Fixed: Uses username to verify leaving, avoiding socket ID bugs
     socket.on('leave_seat', ({ username, seatIndex }) => {
         if (gameState.seats[seatIndex] && gameState.seats[seatIndex].username === username) {
             gameState.seats[seatIndex] = null;
@@ -147,7 +148,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Fixed: Validates by username payload
     socket.on('place_bet', async ({ username, seatIndex, betAmount }) => {
         const seat = gameState.seats[seatIndex];
         if (!seat || seat.username !== username || gameState.status !== 'betting') return;
@@ -221,7 +221,6 @@ io.on('connection', (socket) => {
         } else { socket.emit('reward_claimed', { success: false, message: 'Cooldown active' }); }
     });
 
-    // Fixed chat payload logic
     socket.on('send_chat', ({ username, message }) => { if(username && message) io.emit('receive_chat', { username, message }); });
 
     socket.on('disconnect', () => {
@@ -229,12 +228,13 @@ io.on('connection', (socket) => {
         if (username) {
             gameState.lobby = gameState.lobby.filter(p => p.username !== username);
             delete socketUserMap[socket.id];
-        }
-        // If they drop entirely, empty their seat
-        const seatIndex = gameState.seats.findIndex(s => s && s.username === username);
-        if (seatIndex !== -1) {
-            gameState.seats[seatIndex] = null;
-            if (gameState.seats.every(s => s === null)) { gameState.status = 'waiting'; clearInterval(betTimerInterval); }
+            
+            // Instantly clear the seat of the disconnected user
+            const seatIndex = gameState.seats.findIndex(s => s && s.username === username);
+            if (seatIndex !== -1) {
+                gameState.seats[seatIndex] = null;
+                if (gameState.seats.every(s => s === null)) { gameState.status = 'waiting'; clearInterval(betTimerInterval); }
+            }
         }
         emitGameState();
     });
@@ -262,8 +262,8 @@ function moveToNextTurn() {
     const seat = gameState.seats[gameState.activeSeatIndex];
     if (seat.currentHand < seat.hands.length - 1) { seat.currentHand++; return; }
     let nextIndex = gameState.activeSeatIndex + 1;
-    while (nextIndex < 5 && !gameState.seats[nextIndex]) nextIndex++;
-    if (nextIndex >= 5) processDealerTurn(); else { gameState.activeSeatIndex = nextIndex; emitGameState(); }
+    while (nextIndex < 3 && !gameState.seats[nextIndex]) nextIndex++;
+    if (nextIndex >= 3) processDealerTurn(); else { gameState.activeSeatIndex = nextIndex; emitGameState(); }
 }
 
 async function processDealerTurn() {
