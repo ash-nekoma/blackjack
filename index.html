@@ -23,66 +23,81 @@
         .clear-text { font-family: var(--clear-font); }
         .hidden { display: none !important; }
 
-        /* THE ARCADE CABINET */
         #arcade-cabinet {
             width: 1280px; height: 760px; max-width: 100vw; max-height: 100vh;
             background: var(--bg-dark); border-radius: 12px; border: 6px solid #222;
             box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex;
         }
 
-        /* CUSTOM SCROLLBARS */
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: var(--bg-darker); border-left: 1px solid #333; }
-        ::-webkit-scrollbar-thumb { background: #475569; border: 1px solid #000; }
+        /* CUSTOM RETRO SCROLLBARS */
+        .custom-scroll::-webkit-scrollbar { width: 12px; background: #000; border-left: 2px solid #333;}
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--wood-base); border: 2px solid #000; box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
 
         /* MENUS & MODALS */
         .full-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
         .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 300; }
-        .modal-box { background: var(--bg-dark); border: 4px solid var(--accent-glow); padding: 30px; width: 500px; text-align: center; box-shadow: 10px 10px 0 #000; }
+        .modal-box { background: var(--bg-dark); border: 4px solid var(--accent-glow); padding: 30px; width: 550px; text-align: center; box-shadow: 10px 10px 0 #000; }
         
-        .wood-btn { background: var(--wood-base); border: 4px solid var(--wood-dark); color: #fff; padding: 10px; font-size: 28px; cursor: pointer; box-shadow: 4px 4px 0 #000; width: 300px; margin-bottom: 15px; text-transform: uppercase;}
-        .wood-btn:hover { background: #a06b35; transform: translateY(-2px); }
-        input.retro-input, select { width: 100%; padding: 10px; margin: 10px 0; background: #000; color: #fff; border: 2px solid var(--accent-glow-2); font-family: 'VT323'; font-size: 24px; text-align: center;}
+        /* ALIGNED INPUTS & BUTTONS */
+        .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; }
+        input.retro-input { flex: 1; padding: 12px; margin: 0; background: #000; color: #fff; border: 2px solid var(--accent-glow-2); font-family: 'VT323'; font-size: 24px; text-align: center; outline: none; }
+        .wood-btn { background: var(--wood-base); border: 4px solid var(--wood-dark); color: #fff; padding: 10px 20px; font-size: 28px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; display: flex; justify-content: center; align-items: center; transition: 0.1s;}
+        .wood-btn:hover { background: #a06b35; }
+        .wood-btn:active { transform: scale(0.95) translate(2px, 2px); box-shadow: 0 0 0 #000; }
+        .btn-full { width: 100%; margin-bottom: 15px; }
+
+        /* THEMED TEXT BLOCKS */
+        .terms-box { text-align: left; background: #000; padding: 15px; border: 2px solid #475569; font-family: var(--clear-font); font-size: 14px; color: #94a3b8; height: 120px; overflow-y: auto; margin-bottom: 15px; }
+        .terms-box strong { color: var(--warning); }
+
+        /* COLOR PICKER SQUARES */
+        .color-picker { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .color-sq { width: 40px; height: 40px; border: 3px solid #333; cursor: pointer; transition: 0.2s; border-radius: 4px; box-shadow: 2px 2px 0 #000;}
+        .color-sq:hover { transform: scale(1.1); }
+        .color-sq.selected { border-color: #fff; box-shadow: 0 0 15px #fff; }
 
         /* GAME LAYOUT */
         #game-area { width: 75%; position: relative; background: radial-gradient(circle, #1e293b 0%, #000000 100%); display: flex; flex-direction: column; align-items: center; }
-        #sidebar { width: 25%; background: var(--bg-darker); border-left: 4px solid var(--wood-dark); display: flex; flex-direction: column; }
+        #sidebar { width: 25%; background: var(--bg-darker); border-left: 4px solid var(--wood-dark); display: flex; flex-direction: column; height: 100%; }
 
-        /* TOP HUD */
-        .top-hud { width: 100%; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-        .btn-menu { color: #fff; font-size: 24px; cursor: pointer; opacity: 0.3; transition: 0.2s; background: none; border: none; font-family: 'VT323'; }
-        .btn-menu:hover { opacity: 1; text-shadow: 0 0 10px #fff; }
-        .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid #333; color: var(--success); font-size: 26px; }
+        /* RETRO HUD */
+        .top-hud { width: 100%; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 10; background: rgba(0,0,0,0.5); border-bottom: 2px solid #333; }
+        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
+        .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
+        .hud-panel { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 0; border: 2px solid var(--accent-glow-2); color: #fff; font-size: 26px; box-shadow: 3px 3px 0 #000; display: flex; gap: 15px; align-items: center;}
+        .hud-panel span { color: var(--success); }
+        .btn-hud-stand { background: var(--danger); border: 2px solid #fff; color: #fff; padding: 2px 10px; font-size: 20px; cursor: pointer; text-shadow: 1px 1px 0 #000; }
+        .btn-hud-stand:active { transform: scale(0.95); }
 
         /* SIDEBAR (Lobby & Chat) */
-        .sidebar-header { background: var(--wood-dark); color: #fff; padding: 10px; text-align: center; font-size: 24px; border-bottom: 2px solid #000; display: flex; justify-content: space-between;}
-        .lobby-panel { flex: 0.4; border-bottom: 4px solid var(--wood-dark); overflow-y: auto; padding: 10px; }
-        .lobby-player { font-size: 22px; margin-bottom: 5px; border-bottom: 1px dashed #333; }
-        .chat-panel { flex: 0.6; display: flex; flex-direction: column; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; font-size: 20px; text-shadow: 1px 1px 0 #000; color: #fff; }
-        .chat-input-area { display: flex; border-top: 2px solid #333; }
-        .chat-input-area input { flex: 1; padding: 10px; font-size: 20px; margin:0; border:none; border-radius:0; text-align: left; font-family: var(--clear-font); background: #000; color: #fff;}
-        .chat-input-area button { background: var(--success); color: #000; border: none; padding: 0 15px; font-family: 'VT323'; font-size: 20px; cursor: pointer; }
+        .sidebar-header { background: var(--wood-dark); color: #fff; padding: 10px; text-align: center; font-size: 24px; border-bottom: 2px solid #000; display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000;}
+        .lobby-panel { flex: 0.4; border-bottom: 4px solid var(--wood-dark); padding: 10px; overflow-y: auto; }
+        .lobby-player { font-size: 24px; margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 5px; text-shadow: 1px 1px 0 #000;}
+        .chat-panel { flex: 0.6; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-messages { flex: 1; padding: 10px; font-size: 20px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word;}
+        .chat-input-area { display: flex; border-top: 2px solid #333; background: #000; }
+        .chat-input-area input { flex: 1; padding: 12px; font-size: 18px; margin:0; border:none; text-align: left; font-family: var(--clear-font); background: transparent; color: #fff; outline: none;}
+        .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid #333; padding: 0 20px; font-family: 'VT323'; font-size: 24px; cursor: pointer; }
+        .chat-input-area button:active { background: #059669; }
 
         /* CASINO TABLE */
         .table-surface { width: 850px; height: 450px; margin-top: 40px; position: relative; background: radial-gradient(ellipse at center, var(--table-green) 0%, var(--table-dark) 100%); border: 16px solid var(--table-border); border-radius: 425px 425px 40px 40px; box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.8); }
         .banker-station { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
-        .global-timer { position: absolute; top: 180px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; }
+        
+        .global-timer { position: absolute; top: 180px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
+        .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
 
-        /* SEATS & CARDS */
+        /* SEATS */
         .seat { position: absolute; width: 140px; height: 160px; background: rgba(0, 0, 0, 0.5); border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; z-index: 5; }
         .seat.occupied { border-style: solid; border-color: rgba(255,255,255,0.1); background: transparent; }
-        .seat.my-seat { background: rgba(59, 130, 246, 0.1); border-color: var(--accent-glow-2); }
         .seat.active-turn { box-shadow: 0 0 30px var(--warning); border-color: var(--warning); background: rgba(251, 191, 36, 0.1); }
-        .seat:hover:not(.occupied) { border-color: #fff; cursor: pointer; background: rgba(255, 255, 255, 0.1); }
-
+        
         .seat-header { width: 100%; background: rgba(0,0,0,0.8); color: #fff; font-size: 14px; font-weight: bold; padding: 4px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid #333; }
         .seat-bet { color: var(--success); font-size: 14px; font-weight: bold; margin-top: 5px; background: rgba(0,0,0,0.9); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--success);}
 
-        .btn-eject { position: absolute; top: -10px; right: -10px; background: var(--danger); color: #fff; border: 2px solid #fff; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 20;}
-
         .seat-controls { position: absolute; bottom: -30px; width: 100%; display: flex; gap: 5px; z-index: 15; }
-        .s-btn { flex: 1; padding: 5px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); }
+        .s-btn { flex: 1; padding: 5px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s;}
+        .s-btn:active { transform: scale(0.95); }
         
         .cards-area { position: relative; display: flex; justify-content: center; flex-wrap: wrap; width: 100%; min-height: 70px; margin-top: 5px; gap: -20px;}
         .card { width: 45px; height: 65px; background: #fff; color: #111; border-radius: 4px; display: flex; justify-content: center; align-items: center; text-align: center; font-size: 18px; font-weight: bold; border: 1px solid #ccc; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -20px; }
@@ -90,7 +105,9 @@
         .card.red { color: #dc2626; }
         .hd-badge { position: absolute; top: -10px; right: 0px; background: rgba(0,0,0,0.9); color: #fff; border: 1px solid #fff; padding: 2px 6px; font-size: 12px; font-weight: bold; border-radius: 10px; }
 
-        .ledger-item { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #333; font-size: 20px; }
+        /* LEDGER */
+        .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 20px; background: #0f172a; margin-bottom: 5px; border-radius: 4px;}
+        .ledger-desc { color: #94a3b8; }
     </style>
 </head>
 <body>
@@ -107,11 +124,9 @@
                 <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 15px;">MEMBER LOGIN</h2>
                 <input type="text" id="login-user" class="retro-input" placeholder="USERNAME">
                 <input type="password" id="login-pass" class="retro-input" placeholder="PASSWORD">
-                <button class="wood-btn pixel-text" style="width: 100%; margin-top: 15px;" onclick="login()">LOGIN</button>
-                <p id="login-error" class="pixel-text" style="color: var(--danger); margin-top: 10px; font-size: 20px;"></p>
-                <div style="margin-top: 20px; font-family: var(--clear-font); font-size: 16px;">
-                    <span style="color: #94a3b8; cursor: pointer; text-decoration: underline;" onclick="toggleAuth('signup')">New Player? Request Access Here</span>
-                </div>
+                <button class="wood-btn btn-full pixel-text" style="margin-top: 15px;" onclick="login()">LOGIN</button>
+                <p id="login-error" class="pixel-text" style="color: var(--danger); font-size: 20px;"></p>
+                <div class="clear-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px;" onclick="toggleAuth('signup')">New Player? Request Access Here</div>
             </div>
 
             <div id="panel-signup" class="modal-box hidden">
@@ -119,84 +134,81 @@
                 <input type="text" id="signup-user" class="retro-input" placeholder="CHOOSE USERNAME">
                 <input type="password" id="signup-pass" class="retro-input" placeholder="CREATE PASSWORD">
                 
-                <div style="text-align: left; margin: 15px 0; background: #000; padding: 10px; border: 1px solid #475569; font-family: var(--clear-font); font-size: 14px; color: #94a3b8; height: 80px; overflow-y: auto;">
-                    Strict 1-seat limits apply. Farming rewards via multiple accounts will result in immediate IP bans. All new accounts require Admin approval before logging in.
+                <div class="terms-box custom-scroll">
+                    <strong>SYSTEM TERMS:</strong> Strict 1-seat limits apply. Farming rewards via multiple accounts will result in immediate IP bans. All new accounts require Admin approval before logging in. Play fair.
                 </div>
-                
-                <label style="font-family: var(--clear-font); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff;">
+                <label class="clear-text" style="font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; margin-bottom: 15px;">
                     <input type="checkbox" id="tos-checkbox" style="width: 20px; height: 20px; margin:0;"> I ACCEPT THE TERMS
                 </label>
 
-                <button class="wood-btn pixel-text" style="width: 100%; margin-top: 15px; background: #0f766e; border-color: #042f2e;" onclick="signup()">SUBMIT REQUEST</button>
-                <p id="signup-msg" class="pixel-text" style="margin-top: 10px; font-size: 20px;"></p>
-                
-                <div style="margin-top: 20px; font-family: var(--clear-font); font-size: 16px;">
-                    <span style="color: #94a3b8; cursor: pointer; text-decoration: underline;" onclick="toggleAuth('login')">Already registered? Back to Login</span>
-                </div>
+                <button class="wood-btn btn-full pixel-text" style="background: #0f766e; border-color: #042f2e;" onclick="signup()">SUBMIT REQUEST</button>
+                <p id="signup-msg" class="pixel-text" style="font-size: 20px;"></p>
+                <div class="clear-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline;" onclick="toggleAuth('login')">Back to Login</div>
             </div>
         </div>
 
         <div id="main-menu-view" class="full-menu hidden">
             <h1 class="pixel-text" style="font-size: 80px; color: #fff; margin-bottom: 40px; text-shadow: 4px 4px 0px #000;">MAIN MENU</h1>
-            <button class="wood-btn pixel-text" style="background: var(--success);" onclick="joinGame()">PLAY</button>
-            <button class="wood-btn pixel-text" onclick="showModal('profile-modal'); loadLedger();">PROFILE</button>
-            <button class="wood-btn pixel-text" onclick="showModal('bank-modal')">BANK</button>
-            <button class="wood-btn pixel-text" onclick="showModal('settings-modal')">SETTINGS</button>
-            <button class="wood-btn pixel-text" style="background: var(--danger);" onclick="showModal('logout-modal')">LOGOUT</button>
+            <button class="wood-btn btn-full pixel-text" style="background: var(--success);" onclick="joinGame()">PLAY</button>
+            <button class="wood-btn btn-full pixel-text" onclick="showModal('profile-modal'); loadLedger();">PROFILE</button>
+            <button class="wood-btn btn-full pixel-text" onclick="showModal('bank-modal')">BANKING</button>
+            <button class="wood-btn btn-full pixel-text" style="background: #0f766e;" onclick="claimReward()">DAILY REWARDS</button>
+            <button class="wood-btn btn-full pixel-text" style="background: var(--danger);" onclick="showModal('logout-modal')">LOGOUT</button>
+            <p id="reward-msg" class="pixel-text" style="color: var(--success); font-size: 24px; text-shadow: 2px 2px 0 #000;"></p>
         </div>
 
         <div id="profile-modal" class="overlay-menu hidden">
-            <div class="modal-box" style="width: 600px; max-height: 90%; display: flex; flex-direction: column;">
+            <div class="modal-box" style="width: 700px; max-height: 90%; display: flex; flex-direction: column;">
                 <h2 class="pixel-text" style="color: #fbbf24;">USER PROFILE</h2>
-                <div style="display: flex; gap: 10px; margin: 15px 0;">
-                    <select id="color-select">
-                        <option value="#f8fafc">WHITE</option>
-                        <option value="#ef4444">RED</option>
-                        <option value="#3b82f6">BLUE</option>
-                        <option value="#10b981">GREEN</option>
-                        <option value="#fbbf24">YELLOW</option>
-                    </select>
-                    <button class="wood-btn pixel-text" style="width: 150px;" onclick="saveColor()">SAVE</button>
+                
+                <h3 class="pixel-text" style="margin-top: 15px; text-align: left;">USERNAME COLOR</h3>
+                <div class="color-picker" id="color-picker-ui">
+                    <div class="color-sq selected" style="background:#f8fafc" onclick="selectColor('#f8fafc', this)"></div>
+                    <div class="color-sq" style="background:#ef4444" onclick="selectColor('#ef4444', this)"></div>
+                    <div class="color-sq" style="background:#3b82f6" onclick="selectColor('#3b82f6', this)"></div>
+                    <div class="color-sq" style="background:#10b981" onclick="selectColor('#10b981', this)"></div>
+                    <div class="color-sq" style="background:#fbbf24" onclick="selectColor('#fbbf24', this)"></div>
                 </div>
-                <h3 class="pixel-text" style="text-align: left; margin-bottom: 5px;">LEDGER</h3>
-                <div id="ledger-list" class="pixel-text" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid #475569; text-align: left;"></div>
-                <button class="wood-btn pixel-text" style="width: 100%; margin-top: 15px;" onclick="hideModal('profile-modal')">CLOSE</button>
+                <button class="wood-btn btn-full pixel-text" onclick="saveColor()">SAVE COLOR</button>
+
+                <h3 class="pixel-text" style="text-align: left; margin: 15px 0 5px 0;">CREDIT LEDGER</h3>
+                <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid #475569; text-align: left;"></div>
+                
+                <button class="wood-btn btn-full pixel-text" style="margin-top: 15px; background: var(--danger);" onclick="hideModal('profile-modal')">CLOSE</button>
             </div>
         </div>
 
         <div id="bank-modal" class="overlay-menu hidden">
-            <div class="modal-box">
-                <h2 class="pixel-text" style="color: #fbbf24;">BANKING</h2>
-                <input type="number" id="bank-amount" class="retro-input" placeholder="AMOUNT">
-                <div style="display: flex; gap: 10px;">
-                    <button class="wood-btn pixel-text" style="flex: 1; font-size: 20px; padding: 10px; background: var(--accent-glow-2);" onclick="submitBank('deposit')">DEPOSIT</button>
-                    <button class="wood-btn pixel-text" style="flex: 1; font-size: 20px; padding: 10px; background: var(--warning);" onclick="submitBank('withdrawal')">WITHDRAW</button>
+            <div class="modal-box" style="width: 600px;">
+                <h2 class="pixel-text" style="color: #fbbf24; margin-bottom: 20px;">SYSTEM BANKING</h2>
+                
+                <div class="terms-box custom-scroll" style="height: 90px;">
+                    <strong>BANK RULES:</strong> Minimum request amount is 100,000. Maximum deposit per request is strictly 100,000. All transfers pend Admin approval.
                 </div>
-                <h3 class="pixel-text" style="margin-top: 20px;">GIFT CODE</h3>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="gift-code" class="retro-input" placeholder="ENTER CODE">
-                    <button class="wood-btn pixel-text" style="width: 100px; padding: 10px; font-size: 20px;" onclick="redeemCode()">REDEEM</button>
-                </div>
-                <p id="bank-msg" class="pixel-text" style="color: var(--success); margin-top: 10px;"></p>
-                <button class="wood-btn pixel-text" style="width: 100%; margin-top: 15px;" onclick="hideModal('bank-modal')">CLOSE</button>
-            </div>
-        </div>
 
-        <div id="settings-modal" class="overlay-menu hidden">
-            <div class="modal-box">
-                <h2 class="pixel-text" style="color: #fbbf24;">SETTINGS</h2>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0;">
-                    <span class="pixel-text">MUSIC</span>
-                    <button id="btn-music" class="wood-btn pixel-text" style="width: auto; padding: 5px 15px;" onclick="toggleMusic()">🔊 ON</button>
+                <div class="input-group">
+                    <input type="number" id="bank-amount" class="retro-input" placeholder="ENTER AMOUNT">
                 </div>
-                <button class="wood-btn pixel-text" style="width: 100%; margin-top: 15px;" onclick="hideModal('settings-modal')">CLOSE</button>
+                <div class="input-group">
+                    <button class="wood-btn pixel-text" style="flex: 1; background: var(--accent-glow-2);" onclick="submitBank('deposit')">DEPOSIT</button>
+                    <button class="wood-btn pixel-text" style="flex: 1; background: var(--warning);" onclick="submitBank('withdrawal')">WITHDRAW</button>
+                </div>
+                
+                <h3 class="pixel-text" style="margin-top: 30px; text-align: left;">REDEEM GIFT CODE</h3>
+                <div class="input-group">
+                    <input type="text" id="gift-code" class="retro-input" placeholder="ENTER CODE">
+                    <button class="wood-btn pixel-text" style="width: 150px; background: var(--success);" onclick="redeemCode()">REDEEM</button>
+                </div>
+                
+                <p id="bank-msg" class="pixel-text" style="color: var(--success); font-size: 24px; margin-top: 10px;"></p>
+                <button class="wood-btn btn-full pixel-text" style="margin-top: 15px; background: var(--danger);" onclick="hideModal('bank-modal')">CLOSE</button>
             </div>
         </div>
 
         <div id="logout-modal" class="overlay-menu hidden">
             <div class="modal-box">
                 <h2 class="pixel-text" style="color: #ef4444;">CONFIRM LOGOUT?</h2>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <div class="input-group" style="margin-top: 30px;">
                     <button class="wood-btn pixel-text" style="flex: 1; background: var(--danger);" onclick="logout()">YES</button>
                     <button class="wood-btn pixel-text" style="flex: 1;" onclick="hideModal('logout-modal')">NO</button>
                 </div>
@@ -209,7 +221,10 @@
                 <div class="top-hud">
                     <button class="btn-menu" onclick="exitToMenu()">MENU</button>
                     <div style="font-size: 28px; color: var(--accent-glow-2);" id="phase-display" class="pixel-text">WAITING</div>
-                    <div class="wallet-display pixel-text">CREDITS: <span id="hud-credits"></span></div>
+                    <div class="hud-panel pixel-text">
+                        <span>💰 <span id="hud-credits"></span></span>
+                        <button id="hud-stand-btn" class="btn-hud-stand hidden" onclick="ejectSeat()">STAND UP</button>
+                    </div>
                 </div>
 
                 <div class="table-surface">
@@ -220,6 +235,7 @@
                     </div>
 
                     <div id="global-timer" class="global-timer pixel-text hidden">BETS CLOSING: <span id="g-time">15</span>s</div>
+                    <div id="next-round-timer" class="global-timer pixel-text blue hidden">NEXT ROUND: <span id="n-time">5</span>s</div>
 
                     <div id="seats-area"></div>
                 </div>
@@ -227,11 +243,11 @@
 
             <div id="sidebar">
                 <div class="sidebar-header pixel-text"><span>PLAYERS</span> <span id="player-count" style="color:var(--accent-glow-2);">0</span></div>
-                <div id="lobby-list" class="lobby-panel pixel-text"></div>
+                <div id="lobby-list" class="lobby-panel custom-scroll pixel-text"></div>
                 
                 <div class="sidebar-header pixel-text" style="border-top: 4px solid var(--wood-dark);">TABLE CHAT</div>
                 <div class="chat-panel">
-                    <div id="chat-messages" class="chat-messages pixel-text"></div>
+                    <div id="chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
                         <input type="text" id="chat-input" placeholder="Type message...">
                         <button onclick="sendChat()">SEND</button>
@@ -245,31 +261,26 @@
     <script>
         const socket = io();
         let currentUser = null; let mySeatIndex = -1; let currentGameState = null;
-        let globalTimerInt = null; let mySitTime = 0; let sitTimerInt = null;
+        let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc';
 
-        // Modals & Auth Toggles
+        // Toggles & Modals
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
         
         function toggleAuth(panel) {
-            document.getElementById('login-error').innerText = '';
-            document.getElementById('signup-msg').innerText = '';
-            if(panel === 'login') {
-                document.getElementById('panel-signup').classList.add('hidden');
-                document.getElementById('panel-login').classList.remove('hidden');
-            } else {
-                document.getElementById('panel-login').classList.add('hidden');
-                document.getElementById('panel-signup').classList.remove('hidden');
-            }
+            document.getElementById('login-error').innerText = ''; document.getElementById('signup-msg').innerText = '';
+            if(panel === 'login') { document.getElementById('panel-signup').classList.add('hidden'); document.getElementById('panel-login').classList.remove('hidden'); } 
+            else { document.getElementById('panel-login').classList.add('hidden'); document.getElementById('panel-signup').classList.remove('hidden'); }
         }
 
-        // Auth Operations
+        // Auth
         async function login() {
             const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: document.getElementById('login-user').value, password: document.getElementById('login-pass').value}) });
             const data = await res.json();
             if(res.ok) {
                 currentUser = data; document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
-                document.getElementById('hud-credits').innerText = currentUser.credits; document.getElementById('color-select').value = currentUser.nameColor || '#f8fafc';
+                document.getElementById('hud-credits').innerText = currentUser.credits;
+                selectColor(currentUser.nameColor || '#f8fafc', null);
             } else document.getElementById('login-error').innerText = data.error;
         }
 
@@ -280,26 +291,33 @@
             if(!document.getElementById('tos-checkbox').checked) return msgBox.innerText = "Must accept terms.";
             
             msgBox.style.color = '#fff'; msgBox.innerText = "Sending request...";
-
             const res = await fetch('/api/signup', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
             const data = await res.json();
             
-            if(res.ok) { 
-                msgBox.style.color = 'var(--success)';
-                msgBox.innerText = "REQUEST SENT! WAITING FOR ADMIN APPROVAL."; 
-                setTimeout(() => toggleAuth('login'), 3500);
-            } else { 
-                msgBox.style.color = 'var(--danger)';
-                msgBox.innerText = data.error; 
-            }
+            if(res.ok) { msgBox.style.color = 'var(--success)'; msgBox.innerText = "REQUEST SENT! PENDING APPROVAL."; setTimeout(() => toggleAuth('login'), 3500); } 
+            else { msgBox.style.color = 'var(--danger)'; msgBox.innerText = data.error; }
         }
         function logout() { location.reload(); }
 
-        // Profile & Bank
+        // Daily Rewards
+        function claimReward() { socket.emit('claim_daily_reward', { username: currentUser.username }); }
+        socket.on('reward_claimed', (data) => {
+            const msg = document.getElementById('reward-msg');
+            if(data.success) { currentUser.credits = data.credits; document.getElementById('hud-credits').innerText = currentUser.credits; msg.innerText = "+100,000 CREDITS ACQUIRED!"; msg.style.color="var(--success)";} 
+            else { msg.innerText = data.message; msg.style.color="var(--warning)";}
+            setTimeout(()=> msg.innerText='', 3000);
+        });
+
+        // Profile & Ledger
+        function selectColor(hex, el) {
+            selectedColor = hex;
+            document.querySelectorAll('.color-sq').forEach(sq => sq.classList.remove('selected'));
+            if(el) el.classList.add('selected');
+            else { const match = Array.from(document.querySelectorAll('.color-sq')).find(s => s.style.background.includes(hex.replace('#',''))); if(match) match.classList.add('selected'); }
+        }
         async function saveColor() {
-            const col = document.getElementById('color-select').value;
-            await fetch('/api/profile/color', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, color: col}) });
-            currentUser.nameColor = col; hideModal('profile-modal');
+            await fetch('/api/profile/color', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, color: selectedColor}) });
+            currentUser.nameColor = selectedColor; hideModal('profile-modal');
         }
 
         async function loadLedger() {
@@ -307,42 +325,37 @@
             const list = document.getElementById('ledger-list'); list.innerHTML = '';
             data.forEach(tx => {
                 let color = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff');
-                list.innerHTML += `<div class="ledger-item"><span>${tx.type.toUpperCase()} [${tx.status}]</span> <span style="color:${color}">${tx.amount > 0 ? '+' : ''}${tx.amount}</span></div>`;
+                list.innerHTML += `<div class="ledger-item"><span class="ledger-desc">${tx.type.toUpperCase()} [${tx.status}]</span> <span style="color:${color}">${tx.amount > 0 ? '+' : ''}${tx.amount}</span></div>`;
             });
         }
 
+        // Bank
         async function submitBank(type) {
-            const amt = parseInt(document.getElementById('bank-amount').value); if(!amt || amt <= 0) return;
+            const amt = parseInt(document.getElementById('bank-amount').value); const msgBox = document.getElementById('bank-msg');
+            if(!amt || amt <= 0) return;
             const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount: amt}) });
-            if(res.ok) { document.getElementById('bank-msg').innerText = "REQUEST SENT TO ADMIN."; document.getElementById('bank-amount').value=''; }
-            else { const d = await res.json(); document.getElementById('bank-msg').innerText = d.error; }
-            setTimeout(()=> document.getElementById('bank-msg').innerText='', 3000);
+            if(res.ok) { msgBox.style.color = "var(--success)"; msgBox.innerText = "REQUEST SENT TO ADMIN."; document.getElementById('bank-amount').value=''; }
+            else { const d = await res.json(); msgBox.style.color = "var(--danger)"; msgBox.innerText = d.error; }
+            setTimeout(()=> msgBox.innerText='', 3000);
         }
 
         async function redeemCode() {
-            const code = document.getElementById('gift-code').value;
+            const code = document.getElementById('gift-code').value; const msgBox = document.getElementById('bank-msg');
             const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
-            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; document.getElementById('hud-credits').innerText = currentUser.credits; document.getElementById('bank-msg').innerText = "+"+d.amount+" CREDITS!"; }
-            else { const d = await res.json(); document.getElementById('bank-msg').innerText = d.error; }
-            setTimeout(()=> document.getElementById('bank-msg').innerText='', 3000);
+            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; document.getElementById('hud-credits').innerText = currentUser.credits; msgBox.style.color="var(--success)"; msgBox.innerText = "+"+d.amount+" CREDITS!"; document.getElementById('gift-code').value='';}
+            else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
+            setTimeout(()=> msgBox.innerText='', 3000);
         }
 
-        // Settings
-        let bgm = document.getElementById('sfx-bgm'); let musicOn = false;
-        function toggleMusic() {
-            musicOn = !musicOn; if(musicOn) bgm.play().catch(()=>{}); else bgm.pause();
-            document.getElementById('btn-music').innerText = musicOn ? '🔊 ON' : '🔇 OFF';
-        }
-
-        // Navigation
+        // Nav
         function joinGame() { document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); renderTable(currentGameState); }
         function exitToMenu() { document.getElementById('game-interface').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden'); ejectSeat(); }
-        function ejectSeat() { if(mySeatIndex !== -1) { socket.emit('leave_seat', { seatIndex: mySeatIndex }); mySeatIndex = -1; clearInterval(sitTimerInt); } }
+        function ejectSeat() { if(mySeatIndex !== -1) { socket.emit('leave_seat', { seatIndex: mySeatIndex }); mySeatIndex = -1; document.getElementById('hud-stand-btn').classList.add('hidden'); } }
 
         // Chat
         function sendChat() { const input = document.getElementById('chat-input'); if (input.value.trim() && currentUser) { socket.emit('send_chat', { username: currentUser.username, message: input.value.trim() }); input.value = ''; } }
         document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') sendChat(); });
-        socket.on('receive_chat', data => { const msgs = document.getElementById('chat-messages'); msgs.innerHTML += `<div style="margin-bottom: 5px;"><span style="color:var(--accent-glow-2);">[${data.username}]:</span> <span class="clear-text" style="font-size: 16px;">${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; });
+        socket.on('receive_chat', data => { const msgs = document.getElementById('chat-messages'); msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span class="clear-text" style="font-size: 18px;">${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; });
 
         // Core Render
         socket.on('game_state_update', (state) => {
@@ -375,15 +388,13 @@
             state.seats.forEach((seatData, index) => {
                 const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
                 if (!seatData) {
-                    seatDiv.innerHTML = `<button class="s-btn" style="background:var(--success); color:#000; padding:10px;" onclick="sitDown(${index})">SIT</button>`;
+                    seatDiv.innerHTML = `<button class="s-btn" style="background:var(--success); color:#000; padding:10px; margin-top:50px; text-transform:uppercase; font-size:16px; box-shadow:2px 2px 0 #000;" onclick="sitDown(${index})">SIT</button>`;
                     if (state.status === 'waiting' || state.status === 'betting') activeElements.push(seatDiv);
                 } else {
-                    if (seatData.username === currentUser.username) { mySeatIndex = index; document.getElementById('hud-credits').innerText = seatData.credits; }
-                    seatDiv.classList.add('occupied'); if (mySeatIndex === index) seatDiv.classList.add('my-seat'); if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
+                    if (seatData.username === currentUser.username) { mySeatIndex = index; document.getElementById('hud-credits').innerText = seatData.credits; document.getElementById('hud-stand-btn').classList.remove('hidden');}
+                    seatDiv.classList.add('occupied'); if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
 
-                    let html = ``;
-                    if (mySeatIndex === index && state.status === 'waiting') html += `<button class="btn-eject" onclick="ejectSeat()">✖</button>`;
-                    html += `<div class="seat-header" style="color:${seatData.color}">${seatData.username}</div>`;
+                    let html = `<div class="seat-header" style="color:${seatData.color}">${seatData.username}</div>`;
                     
                     seatData.hands.forEach(hand => {
                         html += `<div class="cards-area">`;
@@ -394,10 +405,10 @@
                     });
 
                     if (mySeatIndex === index && state.status === 'betting' && seatData.hands[0].bet === 0) {
-                        html += `<div style="display:flex; width:90%; margin-top:5px; gap:2px;"><input type="number" id="inseat-bet" value="100" style="margin:0; padding:2px; font-size:14px;"><button class="s-btn" style="background:var(--success); color:#000;" onclick="placeBet()">BET</button></div>`;
+                        html += `<div style="display:flex; width:95%; margin-top:10px; gap:5px;"><input type="number" id="inseat-bet" value="100000" style="margin:0; padding:5px; font-size:16px; flex:1; text-align:center;"><button class="s-btn" style="background:var(--success); color:#000; box-shadow:2px 2px 0 #000;" onclick="placeBet()">BET</button></div>`;
                     }
                     if (mySeatIndex === index && state.status === 'playing' && state.activeSeatIndex === index) {
-                        html += `<div class="seat-controls"><button class="s-btn" style="background:var(--success);" onclick="socket.emit('player_action_hit',{seatIndex:${mySeatIndex}})">HIT</button><button class="s-btn" style="background:#b45309;" onclick="socket.emit('player_action_stand',{seatIndex:${mySeatIndex}})">STAND</button></div>`;
+                        html += `<div class="seat-controls"><button class="s-btn" style="background:var(--success); box-shadow:2px 2px 0 #000; color:#000;" onclick="socket.emit('player_action_hit',{seatIndex:${mySeatIndex}})">HIT</button><button class="s-btn" style="background:#b45309; box-shadow:2px 2px 0 #000; color:#fff;" onclick="socket.emit('player_action_stand',{seatIndex:${mySeatIndex}})">STAND</button></div>`;
                     }
                     seatDiv.innerHTML = html;
                     if (state.status !== 'playing' || seatData.hands[0].bet > 0) activeElements.push(seatDiv);
@@ -405,31 +416,30 @@
                 seatsArea.appendChild(seatDiv);
             });
             layoutArc(activeElements);
-            if(state.status === 'playing' && document.querySelectorAll('.card').length > 0) document.getElementById('sfx-deal').play().catch(()=>{});
         }
 
         function manageTimers(state) {
-            const gTimerUI = document.getElementById('global-timer');
-            if (state.status !== 'betting') { gTimerUI.classList.add('hidden'); clearInterval(globalTimerInt); clearInterval(sitTimerInt); return; }
-
-            // 15s Global Timer
-            if (state.betEndTime > 0) {
-                gTimerUI.classList.remove('hidden'); clearInterval(globalTimerInt);
+            const gTimerUI = document.getElementById('global-timer'); const nTimerUI = document.getElementById('next-round-timer');
+            
+            // 15s Betting Timer
+            if (state.status === 'betting' && state.betEndTime > 0) {
+                gTimerUI.classList.remove('hidden'); clearInterval(globalTimerInt); nTimerUI.classList.add('hidden');
                 globalTimerInt = setInterval(() => {
                     let left = Math.ceil((state.betEndTime - Date.now()) / 1000);
                     if (left > 0) document.getElementById('g-time').innerText = left;
                     else { clearInterval(globalTimerInt); gTimerUI.classList.add('hidden'); }
                 }, 200);
-            } else gTimerUI.classList.add('hidden');
+            } else { gTimerUI.classList.add('hidden'); clearInterval(globalTimerInt); }
 
-            // 7s Local Kick Timer
-            if (mySeatIndex !== -1 && state.seats[mySeatIndex].hands[0].bet === 0) {
-                if (!sitTimerInt) {
-                    sitTimerInt = setInterval(() => {
-                        if (Date.now() - mySitTime > 7000) ejectSeat();
-                    }, 1000);
-                }
-            } else clearInterval(sitTimerInt);
+            // 5s Next Round Timer
+            if (state.status === 'resolving' && state.nextRoundTime > 0) {
+                nTimerUI.classList.remove('hidden'); clearInterval(nextRoundTimerInt);
+                nextRoundTimerInt = setInterval(() => {
+                    let left = Math.ceil((state.nextRoundTime - Date.now()) / 1000);
+                    if (left > 0) document.getElementById('n-time').innerText = left;
+                    else { clearInterval(nextRoundTimerInt); nTimerUI.classList.add('hidden'); }
+                }, 200);
+            } else { nTimerUI.classList.add('hidden'); clearInterval(nextRoundTimerInt); }
         }
 
         function layoutArc(elements) {
@@ -442,8 +452,8 @@
         }
         function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
 
-        function sitDown(index) { if (mySeatIndex !== -1) return; socket.emit('join_seat', { username: currentUser.username, seatIndex: index }); mySitTime = Date.now(); }
-        function placeBet() { const amt = parseInt(document.getElementById('inseat-bet').value); socket.emit('place_bet', { seatIndex: mySeatIndex, betAmount: amt }); clearInterval(sitTimerInt); }
+        function sitDown(index) { if (mySeatIndex !== -1) return; socket.emit('join_seat', { username: currentUser.username, seatIndex: index }); }
+        function placeBet() { const amt = parseInt(document.getElementById('inseat-bet').value); socket.emit('place_bet', { seatIndex: mySeatIndex, betAmount: amt }); }
     </script>
 </body>
 </html>
