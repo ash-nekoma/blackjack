@@ -9,7 +9,7 @@
     <style>
         :root {
             --bg-dark: #0f172a; --bg-darker: #020617;
-            --table-green: #0b5e32; --table-dark: #042e17; /* Brighter classic casino green */
+            --table-green: #0b5e32; --table-dark: #042e17; 
             --wood-base: #8b5a2b; --wood-dark: #5c3a21;
             --accent-glow: #8b5cf6; --accent-glow-2: #3b82f6;
             --danger: #ef4444; --success: #10b981; --warning: #fbbf24;
@@ -66,20 +66,15 @@
         .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid #333; padding: 0 20px; font-family: 'VT323'; font-size: 24px; cursor: pointer; }
         .chat-input-area button:active { background: #059669; }
 
-        /* PERFECT 3-SEAT TABLE */
-        .table-surface { width: 900px; height: 500px; margin-top: 20px; position: relative; background: radial-gradient(ellipse at center, var(--table-green) 0%, var(--table-dark) 100%); border: 24px solid #111; border-radius: 450px 450px 40px 40px; box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.8); border-bottom: 12px solid #111;}
+        /* PERFECT TABLE (FITS 3 OR 5 SEATS DYNAMICALLY) */
+        .table-surface { width: 900px; height: 480px; margin-top: 20px; position: relative; background: radial-gradient(ellipse at center, var(--table-green) 0%, var(--table-dark) 100%); border: 24px solid #111; border-radius: 450px 450px 40px 40px; box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.8); border-bottom: 12px solid #111;}
         .banker-station { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
         
         .global-timer { position: absolute; top: 180px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
 
-        /* FIXED 3-SEAT POSITIONS */
-        .seat { position: absolute; width: 170px; min-height: 180px; padding-bottom: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s;}
-        
-        #seat-0 { left: 120px; top: 220px; }
-        #seat-1 { left: 50%; transform: translateX(-50%); top: 260px; }
-        #seat-2 { right: 120px; top: 220px; }
-
+        /* SEATS */
+        .seat { position: absolute; width: 140px; min-height: 180px; padding-bottom: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s;}
         .seat-empty-box { width: 100%; height: 100%; border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); }
 
         .seat.occupied { background: transparent; }
@@ -93,7 +88,7 @@
 
         /* IN-SEAT CONTROLS */
         .seat-bet-box { display: flex; width: 100%; gap: 4px; margin-top: 10px; justify-content: center; }
-        .seat-bet-box input { width: 90px; padding: 6px; text-align: center; font-size: 16px; margin: 0; outline: none;}
+        .seat-bet-box input { width: 85px; padding: 6px; text-align: center; font-size: 14px; margin: 0; outline: none; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 4px; font-family: var(--clear-font);}
         .s-btn { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 14px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5);}
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
@@ -143,7 +138,7 @@
                 <input type="password" id="signup-pass" class="retro-input" placeholder="CREATE PASSWORD">
                 
                 <div class="terms-box custom-scroll">
-                    <strong>SYSTEM TERMS:</strong> Strict 1-Seat limit. Play fair. Farming rewards via multiple accounts will result in immediate IP bans. All new accounts require Admin approval before logging in.
+                    <strong>SYSTEM TERMS:</strong> Strict 1-Seat limit per room. Play fair. Farming rewards via multiple accounts will result in immediate IP bans. All new accounts require Admin approval before logging in.
                 </div>
                 <label class="clear-text" style="font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; margin-bottom: 15px;">
                     <input type="checkbox" id="tos-checkbox" style="width: 20px; height: 20px; margin:0;"> I ACCEPT THE TERMS
@@ -160,7 +155,8 @@
         <div id="main-menu-view" class="full-menu hidden">
             <h1 class="pixel-text" style="font-size: 80px; color: #fff; margin-bottom: 40px; text-shadow: 4px 4px 0px #000;">MAIN MENU</h1>
             <div class="menu-btn-container">
-                <button class="wood-btn pixel-text" style="background: var(--success);" onclick="joinGame()">PLAY</button>
+                <button class="wood-btn pixel-text" style="background: var(--success);" onclick="joinRoom('3seat')">PLAY 3-SEAT TABLE</button>
+                <button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="joinRoom('5seat')">PLAY 5-SEAT TABLE</button>
                 <button class="wood-btn pixel-text" onclick="showModal('profile-modal'); loadLedger();">PROFILE</button>
                 <button class="wood-btn pixel-text" onclick="showModal('bank-modal')">BANKING</button>
                 <button class="wood-btn pixel-text" style="background: #0f766e;" onclick="claimReward()">DAILY REWARDS</button>
@@ -280,7 +276,7 @@
 
     <script>
         const socket = io();
-        let currentUser = null; let mySeatIndex = -1; let currentGameState = null;
+        let currentUser = null; let currentGameState = null; let currentRoomId = null;
         let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let sitTimerInt = null; let mySitTime = 0;
 
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -299,7 +295,6 @@
                 currentUser = data; document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
                 document.getElementById('hud-credits').innerText = currentUser.credits;
                 selectColor(currentUser.nameColor || '#f8fafc', null);
-                socket.emit('enter_lobby', { username: currentUser.username }); 
             } else document.getElementById('login-error').innerText = data.error;
         }
 
@@ -357,25 +352,36 @@
         let bgm = document.getElementById('sfx-bgm'); let musicOn = false;
         function toggleMusic() { musicOn = !musicOn; if(musicOn) bgm.play().catch(()=>{}); else bgm.pause(); document.getElementById('btn-music').innerText = musicOn ? '🔊 ON' : '🔇 OFF'; }
 
-        function joinGame() { document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); renderTable(currentGameState); }
+        // --- ROOM NAVIGATION ---
+        function joinRoom(roomId) { 
+            currentRoomId = roomId;
+            document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); 
+            socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId });
+        }
         
         function exitToMenu() { 
             document.getElementById('game-interface').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden'); 
-            if(mySeatIndex !== -1) { ejectSeat(mySeatIndex); }
-        }
-        
-        function ejectSeat(index) { 
-            socket.emit('leave_seat', { username: currentUser.username, seatIndex: index }); 
-            if (mySeatIndex === index) { mySeatIndex = -1; clearInterval(sitTimerInt); sitTimerInt = null; }
+            if (currentGameState) {
+                const mySeat = currentGameState.seats.findIndex(s => s && s.username === currentUser.username);
+                if (mySeat !== -1) ejectSeat(mySeat);
+            }
+            socket.emit('leave_room', { username: currentUser.username, roomId: currentRoomId });
+            currentRoomId = null;
         }
 
-        function sendChat() { const input = document.getElementById('chat-input'); if (input.value.trim() && currentUser) { socket.emit('send_chat', { username: currentUser.username, message: input.value.trim() }); input.value = ''; } }
+        function ejectSeat(index) { 
+            socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: index }); 
+            clearInterval(sitTimerInt); sitTimerInt = null;
+        }
+
+        function sendChat() { const input = document.getElementById('chat-input'); if (input.value.trim() && currentUser && currentRoomId) { socket.emit('send_chat', { roomId: currentRoomId, username: currentUser.username, message: input.value.trim() }); input.value = ''; } }
         document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') sendChat(); });
         socket.on('receive_chat', data => { const msgs = document.getElementById('chat-messages'); msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; });
 
+        // --- GAME RENDER ---
         socket.on('game_state_update', (state) => {
             currentGameState = state; 
-            if(currentUser && !document.getElementById('game-interface').classList.contains('hidden')) { updateLobby(state); renderTable(state); manageTimers(state); }
+            if(currentUser && currentRoomId && !document.getElementById('game-interface').classList.contains('hidden')) { updateLobby(state); renderTable(state); manageTimers(state); }
         });
 
         function updateLobby(state) {
@@ -397,21 +403,25 @@
             else { dBadge.innerText = calculateValue(state.dealerCards); dBadge.classList.remove('hidden'); }
 
             const seatsArea = document.getElementById('seats-area'); seatsArea.innerHTML = '';
+            let activeElements = [];
             
             if(currentUser) {
-                 const mySeat = state.seats.find(s => s && s.username === currentUser.username);
-                 if(mySeat) { currentUser.credits = mySeat.credits; document.getElementById('hud-credits').innerText = currentUser.credits; mySeatIndex = state.seats.indexOf(mySeat); }
-                 else { mySeatIndex = -1; }
+                 const mySeatData = state.seats.find(s => s && s.username === currentUser.username);
+                 if(mySeatData) { currentUser.credits = mySeatData.credits; document.getElementById('hud-credits').innerText = currentUser.credits; }
             }
 
-            for(let index=0; index<3; index++) {
+            const totalSeats = state.seats.length; // Dynamic for 3 or 5 seats
+
+            for(let index=0; index<totalSeats; index++) {
                 let seatData = state.seats[index];
                 const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
                 let isMySeat = currentUser && seatData && seatData.username === currentUser.username;
+                let hasSeatAnywhere = state.seats.some(s => s && s.username === currentUser.username);
 
                 if (!seatData) {
-                    let sitBtn = mySeatIndex === -1 ? `<button class="s-btn" style="background:var(--success); color:#000; padding:8px 16px; margin-top:20px; box-shadow:2px 2px 0 #000;" onclick="sitDown(${index})">SIT</button>` : '';
+                    let sitBtn = !hasSeatAnywhere ? `<button class="s-btn" style="background:var(--success); color:#000; padding:8px 16px; margin-top:20px; box-shadow:2px 2px 0 #000;" onclick="sitDown(${index})">SIT</button>` : '';
                     seatDiv.innerHTML = `<div class="seat-empty-box"><div class="pixel-text" style="font-size:28px; color:#94a3b8;">EMPTY</div>${sitBtn}</div>`;
+                    activeElements.push(seatDiv); // Always show empty boxes to mimic image
                 } else {
                     seatDiv.classList.add('occupied'); if (isMySeat) seatDiv.classList.add('my-seat'); if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
 
@@ -433,28 +443,30 @@
                     }
                     if (isMySeat && state.status === 'betting') {
                         if (seatData.hands[0].bet === 0) {
-                            html += `<div class="seat-bet-box"><input type="number" id="inseat-bet-${index}" class="retro-input" value="100000" min="100000"><button class="s-btn" style="background:var(--success); color:#000;" onclick="placeBet(${index})">BET</button></div>`;
+                            html += `<div class="seat-bet-box"><input type="number" id="inseat-bet-${index}" class="retro-input" value="100000" min="100000" style="padding:4px; font-size:18px; width:110px;"><button class="s-btn" style="background:var(--success); color:#000;" onclick="placeBet(${index})">BET</button></div>`;
                             html += `<button class="btn-inseat-standup" style="margin-top: 5px;" onclick="ejectSeat(${index})">STAND UP</button>`;
                         }
                     }
                     if (isMySeat && state.status === 'playing' && state.activeSeatIndex === index) {
                         html += `<div class="seat-controls">`;
-                        html += `<button class="s-btn btn-hit" onclick="socket.emit('player_action_hit',{username: currentUser.username, seatIndex:${index}})">HIT</button>`;
-                        html += `<button class="s-btn btn-stand" onclick="socket.emit('player_action_stand',{username: currentUser.username, seatIndex:${index}})">STAND</button>`;
+                        html += `<button class="s-btn btn-hit" onclick="socket.emit('player_action_hit',{roomId: currentRoomId, username: currentUser.username, seatIndex:${index}})">HIT</button>`;
+                        html += `<button class="s-btn btn-stand" onclick="socket.emit('player_action_stand',{roomId: currentRoomId, username: currentUser.username, seatIndex:${index}})">STAND</button>`;
                         
                         const cHand = seatData.hands[seatData.currentHand];
                         if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) {
-                            html += `<button class="s-btn btn-double" onclick="socket.emit('player_action_double',{username: currentUser.username, seatIndex:${index}})">2X</button>`;
+                            html += `<button class="s-btn btn-double" onclick="socket.emit('player_action_double',{roomId: currentRoomId, username: currentUser.username, seatIndex:${index}})">2X</button>`;
                             if (cHand.cards[0].weight === cHand.cards[1].weight) {
-                                html += `<button class="s-btn btn-split" onclick="socket.emit('player_action_split',{username: currentUser.username, seatIndex:${index}})">SPLIT</button>`;
+                                html += `<button class="s-btn btn-split" onclick="socket.emit('player_action_split',{roomId: currentRoomId, username: currentUser.username, seatIndex:${index}})">SPLIT</button>`;
                             }
                         }
                         html += `</div>`;
                     }
                     seatDiv.innerHTML = html;
+                    activeElements.push(seatDiv);
                 }
                 seatsArea.appendChild(seatDiv);
             }
+            layoutArc(activeElements, totalSeats);
         }
 
         function manageTimers(state) {
@@ -478,6 +490,7 @@
                 }, 200);
             } else { nTimerUI.classList.add('hidden'); clearInterval(nextRoundTimerInt); }
 
+            const mySeatIndex = state.seats.findIndex(s => s && s.username === currentUser.username);
             if (mySeatIndex !== -1 && state.status === 'betting' && state.seats[mySeatIndex].hands[0].bet === 0) {
                 if (!sitTimerInt) {
                     sitTimerInt = setInterval(() => {
@@ -487,15 +500,29 @@
             } else { clearInterval(sitTimerInt); sitTimerInt = null; }
         }
 
+        function layoutArc(elements, totalSeats) {
+            const centerX = 450; const centerY = 130; 
+            const radiusX = totalSeats === 5 ? 380 : 320; 
+            const radiusY = totalSeats === 5 ? 240 : 220; 
+            const widthOffset = 70; // Half of seat width (140/2)
+
+            elements.forEach((el, i) => {
+                let angle = totalSeats === 1 ? Math.PI / 2 : (Math.PI * 0.85) - (i * ((Math.PI * 0.70) / (totalSeats - 1)));
+                el.style.left = `${centerX + Math.cos(angle) * radiusX - widthOffset}px`; 
+                el.style.top = `${centerY + Math.sin(angle) * radiusY - 90}px`;
+            });
+        }
+
+        function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
+
         function sitDown(index) { 
-            if (mySeatIndex !== -1) return alert("Strict 1-Seat Limit per player.");
-            socket.emit('join_seat', { username: currentUser.username, seatIndex: index }); 
+            socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: index }); 
             mySitTime = Date.now(); 
         }
         
         function placeBet(index) { 
             const amt = parseInt(document.getElementById(`inseat-bet-${index}`).value); 
-            socket.emit('place_bet', { username: currentUser.username, seatIndex: index, betAmount: amt }); 
+            socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: index, betAmount: amt }); 
             clearInterval(sitTimerInt); sitTimerInt = null;
         }
     </script>
