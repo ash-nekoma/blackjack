@@ -3,86 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Blackjack - Admin</title>
+    <title>Neon Royale - Admin Terminal</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; color: #0f172a; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #064e3b; border-bottom: 2px solid #064e3b; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #cbd5e1; }
-        th { background-color: #f8fafc; font-weight: 600; }
-        button { background: #064e3b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
-        button:hover { background: #047857; }
-        .edit-form { display: flex; gap: 10px; align-items: center; }
-        input[type="number"] { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; width: 100px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: #1e293b; padding: 20px; border-radius: 8px; border: 2px solid #3b82f6; }
+        h1, h2 { color: #fbbf24; }
+        .auth-panel { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { padding: 8px; background: #000; color: #fff; border: 1px solid #475569; border-radius: 4px; }
+        button { background: #3b82f6; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
+        th, td { padding: 10px; text-align: left; border: 1px solid #333; }
+        th { background: #020617; color: #3b82f6; }
+        .section { margin-top: 30px; border-top: 2px solid #475569; padding-top: 10px; }
+        .btn-green { background: #10b981; } .btn-red { background: #ef4444; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Server Administration Panel</h1>
-        <p>Monitor player accounts, check IPs for abuse, and manage credits.</p>
-        <table>
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Credits</th>
-                    <th>IP Address</th>
-                    <th>ToS Accepted</th>
-                    <th>Last Reward Claim</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="user-table-body">
-            </tbody>
-        </table>
+        <h1>Admin Terminal</h1>
+        <div class="auth-panel">
+            <input type="password" id="admin-pass" placeholder="Enter Admin Password">
+            <button onclick="loadData()">Authenticate & Load</button>
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            
+            <div class="section">
+                <h2>Pending Sign-ups</h2>
+                <table>
+                    <thead><tr><th>Username</th><th>Action</th></tr></thead>
+                    <tbody id="tbl-pending-users"></tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2>Pending Bank Requests</h2>
+                <table>
+                    <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Action</th></tr></thead>
+                    <tbody id="tbl-bank"></tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2>Gift Code Generator</h2>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="gc-code" placeholder="CODE (e.g. WELCOME)">
+                    <input type="number" id="gc-amt" placeholder="Amount">
+                    <input type="number" id="gc-uses" placeholder="Uses">
+                    <button class="btn-green" onclick="createCode()">Generate Code</button>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <script>
-        async function fetchUsers() {
-            try {
-                const response = await fetch('/api/admin/users');
-                const users = await response.json();
-                const tbody = document.getElementById('user-table-body');
-                tbody.innerHTML = '';
+        let pass = '';
 
-                users.forEach(user => {
-                    const tr = document.createElement('tr');
-                    const dateStr = user.lastRewardClaim ? new Date(user.lastRewardClaim).toLocaleString() : 'Never';
-                    tr.innerHTML = `
-                        <td><strong>${user.username}</strong></td>
-                        <td id="balance-${user.username}">${user.credits}</td>
-                        <td><code style="background:#e2e8f0; padding:2px 4px; border-radius:3px;">${user.ipAddress || 'Unknown'}</code></td>
-                        <td>${user.tosAccepted ? '✅' : '❌'}</td>
-                        <td>${dateStr}</td>
-                        <td>
-                            <div class="edit-form">
-                                <input type="number" id="input-${user.username}" value="${user.credits}">
-                                <button onclick="updateBalance('${user.username}')">Save</button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (err) { alert("Could not load users. Is the server running?"); }
+        async function loadData() {
+            pass = document.getElementById('admin-pass').value;
+            const res = await fetch('/api/admin/data', { headers: { 'x-admin-pass': pass } });
+            if (!res.ok) return alert('Unauthorized Password');
+            const data = await res.json();
+            document.getElementById('dashboard').style.display = 'block';
+
+            // Render Users
+            const tUsers = document.getElementById('tbl-pending-users'); tUsers.innerHTML = '';
+            data.users.filter(u => u.status === 'pending').forEach(u => {
+                tUsers.innerHTML += `<tr><td>${u.username}</td><td>
+                    <button class="btn-green" onclick="updateUser('${u.username}', 'approved')">Approve</button>
+                    <button class="btn-red" onclick="updateUser('${u.username}', 'banned')">Deny</button>
+                </td></tr>`;
+            });
+
+            // Render Bank
+            const tBank = document.getElementById('tbl-bank'); tBank.innerHTML = '';
+            data.txs.forEach(tx => {
+                tBank.innerHTML += `<tr><td>${tx.username}</td><td>${tx.type.toUpperCase()}</td><td>${tx.amount}</td><td>
+                    <button class="btn-green" onclick="resolveTx('${tx._id}', 'approve')">Approve</button>
+                    <button class="btn-red" onclick="resolveTx('${tx._id}', 'deny')">Deny</button>
+                </td></tr>`;
+            });
         }
 
-        async function updateBalance(username) {
-            const newBalance = document.getElementById(`input-${username}`).value;
-            try {
-                const response = await fetch('/api/admin/update_balance', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, newBalance: parseInt(newBalance) })
-                });
-                const result = await response.json();
-                if (result.success) {
-                    const cell = document.getElementById(`balance-${username}`);
-                    cell.innerText = newBalance; cell.style.backgroundColor = '#dcfce3';
-                    setTimeout(() => cell.style.backgroundColor = 'transparent', 1000);
-                } else { alert("Failed to update balance."); }
-            } catch (err) { console.error(err); }
+        async function updateUser(username, status) {
+            await fetch('/api/admin/user/status', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': pass }, body: JSON.stringify({username, status}) });
+            loadData();
         }
 
-        fetchUsers();
+        async function resolveTx(id, action) {
+            await fetch('/api/admin/tx/resolve', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': pass }, body: JSON.stringify({id, action}) });
+            loadData();
+        }
+
+        async function createCode() {
+            const code = document.getElementById('gc-code').value; const amount = document.getElementById('gc-amt').value; const usesLeft = document.getElementById('gc-uses').value;
+            await fetch('/api/admin/giftcode', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': pass }, body: JSON.stringify({code, amount, usesLeft}) });
+            alert("Code Generated!"); document.getElementById('gc-code').value='';
+        }
     </script>
 </body>
 </html>
