@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro AAA Blackjack</title>
+    <title>Neon Royale: Retro Blackjack</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
@@ -17,6 +17,8 @@
             --wood-base: #8b5a2b;
             --wood-dark: #5c3a21;
             --wood-light: #a06b35;
+            --danger: #ef4444;
+            --success: #10b981;
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'VT323', monospace; user-select: none; }
@@ -30,7 +32,6 @@
         /* --- View Containers --- */
         #main-menu-view {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            /* Simulated Pixel Landscape Background */
             background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 60%, #90EE90 60%, #32CD32 100%);
             display: flex; justify-content: center; align-items: center; z-index: 50;
         }
@@ -41,15 +42,13 @@
             display: flex; flex-direction: column; align-items: center; padding-top: 50px;
         }
 
-        /* --- Wooden Pixel Buttons (Main Menu) --- */
-        .menu-stack { display: flex; flex-direction: column; gap: 15px; }
+        /* --- Wooden Pixel Buttons --- */
+        .menu-stack { display: flex; flex-direction: column; gap: 15px; align-items: center; }
         .wood-btn {
-            background: var(--wood-base);
-            border: 4px solid var(--wood-dark);
+            background: var(--wood-base); border: 4px solid var(--wood-dark);
             box-shadow: inset -4px -4px 0px rgba(0,0,0,0.4), inset 4px 4px 0px rgba(255,255,255,0.3), 4px 4px 0px #000;
-            color: #fff; text-transform: uppercase;
-            padding: 15px 40px; font-size: 28px; cursor: pointer; text-align: center;
-            transition: all 0.1s; position: relative;
+            color: #fff; text-transform: uppercase; padding: 15px 40px; font-size: 28px; 
+            cursor: pointer; text-align: center; transition: all 0.1s; position: relative; width: 300px;
         }
         .wood-btn:hover { background: var(--wood-light); filter: drop-shadow(0 0 10px #fbbf24); transform: translateY(-2px); }
         .wood-btn:active { box-shadow: inset 4px 4px 0px rgba(0,0,0,0.4), inset -4px -4px 0px rgba(255,255,255,0.3); transform: translateY(2px); }
@@ -58,20 +57,16 @@
         .table-container {
             width: 900px; height: 450px; position: relative; margin-top: 60px;
             background: radial-gradient(ellipse at center, var(--table-green) 0%, #063b2a 100%);
-            border: 16px solid var(--table-border);
-            border-radius: 450px 450px 30px 30px;
+            border: 16px solid var(--table-border); border-radius: 450px 450px 30px 30px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.6);
         }
 
-        /* The Permanent North Star */
         .banker-station {
             position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
             width: 180px; background: #1e293b; border: 4px solid var(--accent-glow);
             border-radius: 10px; padding: 10px; text-align: center;
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5), inset 0 0 10px #000;
-            z-index: 10;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5), inset 0 0 10px #000; z-index: 10;
         }
-        
         .banker-avatar { font-size: 40px; line-height: 1; margin-bottom: 5px; }
 
         /* --- Dynamic Seats --- */
@@ -79,7 +74,7 @@
             position: absolute; width: 130px; height: 140px;
             background: rgba(15, 23, 42, 0.8); border: 2px dashed var(--accent-glow-2);
             border-radius: 10px; padding: 10px; text-align: center;
-            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); /* AAA Smooth glide animation */
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 5;
         }
@@ -89,76 +84,124 @@
         /* Cards */
         .cards-container { display: flex; justify-content: center; gap: -20px; min-height: 60px; margin-top: 5px;}
         .card { 
-            width: 40px; height: 60px; background: white; color: black; 
-            border-radius: 4px; display: flex; justify-content: center; align-items: center; 
+            width: 40px; height: 60px; background: white; color: black; border-radius: 4px; 
+            display: flex; justify-content: center; align-items: center; 
             font-size: 18px; font-family: Arial, sans-serif; font-weight: bold;
             border: 2px solid #333; margin-left: -15px;
         }
         .card.red { color: #ef4444; }
         .card:first-child { margin-left: 0; }
 
-        /* --- Modals & HUD --- */
+        /* --- HUD & Modals --- */
         .hud-bar {
             position: absolute; top: 0; left: 0; width: 100%; background: rgba(0,0,0,0.8);
             border-bottom: 2px solid var(--accent-glow); padding: 10px 30px;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: center; z-index: 100;
         }
 
-        .action-panel { position: absolute; bottom: 30px; display: flex; gap: 15px; }
+        .action-panel { position: absolute; bottom: 30px; display: flex; gap: 15px; z-index: 100; }
         .action-btn { background: #1e293b; border: 2px solid var(--accent-glow-2); color: white; padding: 10px 20px; font-size: 20px; cursor: pointer; transition: 0.2s; border-radius: 5px;}
         .action-btn:hover { background: var(--accent-glow-2); color: #000; }
 
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 100; }
-        .modal-box { background: #1e293b; border: 4px solid var(--accent-glow); padding: 30px; width: 400px; text-align: center; border-radius: 10px;}
-        input { width: 100%; padding: 10px; margin: 10px 0; background: #000; color: #fff; border: 2px solid var(--accent-glow-2); font-family: 'VT323'; font-size: 20px;}
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 200; }
+        .modal-box { background: #1e293b; border: 4px solid var(--accent-glow); padding: 30px; width: 400px; text-align: center; border-radius: 10px; box-shadow: 0 0 30px rgba(139, 92, 246, 0.4); }
+        input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 10px; margin: 10px 0; background: #000; color: #fff; border: 2px solid var(--accent-glow-2); font-family: 'VT323'; font-size: 20px;}
+
+        /* --- Chat Box --- */
+        .chat-container {
+            position: absolute; bottom: 20px; right: 20px; width: 300px; background: rgba(15, 23, 42, 0.9);
+            border: 2px solid var(--accent-glow-2); border-radius: 5px; padding: 10px; z-index: 100;
+        }
+        .chat-messages { height: 120px; overflow-y: auto; margin-bottom: 10px; font-size: 18px; text-shadow: 1px 1px 0 #000; text-align: left; }
     </style>
 </head>
 <body>
 
+    <audio id="sfx-deal" src="deal.mp3" preload="auto"></audio>
+    <audio id="sfx-win" src="win.mp3" preload="auto"></audio>
+
     <div id="login-modal" class="modal">
         <div class="modal-box">
-            <h1 class="pixel-text" style="color: #fbbf24; margin-bottom: 20px;">SYSTEM LOGIN</h1>
+            <h1 class="pixel-text" style="color: #fbbf24; margin-bottom: 20px;">SYSTEM ACCESS</h1>
             <input type="text" id="auth-user" placeholder="USERNAME">
             <input type="password" id="auth-pass" placeholder="PASSWORD">
-            <button class="wood-btn" style="width: 100%; font-size: 20px;" onclick="login()">ENTER SYSTEM</button>
-            <p id="auth-error" style="color: #ef4444; margin-top: 10px;"></p>
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="wood-btn pixel-text" style="flex: 1; padding: 10px; width: auto;" onclick="login()">LOGIN</button>
+                <button class="wood-btn pixel-text" style="flex: 1; padding: 10px; width: auto; filter: grayscale(0.4);" onclick="showToS()">SIGN UP</button>
+            </div>
+            <p id="auth-error" class="pixel-text" style="color: var(--danger); margin-top: 15px;"></p>
+        </div>
+    </div>
+
+    <div id="tos-modal" class="modal hidden">
+        <div class="modal-box" style="width: 500px;">
+            <h2 class="pixel-text" style="color: #fbbf24;">TERMS OF SERVICE</h2>
+            <div style="height: 150px; overflow-y: auto; background: #000; padding: 15px; margin: 15px 0; border: 2px solid var(--accent-glow-2); text-align: left; font-size: 18px; line-height: 1.2;">
+                <p>Welcome to Neon Royale. No real money is involved. Multiple accounts to farm daily rewards are strictly prohibited and will result in a server ban. Play fair and respect the Banker.</p>
+            </div>
+            <label class="pixel-text" style="font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <input type="checkbox" id="tos-checkbox" style="width: 20px; height: 20px; margin:0;">I ACCEPT THE TERMS
+            </label>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="wood-btn pixel-text" style="flex: 1; padding: 10px; width: auto;" onclick="signup()">CONFIRM</button>
+                <button class="wood-btn pixel-text" style="flex: 1; padding: 10px; width: auto; background: #8b0000;" onclick="hideToS()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reward-modal" class="modal hidden">
+        <div class="modal-box">
+            <h2 class="pixel-text" style="color: #fbbf24;">DAILY SYSTEM CREDIT</h2>
+            <p class="pixel-text" style="margin: 15px 0;">Claim 500 free credits every 24 hours.</p>
+            <h1 id="reward-timer" class="pixel-text" style="font-size: 50px; color: #94a3b8; margin: 10px 0;">00:00:00</h1>
+            <button id="btn-claim" class="wood-btn pixel-text" style="width: 100%; margin-top: 10px;" onclick="claimReward()" disabled>CLAIM CREDITS</button>
+            <button class="wood-btn pixel-text" style="width: 100%; margin-top: 10px; background: #475569;" onclick="hideReward()">CLOSE</button>
+            <p id="reward-msg" class="pixel-text" style="color: var(--success); margin-top: 15px;"></p>
         </div>
     </div>
 
     <div id="main-menu-view" class="hidden">
         <div class="menu-stack">
-            <h1 class="pixel-text" style="font-size: 60px; color: #fff; text-align: center; margin-bottom: 30px; text-shadow: 4px 4px 0px #000, 0 0 20px #8b5cf6;">NEON ROYALE</h1>
-            
-            <button class="wood-btn pixel-text" onclick="joinTable()">[ JOIN TABLE NOW ]</button>
-            <button class="wood-btn pixel-text" onclick="alert('Profile System Coming Soon')">[ MY PROFILE ]</button>
-            <button class="wood-btn pixel-text" onclick="alert('Credits: Claimed!')">[ SYSTEM CREDITS ]</button>
+            <h1 class="pixel-text" style="font-size: 80px; color: #fff; margin-bottom: 20px; text-shadow: 4px 4px 0px #000, 0 0 20px var(--accent-glow);">NEON ROYALE</h1>
+            <button class="wood-btn pixel-text" onclick="joinTable()">[ JOIN TABLE ]</button>
+            <button class="wood-btn pixel-text" onclick="showReward()">[ GET CREDITS ]</button>
             <button class="wood-btn pixel-text" onclick="logout()">[ EXIT SYSTEM ]</button>
         </div>
     </div>
 
     <div id="game-view" class="hidden">
+        
         <div class="hud-bar pixel-text">
             <div>USER: <span id="hud-name" style="color:#fbbf24;"></span></div>
             <div id="game-status" style="color: var(--accent-glow-2);">PHASE: WAITING</div>
-            <div>BALANCE: $<span id="hud-credits" style="color:#10b981;"></span></div>
+            <div>BALANCE: $<span id="hud-credits" style="color:var(--success);"></span></div>
         </div>
 
         <div class="table-container">
             <div class="banker-station">
                 <div class="banker-avatar">🤖</div>
-                <div class="pixel-text" style="font-size: 20px; color: var(--accent-glow);">THE BANKER</div>
+                <div class="pixel-text" style="font-size: 24px; color: var(--accent-glow);">THE BANKER</div>
                 <div id="dealer-cards" class="cards-container"></div>
-                <div id="dealer-val" class="pixel-text" style="font-size: 16px;"></div>
+                <div id="dealer-val" class="pixel-text" style="font-size: 18px;"></div>
             </div>
+            <div id="seats-area"></div>
+        </div>
 
-            <div id="seats-area">
-                </div>
+        <div class="chat-container">
+            <div id="chat-messages" class="chat-messages pixel-text">
+                <div style="color: #94a3b8;">System: Welcome to the table.</div>
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="chat-input" placeholder="TALK..." style="margin: 0; padding: 5px; font-size: 18px;">
+                <button class="action-btn pixel-text" style="padding: 5px 10px; font-size: 18px;" onclick="sendChat()">SEND</button>
+            </div>
         </div>
 
         <div id="bet-controls" class="action-panel hidden">
             <input type="number" id="bet-amount" value="100" style="width: 120px; margin: 0; text-align: center;">
             <button class="action-btn pixel-text" onclick="placeBet()">PLACE BET</button>
-            <button class="action-btn pixel-text" style="background: #ef4444;" onclick="leaveTable()">LEAVE TABLE</button>
+            <button class="action-btn pixel-text" style="background: var(--danger); border-color: #7f1d1d;" onclick="leaveTable()">LEAVE TABLE</button>
         </div>
 
         <div id="play-controls" class="action-panel hidden">
@@ -173,8 +216,15 @@
         let currentUser = null;
         let mySeatIndex = -1;
         let currentGameState = null;
+        let nextRewardDate = null;
+        let rewardInterval;
 
-        // --- Auth & Navigation ---
+        // --- Auth & Modals ---
+        function showToS() { document.getElementById('tos-modal').classList.remove('hidden'); }
+        function hideToS() { document.getElementById('tos-modal').classList.add('hidden'); }
+        function showReward() { document.getElementById('reward-modal').classList.remove('hidden'); }
+        function hideReward() { document.getElementById('reward-modal').classList.add('hidden'); document.getElementById('reward-msg').innerText = '';}
+
         async function login() {
             const u = document.getElementById('auth-user').value;
             const p = document.getElementById('auth-pass').value;
@@ -189,26 +239,84 @@
                 document.getElementById('main-menu-view').classList.remove('hidden');
                 document.getElementById('hud-name').innerText = currentUser.username;
                 document.getElementById('hud-credits').innerText = currentUser.credits;
+                
+                nextRewardDate = data.lastRewardClaim ? new Date(new Date(data.lastRewardClaim).getTime() + 24*60*60*1000) : new Date(0);
+                startRewardTimer();
             } else {
                 document.getElementById('auth-error').innerText = data.error || "Login Failed";
             }
         }
 
+        async function signup() {
+            if(!document.getElementById('tos-checkbox').checked) return alert("YOU MUST ACCEPT THE TOS.");
+            const u = document.getElementById('auth-user').value;
+            const p = document.getElementById('auth-pass').value;
+            const res = await fetch('/api/signup', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: u, password: p, tosAccepted: true})
+            });
+            const data = await res.json();
+            if(res.ok) { hideToS(); login(); } 
+            else { document.getElementById('auth-error').innerText = data.error || "Signup Failed"; hideToS(); }
+        }
+
         function logout() { location.reload(); }
 
+        // --- Daily Rewards ---
+        function startRewardTimer() {
+            clearInterval(rewardInterval);
+            rewardInterval = setInterval(() => {
+                const diff = nextRewardDate - new Date();
+                const btn = document.getElementById('btn-claim');
+                const timerUI = document.getElementById('reward-timer');
+                if (diff <= 0) {
+                    timerUI.innerText = "READY!"; timerUI.style.color = "#fbbf24"; btn.disabled = false;
+                } else {
+                    btn.disabled = true; timerUI.style.color = "#94a3b8";
+                    const h = Math.floor((diff / 36e5) % 24); const m = Math.floor((diff / 60000) % 60); const s = Math.floor((diff / 1000) % 60);
+                    timerUI.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                }
+            }, 1000);
+        }
+
+        function claimReward() { socket.emit('claim_daily_reward', { username: currentUser.username }); }
+        socket.on('reward_claimed', (data) => {
+            if(data.success) {
+                currentUser.credits = data.credits; 
+                document.getElementById('hud-credits').innerText = currentUser.credits;
+                nextRewardDate = new Date(data.nextClaim);
+                document.getElementById('reward-msg').innerText = "+500 CREDITS ACQUIRED!";
+                document.getElementById('sfx-win').play().catch(()=>{});
+            } else { document.getElementById('reward-msg').innerText = data.message; }
+        });
+
+        // --- Navigation ---
         function joinTable() {
             document.getElementById('main-menu-view').classList.add('hidden');
             document.getElementById('game-view').classList.remove('hidden');
-            renderTable(currentGameState); // Render immediately using last known state
+            renderTable(currentGameState);
         }
 
         function leaveTable() {
             document.getElementById('game-view').classList.add('hidden');
             document.getElementById('main-menu-view').classList.remove('hidden');
-            // Note: True leave logic requires emitting a disconnect to free the seat on the backend.
+            // Force disconnect logic would go here if backend supported manual seat leaving
         }
 
-        // --- Core Socket Receiver ---
+        // --- Chat System ---
+        function sendChat() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (msg && currentUser) { socket.emit('send_chat', { username: currentUser.username, message: msg }); input.value = ''; }
+        }
+        document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') sendChat(); });
+        socket.on('receive_chat', data => {
+            const msgs = document.getElementById('chat-messages');
+            msgs.innerHTML += `<div style="margin-bottom: 5px;"><span style="color:#fbbf24;">${data.username}:</span> ${data.message}</div>`;
+            msgs.scrollTop = msgs.scrollHeight;
+        });
+
+        // --- Core Socket Receiver & Rendering ---
         socket.on('game_state_update', (state) => {
             currentGameState = state;
             if(currentUser && !document.getElementById('game-view').classList.contains('hidden')) {
@@ -216,27 +324,21 @@
             }
         });
 
-        // --- Render Engine & Dynamic Seating Math ---
         function renderTable(state) {
             if (!state) return;
-
             document.getElementById('game-status').innerText = `PHASE: ${state.status.toUpperCase()}`;
             
-            // 1. Render Dealer
-            const dCards = document.getElementById('dealer-cards');
-            dCards.innerHTML = '';
+            // Dealer
+            const dCards = document.getElementById('dealer-cards'); dCards.innerHTML = '';
             if (state.status === 'playing') {
                 dCards.innerHTML += renderCardHTML(state.dealerCards[0]) + `<div class="card" style="background:#475569;">?</div>`;
             } else if (state.dealerCards.length > 0) {
                 state.dealerCards.forEach(c => dCards.innerHTML += renderCardHTML(c));
             }
 
-            // 2. Generate Seat DOM Elements
-            const seatsArea = document.getElementById('seats-area');
-            seatsArea.innerHTML = '';
-            mySeatIndex = -1;
-
-            let activeElements = []; // Store elements we actually want to draw and position
+            // Seats
+            const seatsArea = document.getElementById('seats-area'); seatsArea.innerHTML = '';
+            mySeatIndex = -1; let activeElements = [];
 
             state.seats.forEach((seatData, index) => {
                 const seatDiv = document.createElement('div');
@@ -244,115 +346,79 @@
                 seatDiv.id = `seat-${index}`;
 
                 if (!seatData) {
-                    // Empty Seat
-                    seatDiv.innerHTML = `<span style="font-size:18px; color:#94a3b8;">EMPTY</span><button style="margin-top:10px; font-size:14px; padding:5px; background:var(--accent-glow-2); border:none; color:white; cursor:pointer;" onclick="sitDown(${index})">SIT</button>`;
-                    
-                    // IF playing, hide empty seats (AAA dynamic fade logic)
-                    if (state.status !== 'waiting' && state.status !== 'betting') {
-                        seatDiv.classList.add('invisible');
-                    } else {
-                        activeElements.push(seatDiv);
-                    }
+                    seatDiv.innerHTML = `<span style="font-size:18px; color:#94a3b8;">EMPTY</span><button class="action-btn" style="margin-top:10px; font-size:16px; padding:5px 10px;" onclick="sitDown(${index})">SIT</button>`;
+                    if (state.status !== 'waiting' && state.status !== 'betting') seatDiv.classList.add('invisible');
+                    else activeElements.push(seatDiv);
                 } else {
-                    // Occupied Seat
                     if (seatData.username === currentUser.username) {
                         mySeatIndex = index;
-                        document.getElementById('hud-credits').innerText = seatData.credits; // Sync wallet
+                        document.getElementById('hud-credits').innerText = seatData.credits;
                     }
-                    
                     seatDiv.classList.add('occupied');
                     if (state.activeSeatIndex === index) seatDiv.style.boxShadow = '0 0 20px #fbbf24';
 
-                    let html = `<div style="color:#fbbf24; font-size:18px;">${seatData.username}</div>`;
-                    
-                    // Render hands
+                    let html = `<div style="color:#fbbf24; font-size:20px;">${seatData.username}</div>`;
                     seatData.hands.forEach(hand => {
                         html += `<div class="cards-container">`;
                         hand.cards.forEach(c => html += renderCardHTML(c));
                         html += `</div>`;
-                        if (hand.bet > 0) html += `<div style="font-size:14px; margin-top:5px; color:#10b981;">BET: $${hand.bet}</div>`;
+                        if (hand.bet > 0) html += `<div style="font-size:16px; margin-top:5px; color:var(--success);">BET: $${hand.bet}</div>`;
                     });
-
                     seatDiv.innerHTML = html;
                     
-                    // Only push to active layout if waiting/betting, OR if they placed a bet during play
-                    if (state.status === 'waiting' || state.status === 'betting' || seatData.hands[0].bet > 0) {
-                        activeElements.push(seatDiv);
-                    } else {
-                        seatDiv.classList.add('invisible'); // Sit out logic
-                    }
+                    if (state.status === 'waiting' || state.status === 'betting' || seatData.hands[0].bet > 0) activeElements.push(seatDiv);
+                    else seatDiv.classList.add('invisible'); 
                 }
-                
                 seatsArea.appendChild(seatDiv);
             });
 
-            // 3. Mathematical Dynamic Repositioning (The Arcade/AAA Feel)
+            // Dynamic AAA Repositioning Math
             layoutArc(activeElements);
 
-            // 4. Update Controls visibility
+            // Controls
             document.getElementById('bet-controls').classList.add('hidden');
             document.getElementById('play-controls').classList.add('hidden');
-
             if (mySeatIndex !== -1) {
                 const mySeat = state.seats[mySeatIndex];
-                if (state.status === 'betting' && mySeat.hands[0].bet === 0) {
-                    document.getElementById('bet-controls').classList.remove('hidden');
-                }
+                if (state.status === 'betting' && mySeat.hands[0].bet === 0) document.getElementById('bet-controls').classList.remove('hidden');
                 if (state.status === 'playing' && state.activeSeatIndex === mySeatIndex) {
                     document.getElementById('play-controls').classList.remove('hidden');
+                    const cHand = mySeat.hands[mySeat.currentHand];
+                    if (cHand.cards.length === 2 && cHand.cards[0].weight === 10 && cHand.cards[1].weight === 10 && mySeat.credits >= cHand.bet) {
+                        document.getElementById('btn-split').classList.remove('hidden');
+                    } else { document.getElementById('btn-split').classList.add('hidden'); }
                 }
             }
+            if(state.status === 'playing' && document.querySelectorAll('.card').length > 0) document.getElementById('sfx-deal').play().catch(()=>{});
         }
 
-        // --- The Core Math Function for Dynamic Seating ---
+        // Dynamic Arc Math
         function layoutArc(elements) {
-            const count = elements.length;
-            if (count === 0) return;
-
-            // Dimensions relative to the .table-container
-            const tableWidth = 900;
-            const tableHeight = 450;
-            const centerX = tableWidth / 2;
-            const centerY = 50; // The origin point (The Banker at the top)
-            
-            // How far the arc sweeps out from the banker
-            const radiusX = 350; 
-            const radiusY = 320; 
+            const count = elements.length; if (count === 0) return;
+            const centerX = 450; const centerY = 50; const radiusX = 350; const radiusY = 320; 
 
             elements.forEach((el, i) => {
                 let angle;
-                if (count === 1) {
-                    angle = Math.PI / 2; // 90 degrees (Straight down from Banker)
-                } else {
-                    // Sweep from Left (approx 150 deg) to Right (approx 30 deg)
-                    const startAngle = Math.PI * 0.85; 
-                    const endAngle = Math.PI * 0.15;
+                if (count === 1) angle = Math.PI / 2;
+                else {
+                    const startAngle = Math.PI * 0.85; const endAngle = Math.PI * 0.15;
                     angle = startAngle - (i * ((startAngle - endAngle) / (count - 1)));
                 }
-
-                // Calculate X and Y, offsetting by half the seat's width/height to center it on the point
                 const x = centerX + Math.cos(angle) * radiusX - 65; 
                 const y = centerY + Math.sin(angle) * radiusY - 70;
-
-                // Apply with transition for smooth gliding
-                el.style.left = `${x}px`;
-                el.style.top = `${y}px`;
+                el.style.left = `${x}px`; el.style.top = `${y}px`;
             });
         }
 
-        // --- Helpers & Triggers ---
+        // Game Actions
         function renderCardHTML(card) {
             if(!card) return `<div class="card" style="background:#475569;">?</div>`;
             const color = ['Hearts', 'Diamonds'].includes(card.suit) ? 'red' : 'black';
             const suitMap = { 'Hearts': '♥', 'Diamonds': '♦', 'Clubs': '♣', 'Spades': '♠' };
             return `<div class="card ${color}">${card.value}${suitMap[card.suit]}</div>`;
         }
-
         function sitDown(index) { socket.emit('join_seat', { username: currentUser.username, seatIndex: index }); }
-        function placeBet() { 
-            const amount = parseInt(document.getElementById('bet-amount').value);
-            socket.emit('place_bet', { seatIndex: mySeatIndex, betAmount: amount }); 
-        }
+        function placeBet() { const amt = parseInt(document.getElementById('bet-amount').value); socket.emit('place_bet', { seatIndex: mySeatIndex, betAmount: amt }); }
         function actionHit() { socket.emit('player_action_hit', { seatIndex: mySeatIndex }); }
         function actionStand() { socket.emit('player_action_stand', { seatIndex: mySeatIndex }); }
         function actionSplit() { socket.emit('player_action_split', { seatIndex: mySeatIndex }); }
