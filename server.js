@@ -15,21 +15,20 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.error('MongoDB error:', err));
 
-// --- DATABASE SCHEMAS ---
 const User = mongoose.model('User', new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     credits: { type: Number, default: 0 },
-    status: { type: String, default: 'pending' }, // 'pending', 'approved', 'banned'
+    status: { type: String, default: 'pending' }, 
     nameColor: { type: String, default: '#f8fafc' },
     ipAddress: String, tosAccepted: Boolean
 }));
 
 const Transaction = mongoose.model('Transaction', new mongoose.Schema({
     username: String,
-    type: String, // 'bet', 'win', 'deposit', 'withdrawal', 'giftcode'
+    type: String, 
     amount: Number,
-    status: { type: String, default: 'completed' }, // 'completed', 'pending', 'denied'
+    status: { type: String, default: 'completed' }, 
     date: { type: Date, default: Date.now }
 }));
 
@@ -37,13 +36,12 @@ const GiftCode = mongoose.model('GiftCode', new mongoose.Schema({
     code: { type: String, unique: true }, amount: Number, usesLeft: Number
 }));
 
-// --- GAME STATE ---
 const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
 const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
 let gameState = {
     seats: [null, null, null, null, null], dealerCards: [], deck: [],
-    status: 'waiting', activeSeatIndex: -1, betEndTime: 0, connectedPlayers: 0
+    status: 'waiting', activeSeatIndex: -1, betEndTime: 0, nextRoundTime: 0, connectedPlayers: 0
 };
 
 function getNewDeck() {
@@ -66,7 +64,7 @@ function emitGameState() {
     io.emit('game_state_update', safeState);
 }
 
-// --- PLAYER REST APIs ---
+// --- REST APIs ---
 app.post('/api/signup', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -79,10 +77,7 @@ app.post('/api/signup', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     const user = await User.findOne({ username: req.body.username, password: req.body.password });
     if (!user) return res.status(401).json({ error: 'Invalid credentials.' });
-    
-    // 👇 DELETE THIS LINE TO ALLOW INSTANT PLAY AFTER SIGN UP 👇
     if (user.status === 'pending') return res.status(401).json({ error: 'Account pending admin approval.' });
-    
     if (user.status === 'banned') return res.status(401).json({ error: 'Account banned.' });
     res.json({ username: user.username, credits: user.credits, nameColor: user.nameColor });
 });
@@ -94,12 +89,17 @@ app.post('/api/profile/color', async (req, res) => {
 
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
+    
+    // BANKING LIMITS
+    if (amount < 100000) return res.status(400).json({ error: 'Minimum request is 100,000.' });
+    if (type === 'deposit' && amount > 100000) return res.status(400).json({ error: 'Max deposit is 100,000 per request.' });
+    
     if (type === 'withdrawal') {
         const user = await User.findOne({ username });
-        if (user.credits < amount) return res.status(400).json({ error: 'Insufficient funds' });
-        await User.updateOne({ username }, { $inc: { credits: -amount } }); // Deduct immediately, refund if denied
+        if (user.credits < amount) return res.status(400).json({ error: 'Insufficient funds.' });
+        await User.updateOne({ username }, { $inc: { credits: -amount } }); 
     }
-    await new Transaction({ username, type, amount, status: 'pending' }).save();
+    await new Transaction({ username, type: `${type} req`, amount, status: 'pending' }).save();
     res.json({ success: true });
 });
 
@@ -119,7 +119,7 @@ app.get('/api/profile/ledger/:username', async (req, res) => {
     res.json(txs);
 });
 
-// --- ADMIN REST APIs (Secured) ---
+// --- ADMIN APIs ---
 const checkAdmin = (req, res, next) => {
     if (req.headers['x-admin-pass'] !== process.env.ADMIN_PASS) return res.status(403).json({ error: 'Unauthorized' });
     next();
@@ -133,21 +133,20 @@ app.get('/api/admin/data', checkAdmin, async (req, res) => {
 });
 
 app.post('/api/admin/user/status', checkAdmin, async (req, res) => {
-    await User.updateOne({ username: req.body.username }, { status: req.body.status });
-    res.json({ success: true });
+    await User.updateOne({ username: req.body.username }, { status: req.body.status }); res.json({ success: true });
 });
 
 app.post('/api/admin/tx/resolve', checkAdmin, async (req, res) => {
-    const { id, action } = req.body; // action = 'approve' or 'deny'
+    const { id, action } = req.body;
     const tx = await Transaction.findById(id);
     if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
 
     if (action === 'approve') {
         tx.status = 'completed';
-        if (tx.type === 'deposit') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } });
+        if (tx.type === 'deposit req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } });
     } else {
         tx.status = 'denied';
-        if (tx.type === 'withdrawal') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); // Refund
+        if (tx.type === 'withdrawal req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); 
     }
     await tx.save(); res.json({ success: true });
 });
@@ -156,8 +155,9 @@ app.post('/api/admin/giftcode', checkAdmin, async (req, res) => {
     await new GiftCode(req.body).save(); res.json({ success: true });
 });
 
-// --- GAME SOCKET LOGIC ---
+// --- SOCKET LOGIC ---
 let betTimerInterval = null;
+let nextRoundInterval = null;
 
 io.on('connection', (socket) => {
     gameState.connectedPlayers++; emitGameState();
@@ -184,15 +184,12 @@ io.on('connection', (socket) => {
         if (seat.credits >= betAmount) {
             seat.hands[0].bet = betAmount; seat.credits -= betAmount;
             await User.updateOne({ username: seat.username }, { credits: seat.credits });
-            await new Transaction({ username: seat.username, type: 'bet', amount: -betAmount }).save();
+            await new Transaction({ username: seat.username, type: 'bet placed', amount: -betAmount }).save();
             
-            // 15s Global Timer Reset Logic
             gameState.betEndTime = Date.now() + 15000;
             clearInterval(betTimerInterval);
             betTimerInterval = setInterval(() => {
-                if (Date.now() >= gameState.betEndTime) {
-                    clearInterval(betTimerInterval); startGame();
-                }
+                if (Date.now() >= gameState.betEndTime) { clearInterval(betTimerInterval); startGame(); }
             }, 1000);
 
             if (gameState.seats.every(s => !s || s.hands[0].bet > 0)) { clearInterval(betTimerInterval); startGame(); }
@@ -214,6 +211,32 @@ io.on('connection', (socket) => {
         moveToNextTurn(); emitGameState();
     });
 
+    socket.on('player_action_split', async ({ seatIndex }) => {
+        if (gameState.status !== 'playing' || gameState.activeSeatIndex !== seatIndex) return;
+        const seat = gameState.seats[seatIndex];
+        const hand = seat.hands[seat.currentHand];
+        if (hand.cards.length === 2 && hand.cards[0].weight === 10 && hand.cards[1].weight === 10 && seat.credits >= hand.bet) {
+            seat.credits -= hand.bet;
+            await User.updateOne({ username: seat.username }, { credits: seat.credits });
+            await new Transaction({ username: seat.username, type: 'split bet', amount: -hand.bet }).save();
+            const newHand = { cards: [hand.cards.pop(), gameState.deck.pop()], bet: hand.bet, status: 'playing', value: 0 };
+            hand.cards.push(gameState.deck.pop()); hand.value = calculateHandValue(hand.cards); newHand.value = calculateHandValue(newHand.cards);
+            seat.hands.push(newHand); emitGameState();
+        }
+    });
+
+    socket.on('claim_daily_reward', async ({ username }) => {
+        const user = await User.findOne({ username });
+        if (!user) return;
+        const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
+        if (Math.abs(now - lastClaim) / 36e5 >= 24) {
+            user.credits += 100000; user.lastRewardClaim = now; await user.save();
+            await new Transaction({ username, type: 'daily reward', amount: 100000, status: 'completed' }).save();
+            socket.emit('reward_claimed', { success: true, credits: user.credits, nextClaim: new Date(now.getTime() + 24*60*60*1000) });
+            const seat = gameState.seats.find(s => s && s.username === username); if(seat) { seat.credits = user.credits; emitGameState(); }
+        } else { socket.emit('reward_claimed', { success: false, message: 'Cooldown active' }); }
+    });
+
     socket.on('send_chat', (data) => { io.emit('receive_chat', data); });
 
     socket.on('disconnect', () => {
@@ -229,7 +252,6 @@ io.on('connection', (socket) => {
 
 function startGame() {
     gameState.status = 'playing'; gameState.deck = getNewDeck(); gameState.dealerCards = [];
-    // Kick anyone who didn't bet
     gameState.seats = gameState.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
     
     for (let i = 0; i < 2; i++) {
@@ -258,6 +280,8 @@ async function processDealerTurn() {
 
 async function resolveBets(dealerValue) {
     gameState.status = 'resolving'; 
+    gameState.nextRoundTime = Date.now() + 5000; // 5s Next Round Timer
+
     for (const seat of gameState.seats) {
         if (seat) {
             for (const hand of seat.hands) {
@@ -270,18 +294,24 @@ async function resolveBets(dealerValue) {
                     if (payout > 0) {
                         seat.credits += payout;
                         await User.updateOne({ username: seat.username }, { $inc: { credits: payout } });
-                        await new Transaction({ username: seat.username, type: 'win', amount: payout }).save();
+                        await new Transaction({ username: seat.username, type: 'win payout', amount: payout }).save();
                     }
                 }
             }
         }
     }
+    
     emitGameState(); 
-    setTimeout(() => {
-        gameState.dealerCards = [];
-        gameState.seats.forEach(seat => { if(seat) { seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; seat.currentHand = 0; } });
-        gameState.status = 'waiting'; emitGameState();
-    }, 7000); 
+
+    clearInterval(nextRoundInterval);
+    nextRoundInterval = setInterval(() => {
+        if (Date.now() >= gameState.nextRoundTime) {
+            clearInterval(nextRoundInterval);
+            gameState.dealerCards = [];
+            gameState.seats.forEach(seat => { if(seat) { seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; seat.currentHand = 0; } });
+            gameState.status = 'waiting'; emitGameState();
+        }
+    }, 1000);
 }
 
 const PORT = process.env.PORT || 3000;
