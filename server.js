@@ -9,18 +9,16 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
-// --- Middleware ---
 app.use(express.json());
 app.use(express.static(__dirname)); 
 
-// --- Database Setup ---
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('MongoDB Connected via Railway Variables'))
+    .then(() => console.log('MongoDB Connected'))
     .catch(err => console.error('MongoDB connection error:', err));
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
-    password: { type: String, required: true }, // Plain text per request
+    password: { type: String, required: true }, 
     credits: { type: Number, default: 0 },
     ipAddress: { type: String },
     lastRewardClaim: { type: Date, default: null },
@@ -29,7 +27,6 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// --- Game Engine State ---
 const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
 const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
@@ -37,7 +34,7 @@ let gameState = {
     seats: [null, null, null, null, null], 
     dealerCards: [],
     deck: [],
-    status: 'waiting', // waiting, betting, playing, dealerTurn, complete
+    status: 'waiting', 
     activeSeatIndex: -1
 };
 
@@ -45,9 +42,7 @@ function getNewDeck() {
     let deck = [];
     for (let i = 0; i < 6; i++) {
         for (let suit of suits) {
-            for (let value of values) {
-                deck.push({ suit, value, weight: getCardWeight(value) });
-            }
+            for (let value of values) { deck.push({ suit, value, weight: getCardWeight(value) }); }
         }
     }
     return deck.sort(() => Math.random() - 0.5);
@@ -66,12 +61,11 @@ function calculateHandValue(cards) {
     return value;
 }
 
-// --- REST APIs (Auth & Admin) ---
+// --- REST APIs ---
 app.post('/api/signup', async (req, res) => {
     try {
         const { username, password, tosAccepted } = req.body;
         if (!tosAccepted) return res.status(400).json({ error: 'ToS must be accepted' });
-        
         const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const user = new User({ username, password, credits: 1000, ipAddress, tosAccepted });
         await user.save();
@@ -88,22 +82,7 @@ app.post('/api/login', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'Server error' }); }
 });
 
-app.get('/api/admin/users', async (req, res) => {
-    try {
-        const users = await User.find({}, '-password'); 
-        res.json(users);
-    } catch (err) { res.status(500).json({ error: 'Server error' }); }
-});
-
-app.post('/api/admin/update_balance', async (req, res) => {
-    try {
-        const { username, newBalance } = req.body;
-        await User.updateOne({ username }, { credits: newBalance });
-        res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Server error' }); }
-});
-
-// --- Socket.IO Real-time Logic ---
+// --- Socket.IO ---
 io.on('connection', (socket) => {
     socket.emit('game_state_update', gameState);
 
@@ -140,9 +119,7 @@ io.on('connection', (socket) => {
         const now = new Date();
         const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
         if (Math.abs(now - lastClaim) / 36e5 >= 24) {
-            user.credits += 500;
-            user.lastRewardClaim = now;
-            await user.save();
+            user.credits += 500; user.lastRewardClaim = now; await user.save();
             socket.emit('reward_claimed', { success: true, credits: user.credits, nextClaim: new Date(now.getTime() + 24*60*60*1000) });
             const seat = gameState.seats.find(s => s && s.username === username);
             if(seat) { seat.credits = user.credits; io.emit('game_state_update', gameState); }
@@ -151,7 +128,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Game Actions
     socket.on('player_action_hit', ({ seatIndex }) => {
         if (gameState.status !== 'playing' || gameState.activeSeatIndex !== seatIndex) return;
         const seat = gameState.seats[seatIndex];
@@ -190,21 +166,20 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Live Chat Broadcast
     socket.on('send_chat', (data) => {
         io.emit('receive_chat', { username: data.username, message: data.message });
     });
 
     socket.on('disconnect', () => {
         const seatIndex = gameState.seats.findIndex(s => s && s.socketId === socket.id);
-        if (seatIndex !== -1 && gameState.status === 'waiting') {
+        if (seatIndex !== -1) {
             gameState.seats[seatIndex] = null;
-            io.emit('game_state_update', gameState);
+            if (gameState.status === 'waiting') io.emit('game_state_update', gameState);
         }
     });
 });
 
-// --- Game Loop Functions ---
+// --- Game Loop ---
 function startGame() {
     gameState.status = 'playing';
     gameState.deck = getNewDeck();
@@ -250,7 +225,7 @@ async function processDealerTurn() {
 }
 
 async function resolveBets(dealerValue) {
-    gameState.status = 'resolving';
+    gameState.status = 'resolving'; // This phase keeps the cards visible
     for (const seat of gameState.seats) {
         if (seat) {
             for (const hand of seat.hands) {
@@ -266,15 +241,24 @@ async function resolveBets(dealerValue) {
                     }
                 }
             }
-            seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }];
-            seat.currentHand = 0;
         }
     }
+    
+    // Broadcast the final hands and results BEFORE clearing
+    io.emit('game_state_update', gameState);
+
+    // FIX: Wait 7 seconds before clearing the table for the next round
     setTimeout(() => {
         gameState.dealerCards = [];
+        gameState.seats.forEach(seat => {
+            if(seat) {
+                seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }];
+                seat.currentHand = 0;
+            }
+        });
         gameState.status = 'waiting';
         io.emit('game_state_update', gameState);
-    }, 5000); 
+    }, 7000); 
 }
 
 const PORT = process.env.PORT || 3000;
