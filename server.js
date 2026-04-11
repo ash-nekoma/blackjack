@@ -52,7 +52,7 @@ function createRoom(numSeats) {
     };
 }
 
-const socketUserMap = {}; // Maps socket.id to { username, roomId }
+const socketUserMap = {}; 
 
 function getNewDeck() {
     let deck = [];
@@ -72,10 +72,12 @@ function emitGameState(roomId) {
     let room = rooms[roomId];
     if (!room) return;
     let safeState = JSON.parse(JSON.stringify(room));
-    // Remove backend-only interval properties
     delete safeState.betTimerInterval; delete safeState.nextRoundInterval;
     
-    if (safeState.status === 'playing' && safeState.dealerCards.length > 1) safeState.dealerCards[1] = { hidden: true };
+    // Hide dealer's hole card
+    if (safeState.status === 'playing' && safeState.dealerCards.length > 1) {
+        safeState.dealerCards[1] = { hidden: true };
+    }
     io.to(roomId).emit('game_state_update', safeState);
 }
 
@@ -94,7 +96,12 @@ app.post('/api/login', async (req, res) => {
     if (!user) return res.status(401).json({ error: 'Invalid credentials.' });
     if (user.status === 'pending') return res.status(401).json({ error: 'Account pending admin approval.' });
     if (user.status === 'banned') return res.status(401).json({ error: 'Account banned.' });
-    res.json({ username: user.username, credits: user.credits, nameColor: user.nameColor });
+    
+    // Send back nextClaim time for the Daily Rewards timer
+    const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
+    const nextClaim = new Date(lastClaim.getTime() + 24*60*60*1000);
+    
+    res.json({ username: user.username, credits: user.credits, nameColor: user.nameColor, nextClaim });
 });
 
 app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
@@ -126,29 +133,6 @@ app.get('/api/profile/ledger/:username', async (req, res) => {
     const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50); res.json(txs);
 });
 
-// --- ADMIN APIs ---
-const checkAdmin = (req, res, next) => {
-    if (req.headers['x-admin-pass'] !== process.env.ADMIN_PASS) return res.status(403).json({ error: 'Unauthorized' });
-    next();
-};
-
-app.get('/api/admin/data', checkAdmin, async (req, res) => {
-    const users = await User.find({}, '-password'); const txs = await Transaction.find({ status: 'pending' }); const codes = await GiftCode.find();
-    res.json({ users, txs, codes });
-});
-
-app.post('/api/admin/user/status', checkAdmin, async (req, res) => { await User.updateOne({ username: req.body.username }, { status: req.body.status }); res.json({ success: true }); });
-
-app.post('/api/admin/tx/resolve', checkAdmin, async (req, res) => {
-    const { id, action } = req.body; const tx = await Transaction.findById(id);
-    if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
-    if (action === 'approve') { tx.status = 'completed'; if (tx.type === 'deposit req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); } 
-    else { tx.status = 'denied'; if (tx.type === 'withdrawal req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); }
-    await tx.save(); res.json({ success: true });
-});
-
-app.post('/api/admin/giftcode', checkAdmin, async (req, res) => { await new GiftCode(req.body).save(); res.json({ success: true }); });
-
 // --- SOCKET LOGIC ---
 
 io.on('connection', (socket) => {
@@ -169,7 +153,6 @@ io.on('connection', (socket) => {
         socket.leave(roomId);
         room.lobby = room.lobby.filter(p => p.username !== username);
         
-        // Remove from seat if seated
         const seatIndex = room.seats.findIndex(s => s && s.username === username);
         if (seatIndex !== -1) {
             room.seats[seatIndex] = null;
@@ -181,7 +164,7 @@ io.on('connection', (socket) => {
 
     socket.on('join_seat', async ({ roomId, username, seatIndex }) => {
         let room = rooms[roomId]; if (!room) return;
-        if (room.seats.some(s => s && s.username === username)) return; // 1 SEAT LIMIT
+        if (room.seats.some(s => s && s.username === username)) return; 
         if (seatIndex < 0 || seatIndex >= room.seats.length || room.seats[seatIndex]) return;
 
         const user = await User.findOne({ username });
@@ -268,20 +251,38 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('claim_daily_reward', async ({ username }) => {
+    // --- DAILY REWARDS MINIGAME ---
+    socket.on('claim_daily_reward_box', async ({ username, boxIndex }) => {
         const user = await User.findOne({ username }); if (!user) return;
         const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
+        
         if (Math.abs(now - lastClaim) / 36e5 >= 24) {
-            user.credits += 100000; user.lastRewardClaim = now; await user.save();
-            await new Transaction({ username, type: 'daily reward', amount: 100000, status: 'completed' }).save();
-            socket.emit('reward_claimed', { success: true, credits: user.credits, nextClaim: new Date(now.getTime() + 24*60*60*1000) });
+            // Randomized 6-box prize pool
+            let prizes = [1000, 0, 0, 0, 5000, 10000];
+            prizes = prizes.sort(() => Math.random() - 0.5);
+            
+            const wonAmount = prizes[boxIndex];
+            
+            user.lastRewardClaim = now;
+            if (wonAmount > 0) {
+                user.credits += wonAmount;
+                await new Transaction({ username, type: 'daily reward', amount: wonAmount, status: 'completed' }).save();
+            }
+            await user.save();
+            
+            const nextClaim = new Date(now.getTime() + 24*60*60*1000);
+            
+            // Send back the results to animate the boxes
+            socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, nextClaim });
             
             // Sync credits across all rooms if they are seated
             Object.keys(rooms).forEach(rId => {
                 const seat = rooms[rId].seats.find(s => s && s.username === username); 
                 if(seat) { seat.credits = user.credits; emitGameState(rId); }
             });
-        } else { socket.emit('reward_claimed', { success: false, message: 'Cooldown active' }); }
+        } else { 
+            socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); 
+        }
     });
 
     socket.on('send_chat', ({ roomId, username, message }) => { 
