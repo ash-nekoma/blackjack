@@ -10,7 +10,7 @@
         h1, h2 { color: #fbbf24; }
         .auth-panel { display: flex; gap: 10px; margin-bottom: 20px; }
         input { padding: 8px; background: #000; color: #fff; border: 1px solid #475569; border-radius: 4px; }
-        button { background: #3b82f6; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        button { background: #3b82f6; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button:hover { background: #2563eb; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #000; }
         th, td { padding: 10px; text-align: left; border: 1px solid #333; }
@@ -38,9 +38,9 @@
             </div>
 
             <div class="section">
-                <h2>Pending Bank Requests</h2>
+                <h2>Banking Requests</h2>
                 <table>
-                    <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Action</th></tr></thead>
+                    <thead><tr><th>User</th><th>Request Type</th><th>Amount</th><th>Action</th></tr></thead>
                     <tbody id="tbl-bank"></tbody>
                 </table>
             </div>
@@ -68,19 +68,17 @@
             const data = await res.json();
             document.getElementById('dashboard').style.display = 'block';
 
-            // Render Users
             const tUsers = document.getElementById('tbl-pending-users'); tUsers.innerHTML = '';
             data.users.filter(u => u.status === 'pending').forEach(u => {
                 tUsers.innerHTML += `<tr><td>${u.username}</td><td>
                     <button class="btn-green" onclick="updateUser('${u.username}', 'approved')">Approve</button>
-                    <button class="btn-red" onclick="updateUser('${u.username}', 'banned')">Deny</button>
+                    <button class="btn-red" onclick="updateUser('${u.username}', 'banned')">Deny / Ban</button>
                 </td></tr>`;
             });
 
-            // Render Bank
             const tBank = document.getElementById('tbl-bank'); tBank.innerHTML = '';
             data.txs.forEach(tx => {
-                tBank.innerHTML += `<tr><td>${tx.username}</td><td>${tx.type.toUpperCase()}</td><td>${tx.amount}</td><td>
+                tBank.innerHTML += `<tr><td>${tx.username}</td><td style="text-transform: uppercase; font-weight:bold;">${tx.type}</td><td>${tx.amount}</td><td>
                     <button class="btn-green" onclick="resolveTx('${tx._id}', 'approve')">Approve</button>
                     <button class="btn-red" onclick="resolveTx('${tx._id}', 'deny')">Deny</button>
                 </td></tr>`;
@@ -99,6 +97,7 @@
 
         async function createCode() {
             const code = document.getElementById('gc-code').value; const amount = document.getElementById('gc-amt').value; const usesLeft = document.getElementById('gc-uses').value;
+            if(!code || !amount || !usesLeft) return alert("Fill all fields.");
             await fetch('/api/admin/giftcode', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': pass }, body: JSON.stringify({code, amount, usesLeft}) });
             alert("Code Generated!"); document.getElementById('gc-code').value='';
         }
