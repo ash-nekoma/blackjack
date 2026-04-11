@@ -3,7 +3,6 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
-const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -61,13 +60,24 @@ function calculateHandValue(cards) {
     return value;
 }
 
+// --- SECURE STATE BROADCASTER ---
+function emitGameState() {
+    // Clone state to avoid modifying the real game logic
+    let safeState = JSON.parse(JSON.stringify(gameState));
+    
+    // Hide dealer's second card if the round is still actively playing
+    if (safeState.status === 'playing' && safeState.dealerCards.length > 1) {
+        safeState.dealerCards[1] = { hidden: true }; 
+    }
+    io.emit('game_state_update', safeState);
+}
+
 // --- REST APIs ---
 app.post('/api/signup', async (req, res) => {
     try {
         const { username, password, tosAccepted } = req.body;
         if (!tosAccepted) return res.status(400).json({ error: 'ToS must be accepted' });
-        const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        const user = new User({ username, password, credits: 1000, ipAddress, tosAccepted });
+        const user = new User({ username, password, credits: 1000, tosAccepted });
         await user.save();
         res.status(201).json({ message: 'User created successfully', username: user.username });
     } catch (err) { res.status(400).json({ error: 'Username may already exist' }); }
@@ -84,7 +94,7 @@ app.post('/api/login', async (req, res) => {
 
 // --- Socket.IO ---
 io.on('connection', (socket) => {
-    socket.emit('game_state_update', gameState);
+    emitGameState();
 
     socket.on('join_seat', async ({ username, seatIndex }) => {
         if (seatIndex < 0 || seatIndex > 4 || gameState.seats[seatIndex]) return;
@@ -96,7 +106,15 @@ io.on('connection', (socket) => {
             hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0
         };
         if (gameState.status === 'waiting') gameState.status = 'betting';
-        io.emit('game_state_update', gameState);
+        emitGameState();
+    });
+
+    socket.on('leave_seat', ({ seatIndex }) => {
+        if (gameState.seats[seatIndex] && gameState.seats[seatIndex].socketId === socket.id) {
+            gameState.seats[seatIndex] = null;
+            if (gameState.seats.every(s => s === null)) gameState.status = 'waiting';
+            emitGameState();
+        }
     });
 
     socket.on('place_bet', async ({ seatIndex, betAmount }) => {
@@ -108,8 +126,9 @@ io.on('connection', (socket) => {
             seat.credits -= betAmount;
             await User.updateOne({ username: seat.username }, { credits: seat.credits });
             
+            // Start game if everyone seated has placed a bet
             if (gameState.seats.every(s => !s || s.hands[0].bet > 0)) startGame();
-            io.emit('game_state_update', gameState);
+            emitGameState();
         }
     });
 
@@ -122,10 +141,8 @@ io.on('connection', (socket) => {
             user.credits += 500; user.lastRewardClaim = now; await user.save();
             socket.emit('reward_claimed', { success: true, credits: user.credits, nextClaim: new Date(now.getTime() + 24*60*60*1000) });
             const seat = gameState.seats.find(s => s && s.username === username);
-            if(seat) { seat.credits = user.credits; io.emit('game_state_update', gameState); }
-        } else {
-            socket.emit('reward_claimed', { success: false, message: 'Cooldown active' });
-        }
+            if(seat) { seat.credits = user.credits; emitGameState(); }
+        } else { socket.emit('reward_claimed', { success: false, message: 'Cooldown active' }); }
     });
 
     socket.on('player_action_hit', ({ seatIndex }) => {
@@ -137,7 +154,7 @@ io.on('connection', (socket) => {
         hand.cards.push(gameState.deck.pop());
         hand.value = calculateHandValue(hand.cards);
         if (hand.value > 21) { hand.status = 'bust'; moveToNextTurn(); }
-        io.emit('game_state_update', gameState);
+        emitGameState();
     });
 
     socket.on('player_action_stand', ({ seatIndex }) => {
@@ -145,7 +162,7 @@ io.on('connection', (socket) => {
         if (gameState.seats[seatIndex].socketId !== socket.id) return;
         gameState.seats[seatIndex].hands[gameState.seats[seatIndex].currentHand].status = 'stand';
         moveToNextTurn();
-        io.emit('game_state_update', gameState);
+        emitGameState();
     });
 
     socket.on('player_action_split', async ({ seatIndex }) => {
@@ -162,7 +179,7 @@ io.on('connection', (socket) => {
             hand.value = calculateHandValue(hand.cards);
             newHand.value = calculateHandValue(newHand.cards);
             seat.hands.push(newHand);
-            io.emit('game_state_update', gameState);
+            emitGameState();
         }
     });
 
@@ -174,12 +191,12 @@ io.on('connection', (socket) => {
         const seatIndex = gameState.seats.findIndex(s => s && s.socketId === socket.id);
         if (seatIndex !== -1) {
             gameState.seats[seatIndex] = null;
-            if (gameState.status === 'waiting') io.emit('game_state_update', gameState);
+            if (gameState.seats.every(s => s === null)) gameState.status = 'waiting';
+            emitGameState();
         }
     });
 });
 
-// --- Game Loop ---
 function startGame() {
     gameState.status = 'playing';
     gameState.deck = getNewDeck();
@@ -214,7 +231,7 @@ function moveToNextTurn() {
 async function processDealerTurn() {
     gameState.status = 'dealerTurn';
     gameState.activeSeatIndex = -1;
-    io.emit('game_state_update', gameState);
+    emitGameState();
 
     let dealerValue = calculateHandValue(gameState.dealerCards);
     while (dealerValue < 17) {
@@ -225,7 +242,7 @@ async function processDealerTurn() {
 }
 
 async function resolveBets(dealerValue) {
-    gameState.status = 'resolving'; // This phase keeps the cards visible
+    gameState.status = 'resolving'; 
     for (const seat of gameState.seats) {
         if (seat) {
             for (const hand of seat.hands) {
@@ -244,20 +261,16 @@ async function resolveBets(dealerValue) {
         }
     }
     
-    // Broadcast the final hands and results BEFORE clearing
-    io.emit('game_state_update', gameState);
+    emitGameState(); // Broadcast final results (reveals hole card automatically)
 
-    // FIX: Wait 7 seconds before clearing the table for the next round
+    // 7-second pause before wiping the table
     setTimeout(() => {
         gameState.dealerCards = [];
         gameState.seats.forEach(seat => {
-            if(seat) {
-                seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }];
-                seat.currentHand = 0;
-            }
+            if(seat) { seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; seat.currentHand = 0; }
         });
         gameState.status = 'waiting';
-        io.emit('game_state_update', gameState);
+        emitGameState();
     }, 7000); 
 }
 
