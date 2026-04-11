@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Blackjack - Admin</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; color: #0f172a; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #064e3b; border-bottom: 2px solid #064e3b; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #cbd5e1; }
+        th { background-color: #f8fafc; font-weight: 600; }
+        button { background: #064e3b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #047857; }
+        .edit-form { display: flex; gap: 10px; align-items: center; }
+        input[type="number"] { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; width: 100px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Server Administration Panel</h1>
+        <p>Monitor player accounts, check IPs for abuse, and manage credits.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Credits</th>
+                    <th>IP Address</th>
+                    <th>ToS Accepted</th>
+                    <th>Last Reward Claim</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="user-table-body">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Fetch and render users on load
+        async function fetchUsers() {
+            try {
+                const response = await fetch('/api/admin/users');
+                const users = await response.json();
+                const tbody = document.getElementById('user-table-body');
+                tbody.innerHTML = '';
+
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    
+                    // Format Date
+                    const dateStr = user.lastRewardClaim 
+                        ? new Date(user.lastRewardClaim).toLocaleString() 
+                        : 'Never';
+
+                    tr.innerHTML = `
+                        <td><strong>${user.username}</strong></td>
+                        <td id="balance-${user.username}">${user.credits}</td>
+                        <td><code style="background:#e2e8f0; padding:2px 4px; border-radius:3px;">${user.ipAddress || 'Unknown'}</code></td>
+                        <td>${user.tosAccepted ? '✅' : '❌'}</td>
+                        <td>${dateStr}</td>
+                        <td>
+                            <div class="edit-form">
+                                <input type="number" id="input-${user.username}" value="${user.credits}">
+                                <button onclick="updateBalance('${user.username}')">Save</button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Error fetching users:", err);
+                alert("Could not load users. Is the server running?");
+            }
+        }
+
+        // Update balance API call
+        async function updateBalance(username) {
+            const newBalance = document.getElementById(`input-${username}`).value;
+            
+            try {
+                const response = await fetch('/api/admin/update_balance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, newBalance: parseInt(newBalance) })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById(`balance-${username}`).innerText = newBalance;
+                    // Flash background to indicate success
+                    const cell = document.getElementById(`balance-${username}`);
+                    cell.style.backgroundColor = '#dcfce3';
+                    setTimeout(() => cell.style.backgroundColor = 'transparent', 1000);
+                } else {
+                    alert("Failed to update balance.");
+                }
+            } catch (err) {
+                console.error("Error updating balance:", err);
+            }
+        }
+
+        // Initialize
+        fetchUsers();
+    </script>
+</body>
+</html>
