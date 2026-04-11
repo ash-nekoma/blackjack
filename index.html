@@ -9,7 +9,7 @@
     <style>
         :root {
             --bg-dark: #0f172a; --bg-darker: #020617;
-            --table-green: #0d5c46; --table-dark: #042418;
+            --table-green: #0b5e32; --table-dark: #042e17; /* Brighter classic casino green */
             --wood-base: #8b5a2b; --wood-dark: #5c3a21;
             --accent-glow: #8b5cf6; --accent-glow-2: #3b82f6;
             --danger: #ef4444; --success: #10b981; --warning: #fbbf24;
@@ -67,39 +67,50 @@
         .chat-input-area button:active { background: #059669; }
 
         /* PERFECT 3-SEAT TABLE */
-        .table-surface { width: 900px; height: 480px; margin-top: 20px; position: relative; background: radial-gradient(ellipse at center, var(--table-green) 0%, var(--table-dark) 100%); border: 16px solid var(--table-border); border-radius: 450px 450px 40px 40px; box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.8); }
-        .banker-station { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
+        .table-surface { width: 900px; height: 500px; margin-top: 20px; position: relative; background: radial-gradient(ellipse at center, var(--table-green) 0%, var(--table-dark) 100%); border: 24px solid #111; border-radius: 450px 450px 40px 40px; box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.8); border-bottom: 12px solid #111;}
+        .banker-station { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
         
         .global-timer { position: absolute; top: 180px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
 
-        /* SEATS */
-        .seat { position: absolute; width: 160px; min-height: 180px; padding-bottom: 10px; background: rgba(0, 0, 0, 0.6); border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; z-index: 5; transition: 0.3s;}
-        .seat.occupied { border-style: solid; border-color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.8); box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
-        .seat.active-turn { box-shadow: 0 0 30px var(--warning); border-color: var(--warning); background: rgba(251, 191, 36, 0.15); }
+        /* FIXED 3-SEAT POSITIONS */
+        .seat { position: absolute; width: 170px; min-height: 180px; padding-bottom: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s;}
         
-        .seat-header { width: 100%; background: #111; color: #fff; font-size: 15px; font-weight: bold; padding: 6px; border-top-left-radius: 6px; border-top-right-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-bottom: 2px solid #333; }
-        .seat-bet { color: var(--success); font-size: 14px; font-weight: bold; margin-top: 5px; background: #000; padding: 4px 10px; border-radius: 6px; border: 1px solid #333;}
+        #seat-0 { left: 120px; top: 220px; }
+        #seat-1 { left: 50%; transform: translateX(-50%); top: 260px; }
+        #seat-2 { right: 120px; top: 220px; }
 
-        .seat-bet-box { display: flex; width: 90%; gap: 4px; margin-top: 10px; }
-        .seat-bet-box input { flex: 1; padding: 4px; text-align: center; font-size: 18px; margin: 0; outline: none; width: 110px;}
-        .s-btn { flex: 1; padding: 6px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 14px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5);}
+        .seat-empty-box { width: 100%; height: 100%; border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); }
+
+        .seat.occupied { background: transparent; }
+        .seat.active-turn .cards-area { filter: drop-shadow(0 0 20px var(--warning)); }
+        
+        .seat-header { background: rgba(0,0,0,0.8); color: #fff; font-size: 16px; font-weight: bold; padding: 4px 10px; border-radius: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid #333; margin-bottom: 10px; box-shadow: 2px 2px 0 #000;}
+        .seat-bet { color: var(--success); font-size: 16px; font-weight: bold; margin-top: 10px; background: #000; padding: 4px 15px; border-radius: 20px; border: 2px solid var(--success); box-shadow: 2px 2px 0 #000;}
+
+        /* CLASSIC CIRCULAR VALUE BADGES */
+        .hd-badge { position: absolute; top: -15px; left: -15px; width: 34px; height: 34px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10;}
+
+        /* IN-SEAT CONTROLS */
+        .seat-bet-box { display: flex; width: 100%; gap: 4px; margin-top: 10px; justify-content: center; }
+        .seat-bet-box input { width: 90px; padding: 6px; text-align: center; font-size: 16px; margin: 0; outline: none;}
+        .s-btn { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 14px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5);}
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
-        .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 90%; margin-top: 10px; }
+        .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; }
         .btn-hit { background: var(--success); color: #000; }
         .btn-stand { background: #b45309; color: #fff; }
         .btn-double { background: var(--accent-glow-2); color: #fff; }
         .btn-split { background: var(--accent-glow); color: #fff; }
 
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 90%; padding: 8px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; margin-top: 10px; font-family: var(--clear-font); box-shadow: 2px 2px 0 #000; }
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; padding: 8px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; margin-top: 10px; font-family: var(--clear-font); box-shadow: 2px 2px 0 #000; }
         .btn-inseat-standup:active { transform: scale(0.95); }
 
-        .cards-area { position: relative; display: flex; justify-content: center; flex-wrap: wrap; width: 100%; min-height: 70px; margin-top: 10px; gap: -25px;}
-        .card { width: 48px; height: 70px; background: #fff; color: #111; border-radius: 5px; display: flex; justify-content: center; align-items: center; text-align: center; font-size: 18px; font-weight: bold; border: 1px solid #666; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -20px; }
+        .cards-area { position: relative; display: flex; justify-content: center; flex-direction: row; width: 100%; min-height: 80px; gap: 10px; }
+        .hand-container { position: relative; display: flex; justify-content: center; gap: -25px; }
+        .card { width: 55px; height: 80px; background: #fff; color: #111; border-radius: 5px; display: flex; justify-content: center; align-items: center; text-align: center; font-size: 22px; font-weight: bold; border: 1px solid #666; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -25px; }
         .card:first-child { margin-left: 0; }
         .card.red { color: #dc2626; }
-        .hd-badge { position: absolute; top: -12px; right: -5px; background: rgba(0,0,0,0.9); color: #fff; border: 2px solid #fff; padding: 2px 8px; font-size: 14px; font-weight: bold; border-radius: 12px; box-shadow: 0 2px 5px #000; z-index: 10;}
 
         .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 20px; background: #0f172a; margin-bottom: 5px; border-radius: 4px;}
         .ledger-desc { color: #94a3b8; }
@@ -132,7 +143,7 @@
                 <input type="password" id="signup-pass" class="retro-input" placeholder="CREATE PASSWORD">
                 
                 <div class="terms-box custom-scroll">
-                    <strong>SYSTEM TERMS:</strong> Play fair. Farming rewards via multiple accounts will result in immediate IP bans. All new accounts require Admin approval before logging in.
+                    <strong>SYSTEM TERMS:</strong> Strict 1-Seat limit. Play fair. Farming rewards via multiple accounts will result in immediate IP bans. All new accounts require Admin approval before logging in.
                 </div>
                 <label class="clear-text" style="font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; margin-bottom: 15px;">
                     <input type="checkbox" id="tos-checkbox" style="width: 20px; height: 20px; margin:0;"> I ACCEPT THE TERMS
@@ -239,8 +250,8 @@
                 <div class="table-surface">
                     <div class="banker-station clear-text">
                         <div style="font-size: 20px; font-weight: bold; color: #f8fafc; margin-bottom: 5px; text-shadow: 0 0 5px #000;">DEALER</div>
-                        <div id="dealer-cards" class="cards-area"></div>
-                        <div id="dealer-val" class="hd-badge hidden"></div>
+                        <div id="dealer-cards" class="hand-container" style="min-height: 80px;"></div>
+                        <div id="dealer-val" class="hd-badge hidden" style="left: -15px;"></div>
                     </div>
 
                     <div id="global-timer" class="global-timer pixel-text hidden">BETS CLOSING: <span id="g-time">15</span>s</div>
@@ -355,11 +366,7 @@
         
         function ejectSeat(index) { 
             socket.emit('leave_seat', { username: currentUser.username, seatIndex: index }); 
-            if (mySeatIndex === index) {
-                mySeatIndex = -1;
-                clearInterval(sitTimerInt);
-                sitTimerInt = null;
-            }
+            if (mySeatIndex === index) { mySeatIndex = -1; clearInterval(sitTimerInt); sitTimerInt = null; }
         }
 
         function sendChat() { const input = document.getElementById('chat-input'); if (input.value.trim() && currentUser) { socket.emit('send_chat', { username: currentUser.username, message: input.value.trim() }); input.value = ''; } }
@@ -390,40 +397,43 @@
             else { dBadge.innerText = calculateValue(state.dealerCards); dBadge.classList.remove('hidden'); }
 
             const seatsArea = document.getElementById('seats-area'); seatsArea.innerHTML = '';
-            let activeElements = [];
             
             if(currentUser) {
                  const mySeat = state.seats.find(s => s && s.username === currentUser.username);
                  if(mySeat) { currentUser.credits = mySeat.credits; document.getElementById('hud-credits').innerText = currentUser.credits; mySeatIndex = state.seats.indexOf(mySeat); }
+                 else { mySeatIndex = -1; }
             }
 
-            state.seats.forEach((seatData, index) => {
+            for(let index=0; index<3; index++) {
+                let seatData = state.seats[index];
                 const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
                 let isMySeat = currentUser && seatData && seatData.username === currentUser.username;
 
                 if (!seatData) {
                     let sitBtn = mySeatIndex === -1 ? `<button class="s-btn" style="background:var(--success); color:#000; padding:8px 16px; margin-top:20px; box-shadow:2px 2px 0 #000;" onclick="sitDown(${index})">SIT</button>` : '';
-                    seatDiv.innerHTML = `<div class="pixel-text" style="font-size:28px; color:#94a3b8; margin-top:30px;">EMPTY</div>${sitBtn}`;
-                    if (state.status === 'waiting' || state.status === 'betting') activeElements.push(seatDiv);
+                    seatDiv.innerHTML = `<div class="seat-empty-box"><div class="pixel-text" style="font-size:28px; color:#94a3b8;">EMPTY</div>${sitBtn}</div>`;
                 } else {
                     seatDiv.classList.add('occupied'); if (isMySeat) seatDiv.classList.add('my-seat'); if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
 
                     let html = `<div class="seat-header" style="color:${seatData.color}">${seatData.username}</div>`;
                     
+                    html += `<div class="cards-area">`;
                     seatData.hands.forEach(hand => {
-                        html += `<div class="cards-area">`;
+                        html += `<div class="hand-container">`;
                         hand.cards.forEach(c => html += `<div class="card ${['Hearts', 'Diamonds'].includes(c.suit)?'red':''}">${c.value}<br><span style="font-size:20px;">${{'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit]}</span></div>`);
                         if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
                         html += `</div>`;
-                        if (hand.bet > 0) html += `<div class="seat-bet">BET: $${hand.bet}</div>`;
                     });
+                    html += `</div>`;
+                    
+                    if (seatData.hands[0].bet > 0) html += `<div class="seat-bet">BET: $${seatData.hands[0].bet}</div>`;
 
                     if (isMySeat && state.status === 'waiting') {
                         html += `<button class="btn-inseat-standup" onclick="ejectSeat(${index})">STAND UP</button>`;
                     }
                     if (isMySeat && state.status === 'betting') {
                         if (seatData.hands[0].bet === 0) {
-                            html += `<div class="seat-bet-box"><input type="number" id="inseat-bet-${index}" class="retro-input" value="100000" min="100000" style="padding:4px; font-size:18px; width:110px;"><button class="s-btn" style="background:var(--success); color:#000;" onclick="placeBet(${index})">BET</button></div>`;
+                            html += `<div class="seat-bet-box"><input type="number" id="inseat-bet-${index}" class="retro-input" value="100000" min="100000"><button class="s-btn" style="background:var(--success); color:#000;" onclick="placeBet(${index})">BET</button></div>`;
                             html += `<button class="btn-inseat-standup" style="margin-top: 5px;" onclick="ejectSeat(${index})">STAND UP</button>`;
                         }
                     }
@@ -441,13 +451,10 @@
                         }
                         html += `</div>`;
                     }
-                    
                     seatDiv.innerHTML = html;
-                    if (state.status !== 'playing' || seatData.hands[0].bet > 0) activeElements.push(seatDiv);
                 }
                 seatsArea.appendChild(seatDiv);
-            });
-            layoutArc(activeElements);
+            }
         }
 
         function manageTimers(state) {
@@ -480,16 +487,6 @@
             } else { clearInterval(sitTimerInt); sitTimerInt = null; }
         }
 
-        function layoutArc(elements) {
-            const count = elements.length; if (count === 0) return;
-            const centerX = 450; const centerY = 130; const radiusX = 320; const radiusY = 220; 
-            elements.forEach((el, i) => {
-                let angle = count === 1 ? Math.PI / 2 : (Math.PI * 0.80) - (i * ((Math.PI * 0.60) / (count - 1)));
-                el.style.left = `${centerX + Math.cos(angle) * radiusX - 80}px`; el.style.top = `${centerY + Math.sin(angle) * radiusY - 90}px`;
-            });
-        }
-        function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
-
         function sitDown(index) { 
             if (mySeatIndex !== -1) return alert("Strict 1-Seat Limit per player.");
             socket.emit('join_seat', { username: currentUser.username, seatIndex: index }); 
@@ -499,8 +496,7 @@
         function placeBet(index) { 
             const amt = parseInt(document.getElementById(`inseat-bet-${index}`).value); 
             socket.emit('place_bet', { username: currentUser.username, seatIndex: index, betAmount: amt }); 
-            clearInterval(sitTimerInt); 
-            sitTimerInt = null;
+            clearInterval(sitTimerInt); sitTimerInt = null;
         }
     </script>
 </body>
