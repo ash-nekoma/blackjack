@@ -25,9 +25,7 @@ const User = mongoose.model('User', new mongoose.Schema({
 }));
 
 const Transaction = mongoose.model('Transaction', new mongoose.Schema({
-    username: String,
-    type: String, 
-    amount: Number,
+    username: String, type: String, amount: Number,
     status: { type: String, default: 'completed' }, 
     date: { type: Date, default: Date.now }
 }));
@@ -43,6 +41,9 @@ let gameState = {
     seats: [null, null, null, null, null], dealerCards: [], deck: [],
     status: 'waiting', activeSeatIndex: -1, betEndTime: 0, nextRoundTime: 0, connectedPlayers: 0
 };
+
+// SECURE SOCKET MAPPING
+const activeSockets = {};
 
 function getNewDeck() {
     let deck = [];
@@ -82,15 +83,10 @@ app.post('/api/login', async (req, res) => {
     res.json({ username: user.username, credits: user.credits, nameColor: user.nameColor });
 });
 
-app.post('/api/profile/color', async (req, res) => {
-    await User.updateOne({ username: req.body.username }, { nameColor: req.body.color });
-    res.json({ success: true });
-});
+app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
 
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
-    
-    // BANKING LIMITS
     if (amount < 100000) return res.status(400).json({ error: 'Minimum request is 100,000.' });
     if (type === 'deposit' && amount > 100000) return res.status(400).json({ error: 'Max deposit is 100,000 per request.' });
     
@@ -107,16 +103,13 @@ app.post('/api/bank/giftcode', async (req, res) => {
     const { username, code } = req.body;
     const gc = await GiftCode.findOne({ code });
     if (!gc || gc.usesLeft <= 0) return res.status(400).json({ error: 'Invalid or expired code.' });
-    
-    await User.updateOne({ username }, { $inc: { credits: gc.amount } });
-    await GiftCode.updateOne({ code }, { $inc: { usesLeft: -1 } });
+    await User.updateOne({ username }, { $inc: { credits: gc.amount } }); await GiftCode.updateOne({ code }, { $inc: { usesLeft: -1 } });
     await new Transaction({ username, type: 'giftcode', amount: gc.amount, status: 'completed' }).save();
     res.json({ success: true, amount: gc.amount });
 });
 
 app.get('/api/profile/ledger/:username', async (req, res) => {
-    const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50);
-    res.json(txs);
+    const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50); res.json(txs);
 });
 
 // --- ADMIN APIs ---
@@ -126,34 +119,21 @@ const checkAdmin = (req, res, next) => {
 };
 
 app.get('/api/admin/data', checkAdmin, async (req, res) => {
-    const users = await User.find({}, '-password');
-    const txs = await Transaction.find({ status: 'pending' });
-    const codes = await GiftCode.find();
+    const users = await User.find({}, '-password'); const txs = await Transaction.find({ status: 'pending' }); const codes = await GiftCode.find();
     res.json({ users, txs, codes });
 });
 
-app.post('/api/admin/user/status', checkAdmin, async (req, res) => {
-    await User.updateOne({ username: req.body.username }, { status: req.body.status }); res.json({ success: true });
-});
+app.post('/api/admin/user/status', checkAdmin, async (req, res) => { await User.updateOne({ username: req.body.username }, { status: req.body.status }); res.json({ success: true }); });
 
 app.post('/api/admin/tx/resolve', checkAdmin, async (req, res) => {
-    const { id, action } = req.body;
-    const tx = await Transaction.findById(id);
+    const { id, action } = req.body; const tx = await Transaction.findById(id);
     if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
-
-    if (action === 'approve') {
-        tx.status = 'completed';
-        if (tx.type === 'deposit req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } });
-    } else {
-        tx.status = 'denied';
-        if (tx.type === 'withdrawal req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); 
-    }
+    if (action === 'approve') { tx.status = 'completed'; if (tx.type === 'deposit req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); } 
+    else { tx.status = 'denied'; if (tx.type === 'withdrawal req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); }
     await tx.save(); res.json({ success: true });
 });
 
-app.post('/api/admin/giftcode', checkAdmin, async (req, res) => {
-    await new GiftCode(req.body).save(); res.json({ success: true });
-});
+app.post('/api/admin/giftcode', checkAdmin, async (req, res) => { await new GiftCode(req.body).save(); res.json({ success: true }); });
 
 // --- SOCKET LOGIC ---
 let betTimerInterval = null;
@@ -162,7 +142,10 @@ let nextRoundInterval = null;
 io.on('connection', (socket) => {
     gameState.connectedPlayers++; emitGameState();
 
-    socket.on('join_seat', async ({ username, seatIndex }) => {
+    socket.on('register_socket', ({ username }) => { activeSockets[socket.id] = username; });
+
+    socket.on('join_seat', async ({ seatIndex }) => {
+        const username = activeSockets[socket.id]; if(!username) return;
         if (seatIndex < 0 || seatIndex > 4 || gameState.seats[seatIndex]) return;
         const user = await User.findOne({ username });
         gameState.seats[seatIndex] = { username: user.username, color: user.nameColor, socketId: socket.id, credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0 };
@@ -188,10 +171,7 @@ io.on('connection', (socket) => {
             
             gameState.betEndTime = Date.now() + 15000;
             clearInterval(betTimerInterval);
-            betTimerInterval = setInterval(() => {
-                if (Date.now() >= gameState.betEndTime) { clearInterval(betTimerInterval); startGame(); }
-            }, 1000);
-
+            betTimerInterval = setInterval(() => { if (Date.now() >= gameState.betEndTime) { clearInterval(betTimerInterval); startGame(); } }, 1000);
             if (gameState.seats.every(s => !s || s.hands[0].bet > 0)) { clearInterval(betTimerInterval); startGame(); }
             else emitGameState();
         }
@@ -211,23 +191,36 @@ io.on('connection', (socket) => {
         moveToNextTurn(); emitGameState();
     });
 
+    socket.on('player_action_double', async ({ seatIndex }) => {
+        if (gameState.status !== 'playing' || gameState.activeSeatIndex !== seatIndex) return;
+        const seat = gameState.seats[seatIndex]; const hand = seat.hands[seat.currentHand];
+        if (hand.cards.length !== 2 || seat.credits < hand.bet) return; // Mechanic Validation
+
+        seat.credits -= hand.bet; 
+        await User.updateOne({ username: seat.username }, { credits: seat.credits });
+        await new Transaction({ username: seat.username, type: 'double down', amount: -hand.bet }).save();
+        hand.bet *= 2;
+        
+        hand.cards.push(gameState.deck.pop()); hand.value = calculateValue(hand.cards);
+        if (hand.value > 21) hand.status = 'bust'; else hand.status = 'stand'; // Auto stand on double
+        moveToNextTurn(); emitGameState();
+    });
+
     socket.on('player_action_split', async ({ seatIndex }) => {
         if (gameState.status !== 'playing' || gameState.activeSeatIndex !== seatIndex) return;
-        const seat = gameState.seats[seatIndex];
-        const hand = seat.hands[seat.currentHand];
-        if (hand.cards.length === 2 && hand.cards[0].weight === 10 && hand.cards[1].weight === 10 && seat.credits >= hand.bet) {
+        const seat = gameState.seats[seatIndex]; const hand = seat.hands[seat.currentHand];
+        if (hand.cards.length === 2 && hand.cards[0].weight === hand.cards[1].weight && seat.credits >= hand.bet) {
             seat.credits -= hand.bet;
             await User.updateOne({ username: seat.username }, { credits: seat.credits });
             await new Transaction({ username: seat.username, type: 'split bet', amount: -hand.bet }).save();
             const newHand = { cards: [hand.cards.pop(), gameState.deck.pop()], bet: hand.bet, status: 'playing', value: 0 };
-            hand.cards.push(gameState.deck.pop()); hand.value = calculateHandValue(hand.cards); newHand.value = calculateHandValue(newHand.cards);
+            hand.cards.push(gameState.deck.pop()); hand.value = calculateValue(hand.cards); newHand.value = calculateValue(newHand.cards);
             seat.hands.push(newHand); emitGameState();
         }
     });
 
     socket.on('claim_daily_reward', async ({ username }) => {
-        const user = await User.findOne({ username });
-        if (!user) return;
+        const user = await User.findOne({ username }); if (!user) return;
         const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
         if (Math.abs(now - lastClaim) / 36e5 >= 24) {
             user.credits += 100000; user.lastRewardClaim = now; await user.save();
@@ -237,10 +230,10 @@ io.on('connection', (socket) => {
         } else { socket.emit('reward_claimed', { success: false, message: 'Cooldown active' }); }
     });
 
-    socket.on('send_chat', (data) => { io.emit('receive_chat', data); });
+    socket.on('send_chat', (msg) => { const username = activeSockets[socket.id]; if(username && msg) io.emit('receive_chat', { username, message: msg }); });
 
     socket.on('disconnect', () => {
-        gameState.connectedPlayers--;
+        gameState.connectedPlayers--; delete activeSockets[socket.id];
         const seatIndex = gameState.seats.findIndex(s => s && s.socketId === socket.id);
         if (seatIndex !== -1) {
             gameState.seats[seatIndex] = null;
@@ -258,7 +251,16 @@ function startGame() {
         gameState.seats.forEach(seat => { if (seat) seat.hands[0].cards.push(gameState.deck.pop()); });
         gameState.dealerCards.push(gameState.deck.pop());
     }
+    
     gameState.seats.forEach(seat => { if (seat) { seat.hands[0].value = calculateValue(seat.hands[0].cards); if(seat.hands[0].value === 21) seat.hands[0].status = 'blackjack'; } });
+    
+    // DEALER BLACKJACK PEEK MECHANIC
+    let dealerInitialValue = calculateValue(gameState.dealerCards);
+    if (dealerInitialValue === 21) {
+        resolveBets(21); // Skip straight to resolution
+        return;
+    }
+
     gameState.activeSeatIndex = gameState.seats.findIndex(s => s && s.hands[0].status === 'waiting');
     if (gameState.activeSeatIndex === -1) processDealerTurn(); else emitGameState();
 }
@@ -280,21 +282,21 @@ async function processDealerTurn() {
 
 async function resolveBets(dealerValue) {
     gameState.status = 'resolving'; 
-    gameState.nextRoundTime = Date.now() + 5000; // 5s Next Round Timer
+    gameState.nextRoundTime = Date.now() + 5000; 
 
     for (const seat of gameState.seats) {
         if (seat) {
             for (const hand of seat.hands) {
                 if (hand.bet > 0) {
                     let payout = 0;
-                    if (hand.status === 'blackjack') payout = hand.bet * 2.5; 
+                    if (hand.status === 'blackjack' && dealerValue !== 21) payout = hand.bet * 2.5; 
                     else if (hand.status !== 'bust' && (dealerValue > 21 || hand.value > dealerValue)) payout = hand.bet * 2; 
-                    else if (hand.status !== 'bust' && hand.value === dealerValue) payout = hand.bet; 
+                    else if (hand.status !== 'bust' && hand.value === dealerValue) payout = hand.bet; // Push returns original bet
 
                     if (payout > 0) {
                         seat.credits += payout;
                         await User.updateOne({ username: seat.username }, { $inc: { credits: payout } });
-                        await new Transaction({ username: seat.username, type: 'win payout', amount: payout }).save();
+                        await new Transaction({ username: seat.username, type: payout === hand.bet ? 'push refund' : 'win payout', amount: payout }).save();
                     }
                 }
             }
@@ -302,7 +304,6 @@ async function resolveBets(dealerValue) {
     }
     
     emitGameState(); 
-
     clearInterval(nextRoundInterval);
     nextRoundInterval = setInterval(() => {
         if (Date.now() >= gameState.nextRoundTime) {
