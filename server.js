@@ -79,7 +79,10 @@ app.post('/api/signup', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     const user = await User.findOne({ username: req.body.username, password: req.body.password });
     if (!user) return res.status(401).json({ error: 'Invalid credentials.' });
+    
+    // 👇 DELETE THIS LINE TO ALLOW INSTANT PLAY AFTER SIGN UP 👇
     if (user.status === 'pending') return res.status(401).json({ error: 'Account pending admin approval.' });
+    
     if (user.status === 'banned') return res.status(401).json({ error: 'Account banned.' });
     res.json({ username: user.username, credits: user.credits, nameColor: user.nameColor });
 });
