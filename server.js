@@ -37,14 +37,22 @@ const GiftCode = mongoose.model('GiftCode', new mongoose.Schema({
 const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
 const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
-// EXACTLY 3 SEATS
-let gameState = {
-    seats: [null, null, null], dealerCards: [], deck: [],
-    status: 'waiting', activeSeatIndex: -1, betEndTime: 0, nextRoundTime: 0, 
-    lobby: [] 
+// --- MULTI-ROOM SETUP ---
+const rooms = {
+    '3seat': createRoom(3),
+    '5seat': createRoom(5)
 };
 
-const socketUserMap = {}; 
+function createRoom(numSeats) {
+    return {
+        seats: Array(numSeats).fill(null),
+        dealerCards: [], deck: [],
+        status: 'waiting', activeSeatIndex: -1, betEndTime: 0, nextRoundTime: 0, 
+        lobby: [], betTimerInterval: null, nextRoundInterval: null
+    };
+}
+
+const socketUserMap = {}; // Maps socket.id to { username, roomId }
 
 function getNewDeck() {
     let deck = [];
@@ -60,10 +68,15 @@ function calculateValue(cards) {
     while(val > 21 && aces > 0) { val -= 10; aces--; } return val;
 }
 
-function emitGameState() {
-    let safeState = JSON.parse(JSON.stringify(gameState));
+function emitGameState(roomId) {
+    let room = rooms[roomId];
+    if (!room) return;
+    let safeState = JSON.parse(JSON.stringify(room));
+    // Remove backend-only interval properties
+    delete safeState.betTimerInterval; delete safeState.nextRoundInterval;
+    
     if (safeState.status === 'playing' && safeState.dealerCards.length > 1) safeState.dealerCards[1] = { hidden: true };
-    io.emit('game_state_update', safeState);
+    io.to(roomId).emit('game_state_update', safeState);
 }
 
 // --- REST APIs ---
@@ -113,76 +126,120 @@ app.get('/api/profile/ledger/:username', async (req, res) => {
     const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50); res.json(txs);
 });
 
+// --- ADMIN APIs ---
+const checkAdmin = (req, res, next) => {
+    if (req.headers['x-admin-pass'] !== process.env.ADMIN_PASS) return res.status(403).json({ error: 'Unauthorized' });
+    next();
+};
+
+app.get('/api/admin/data', checkAdmin, async (req, res) => {
+    const users = await User.find({}, '-password'); const txs = await Transaction.find({ status: 'pending' }); const codes = await GiftCode.find();
+    res.json({ users, txs, codes });
+});
+
+app.post('/api/admin/user/status', checkAdmin, async (req, res) => { await User.updateOne({ username: req.body.username }, { status: req.body.status }); res.json({ success: true }); });
+
+app.post('/api/admin/tx/resolve', checkAdmin, async (req, res) => {
+    const { id, action } = req.body; const tx = await Transaction.findById(id);
+    if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
+    if (action === 'approve') { tx.status = 'completed'; if (tx.type === 'deposit req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); } 
+    else { tx.status = 'denied'; if (tx.type === 'withdrawal req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); }
+    await tx.save(); res.json({ success: true });
+});
+
+app.post('/api/admin/giftcode', checkAdmin, async (req, res) => { await new GiftCode(req.body).save(); res.json({ success: true }); });
+
 // --- SOCKET LOGIC ---
-let betTimerInterval = null;
-let nextRoundInterval = null;
 
 io.on('connection', (socket) => {
     
-    socket.on('enter_lobby', async ({ username }) => {
-        socketUserMap[socket.id] = username;
+    socket.on('enter_room', async ({ username, roomId }) => {
+        if (!rooms[roomId]) return;
+        socket.join(roomId);
+        socketUserMap[socket.id] = { username, roomId };
         const user = await User.findOne({ username });
-        if (user && !gameState.lobby.find(p => p.username === username)) {
-            gameState.lobby.push({ username: user.username, color: user.nameColor });
+        if (user && !rooms[roomId].lobby.find(p => p.username === username)) {
+            rooms[roomId].lobby.push({ username: user.username, color: user.nameColor });
         }
-        emitGameState();
+        emitGameState(roomId);
     });
 
-    socket.on('join_seat', async ({ username, seatIndex }) => {
-        // STRICT 1 SEAT RULE ENFORCED HERE
-        if (gameState.seats.some(s => s && s.username === username)) return; 
-        if (seatIndex < 0 || seatIndex > 2 || gameState.seats[seatIndex]) return;
+    socket.on('leave_room', ({ username, roomId }) => {
+        let room = rooms[roomId]; if (!room) return;
+        socket.leave(roomId);
+        room.lobby = room.lobby.filter(p => p.username !== username);
+        
+        // Remove from seat if seated
+        const seatIndex = room.seats.findIndex(s => s && s.username === username);
+        if (seatIndex !== -1) {
+            room.seats[seatIndex] = null;
+            if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); }
+        }
+        if(socketUserMap[socket.id]) delete socketUserMap[socket.id];
+        emitGameState(roomId);
+    });
+
+    socket.on('join_seat', async ({ roomId, username, seatIndex }) => {
+        let room = rooms[roomId]; if (!room) return;
+        if (room.seats.some(s => s && s.username === username)) return; // 1 SEAT LIMIT
+        if (seatIndex < 0 || seatIndex >= room.seats.length || room.seats[seatIndex]) return;
 
         const user = await User.findOne({ username });
         if (!user) return;
-        gameState.seats[seatIndex] = { username: user.username, color: user.nameColor, socketId: socket.id, credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0 };
-        if (gameState.status === 'waiting') gameState.status = 'betting';
-        emitGameState();
+        room.seats[seatIndex] = { username: user.username, color: user.nameColor, socketId: socket.id, credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0 };
+        if (room.status === 'waiting') room.status = 'betting';
+        emitGameState(roomId);
     });
 
-    socket.on('leave_seat', ({ username, seatIndex }) => {
-        if (gameState.seats[seatIndex] && gameState.seats[seatIndex].username === username) {
-            gameState.seats[seatIndex] = null;
-            if (gameState.seats.every(s => s === null)) { gameState.status = 'waiting'; clearInterval(betTimerInterval); }
-            emitGameState();
+    socket.on('leave_seat', ({ roomId, username, seatIndex }) => {
+        let room = rooms[roomId]; if (!room) return;
+        if (room.seats[seatIndex] && room.seats[seatIndex].username === username) {
+            room.seats[seatIndex] = null;
+            if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); }
+            emitGameState(roomId);
         }
     });
 
-    socket.on('place_bet', async ({ username, seatIndex, betAmount }) => {
-        const seat = gameState.seats[seatIndex];
-        if (!seat || seat.username !== username || gameState.status !== 'betting') return;
+    socket.on('place_bet', async ({ roomId, username, seatIndex, betAmount }) => {
+        let room = rooms[roomId]; if (!room) return;
+        const seat = room.seats[seatIndex];
+        if (!seat || seat.username !== username || room.status !== 'betting') return;
         if (seat.credits >= betAmount) {
             seat.hands[0].bet = betAmount; seat.credits -= betAmount;
             await User.updateOne({ username: seat.username }, { credits: seat.credits });
             await new Transaction({ username: seat.username, type: 'bet placed', amount: -betAmount }).save();
             
-            gameState.betEndTime = Date.now() + 15000;
-            clearInterval(betTimerInterval);
-            betTimerInterval = setInterval(() => { if (Date.now() >= gameState.betEndTime) { clearInterval(betTimerInterval); startGame(); } }, 1000);
-            if (gameState.seats.every(s => !s || s.hands[0].bet > 0)) { clearInterval(betTimerInterval); startGame(); }
-            else emitGameState();
+            room.betEndTime = Date.now() + 15000;
+            clearInterval(room.betTimerInterval);
+            room.betTimerInterval = setInterval(() => { if (Date.now() >= room.betEndTime) { clearInterval(room.betTimerInterval); startGame(roomId); } }, 1000);
+            
+            if (room.seats.every(s => !s || s.hands[0].bet > 0)) { clearInterval(room.betTimerInterval); startGame(roomId); }
+            else emitGameState(roomId);
         }
     });
 
-    socket.on('player_action_hit', ({ username, seatIndex }) => {
-        if (gameState.status !== 'playing' || gameState.activeSeatIndex !== seatIndex) return;
-        const seat = gameState.seats[seatIndex]; if (seat.username !== username) return;
+    socket.on('player_action_hit', ({ roomId, username, seatIndex }) => {
+        let room = rooms[roomId]; if (!room) return;
+        if (room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return;
+        const seat = room.seats[seatIndex]; if (seat.username !== username) return;
         const hand = seat.hands[seat.currentHand];
-        hand.cards.push(gameState.deck.pop()); hand.value = calculateValue(hand.cards);
-        if (hand.value > 21) { hand.status = 'bust'; moveToNextTurn(); }
-        emitGameState();
+        hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards);
+        if (hand.value > 21) { hand.status = 'bust'; moveToNextTurn(roomId); }
+        emitGameState(roomId);
     });
 
-    socket.on('player_action_stand', ({ username, seatIndex }) => {
-        if (gameState.status !== 'playing' || gameState.activeSeatIndex !== seatIndex) return;
-        const seat = gameState.seats[seatIndex]; if (seat.username !== username) return;
+    socket.on('player_action_stand', ({ roomId, username, seatIndex }) => {
+        let room = rooms[roomId]; if (!room) return;
+        if (room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return;
+        const seat = room.seats[seatIndex]; if (seat.username !== username) return;
         seat.hands[seat.currentHand].status = 'stand';
-        moveToNextTurn(); emitGameState();
+        moveToNextTurn(roomId); emitGameState(roomId);
     });
 
-    socket.on('player_action_double', async ({ username, seatIndex }) => {
-        if (gameState.status !== 'playing' || gameState.activeSeatIndex !== seatIndex) return;
-        const seat = gameState.seats[seatIndex]; if (seat.username !== username) return;
+    socket.on('player_action_double', async ({ roomId, username, seatIndex }) => {
+        let room = rooms[roomId]; if (!room) return;
+        if (room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return;
+        const seat = room.seats[seatIndex]; if (seat.username !== username) return;
         const hand = seat.hands[seat.currentHand];
         if (hand.cards.length !== 2 || seat.credits < hand.bet) return; 
 
@@ -191,22 +248,23 @@ io.on('connection', (socket) => {
         await new Transaction({ username: seat.username, type: 'double down', amount: -hand.bet }).save();
         hand.bet *= 2;
         
-        hand.cards.push(gameState.deck.pop()); hand.value = calculateValue(hand.cards);
+        hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards);
         if (hand.value > 21) hand.status = 'bust'; else hand.status = 'stand'; 
-        moveToNextTurn(); emitGameState();
+        moveToNextTurn(roomId); emitGameState(roomId);
     });
 
-    socket.on('player_action_split', async ({ username, seatIndex }) => {
-        if (gameState.status !== 'playing' || gameState.activeSeatIndex !== seatIndex) return;
-        const seat = gameState.seats[seatIndex]; if (seat.username !== username) return;
+    socket.on('player_action_split', async ({ roomId, username, seatIndex }) => {
+        let room = rooms[roomId]; if (!room) return;
+        if (room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return;
+        const seat = room.seats[seatIndex]; if (seat.username !== username) return;
         const hand = seat.hands[seat.currentHand];
         if (hand.cards.length === 2 && hand.cards[0].weight === hand.cards[1].weight && seat.credits >= hand.bet) {
             seat.credits -= hand.bet;
             await User.updateOne({ username: seat.username }, { credits: seat.credits });
             await new Transaction({ username: seat.username, type: 'split bet', amount: -hand.bet }).save();
-            const newHand = { cards: [hand.cards.pop(), gameState.deck.pop()], bet: hand.bet, status: 'playing', value: 0 };
-            hand.cards.push(gameState.deck.pop()); hand.value = calculateValue(hand.cards); newHand.value = calculateValue(newHand.cards);
-            seat.hands.push(newHand); emitGameState();
+            const newHand = { cards: [hand.cards.pop(), room.deck.pop()], bet: hand.bet, status: 'playing', value: 0 };
+            hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); newHand.value = calculateValue(newHand.cards);
+            seat.hands.push(newHand); emitGameState(roomId);
         }
     });
 
@@ -217,66 +275,79 @@ io.on('connection', (socket) => {
             user.credits += 100000; user.lastRewardClaim = now; await user.save();
             await new Transaction({ username, type: 'daily reward', amount: 100000, status: 'completed' }).save();
             socket.emit('reward_claimed', { success: true, credits: user.credits, nextClaim: new Date(now.getTime() + 24*60*60*1000) });
-            const seat = gameState.seats.find(s => s && s.username === username); if(seat) { seat.credits = user.credits; emitGameState(); }
+            
+            // Sync credits across all rooms if they are seated
+            Object.keys(rooms).forEach(rId => {
+                const seat = rooms[rId].seats.find(s => s && s.username === username); 
+                if(seat) { seat.credits = user.credits; emitGameState(rId); }
+            });
         } else { socket.emit('reward_claimed', { success: false, message: 'Cooldown active' }); }
     });
 
-    socket.on('send_chat', ({ username, message }) => { if(username && message) io.emit('receive_chat', { username, message }); });
+    socket.on('send_chat', ({ roomId, username, message }) => { 
+        if(roomId && username && message) io.to(roomId).emit('receive_chat', { username, message }); 
+    });
 
     socket.on('disconnect', () => {
-        const username = socketUserMap[socket.id];
-        if (username) {
-            gameState.lobby = gameState.lobby.filter(p => p.username !== username);
-            delete socketUserMap[socket.id];
-            
-            const seatIndex = gameState.seats.findIndex(s => s && s.username === username);
-            if (seatIndex !== -1) {
-                gameState.seats[seatIndex] = null;
-                if (gameState.seats.every(s => s === null)) { gameState.status = 'waiting'; clearInterval(betTimerInterval); }
+        const data = socketUserMap[socket.id];
+        if (data) {
+            let room = rooms[data.roomId];
+            if (room) {
+                room.lobby = room.lobby.filter(p => p.username !== data.username);
+                const seatIndex = room.seats.findIndex(s => s && s.username === data.username);
+                if (seatIndex !== -1) {
+                    room.seats[seatIndex] = null;
+                    if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); }
+                }
+                emitGameState(data.roomId);
             }
+            delete socketUserMap[socket.id];
         }
-        emitGameState();
     });
 });
 
-function startGame() {
-    gameState.status = 'playing'; gameState.deck = getNewDeck(); gameState.dealerCards = [];
-    gameState.seats = gameState.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
+function startGame(roomId) {
+    let room = rooms[roomId]; if (!room) return;
+    room.status = 'playing'; room.deck = getNewDeck(); room.dealerCards = [];
+    room.seats = room.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
     
     for (let i = 0; i < 2; i++) {
-        gameState.seats.forEach(seat => { if (seat) seat.hands[0].cards.push(gameState.deck.pop()); });
-        gameState.dealerCards.push(gameState.deck.pop());
+        room.seats.forEach(seat => { if (seat) seat.hands[0].cards.push(room.deck.pop()); });
+        room.dealerCards.push(room.deck.pop());
     }
     
-    gameState.seats.forEach(seat => { if (seat) { seat.hands[0].value = calculateValue(seat.hands[0].cards); if(seat.hands[0].value === 21) seat.hands[0].status = 'blackjack'; } });
+    room.seats.forEach(seat => { if (seat) { seat.hands[0].value = calculateValue(seat.hands[0].cards); if(seat.hands[0].value === 21) seat.hands[0].status = 'blackjack'; } });
     
-    let dealerInitialValue = calculateValue(gameState.dealerCards);
-    if (dealerInitialValue === 21) { resolveBets(21); return; }
+    let dealerInitialValue = calculateValue(room.dealerCards);
+    if (dealerInitialValue === 21) { resolveBets(roomId, 21); return; }
 
-    gameState.activeSeatIndex = gameState.seats.findIndex(s => s && s.hands[0].status === 'waiting');
-    if (gameState.activeSeatIndex === -1) processDealerTurn(); else emitGameState();
+    room.activeSeatIndex = room.seats.findIndex(s => s && s.hands[0].status === 'waiting');
+    if (room.activeSeatIndex === -1) processDealerTurn(roomId); else emitGameState(roomId);
 }
 
-function moveToNextTurn() {
-    const seat = gameState.seats[gameState.activeSeatIndex];
+function moveToNextTurn(roomId) {
+    let room = rooms[roomId]; if (!room) return;
+    const seat = room.seats[room.activeSeatIndex];
     if (seat.currentHand < seat.hands.length - 1) { seat.currentHand++; return; }
-    let nextIndex = gameState.activeSeatIndex + 1;
-    while (nextIndex < 3 && !gameState.seats[nextIndex]) nextIndex++;
-    if (nextIndex >= 3) processDealerTurn(); else { gameState.activeSeatIndex = nextIndex; emitGameState(); }
+    let nextIndex = room.activeSeatIndex + 1;
+    while (nextIndex < room.seats.length && !room.seats[nextIndex]) nextIndex++;
+    if (nextIndex >= room.seats.length) processDealerTurn(roomId); else { room.activeSeatIndex = nextIndex; emitGameState(roomId); }
 }
 
-async function processDealerTurn() {
-    gameState.status = 'dealerTurn'; gameState.activeSeatIndex = -1; emitGameState();
-    let dealerValue = calculateValue(gameState.dealerCards);
-    while (dealerValue < 17) { gameState.dealerCards.push(gameState.deck.pop()); dealerValue = calculateValue(gameState.dealerCards); }
-    resolveBets(dealerValue);
+async function processDealerTurn(roomId) {
+    let room = rooms[roomId]; if (!room) return;
+    room.status = 'dealerTurn'; room.activeSeatIndex = -1; emitGameState(roomId);
+    let dealerValue = calculateValue(room.dealerCards);
+    while (dealerValue < 17) { room.dealerCards.push(room.deck.pop()); dealerValue = calculateValue(room.dealerCards); }
+    resolveBets(roomId, dealerValue);
 }
 
-async function resolveBets(dealerValue) {
-    gameState.status = 'resolving'; 
-    gameState.nextRoundTime = Date.now() + 5000; 
+async function resolveBets(roomId, dealerValue) {
+    let room = rooms[roomId]; if (!room) return;
+    room.status = 'resolving'; 
+    room.nextRoundTime = Date.now() + 5000; 
 
-    for (const seat of gameState.seats) {
+    for (const seat of room.seats) {
         if (seat) {
             for (const hand of seat.hands) {
                 if (hand.bet > 0) {
@@ -295,14 +366,14 @@ async function resolveBets(dealerValue) {
         }
     }
     
-    emitGameState(); 
-    clearInterval(nextRoundInterval);
-    nextRoundInterval = setInterval(() => {
-        if (Date.now() >= gameState.nextRoundTime) {
-            clearInterval(nextRoundInterval);
-            gameState.dealerCards = [];
-            gameState.seats.forEach(seat => { if(seat) { seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; seat.currentHand = 0; } });
-            gameState.status = 'waiting'; emitGameState();
+    emitGameState(roomId); 
+    clearInterval(room.nextRoundInterval);
+    room.nextRoundInterval = setInterval(() => {
+        if (Date.now() >= room.nextRoundTime) {
+            clearInterval(room.nextRoundInterval);
+            room.dealerCards = [];
+            room.seats.forEach(seat => { if(seat) { seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; seat.currentHand = 0; } });
+            room.status = 'waiting'; emitGameState(roomId);
         }
     }, 1000);
 }
