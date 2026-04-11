@@ -37,7 +37,7 @@ const GiftCode = mongoose.model('GiftCode', new mongoose.Schema({
 const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
 const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
-// 3 SEATS ONLY
+// EXACTLY 3 SEATS
 let gameState = {
     seats: [null, null, null], dealerCards: [], deck: [],
     status: 'waiting', activeSeatIndex: -1, betEndTime: 0, nextRoundTime: 0, 
@@ -129,7 +129,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('join_seat', async ({ username, seatIndex }) => {
-        // STRICT 1 SEAT LIMIT
+        // STRICT 1 SEAT RULE ENFORCED HERE
         if (gameState.seats.some(s => s && s.username === username)) return; 
         if (seatIndex < 0 || seatIndex > 2 || gameState.seats[seatIndex]) return;
 
@@ -229,7 +229,6 @@ io.on('connection', (socket) => {
             gameState.lobby = gameState.lobby.filter(p => p.username !== username);
             delete socketUserMap[socket.id];
             
-            // Instantly clear the seat of the disconnected user
             const seatIndex = gameState.seats.findIndex(s => s && s.username === username);
             if (seatIndex !== -1) {
                 gameState.seats[seatIndex] = null;
