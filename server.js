@@ -110,7 +110,6 @@ function emitGameState(roomId) {
     let room = rooms[roomId];
     if (!room) return;
     
-    // DESTRUCTURING TO PREVENT CIRCULAR CRASHES
     const { betTimerInterval, nextRoundInterval, turnTimerInterval, dealerInterval, ...serializableRoom } = room;
     let safeState = JSON.parse(JSON.stringify(serializableRoom));
     
@@ -122,21 +121,18 @@ function emitGameState(roomId) {
     if (safeState.nextRoundTime) safeState.nextRoundTimeLeft = Math.max(0, safeState.nextRoundTime - now);
     if (safeState.turnEndTime) safeState.turnTimeLeft = Math.max(0, safeState.turnEndTime - now);
 
-    // HIDE DEALER'S HOLE CARD ONLY DURING THE 'playing' PHASE
     if (safeState.status === 'playing' && safeState.dealerCards.length > 1) {
         safeState.dealerCards[1] = { hidden: true };
     }
     io.to(roomId).emit('game_state_update', safeState);
 }
 
-// 15S ACTION TIMER MANAGER
 function startTurnTimer(roomId) {
     let room = rooms[roomId];
     clearInterval(room.turnTimerInterval);
     room.turnTimerInterval = setInterval(() => {
         if (Date.now() >= room.turnEndTime) {
             clearInterval(room.turnTimerInterval);
-            // Auto Stand if AFK
             let seat = room.seats[room.activeSeatIndex];
             if (seat && seat.hands[seat.currentHand]) {
                 seat.hands[seat.currentHand].status = 'stand';
@@ -197,7 +193,7 @@ app.get('/api/profile/ledger/:username', async (req, res) => {
     const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50); res.json(txs);
 });
 
-// --- ADMIN APIs (MONGODB SECURED) ---
+// --- ADMIN APIs ---
 const checkAdmin = async (req, res, next) => {
     try {
         const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
@@ -267,8 +263,7 @@ io.on('connection', (socket) => {
         room.seats[seatIndex] = { 
             username: user.username, color: user.nameColor, socketId: socket.id, 
             credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], 
-            currentHand: 0,
-            kickAt: Date.now() + 5000 
+            currentHand: 0, kickAt: Date.now() + 5000 
         };
         
         if (room.status === 'waiting') room.status = 'betting';
@@ -324,6 +319,7 @@ io.on('connection', (socket) => {
         
         if (hand.value > 21) { 
             hand.status = 'bust'; 
+            hand.result = 'bust'; // Flag for UI
             moveToNextTurn(roomId); 
         }
         else if (hand.value === 21) { 
@@ -331,7 +327,6 @@ io.on('connection', (socket) => {
             moveToNextTurn(roomId); 
         }
         else {
-            // SUCCESSFUL HIT: Reset 15s turn timer
             room.turnEndTime = Date.now() + 15000;
             startTurnTimer(roomId);
             emitGameState(roomId);
@@ -363,7 +358,8 @@ io.on('connection', (socket) => {
         hand.cards.push(room.deck.pop()); 
         hand.value = calculateValue(hand.cards);
         
-        if (hand.value > 21) hand.status = 'bust'; else hand.status = 'stand'; 
+        if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; } 
+        else { hand.status = 'stand'; } 
         moveToNextTurn(roomId); 
     });
 
@@ -394,7 +390,6 @@ io.on('connection', (socket) => {
             
             if(hand.status === 'stand') moveToNextTurn(roomId);
             else {
-                // SUCCESSFUL SPLIT: Reset 15s turn timer
                 room.turnEndTime = Date.now() + 15000;
                 startTurnTimer(roomId);
                 emitGameState(roomId);
@@ -425,9 +420,7 @@ io.on('connection', (socket) => {
                 const seat = rooms[rId].seats.find(s => s && s.username === username); 
                 if(seat) { seat.credits = user.credits; emitGameState(rId); }
             });
-        } else { 
-            socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); 
-        }
+        } else { socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); }
     });
 
     socket.on('send_chat', ({ roomId, username, message }) => { 
@@ -463,11 +456,13 @@ function startGame(roomId) {
         room.dealerCards.push(room.deck.pop());
     }
     
-    room.seats.forEach(seat => { if (seat) { seat.hands[0].value = calculateValue(seat.hands[0].cards); if(seat.hands[0].value === 21) seat.hands[0].status = 'blackjack'; } });
+    room.seats.forEach(seat => { if (seat) { 
+        seat.hands[0].value = calculateValue(seat.hands[0].cards); 
+        if(seat.hands[0].value === 21) { seat.hands[0].status = 'blackjack'; } 
+    }});
     
     let dealerInitialValue = calculateValue(room.dealerCards);
     if (dealerInitialValue === 21) { 
-        // Reveal hole card instantly if dealer has Blackjack
         room.dealerCards[1].hidden = false;
         resolveBets(roomId, 21); 
         return; 
@@ -477,7 +472,6 @@ function startGame(roomId) {
     if (room.activeSeatIndex === -1) {
         processDealerTurn(roomId); 
     } else {
-        // Start the 15s turn timer for the first player
         room.turnEndTime = Date.now() + 15000;
         startTurnTimer(roomId);
         emitGameState(roomId);
@@ -486,15 +480,13 @@ function startGame(roomId) {
 
 function moveToNextTurn(roomId) {
     let room = rooms[roomId]; if (!room) return;
-    clearInterval(room.turnTimerInterval); // Clear outgoing player's timer
+    clearInterval(room.turnTimerInterval); 
 
     const seat = room.seats[room.activeSeatIndex];
     
     if (seat && seat.currentHand < seat.hands.length - 1) { 
         seat.currentHand++; 
         if (seat.hands[seat.currentHand].status !== 'waiting') return moveToNextTurn(roomId); 
-        
-        // Timer for the next hand in a split
         room.turnEndTime = Date.now() + 15000;
         startTurnTimer(roomId);
         emitGameState(roomId);
@@ -511,8 +503,6 @@ function moveToNextTurn(roomId) {
         processDealerTurn(roomId); 
     } else { 
         room.activeSeatIndex = nextIndex; 
-        
-        // Timer for the next seated player
         room.turnEndTime = Date.now() + 15000;
         startTurnTimer(roomId);
         emitGameState(roomId); 
@@ -524,22 +514,13 @@ async function processDealerTurn(roomId) {
     room.status = 'dealerTurn'; room.activeSeatIndex = -1; 
     clearInterval(room.turnTimerInterval);
     
-    // REVEAL HOLE CARD (Triggers 3D flip on client)
-    if(room.dealerCards.length > 1) {
-        room.dealerCards[1].hidden = false;
-    }
+    if(room.dealerCards.length > 1) room.dealerCards[1].hidden = false;
     emitGameState(roomId);
 
-    // PAUSE BEFORE DRAWING FOR TENSION
     setTimeout(() => {
         let dealerValue = calculateValue(room.dealerCards);
-        
-        if (dealerValue >= 17) {
-            resolveBets(roomId, dealerValue);
-            return;
-        }
+        if (dealerValue >= 17) { resolveBets(roomId, dealerValue); return; }
 
-        // DRAW CARDS ONE BY ONE WITH 1-SECOND DELAY
         room.dealerInterval = setInterval(() => {
             if (dealerValue < 17) {
                 room.dealerCards.push(room.deck.pop());
@@ -550,7 +531,6 @@ async function processDealerTurn(roomId) {
                 resolveBets(roomId, dealerValue);
             }
         }, 1000);
-
     }, 1000);
 }
 
@@ -564,9 +544,13 @@ async function resolveBets(roomId, dealerValue) {
             for (const hand of seat.hands) {
                 if (hand.bet > 0) {
                     let payout = 0;
-                    if (hand.status === 'blackjack' && dealerValue !== 21) payout = hand.bet * 2.5; 
-                    else if (hand.status !== 'bust' && (dealerValue > 21 || hand.value > dealerValue)) payout = hand.bet * 2; 
-                    else if (hand.status !== 'bust' && hand.value === dealerValue) payout = hand.bet; 
+                    
+                    // EVALUATE WIN/LOSE FOR UI STAMP
+                    if (hand.status === 'blackjack' && dealerValue !== 21) { payout = hand.bet * 2.5; hand.result = 'win-bj'; } 
+                    else if (hand.status !== 'bust' && (dealerValue > 21 || hand.value > dealerValue)) { payout = hand.bet * 2; hand.result = 'win'; } 
+                    else if (hand.status !== 'bust' && hand.value === dealerValue) { payout = hand.bet; hand.result = 'push'; }
+                    else if (hand.status === 'bust') { hand.result = 'bust'; }
+                    else { hand.result = 'lose'; }
 
                     if (payout > 0) {
                         seat.credits += payout;
