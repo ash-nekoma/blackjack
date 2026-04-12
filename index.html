@@ -101,6 +101,7 @@
         .global-timer.warning { background: #eab308; color: #000; top: 230px; font-size: 24px; font-weight: bold;}
 
         @keyframes pulse-glow { 0% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } 50% { box-shadow: 0 0 40px #fff; border-color: #fff; } 100% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } }
+        @keyframes actionPop { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 80% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
         
         .seat { position: absolute; width: 140px; min-height: 180px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s;}
         .seat-empty-box { width: 100%; height: 100%; border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); }
@@ -126,12 +127,19 @@
 
         @keyframes flyOut { 0% { transform: translateY(-100px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         @keyframes flipCard { 0% { transform: rotateY(180deg); } 100% { transform: rotateY(0deg); } }
+        
+        .anim-fly-out { animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         .hands-wrapper { display: flex; gap: 15px; justify-content: center; }
-        .hand-box { display: flex; flex-direction: column; align-items: center; }
+        .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; }
         .hand-container { position: relative; display: flex; justify-content: center; margin-bottom: 5px; }
         
-        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -35px; animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: Arial, Helvetica, sans-serif; }
+        .action-badge { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: bold; color: #fff; text-shadow: 0 0 10px #000, 0 0 20px var(--accent-glow-2); z-index: 20; pointer-events: none; animation: actionPop 0.3s ease-out forwards; font-family: 'VT323'; letter-spacing: 2px;}
+        .action-badge.bust { color: var(--danger); text-shadow: 0 0 10px #000, 0 0 20px var(--danger); }
+        .action-badge.stand { color: var(--success); text-shadow: 0 0 10px #000, 0 0 20px var(--success); }
+        .action-badge.blackjack { color: var(--warning); text-shadow: 0 0 10px #000, 0 0 20px var(--warning); font-size: 34px; }
+
+        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -35px; font-family: Arial, Helvetica, sans-serif; }
         .card:first-child { margin-left: 0; }
         .card.red { color: #d00; }
         .card.black { color: #000; }
@@ -448,7 +456,7 @@
         let currentUser = null; let currentGameState = null; let currentRoomId = null; let mySeatIndex = -1;
         let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let idleTimerInt = null;
         let dailyRewardNextClaim = new Date(0); let rewardTimerInt = null; let isPickingReward = false;
-        let lastBetAmount = 1000; // Memorizes your last bet
+        let lastBetAmount = 1000; 
 
         // UI HELPERS
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -616,11 +624,11 @@
         
         window.actPlaceBet = function(idx) { 
             const amtStr = document.getElementById(`inseat-bet-${idx}`).value; 
-            const amt = parseInt(amtStr.replace(/,/g, '')); // Strips commas just in case
+            const amt = parseInt(amtStr.replace(/,/g, ''));
             if (isNaN(amt) || amt < 1000) return alert("Minimum bet is 1,000 credits.");
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
-            lastBetAmount = amt; // Memory for next round
+            lastBetAmount = amt; 
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
         }
         
@@ -630,13 +638,19 @@
         window.actDouble = function(idx) { socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
         window.actSplit = function(idx) { socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
 
-        function formatCardHTML(c) {
-            if (c.hidden) return `<div class="card dealer-hidden"></div>`;
+        function formatCardHTML(c, cIndex) {
+            // Animates ONLY cards dealt within the last 1000ms relative to server time
+            const isNew = c.dealtAt && (currentGameState.serverTime - c.dealtAt < 1000);
+            const animClass = isNew ? 'anim-fly-out' : '';
+            
+            if (c.hidden) return `<div class="card dealer-hidden ${animClass}"></div>`;
+            
             const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : 'black';
             const suitSym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit];
-            const flipClass = (currentGameState.status === 'resolving' && currentGameState.dealerCards.length >= 2) ? 'flip-reveal' : '';
+            const flipClass = (currentGameState.status === 'resolving' && cIndex === 1) ? 'flip-reveal' : '';
+            
             return `
-                <div class="card ${flipClass} ${colorClass}">
+                <div class="card ${flipClass} ${colorClass} ${animClass}">
                     <div class="card-corner top-left">${c.value}<br>${suitSym}</div>
                     <div class="card-center-suit">${suitSym}</div>
                     <div class="card-corner bottom-right">${c.value}<br>${suitSym}</div>
@@ -659,9 +673,10 @@
             document.getElementById('phase-display').innerText = state.status === 'resolving' ? 'RESULTS' : state.status.toUpperCase();
             
             const dCards = document.getElementById('dealer-cards'); dCards.innerHTML = ''; const dBadge = document.getElementById('dealer-val');
-            state.dealerCards.forEach(c => { dCards.innerHTML += formatCardHTML(c); });
+            state.dealerCards.forEach((c, i) => { dCards.innerHTML += formatCardHTML(c, i); });
             
-            if (state.status === 'playing' || state.status === 'betting' || state.dealerCards.length===0) dBadge.classList.add('hidden');
+            // Value badge is ALWAYS visible during play if there's a face-up card
+            if (state.dealerCards.length===0) dBadge.classList.add('hidden');
             else { dBadge.innerText = calculateValue(state.dealerCards); dBadge.classList.remove('hidden'); }
 
             const seatsArea = document.getElementById('seats-area'); seatsArea.innerHTML = '';
@@ -698,7 +713,14 @@
                         let activeHandClass = (state.activeSeatIndex === index && seatData.currentHand === hIdx) ? 'active-hand' : '';
                         html += `<div class="hand-box ${activeHandClass}">`;
                         html += `<div class="hand-container">`;
-                        hand.cards.forEach(c => html += formatCardHTML(c));
+                        
+                        // Inject dynamic action badge (HIT, STAND, DOUBLE, BUST, etc.)
+                        if (hand.lastAction) {
+                            let bClass = hand.lastAction.toLowerCase();
+                            html += `<div class="action-badge ${bClass}">${hand.lastAction}</div>`;
+                        }
+
+                        hand.cards.forEach((c, i) => html += formatCardHTML(c, i));
                         if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
                         html += `</div>`;
                         if (hand.bet > 0) html += `<div class="seat-bet"><span class="coin-icon">🪙</span> ${formatNumber(hand.bet)}</div>`;
@@ -740,7 +762,6 @@
         function manageTimers(state) {
             const gTimerUI = document.getElementById('global-timer'); const nTimerUI = document.getElementById('next-round-timer'); const iTimerUI = document.getElementById('idle-timer');
             
-            // PREVENT CLOCK DRIFT: Use exact server remaining time
             if (state.status === 'betting' && state.betTimeLeft > 0) {
                 let left = Math.ceil(state.betTimeLeft / 1000);
                 gTimerUI.classList.remove('hidden'); clearInterval(globalTimerInt); nTimerUI.classList.add('hidden');
@@ -793,10 +814,7 @@
     </script>
     
     <script>
-        // Disable Right-Click Context Menu
         document.addEventListener('contextmenu', event => event.preventDefault());
-
-        // Disable standard Developer Tools keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
             if (e.key === 'F11' || e.keyCode === 122) { e.preventDefault(); return false; }
