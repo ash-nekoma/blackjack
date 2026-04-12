@@ -37,7 +37,6 @@ const GiftCode = mongoose.model('GiftCode', new mongoose.Schema({
 const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
 const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
-// --- MULTI-ROOM SETUP ---
 const rooms = {
     '3seat': createRoom(3),
     '5seat': createRoom(5)
@@ -54,7 +53,6 @@ function createRoom(numSeats) {
 
 const socketUserMap = {}; 
 
-// --- MASTER 5-SECOND IDLE KICKER ---
 setInterval(() => {
     const now = Date.now();
     Object.keys(rooms).forEach(roomId => {
@@ -62,7 +60,6 @@ setInterval(() => {
         let changed = false;
         
         room.seats.forEach((seat, i) => {
-            // If they have a kick timestamp and the time has passed, vaporize them
             if (seat && seat.kickAt && now >= seat.kickAt) {
                 room.seats[i] = null;
                 changed = true;
@@ -93,12 +90,21 @@ function calculateValue(cards) {
     while(val > 21 && aces > 0) { val -= 10; aces--; } return val;
 }
 
+// ANTI-DRIFT STATE EMITTER
 function emitGameState(roomId) {
     let room = rooms[roomId];
     if (!room) return;
     let safeState = JSON.parse(JSON.stringify(room));
     delete safeState.betTimerInterval; delete safeState.nextRoundInterval;
     
+    // Calculates exact time remaining to prevent client clock mismatch
+    const now = Date.now();
+    safeState.seats.forEach(s => {
+        if (s && s.kickAt) s.kickTimeLeft = Math.max(0, s.kickAt - now);
+    });
+    if (safeState.betEndTime) safeState.betTimeLeft = Math.max(0, safeState.betEndTime - now);
+    if (safeState.nextRoundTime) safeState.nextRoundTimeLeft = Math.max(0, safeState.nextRoundTime - now);
+
     if (safeState.status === 'playing' && safeState.dealerCards.length > 1) {
         safeState.dealerCards[1] = { hidden: true };
     }
@@ -132,6 +138,7 @@ app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
     if (amount < 100000) return res.status(400).json({ error: 'Minimum request is 100,000.' });
     if (type === 'deposit' && amount > 100000) return res.status(400).json({ error: 'Max deposit is 100,000 per request.' });
+    if (type === 'withdrawal' && amount > 100000) return res.status(400).json({ error: 'Max withdrawal is 100,000 per request.' });
     
     if (type === 'withdrawal') {
         const user = await User.findOne({ username });
@@ -190,7 +197,6 @@ io.on('connection', (socket) => {
         const user = await User.findOne({ username });
         if (!user) return;
         
-        // Assign seat and INSTANTLY start 5-second kick timer
         room.seats[seatIndex] = { 
             username: user.username, color: user.nameColor, socketId: socket.id, 
             credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], 
@@ -217,18 +223,14 @@ io.on('connection', (socket) => {
         if (!seat || seat.username !== username || room.status !== 'betting') return;
         if (seat.credits >= betAmount) {
             seat.hands[0].bet = betAmount; seat.credits -= betAmount;
-            
-            // Remove the kick timer now that they've bet
             seat.kickAt = null; 
             
             await User.updateOne({ username: seat.username }, { credits: seat.credits });
             await new Transaction({ username: seat.username, type: 'bet placed', amount: -betAmount }).save();
             
-            // 15S GLOBAL TIMER RESET
             room.betEndTime = Date.now() + 15000;
             clearInterval(room.betTimerInterval);
             
-            // Only instant-start if EVERY physical seat is taken and has a bet
             const allPhysicalSeatsFullAndBetted = room.seats.every(s => s !== null && s.hands[0].bet > 0);
 
             if (allPhysicalSeatsFullAndBetted) {
@@ -236,10 +238,7 @@ io.on('connection', (socket) => {
                 startGame(roomId); 
             } else {
                 room.betTimerInterval = setInterval(() => { 
-                    if (Date.now() >= room.betEndTime) { 
-                        clearInterval(room.betTimerInterval); 
-                        startGame(roomId); 
-                    } 
+                    if (Date.now() >= room.betEndTime) { clearInterval(room.betTimerInterval); startGame(roomId); } 
                 }, 1000);
                 emitGameState(roomId);
             }
@@ -373,7 +372,6 @@ function startGame(roomId) {
     let room = rooms[roomId]; if (!room) return;
     room.status = 'playing'; room.deck = getNewDeck(); room.dealerCards = [];
     
-    // Sweep away any empty/unbetted seats permanently for this round
     room.seats = room.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
     
     for (let i = 0; i < 2; i++) {
@@ -450,13 +448,11 @@ async function resolveBets(roomId, dealerValue) {
         if (Date.now() >= room.nextRoundTime) {
             clearInterval(room.nextRoundInterval);
             room.dealerCards = [];
-            
-            // RESET ROUND & INSTANTLY START 5S IDLE KICK
             room.seats.forEach(seat => { 
                 if(seat) { 
                     seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; 
                     seat.currentHand = 0; 
-                    seat.kickAt = Date.now() + 5000; // Reset 5s idle kick immediately
+                    seat.kickAt = Date.now() + 5000; 
                 } 
             });
             room.status = 'waiting'; 
