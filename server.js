@@ -166,7 +166,7 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
 
-// STRICT BANKING LIMITS (Min Dep: 10k, Min With: 50k, Max Both: 100k)
+// STRICT BANKING LIMITS
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
     if (type === 'deposit') {
