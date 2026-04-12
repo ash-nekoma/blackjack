@@ -9,10 +9,10 @@
     <style>
         :root {
             --bg-dark: #0f172a; --bg-darker: #020617;
-            --table-green: #0d7a42; --table-dark: #054522; /* Vibrant classic casino green */
-            --wood-base: #8b5a2b; --wood-dark: #5c3a21;
+            --table-green: #0d7a42; --table-dark: #054522; 
             --accent-glow: #8b5cf6; --accent-glow-2: #3b82f6;
             --danger: #ef4444; --success: #10b981; --warning: #fbbf24;
+            --border-std: #222;
             --clear-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
         }
         
@@ -23,50 +23,49 @@
         .clear-text { font-family: var(--clear-font); }
         .hidden { display: none !important; }
 
-        /* HIDE NUMBER INPUT ARROWS */
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
-        #arcade-cabinet { width: 1280px; height: 760px; max-width: 100vw; max-height: 100vh; background: var(--bg-dark); border-radius: 12px; border: 6px solid #222; box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
-        .custom-scroll::-webkit-scrollbar { width: 12px; background: #000; border-left: 2px solid #333;}
-        .custom-scroll::-webkit-scrollbar-thumb { background: var(--wood-base); border: 2px solid #000; box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
+        #arcade-cabinet { width: 1280px; height: 760px; max-width: 100vw; max-height: 100vh; background: var(--bg-dark); border-radius: 12px; border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
+        .custom-scroll::-webkit-scrollbar { width: 12px; background: #000; border-left: 2px solid var(--border-std);}
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border: 2px solid var(--border-std); box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
 
         .full-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
         .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 300; }
-        .modal-box { background: var(--bg-dark); border: 4px solid var(--accent-glow); padding: 30px; width: 650px; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 90vh; overflow-y: auto;}
+        .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 90vh; overflow-y: auto;}
         
         .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; }
-        input.retro-input { flex: 1; padding: 12px; margin: 0; background: #000; color: #fff; border: 2px solid var(--accent-glow-2); font-family: 'VT323'; font-size: 24px; text-align: center; outline: none; }
+        input.retro-input { flex: 1; padding: 12px; margin: 0; background: #000; color: #fff; border: 2px solid var(--border-std); font-family: 'VT323'; font-size: 24px; text-align: center; outline: none; }
         
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px;}
-        .wood-btn { width: 100%; background: var(--wood-base); border: 4px solid var(--wood-dark); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; display: flex; justify-content: center; align-items: center; transition: 0.1s;}
+        .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; display: flex; justify-content: center; align-items: center; transition: 0.1s;}
         .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 #000; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.7; }
         
         .coming-soon-badge { background: var(--danger); font-size: 14px; padding: 2px 8px; border-radius: 4px; margin-left: 10px; border: 1px solid #fff; animation: pulse-glow 2s infinite;}
 
-        .tab-buttons { display: flex; border-bottom: 2px solid var(--accent-glow); margin-bottom: 15px; }
+        .tab-buttons { display: flex; border-bottom: 2px solid var(--border-std); margin-bottom: 15px; }
         .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-family: 'VT323'; font-size: 22px; cursor: pointer; }
         .tab-btn.active { background: var(--accent-glow); color: #fff; box-shadow: inset 0 3px 0 #fff; }
-        .tab-content { display: none; text-align: left; background: #000; padding: 15px; border: 2px solid #475569; font-family: var(--clear-font); font-size: 16px; color: #e2e8f0; height: 300px; overflow-y: auto; line-height: 1.5;}
+        .tab-content { display: none; text-align: left; background: #000; padding: 15px; border: 2px solid var(--border-std); font-family: var(--clear-font); font-size: 16px; color: #e2e8f0; height: 300px; overflow-y: auto; line-height: 1.5;}
         .tab-content.active { display: block; }
         .tab-content h3 { color: var(--warning); font-family: 'VT323'; font-size: 28px; margin-bottom: 10px; letter-spacing: 1px;}
         .tab-content ul { padding-left: 20px; }
         .tab-content li { margin-bottom: 8px; }
 
-        .terms-box { text-align: left; background: #000; padding: 15px; border: 2px solid #475569; font-family: var(--clear-font); font-size: 14px; color: #94a3b8; height: 120px; overflow-y: auto; margin-bottom: 15px; }
+        .terms-box { text-align: left; background: #000; padding: 15px; border: 2px solid var(--border-std); font-family: var(--clear-font); font-size: 14px; color: #94a3b8; height: 120px; overflow-y: auto; margin-bottom: 15px; }
 
         .profile-preview { font-size: 50px; margin-bottom: 10px; text-shadow: 3px 3px 0 #000;}
-        .profile-credits { font-size: 30px; color: var(--success); margin-bottom: 20px; text-shadow: 2px 2px 0 #000;}
+        .profile-credits { font-size: 30px; color: #fff; margin-bottom: 20px; text-shadow: 2px 2px 0 #000;}
         .color-picker { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
         .color-sq { width: 40px; height: 40px; border: 3px solid #333; cursor: pointer; transition: 0.2s; border-radius: 4px; box-shadow: 2px 2px 0 #000;}
         .color-sq:hover { transform: scale(1.1); }
         .color-sq.selected { border-color: #fff; box-shadow: 0 0 15px #fff; }
 
         .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
-        .reward-box { height: 100px; background: #1e293b; border: 4px solid var(--accent-glow-2); border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
+        .reward-box { height: 100px; background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
         .reward-box:hover { background: #3b82f6; transform: translateY(-5px); }
         .reward-box .inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; }
         .reward-box.open .inner { transform: rotateY(180deg); }
@@ -75,32 +74,34 @@
         .reward-box .back { background: #000; transform: rotateY(180deg); font-family: 'VT323'; font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
         .reward-box .back.zero { color: #94a3b8; border-color: #475569; }
 
-        #game-area { width: 75%; position: relative; background: radial-gradient(circle, #1e293b 0%, #000000 100%); display: flex; flex-direction: column; align-items: center; overflow: hidden;}
-        #sidebar { width: 25%; background: var(--bg-darker); border-left: 4px solid var(--wood-dark); display: flex; flex-direction: column; height: 100%; }
+        /* GAME LAYOUT: ENTIRE AREA IS THE GREEN FELT NOW */
+        #game-area { width: 75%; position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); display: flex; flex-direction: column; align-items: center; overflow: hidden;}
+        #sidebar { width: 25%; background: var(--bg-darker); border-left: 2px solid var(--border-std); display: flex; flex-direction: column; height: 100%; z-index: 50;}
 
-        .top-hud { width: 100%; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 10; background: rgba(0,0,0,0.5); border-bottom: 2px solid #333; }
+        .top-hud { width: 100%; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 50; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); }
         .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
-        .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--success); color: var(--success); font-size: 26px; box-shadow: 2px 2px 0 #000;}
+        .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
 
-        .sidebar-header { background: var(--wood-dark); color: #fff; padding: 10px; text-align: center; font-size: 24px; border-bottom: 2px solid #000; display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000;}
-        .lobby-panel { flex: 0.4; border-bottom: 4px solid var(--wood-dark); padding: 10px; overflow-y: auto; }
+        .sidebar-header { background: #1e293b; color: #fff; padding: 10px; text-align: center; font-size: 24px; border-bottom: 2px solid var(--border-std); display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000;}
+        .lobby-panel { flex: 0.4; border-bottom: 2px solid var(--border-std); padding: 10px; overflow-y: auto; background: var(--bg-darker); }
         .lobby-player { font-size: 24px; margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 5px; text-shadow: 1px 1px 0 #000;}
         
-        .chat-panel { flex: 0.6; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-panel { flex: 0.6; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-darker); }
         .chat-messages { flex: 1; padding: 10px; font-size: 20px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word; font-family: 'VT323';}
-        .chat-input-area { display: flex; border-top: 2px solid #333; background: #000; }
+        .chat-input-area { display: flex; border-top: 2px solid var(--border-std); background: #000; }
         .chat-input-area input { flex: 1; padding: 12px; font-size: 20px; margin:0; border:none; text-align: left; font-family: 'VT323'; background: transparent; color: #fff; outline: none;}
-        .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid #333; padding: 0 20px; font-family: 'VT323'; font-size: 24px; cursor: pointer; }
+        .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-family: 'VT323'; font-size: 24px; cursor: pointer; }
         .chat-input-area button:active { background: #059669; }
 
-        /* WIDER, FLATTER TABLE GEOMETRY */
-        .table-surface { width: 1100px; height: 550px; margin-top: 20px; position: relative; background: radial-gradient(ellipse at center, var(--table-green) 0%, var(--table-dark) 100%); border: 5px solid #6b4423; border-radius: 300px 300px 40px 40px; box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.8); }
+        /* TABLE SURFACE CONTAINER (Invisible mapping layer) */
+        .table-surface { flex: 1; width: 100%; position: relative; background: transparent; border: none; }
         .banker-station { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
         
-        .global-timer { position: absolute; top: 180px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 3px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center; text-shadow: none !important;}
+        /* CLEAN TIMERS */
+        .global-timer { position: absolute; top: 170px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
-        .global-timer.warning { background: #eab308; color: #000; border-color: #000; top: 240px; font-size: 24px; font-weight: bold;}
+        .global-timer.warning { background: #eab308; color: #000; top: 230px; font-size: 24px; font-weight: bold;}
 
         @keyframes pulse-glow { 0% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } 50% { box-shadow: 0 0 40px #fff; border-color: #fff; } 100% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } }
         
@@ -109,14 +110,12 @@
 
         .seat.active-turn .hand-box.active-hand { animation: pulse-glow 1.5s infinite; border-radius: 8px; background: rgba(251, 191, 36, 0.2); padding: 10px; border: 2px solid var(--warning);}
         
-        .seat-header { background: rgba(0,0,0,0.8); color: #fff; font-size: 16px; font-weight: bold; padding: 4px 10px; border-radius: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid #333; margin-bottom: 10px; box-shadow: 2px 2px 0 #000;}
-        
-        /* BET PLACEMENT UNDER CARDS */
-        .seat-bet { color: var(--warning); font-size: 14px; font-weight: bold; margin-top: 8px; background: rgba(0,0,0,0.7); padding: 2px 12px; border-radius: 20px; border: 2px solid var(--warning); box-shadow: 2px 2px 0 rgba(0,0,0,0.8); text-align: center; text-shadow: 1px 1px 0 #000; z-index: 5;}
+        .seat-header { background: rgba(0,0,0,0.8); color: #fff; font-size: 16px; font-weight: bold; padding: 4px 10px; border-radius: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 2px solid var(--border-std); margin-bottom: 10px; box-shadow: 2px 2px 0 #000;}
+        .seat-bet { color: var(--warning); font-size: 14px; font-weight: bold; margin-top: 8px; background: rgba(0,0,0,0.8); padding: 4px 12px; border-radius: 20px; border: 2px solid var(--warning); box-shadow: 2px 2px 0 rgba(0,0,0,0.8); text-align: center; z-index: 5;}
 
         .seat-bet-box { display: flex; width: 100%; gap: 5px; margin-top: 10px; justify-content: center; }
-        .seat-bet-box input { width: 60%; padding: 4px; text-align: center; font-size: 16px; margin: 0; outline: none; background: #1e293b; color: #fff; border: 2px solid #475569; border-radius: 4px; font-family: var(--clear-font);}
-        .s-btn { padding: 6px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 14px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5);}
+        .seat-bet-box input { width: 60%; padding: 4px; text-align: center; font-size: 16px; margin: 0; outline: none; background: #1e293b; color: #fff; border: 2px solid var(--border-std); border-radius: 4px; font-family: var(--clear-font);}
+        .s-btn { padding: 6px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 14px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5);}
         .s-btn.btn-bet { width: 40%; background: var(--success); color: #000; }
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
@@ -125,7 +124,7 @@
         .btn-stand { background: #b45309; color: #fff; }
         .btn-double { background: var(--accent-glow-2); color: #fff; }
         .btn-split { background: var(--accent-glow); color: #fff; }
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; padding: 8px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; margin-top: 10px; font-family: var(--clear-font); box-shadow: 2px 2px 0 #000; }
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; padding: 8px; font-weight: bold; cursor: pointer; border: 2px solid var(--border-std); border-radius: 4px; margin-top: 10px; font-family: var(--clear-font); box-shadow: 2px 2px 0 #000; }
         .btn-inseat-standup:active { transform: scale(0.95); }
 
         @keyframes flyOut { 0% { transform: translateY(-100px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
@@ -135,8 +134,7 @@
         .hand-box { display: flex; flex-direction: column; align-items: center; }
         .hand-container { position: relative; display: flex; justify-content: center; margin-bottom: 5px; }
         
-        /* AUTHENTIC CARD STYLING */
-        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; border: 1px solid #aaa; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -35px; animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: Arial, Helvetica, sans-serif; }
+        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -35px; animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: Arial, Helvetica, sans-serif; }
         .card:first-child { margin-left: 0; }
         .card.red { color: #d00; }
         .card.black { color: #000; }
@@ -145,14 +143,15 @@
         .card-corner.bottom-right { bottom: 3px; right: 3px; transform: rotate(180deg); }
         .card-center-suit { font-size: 34px; }
         
-        .card.dealer-hidden { background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); border: 2px solid #fff; color: transparent; transform: rotateY(180deg); animation: none;}
+        .card.dealer-hidden { background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); color: transparent; transform: rotateY(180deg); animation: none;}
         .card.flip-reveal { animation: flipCard 0.6s ease-out forwards; }
 
-        /* VALUE BADGE - TOP LEFT */
         .hd-badge { position: absolute; top: -10px; left: -15px; width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10;}
 
         .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 20px; background: #0f172a; margin-bottom: 5px; border-radius: 4px;}
         .ledger-desc { color: #94a3b8; }
+        
+        .coin-icon { color:#fbbf24; text-shadow: 1px 1px 0 #000; font-family: 'Segoe UI Emoji', sans-serif;}
     </style>
 </head>
 <body>
@@ -220,6 +219,7 @@
                     <button class="wood-btn pixel-text" style="background: var(--success);" onclick="joinRoom('5seat')">5-SEAT CLASSIC TABLE</button>
                     <button class="wood-btn pixel-text" disabled style="background: #333;">THE TRACK - RACING <span class="coming-soon-badge">COMING SOON</span></button>
                     <button class="wood-btn pixel-text" disabled style="background: #333;">THE PIT - DICE <span class="coming-soon-badge">COMING SOON</span></button>
+                    <button class="wood-btn pixel-text" disabled style="background: #333;">THE PIT - COINS <span class="coming-soon-badge">COMING SOON</span></button>
                     <button class="wood-btn pixel-text" style="background: var(--danger); margin-top: 10px;" onclick="hideModal('play-modal')">BACK TO DASHBOARD</button>
                 </div>
             </div>
@@ -249,7 +249,7 @@
                 <div id="tab-sys" class="tab-content custom-scroll">
                     <h3>ECONOMY & SYSTEM</h3>
                     <ul>
-                        <li><strong>Banking Limits:</strong> The absolute minimum for both deposits and withdrawals is 100,000 credits. The maximum deposit per request is 100,000 credits.</li>
+                        <li><strong>Banking Limits:</strong> The absolute minimum for both deposits and withdrawals is 100,000. The maximum deposit per request is 100,000.</li>
                         <li><strong>Admin Approval:</strong> All new account signups and bank transfers pend manual Admin review.</li>
                         <li><strong>Daily Rewards:</strong> Available every 24 hours. Pick a mystery box for a 1-in-6 chance to win huge payouts.</li>
                         <li><strong>Fair Play:</strong> Using multiple accounts to farm Daily Rewards is strictly prohibited and results in an IP ban.</li>
@@ -290,7 +290,7 @@
         <div id="profile-modal" class="overlay-menu hidden">
             <div class="modal-box" style="width: 700px; max-height: 90%; display: flex; flex-direction: column;">
                 <div class="profile-preview pixel-text" id="profile-username-preview">USERNAME</div>
-                <div class="profile-credits pixel-text">BALANCE: $<span id="profile-credits-preview">0</span></div>
+                <div class="profile-credits pixel-text">BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
                 
                 <h3 class="pixel-text" style="margin-top: 10px; text-align: left; color:#fff;">USERNAME COLOR</h3>
                 <div class="color-picker" id="color-picker-ui">
@@ -303,12 +303,12 @@
                 
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button class="wood-btn pixel-text" style="flex:1; background: var(--accent-glow-2);" onclick="saveColor()">SAVE COLOR</button>
-                    <button class="wood-btn pixel-text" style="flex:1; background: var(--wood-base);" onclick="toggleLedger()">VIEW FULL LEDGER</button>
+                    <button class="wood-btn pixel-text" style="flex:1; background: #475569;" onclick="toggleLedger()">VIEW FULL LEDGER</button>
                 </div>
 
                 <div id="ledger-container" class="hidden" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; margin-top: 15px;">
                     <h3 class="pixel-text" style="text-align: left; margin-bottom: 5px; color:#fff;">CREDIT LEDGER</h3>
-                    <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid #475569; text-align: left; min-height: 200px;"></div>
+                    <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 200px;"></div>
                 </div>
                 
                 <div style="display: flex; justify-content: center; margin-top: 15px;">
@@ -379,7 +379,7 @@
         <div id="settings-modal" class="overlay-menu hidden">
             <div class="modal-box">
                 <h2 class="pixel-text" style="color: #fff;">SYSTEM SETTINGS</h2>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin: 30px 0; background: #000; padding: 15px; border: 2px solid #475569;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 30px 0; background: #000; padding: 15px; border: 2px solid var(--border-std);">
                     <span class="pixel-text" style="font-size: 28px; color: #fff;">BACKGROUND MUSIC</span>
                     <button id="btn-music" class="wood-btn pixel-text" style="width: 150px; margin-bottom:0; background: #333;" onclick="toggleMusic()">🔇 OFF</button>
                 </div>
@@ -405,7 +405,7 @@
                 <div class="top-hud">
                     <button class="btn-menu" onclick="exitToMenu()">◄ DASHBOARD</button>
                     <div style="font-size: 32px; color: var(--accent-glow-2);" id="phase-display" class="pixel-text">WAITING</div>
-                    <div class="wallet-display pixel-text">CREDITS: $<span id="hud-credits"></span></div>
+                    <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="hud-credits"></span></div>
                 </div>
 
                 <div class="table-surface">
@@ -427,7 +427,7 @@
                 <div class="sidebar-header pixel-text"><span>PLAYERS</span> <span id="player-count" style="color:var(--accent-glow-2);">0</span></div>
                 <div id="lobby-list" class="lobby-panel custom-scroll pixel-text"></div>
                 
-                <div class="sidebar-header pixel-text" style="border-top: 4px solid var(--wood-dark);">TABLE CHAT</div>
+                <div class="sidebar-header pixel-text" style="border-top: 2px solid var(--border-std);">TABLE CHAT</div>
                 <div class="chat-panel">
                     <div id="chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
@@ -443,7 +443,7 @@
     <script>
         const socket = io();
         let currentUser = null; let currentGameState = null; let currentRoomId = null; let mySeatIndex = -1;
-        let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let sitTimerInt = null; let mySitTime = 0;
+        let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let idleTimerInt = null;
         let dailyRewardNextClaim = new Date(0); let rewardTimerInt = null; let isPickingReward = false;
         let lastBetAmount = 100000; // Memorizes your last bet
 
@@ -515,7 +515,7 @@
             const list = document.getElementById('ledger-list'); list.innerHTML = '';
             data.forEach(tx => {
                 let color = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff');
-                list.innerHTML += `<div class="ledger-item"><span class="ledger-desc">${tx.type.toUpperCase()} [${tx.status}]</span> <span style="color:${color}">${tx.amount > 0 ? '+' : ''}${tx.amount}</span></div>`;
+                list.innerHTML += `<div class="ledger-item"><span class="ledger-desc">${tx.type.toUpperCase()} [${tx.status}]</span> <span style="color:${color}">${tx.amount > 0 ? '+' : ''}${tx.amount} <span class="coin-icon">🪙</span></span></div>`;
             });
         }
 
@@ -567,7 +567,7 @@
             if(data.success) {
                 data.allPrizes.forEach((prize, i) => {
                     const backEl = document.getElementById(`box-val-${i}`);
-                    backEl.innerText = prize > 0 ? `+${prize}` : 'EMPTY';
+                    backEl.innerHTML = prize > 0 ? `+${prize} <span class="coin-icon">🪙</span>` : 'EMPTY';
                     if(prize === 0) backEl.classList.add('zero'); else backEl.classList.remove('zero');
                     setTimeout(() => document.querySelectorAll('.reward-box')[i].classList.add('open'), i * 100);
                 });
@@ -613,7 +613,10 @@
         
         window.actPlaceBet = function(idx) { 
             const amt = parseInt(document.getElementById(`inseat-bet-${idx}`).value); 
-            if (amt >= 100000) lastBetAmount = amt; // Save for next round default
+            if (isNaN(amt) || amt < 100000) return alert("Minimum bet is 100,000 credits.");
+            if (amt > currentUser.credits) return alert("Insufficient credits!");
+            
+            lastBetAmount = amt; // Memory for next round
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
         }
         
@@ -694,8 +697,7 @@
                         hand.cards.forEach(c => html += formatCardHTML(c));
                         if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
                         html += `</div>`;
-                        // Bet amount directly under cards
-                        if (hand.bet > 0) html += `<div class="seat-bet">$${hand.bet}</div>`;
+                        if (hand.bet > 0) html += `<div class="seat-bet"><span class="coin-icon">🪙</span> ${hand.bet}</div>`;
                         html += `</div>`;
                     });
                     html += `</div>`;
@@ -734,42 +736,49 @@
         function manageTimers(state) {
             const gTimerUI = document.getElementById('global-timer'); const nTimerUI = document.getElementById('next-round-timer'); const iTimerUI = document.getElementById('idle-timer');
             
-            if (state.status === 'betting' && state.betEndTime > 0) {
+            // PREVENT CLOCK DRIFT: Use exact server remaining time
+            if (state.status === 'betting' && state.betTimeLeft > 0) {
+                let left = Math.ceil(state.betTimeLeft / 1000);
                 gTimerUI.classList.remove('hidden'); clearInterval(globalTimerInt); nTimerUI.classList.add('hidden');
+                document.getElementById('g-time').innerText = left;
                 globalTimerInt = setInterval(() => {
-                    let left = Math.ceil((state.betEndTime - Date.now()) / 1000);
+                    left--;
                     if (left > 0) document.getElementById('g-time').innerText = left;
                     else { clearInterval(globalTimerInt); gTimerUI.classList.add('hidden'); }
-                }, 200);
-            } else { gTimerUI.classList.add('hidden'); clearInterval(globalTimerInt); }
+                }, 1000);
+            } else if (state.status !== 'betting') { gTimerUI.classList.add('hidden'); clearInterval(globalTimerInt); }
 
-            if (state.status === 'resolving' && state.nextRoundTime > 0) {
+            if (state.status === 'resolving' && state.nextRoundTimeLeft > 0) {
+                let left = Math.ceil(state.nextRoundTimeLeft / 1000);
                 nTimerUI.classList.remove('hidden'); clearInterval(nextRoundTimerInt);
+                document.getElementById('n-time').innerText = left;
                 nextRoundTimerInt = setInterval(() => {
-                    let left = Math.ceil((state.nextRoundTime - Date.now()) / 1000);
+                    left--;
                     if (left > 0) document.getElementById('n-time').innerText = left;
                     else { clearInterval(nextRoundTimerInt); nTimerUI.classList.add('hidden'); }
-                }, 200);
-            } else { nTimerUI.classList.add('hidden'); clearInterval(nextRoundTimerInt); }
+                }, 1000);
+            } else if (state.status !== 'resolving') { nTimerUI.classList.add('hidden'); clearInterval(nextRoundTimerInt); }
 
             if (mySeatIndex !== -1 && state.status === 'betting') {
                 const mySeatData = state.seats[mySeatIndex];
-                if (mySeatData && mySeatData.hands[0].bet === 0 && mySeatData.kickAt) {
+                if (mySeatData && mySeatData.hands[0].bet === 0 && mySeatData.kickTimeLeft > 0) {
+                    let left = Math.ceil(mySeatData.kickTimeLeft / 1000);
                     iTimerUI.classList.remove('hidden'); clearInterval(idleTimerInt);
+                    document.getElementById('i-time').innerText = left;
                     idleTimerInt = setInterval(() => {
-                        let left = Math.ceil((mySeatData.kickAt - Date.now()) / 1000);
+                        left--;
                         if (left > 0) document.getElementById('i-time').innerText = left;
                         else { clearInterval(idleTimerInt); iTimerUI.classList.add('hidden'); }
-                    }, 200);
+                    }, 1000);
                 } else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
             } else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
         }
 
         function layoutArc(elements, totalSeats) {
-            const centerX = 550; const centerY = 160; 
-            const radiusX = totalSeats === 5 ? 420 : 350; 
-            const radiusY = totalSeats === 5 ? 200 : 180; 
-            const widthOffset = 70; // Half seat width to center
+            const centerX = 480; const centerY = 180; 
+            const radiusX = totalSeats === 5 ? 400 : 320; 
+            const radiusY = totalSeats === 5 ? 260 : 200; 
+            const widthOffset = 70; 
 
             elements.forEach((el, i) => {
                 let angle = totalSeats === 1 ? Math.PI / 2 : (Math.PI * 0.85) - (i * ((Math.PI * 0.70) / (totalSeats - 1)));
@@ -777,8 +786,6 @@
                 el.style.top = `${centerY + Math.sin(angle) * radiusY - 90}px`;
             });
         }
-
-        function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
     </script>
 </body>
 </html>
