@@ -109,8 +109,10 @@ function calculateValue(cards) {
 function emitGameState(roomId) {
     let room = rooms[roomId];
     if (!room) return;
-    let safeState = JSON.parse(JSON.stringify(room));
-    delete safeState.betTimerInterval; delete safeState.nextRoundInterval;
+    
+    // FIX: Extract Interval objects BEFORE converting to JSON to prevent Circular Reference Crashes!
+    const { betTimerInterval, nextRoundInterval, ...serializableRoom } = room;
+    let safeState = JSON.parse(JSON.stringify(serializableRoom));
     
     const now = Date.now();
     safeState.seats.forEach(s => {
@@ -268,7 +270,6 @@ io.on('connection', (socket) => {
         const seat = room.seats[seatIndex];
         if (!seat || seat.username !== username || room.status !== 'betting') return;
         
-        // MINIMUM BET UPDATED TO 1000
         if (seat.credits >= betAmount && betAmount >= 1000) {
             seat.hands[0].bet = betAmount; seat.credits -= betAmount;
             seat.kickAt = null; 
