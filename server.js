@@ -62,8 +62,8 @@ function createRoom(numSeats) {
     return {
         seats: Array(numSeats).fill(null),
         dealerCards: [], deck: [],
-        status: 'waiting', activeSeatIndex: -1, betEndTime: 0, nextRoundTime: 0, 
-        lobby: [], betTimerInterval: null, nextRoundInterval: null
+        status: 'waiting', activeSeatIndex: -1, betEndTime: 0, nextRoundTime: 0, turnEndTime: 0,
+        lobby: [], betTimerInterval: null, nextRoundInterval: null, turnTimerInterval: null, dealerInterval: null
     };
 }
 
@@ -110,7 +110,8 @@ function emitGameState(roomId) {
     let room = rooms[roomId];
     if (!room) return;
     
-    const { betTimerInterval, nextRoundInterval, ...serializableRoom } = room;
+    // DESTRUCTURING TO PREVENT CIRCULAR CRASHES
+    const { betTimerInterval, nextRoundInterval, turnTimerInterval, dealerInterval, ...serializableRoom } = room;
     let safeState = JSON.parse(JSON.stringify(serializableRoom));
     
     const now = Date.now();
@@ -119,12 +120,30 @@ function emitGameState(roomId) {
     });
     if (safeState.betEndTime) safeState.betTimeLeft = Math.max(0, safeState.betEndTime - now);
     if (safeState.nextRoundTime) safeState.nextRoundTimeLeft = Math.max(0, safeState.nextRoundTime - now);
+    if (safeState.turnEndTime) safeState.turnTimeLeft = Math.max(0, safeState.turnEndTime - now);
 
-    // Hide dealer's hole card during play
+    // HIDE DEALER'S HOLE CARD ONLY DURING THE 'playing' PHASE
     if (safeState.status === 'playing' && safeState.dealerCards.length > 1) {
         safeState.dealerCards[1] = { hidden: true };
     }
     io.to(roomId).emit('game_state_update', safeState);
+}
+
+// 15S ACTION TIMER MANAGER
+function startTurnTimer(roomId) {
+    let room = rooms[roomId];
+    clearInterval(room.turnTimerInterval);
+    room.turnTimerInterval = setInterval(() => {
+        if (Date.now() >= room.turnEndTime) {
+            clearInterval(room.turnTimerInterval);
+            // Auto Stand if AFK
+            let seat = room.seats[room.activeSeatIndex];
+            if (seat && seat.hands[seat.currentHand]) {
+                seat.hands[seat.currentHand].status = 'stand';
+            }
+            moveToNextTurn(roomId);
+        }
+    }, 500);
 }
 
 // --- PLAYER REST APIs ---
@@ -303,9 +322,20 @@ io.on('connection', (socket) => {
         hand.cards.push(room.deck.pop()); 
         hand.value = calculateValue(hand.cards);
         
-        if (hand.value > 21) { hand.status = 'bust'; moveToNextTurn(roomId); }
-        else if (hand.value === 21) { hand.status = 'stand'; moveToNextTurn(roomId); }
-        else emitGameState(roomId);
+        if (hand.value > 21) { 
+            hand.status = 'bust'; 
+            moveToNextTurn(roomId); 
+        }
+        else if (hand.value === 21) { 
+            hand.status = 'stand'; 
+            moveToNextTurn(roomId); 
+        }
+        else {
+            // SUCCESSFUL HIT: Reset 15s turn timer
+            room.turnEndTime = Date.now() + 15000;
+            startTurnTimer(roomId);
+            emitGameState(roomId);
+        }
     });
 
     socket.on('player_action_stand', ({ roomId, username, seatIndex }) => {
@@ -363,7 +393,12 @@ io.on('connection', (socket) => {
             seat.hands.push(newHand); 
             
             if(hand.status === 'stand') moveToNextTurn(roomId);
-            else emitGameState(roomId);
+            else {
+                // SUCCESSFUL SPLIT: Reset 15s turn timer
+                room.turnEndTime = Date.now() + 15000;
+                startTurnTimer(roomId);
+                emitGameState(roomId);
+            }
         }
     });
 
@@ -421,7 +456,6 @@ function startGame(roomId) {
     let room = rooms[roomId]; if (!room) return;
     room.status = 'playing'; room.deck = getNewDeck(); room.dealerCards = [];
     
-    // Wipe players who failed to bet
     room.seats = room.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
     
     for (let i = 0; i < 2; i++) {
@@ -432,19 +466,37 @@ function startGame(roomId) {
     room.seats.forEach(seat => { if (seat) { seat.hands[0].value = calculateValue(seat.hands[0].cards); if(seat.hands[0].value === 21) seat.hands[0].status = 'blackjack'; } });
     
     let dealerInitialValue = calculateValue(room.dealerCards);
-    if (dealerInitialValue === 21) { resolveBets(roomId, 21); return; }
+    if (dealerInitialValue === 21) { 
+        // Reveal hole card instantly if dealer has Blackjack
+        room.dealerCards[1].hidden = false;
+        resolveBets(roomId, 21); 
+        return; 
+    }
 
     room.activeSeatIndex = room.seats.findIndex(s => s && s.hands[0].status === 'waiting');
-    if (room.activeSeatIndex === -1) processDealerTurn(roomId); else emitGameState(roomId);
+    if (room.activeSeatIndex === -1) {
+        processDealerTurn(roomId); 
+    } else {
+        // Start the 15s turn timer for the first player
+        room.turnEndTime = Date.now() + 15000;
+        startTurnTimer(roomId);
+        emitGameState(roomId);
+    }
 }
 
 function moveToNextTurn(roomId) {
     let room = rooms[roomId]; if (!room) return;
+    clearInterval(room.turnTimerInterval); // Clear outgoing player's timer
+
     const seat = room.seats[room.activeSeatIndex];
     
-    if (seat.currentHand < seat.hands.length - 1) { 
+    if (seat && seat.currentHand < seat.hands.length - 1) { 
         seat.currentHand++; 
         if (seat.hands[seat.currentHand].status !== 'waiting') return moveToNextTurn(roomId); 
+        
+        // Timer for the next hand in a split
+        room.turnEndTime = Date.now() + 15000;
+        startTurnTimer(roomId);
         emitGameState(roomId);
         return; 
     }
@@ -455,16 +507,51 @@ function moveToNextTurn(roomId) {
         nextIndex++;
     }
     
-    if (nextIndex >= room.seats.length) processDealerTurn(roomId); 
-    else { room.activeSeatIndex = nextIndex; emitGameState(roomId); }
+    if (nextIndex >= room.seats.length) {
+        processDealerTurn(roomId); 
+    } else { 
+        room.activeSeatIndex = nextIndex; 
+        
+        // Timer for the next seated player
+        room.turnEndTime = Date.now() + 15000;
+        startTurnTimer(roomId);
+        emitGameState(roomId); 
+    }
 }
 
 async function processDealerTurn(roomId) {
     let room = rooms[roomId]; if (!room) return;
-    room.status = 'dealerTurn'; room.activeSeatIndex = -1; emitGameState(roomId);
-    let dealerValue = calculateValue(room.dealerCards);
-    while (dealerValue < 17) { room.dealerCards.push(room.deck.pop()); dealerValue = calculateValue(room.dealerCards); }
-    resolveBets(roomId, dealerValue);
+    room.status = 'dealerTurn'; room.activeSeatIndex = -1; 
+    clearInterval(room.turnTimerInterval);
+    
+    // REVEAL HOLE CARD (Triggers 3D flip on client)
+    if(room.dealerCards.length > 1) {
+        room.dealerCards[1].hidden = false;
+    }
+    emitGameState(roomId);
+
+    // PAUSE BEFORE DRAWING FOR TENSION
+    setTimeout(() => {
+        let dealerValue = calculateValue(room.dealerCards);
+        
+        if (dealerValue >= 17) {
+            resolveBets(roomId, dealerValue);
+            return;
+        }
+
+        // DRAW CARDS ONE BY ONE WITH 1-SECOND DELAY
+        room.dealerInterval = setInterval(() => {
+            if (dealerValue < 17) {
+                room.dealerCards.push(room.deck.pop());
+                dealerValue = calculateValue(room.dealerCards);
+                emitGameState(roomId);
+            } else {
+                clearInterval(room.dealerInterval);
+                resolveBets(roomId, dealerValue);
+            }
+        }, 1000);
+
+    }, 1000);
 }
 
 async function resolveBets(roomId, dealerValue) {
@@ -498,8 +585,6 @@ async function resolveBets(roomId, dealerValue) {
         if (Date.now() >= room.nextRoundTime) {
             clearInterval(room.nextRoundInterval);
             room.dealerCards = [];
-            
-            // Re-open seats and instantly start the 5s idle timer for anyone still seated
             room.seats.forEach(seat => { 
                 if(seat) { 
                     seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; 
@@ -507,11 +592,8 @@ async function resolveBets(roomId, dealerValue) {
                     seat.kickAt = Date.now() + 5000; 
                 } 
             });
-            
-            // FIX: If players are still seated, shift immediately back to 'betting' so the UI displays the inputs.
             const anyoneSeated = room.seats.some(s => s !== null);
             room.status = anyoneSeated ? 'betting' : 'waiting';
-            
             emitGameState(roomId);
         }
     }, 1000);
