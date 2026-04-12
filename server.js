@@ -15,8 +15,6 @@ app.use(express.static(__dirname));
 mongoose.connect(process.env.MONGODB_URI)
     .then(async () => {
         console.log('MongoDB Connected Successfully');
-        
-        // Automatically create the Admin Password in the DB if it doesn't exist yet
         const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
         if (!adminConfig) {
             await new SystemConfig({ configName: 'admin_password', configValue: 'admin123' }).save();
@@ -181,7 +179,6 @@ app.get('/api/profile/ledger/:username', async (req, res) => {
 // --- ADMIN APIs (MONGODB SECURED) ---
 const checkAdmin = async (req, res, next) => {
     try {
-        // Query the database for the active admin password
         const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
         const actualPassword = adminConfig ? adminConfig.configValue : 'admin123';
         
@@ -271,7 +268,8 @@ io.on('connection', (socket) => {
         const seat = room.seats[seatIndex];
         if (!seat || seat.username !== username || room.status !== 'betting') return;
         
-        if (seat.credits >= betAmount && betAmount >= 100000) {
+        // MINIMUM BET UPDATED TO 1000
+        if (seat.credits >= betAmount && betAmount >= 1000) {
             seat.hands[0].bet = betAmount; seat.credits -= betAmount;
             seat.kickAt = null; 
             
