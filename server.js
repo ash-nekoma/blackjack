@@ -11,9 +11,25 @@ const io = new Server(server, { cors: { origin: '*' } });
 app.use(express.json());
 app.use(express.static(__dirname));
 
+// --- MONGODB CONNECTION & AUTO-SETUP ---
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB error:', err));
+    .then(async () => {
+        console.log('MongoDB Connected Successfully');
+        
+        // Automatically create the Admin Password in the DB if it doesn't exist yet
+        const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
+        if (!adminConfig) {
+            await new SystemConfig({ configName: 'admin_password', configValue: 'admin123' }).save();
+            console.log('SYSTEM LOG: Default Admin Password stored in DB as "admin123"');
+        }
+    })
+    .catch(err => console.error('MongoDB connection error:', err));
+
+// --- DATABASE SCHEMAS ---
+const SystemConfig = mongoose.model('SystemConfig', new mongoose.Schema({
+    configName: { type: String, unique: true },
+    configValue: { type: String }
+}));
 
 const User = mongoose.model('User', new mongoose.Schema({
     username: { type: String, required: true, unique: true },
@@ -21,7 +37,8 @@ const User = mongoose.model('User', new mongoose.Schema({
     credits: { type: Number, default: 0 },
     status: { type: String, default: 'pending' }, 
     nameColor: { type: String, default: '#f8fafc' },
-    ipAddress: String, tosAccepted: Boolean
+    ipAddress: String, tosAccepted: Boolean,
+    lastRewardClaim: { type: Date, default: null }
 }));
 
 const Transaction = mongoose.model('Transaction', new mongoose.Schema({
@@ -34,6 +51,7 @@ const GiftCode = mongoose.model('GiftCode', new mongoose.Schema({
     code: { type: String, unique: true }, amount: Number, usesLeft: Number
 }));
 
+// --- GAME LOGIC GLOBALS ---
 const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
 const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
@@ -90,14 +108,12 @@ function calculateValue(cards) {
     while(val > 21 && aces > 0) { val -= 10; aces--; } return val;
 }
 
-// ANTI-DRIFT STATE EMITTER
 function emitGameState(roomId) {
     let room = rooms[roomId];
     if (!room) return;
     let safeState = JSON.parse(JSON.stringify(room));
     delete safeState.betTimerInterval; delete safeState.nextRoundInterval;
     
-    // Calculates exact time remaining to prevent client clock mismatch
     const now = Date.now();
     safeState.seats.forEach(s => {
         if (s && s.kickAt) s.kickTimeLeft = Math.max(0, s.kickAt - now);
@@ -111,7 +127,7 @@ function emitGameState(roomId) {
     io.to(roomId).emit('game_state_update', safeState);
 }
 
-// --- REST APIs ---
+// --- PLAYER REST APIs ---
 app.post('/api/signup', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -161,6 +177,39 @@ app.post('/api/bank/giftcode', async (req, res) => {
 app.get('/api/profile/ledger/:username', async (req, res) => {
     const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50); res.json(txs);
 });
+
+// --- ADMIN APIs (MONGODB SECURED) ---
+const checkAdmin = async (req, res, next) => {
+    try {
+        // Query the database for the active admin password
+        const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
+        const actualPassword = adminConfig ? adminConfig.configValue : 'admin123';
+        
+        if (req.headers['x-admin-pass'] !== actualPassword) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+        next();
+    } catch (error) {
+        res.status(500).json({ error: 'Database Error verifiying admin credentials' });
+    }
+};
+
+app.get('/api/admin/data', checkAdmin, async (req, res) => {
+    const users = await User.find({}, '-password'); const txs = await Transaction.find({ status: 'pending' }); const codes = await GiftCode.find();
+    res.json({ users, txs, codes });
+});
+
+app.post('/api/admin/user/status', checkAdmin, async (req, res) => { await User.updateOne({ username: req.body.username }, { status: req.body.status }); res.json({ success: true }); });
+
+app.post('/api/admin/tx/resolve', checkAdmin, async (req, res) => {
+    const { id, action } = req.body; const tx = await Transaction.findById(id);
+    if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
+    if (action === 'approve') { tx.status = 'completed'; if (tx.type === 'deposit req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); } 
+    else { tx.status = 'denied'; if (tx.type === 'withdrawal req') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); }
+    await tx.save(); res.json({ success: true });
+});
+
+app.post('/api/admin/giftcode', checkAdmin, async (req, res) => { await new GiftCode(req.body).save(); res.json({ success: true }); });
 
 // --- SOCKET LOGIC ---
 io.on('connection', (socket) => {
@@ -221,7 +270,8 @@ io.on('connection', (socket) => {
         let room = rooms[roomId]; if (!room) return;
         const seat = room.seats[seatIndex];
         if (!seat || seat.username !== username || room.status !== 'betting') return;
-        if (seat.credits >= betAmount) {
+        
+        if (seat.credits >= betAmount && betAmount >= 100000) {
             seat.hands[0].bet = betAmount; seat.credits -= betAmount;
             seat.kickAt = null; 
             
