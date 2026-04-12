@@ -9,7 +9,7 @@
     <style>
         :root {
             --bg-dark: #0f172a; --bg-darker: #020617;
-            --table-green: #0b5e32; --table-dark: #042e17; 
+            --table-green: #0d7a42; --table-dark: #054522; /* Vibrant classic casino green */
             --wood-base: #8b5a2b; --wood-dark: #5c3a21;
             --accent-glow: #8b5cf6; --accent-glow-2: #3b82f6;
             --danger: #ef4444; --success: #10b981; --warning: #fbbf24;
@@ -23,6 +23,11 @@
         .clear-text { font-family: var(--clear-font); }
         .hidden { display: none !important; }
 
+        /* HIDE NUMBER INPUT ARROWS */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+
         #arcade-cabinet { width: 1280px; height: 760px; max-width: 100vw; max-height: 100vh; background: var(--bg-dark); border-radius: 12px; border: 6px solid #222; box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
         .custom-scroll::-webkit-scrollbar { width: 12px; background: #000; border-left: 2px solid #333;}
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--wood-base); border: 2px solid #000; box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
@@ -34,7 +39,6 @@
         .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; }
         input.retro-input { flex: 1; padding: 12px; margin: 0; background: #000; color: #fff; border: 2px solid var(--accent-glow-2); font-family: 'VT323'; font-size: 24px; text-align: center; outline: none; }
         
-        /* NEW: Grid Menu Layout */
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px;}
         .wood-btn { width: 100%; background: var(--wood-base); border: 4px solid var(--wood-dark); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; display: flex; justify-content: center; align-items: center; transition: 0.1s;}
         .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
@@ -43,7 +47,6 @@
         
         .coming-soon-badge { background: var(--danger); font-size: 14px; padding: 2px 8px; border-radius: 4px; margin-left: 10px; border: 1px solid #fff; animation: pulse-glow 2s infinite;}
 
-        /* TABS CSS */
         .tab-buttons { display: flex; border-bottom: 2px solid var(--accent-glow); margin-bottom: 15px; }
         .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-family: 'VT323'; font-size: 22px; cursor: pointer; }
         .tab-btn.active { background: var(--accent-glow); color: #fff; box-shadow: inset 0 3px 0 #fff; }
@@ -72,8 +75,7 @@
         .reward-box .back { background: #000; transform: rotateY(180deg); font-family: 'VT323'; font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
         .reward-box .back.zero { color: #94a3b8; border-color: #475569; }
 
-        /* GAME LAYOUT & SIDEBAR */
-        #game-area { width: 75%; position: relative; background: radial-gradient(circle, #1e293b 0%, #000000 100%); display: flex; flex-direction: column; align-items: center; }
+        #game-area { width: 75%; position: relative; background: radial-gradient(circle, #1e293b 0%, #000000 100%); display: flex; flex-direction: column; align-items: center; overflow: hidden;}
         #sidebar { width: 25%; background: var(--bg-darker); border-left: 4px solid var(--wood-dark); display: flex; flex-direction: column; height: 100%; }
 
         .top-hud { width: 100%; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 10; background: rgba(0,0,0,0.5); border-bottom: 2px solid #333; }
@@ -92,13 +94,13 @@
         .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid #333; padding: 0 20px; font-family: 'VT323'; font-size: 24px; cursor: pointer; }
         .chat-input-area button:active { background: #059669; }
 
-        /* CASINO TABLE */
-        .table-surface { width: 900px; height: 480px; margin-top: 20px; position: relative; background: radial-gradient(ellipse at center, var(--table-green) 0%, var(--table-dark) 100%); border: 24px solid #111; border-radius: 450px 450px 40px 40px; box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.8); border-bottom: 12px solid #111;}
-        .banker-station { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
+        /* WIDER, FLATTER TABLE GEOMETRY */
+        .table-surface { width: 1100px; height: 550px; margin-top: 20px; position: relative; background: radial-gradient(ellipse at center, var(--table-green) 0%, var(--table-dark) 100%); border: 5px solid #6b4423; border-radius: 300px 300px 40px 40px; box-shadow: 0 30px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.8); }
+        .banker-station { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
         
-        .global-timer { position: absolute; top: 180px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
+        .global-timer { position: absolute; top: 180px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 3px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center; text-shadow: none !important;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
-        .global-timer.warning { background: rgba(234, 179, 8, 0.9); color: #000; border-color: #000; top: 240px; font-size: 24px;}
+        .global-timer.warning { background: #eab308; color: #000; border-color: #000; top: 240px; font-size: 24px; font-weight: bold;}
 
         @keyframes pulse-glow { 0% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } 50% { box-shadow: 0 0 40px #fff; border-color: #fff; } 100% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } }
         
@@ -108,7 +110,9 @@
         .seat.active-turn .hand-box.active-hand { animation: pulse-glow 1.5s infinite; border-radius: 8px; background: rgba(251, 191, 36, 0.2); padding: 10px; border: 2px solid var(--warning);}
         
         .seat-header { background: rgba(0,0,0,0.8); color: #fff; font-size: 16px; font-weight: bold; padding: 4px 10px; border-radius: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid #333; margin-bottom: 10px; box-shadow: 2px 2px 0 #000;}
-        .seat-bet { color: var(--success); font-size: 16px; font-weight: bold; margin-top: 5px; background: #000; padding: 4px 10px; border-radius: 20px; border: 2px solid var(--success); box-shadow: 2px 2px 0 #000; text-align: center;}
+        
+        /* BET PLACEMENT UNDER CARDS */
+        .seat-bet { color: var(--warning); font-size: 14px; font-weight: bold; margin-top: 8px; background: rgba(0,0,0,0.7); padding: 2px 12px; border-radius: 20px; border: 2px solid var(--warning); box-shadow: 2px 2px 0 rgba(0,0,0,0.8); text-align: center; text-shadow: 1px 1px 0 #000; z-index: 5;}
 
         .seat-bet-box { display: flex; width: 100%; gap: 5px; margin-top: 10px; justify-content: center; }
         .seat-bet-box input { width: 60%; padding: 4px; text-align: center; font-size: 16px; margin: 0; outline: none; background: #1e293b; color: #fff; border: 2px solid #475569; border-radius: 4px; font-family: var(--clear-font);}
@@ -129,16 +133,23 @@
 
         .hands-wrapper { display: flex; gap: 15px; justify-content: center; }
         .hand-box { display: flex; flex-direction: column; align-items: center; }
-        .hand-container { position: relative; display: flex; justify-content: center; gap: -25px; margin-bottom: 5px;}
+        .hand-container { position: relative; display: flex; justify-content: center; margin-bottom: 5px; }
         
-        .card { width: 55px; height: 80px; background: #fff; color: #111; border-radius: 5px; display: flex; justify-content: center; align-items: center; text-align: center; font-size: 22px; font-weight: bold; border: 1px solid #666; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -25px; animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        /* AUTHENTIC CARD STYLING */
+        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; border: 1px solid #aaa; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -35px; animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: Arial, Helvetica, sans-serif; }
         .card:first-child { margin-left: 0; }
-        .card.red { color: #dc2626; }
+        .card.red { color: #d00; }
+        .card.black { color: #000; }
+        .card-corner { position: absolute; font-size: 15px; font-weight: bold; line-height: 1; text-align: center; letter-spacing: -1px;}
+        .card-corner.top-left { top: 3px; left: 3px; }
+        .card-corner.bottom-right { bottom: 3px; right: 3px; transform: rotate(180deg); }
+        .card-center-suit { font-size: 34px; }
         
         .card.dealer-hidden { background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); border: 2px solid #fff; color: transparent; transform: rotateY(180deg); animation: none;}
         .card.flip-reveal { animation: flipCard 0.6s ease-out forwards; }
 
-        .hd-badge { position: absolute; top: -15px; left: -15px; width: 34px; height: 34px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10;}
+        /* VALUE BADGE - TOP LEFT */
+        .hd-badge { position: absolute; top: -10px; left: -15px; width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10;}
 
         .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 20px; background: #0f172a; margin-bottom: 5px; border-radius: 4px;}
         .ledger-desc { color: #94a3b8; }
@@ -209,7 +220,6 @@
                     <button class="wood-btn pixel-text" style="background: var(--success);" onclick="joinRoom('5seat')">5-SEAT CLASSIC TABLE</button>
                     <button class="wood-btn pixel-text" disabled style="background: #333;">THE TRACK - RACING <span class="coming-soon-badge">COMING SOON</span></button>
                     <button class="wood-btn pixel-text" disabled style="background: #333;">THE PIT - DICE <span class="coming-soon-badge">COMING SOON</span></button>
-                    <button class="wood-btn pixel-text" disabled style="background: #333;">THE PIT - COINS <span class="coming-soon-badge">COMING SOON</span></button>
                     <button class="wood-btn pixel-text" style="background: var(--danger); margin-top: 10px;" onclick="hideModal('play-modal')">BACK TO DASHBOARD</button>
                 </div>
             </div>
@@ -435,6 +445,7 @@
         let currentUser = null; let currentGameState = null; let currentRoomId = null; let mySeatIndex = -1;
         let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let sitTimerInt = null; let mySitTime = 0;
         let dailyRewardNextClaim = new Date(0); let rewardTimerInt = null; let isPickingReward = false;
+        let lastBetAmount = 100000; // Memorizes your last bet
 
         // UI HELPERS
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -599,12 +610,31 @@
         socket.on('receive_chat', data => { const msgs = document.getElementById('chat-messages'); msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; });
 
         window.actSitDown = function(idx) { socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actPlaceBet = function(idx) { const amt = parseInt(document.getElementById(`inseat-bet-${idx}`).value); socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); }
+        
+        window.actPlaceBet = function(idx) { 
+            const amt = parseInt(document.getElementById(`inseat-bet-${idx}`).value); 
+            if (amt >= 100000) lastBetAmount = amt; // Save for next round default
+            socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
+        }
+        
         window.actEjectSeat = function(idx) { socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
         window.actHit = function(idx) { socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
         window.actStand = function(idx) { socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
         window.actDouble = function(idx) { socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
         window.actSplit = function(idx) { socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+
+        function formatCardHTML(c) {
+            if (c.hidden) return `<div class="card dealer-hidden"></div>`;
+            const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : 'black';
+            const suitSym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit];
+            const flipClass = (currentGameState.status === 'resolving' && currentGameState.dealerCards.length >= 2) ? 'flip-reveal' : '';
+            return `
+                <div class="card ${flipClass} ${colorClass}">
+                    <div class="card-corner top-left">${c.value}<br>${suitSym}</div>
+                    <div class="card-center-suit">${suitSym}</div>
+                    <div class="card-corner bottom-right">${c.value}<br>${suitSym}</div>
+                </div>`;
+        }
 
         socket.on('game_state_update', (state) => {
             currentGameState = state; 
@@ -622,14 +652,8 @@
             document.getElementById('phase-display').innerText = state.status === 'resolving' ? 'RESULTS' : state.status.toUpperCase();
             
             const dCards = document.getElementById('dealer-cards'); dCards.innerHTML = ''; const dBadge = document.getElementById('dealer-val');
-            state.dealerCards.forEach(c => {
-                if (c.hidden) {
-                    dCards.innerHTML += `<div class="card dealer-hidden"></div>`;
-                } else {
-                    let flipClass = (state.status === 'resolving' && state.dealerCards.length >= 2) ? 'flip-reveal' : '';
-                    dCards.innerHTML += `<div class="card ${flipClass} ${['Hearts', 'Diamonds'].includes(c.suit)?'red':''}">${c.value}<br><span style="font-size:24px;">${{'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit]}</span></div>`;
-                }
-            });
+            state.dealerCards.forEach(c => { dCards.innerHTML += formatCardHTML(c); });
+            
             if (state.status === 'playing' || state.status === 'betting' || state.dealerCards.length===0) dBadge.classList.add('hidden');
             else { dBadge.innerText = calculateValue(state.dealerCards); dBadge.classList.remove('hidden'); }
 
@@ -667,10 +691,11 @@
                         let activeHandClass = (state.activeSeatIndex === index && seatData.currentHand === hIdx) ? 'active-hand' : '';
                         html += `<div class="hand-box ${activeHandClass}">`;
                         html += `<div class="hand-container">`;
-                        hand.cards.forEach(c => html += `<div class="card ${['Hearts', 'Diamonds'].includes(c.suit)?'red':''}">${c.value}<br><span style="font-size:20px;">${{'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit]}</span></div>`);
+                        hand.cards.forEach(c => html += formatCardHTML(c));
                         if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
                         html += `</div>`;
-                        if (hand.bet > 0) html += `<div class="seat-bet">BET: $${hand.bet}</div>`;
+                        // Bet amount directly under cards
+                        if (hand.bet > 0) html += `<div class="seat-bet">$${hand.bet}</div>`;
                         html += `</div>`;
                     });
                     html += `</div>`;
@@ -680,7 +705,7 @@
                     }
                     if (isMySeat && state.status === 'betting') {
                         if (seatData.hands[0].bet === 0) {
-                            html += `<div class="seat-bet-box"><input type="number" id="inseat-bet-${index}" class="retro-input" value="100000" min="100000" style="padding:4px; font-size:16px; width:80px;"><button class="s-btn btn-bet" onclick="actPlaceBet(${index})">BET</button></div>`;
+                            html += `<div class="seat-bet-box"><input type="number" id="inseat-bet-${index}" class="retro-input" value="${lastBetAmount}" min="100000" style="padding:4px; font-size:16px; width:80px;"><button class="s-btn btn-bet" onclick="actPlaceBet(${index})">BET</button></div>`;
                             html += `<button class="btn-inseat-standup" style="margin-top: 5px;" onclick="actEjectSeat(${index})">STAND UP</button>`;
                         }
                     }
@@ -741,10 +766,10 @@
         }
 
         function layoutArc(elements, totalSeats) {
-            const centerX = 450; const centerY = 130; 
-            const radiusX = totalSeats === 5 ? 380 : 320; 
-            const radiusY = totalSeats === 5 ? 240 : 220; 
-            const widthOffset = 70; 
+            const centerX = 550; const centerY = 160; 
+            const radiusX = totalSeats === 5 ? 420 : 350; 
+            const radiusY = totalSeats === 5 ? 200 : 180; 
+            const widthOffset = 70; // Half seat width to center
 
             elements.forEach((el, i) => {
                 let angle = totalSeats === 1 ? Math.PI / 2 : (Math.PI * 0.85) - (i * ((Math.PI * 0.70) / (totalSeats - 1)));
