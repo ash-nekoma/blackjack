@@ -165,6 +165,7 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
 
+// ATOMIC BANK TRANSACTIONS
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
     if (amount < 100000) return res.status(400).json({ error: 'Minimum request is 100,000.' });
@@ -172,9 +173,12 @@ app.post('/api/bank/request', async (req, res) => {
     if (type === 'withdrawal' && amount > 100000) return res.status(400).json({ error: 'Max withdrawal is 100,000 per request.' });
     
     if (type === 'withdrawal') {
-        const user = await User.findOne({ username });
-        if (user.credits < amount) return res.status(400).json({ error: 'Insufficient funds.' });
-        await User.updateOne({ username }, { $inc: { credits: -amount } }); 
+        const user = await User.findOneAndUpdate(
+            { username, credits: { $gte: amount } }, 
+            { $inc: { credits: -amount } },
+            { new: true }
+        );
+        if (!user) return res.status(400).json({ error: 'Insufficient funds or transaction in progress.' });
     }
     await new Transaction({ username, type: `${type} req`, amount, status: 'pending' }).save();
     res.json({ success: true });
@@ -182,9 +186,9 @@ app.post('/api/bank/request', async (req, res) => {
 
 app.post('/api/bank/giftcode', async (req, res) => {
     const { username, code } = req.body;
-    const gc = await GiftCode.findOne({ code });
-    if (!gc || gc.usesLeft <= 0) return res.status(400).json({ error: 'Invalid or expired code.' });
-    await User.updateOne({ username }, { $inc: { credits: gc.amount } }); await GiftCode.updateOne({ code }, { $inc: { usesLeft: -1 } });
+    const gc = await GiftCode.findOneAndUpdate({ code, usesLeft: { $gt: 0 } }, { $inc: { usesLeft: -1 } });
+    if (!gc) return res.status(400).json({ error: 'Invalid or expired code.' });
+    await User.updateOne({ username }, { $inc: { credits: gc.amount } }); 
     await new Transaction({ username, type: 'giftcode', amount: gc.amount, status: 'completed' }).save();
     res.json({ success: true, amount: gc.amount });
 });
@@ -198,14 +202,9 @@ const checkAdmin = async (req, res, next) => {
     try {
         const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
         const actualPassword = adminConfig ? adminConfig.configValue : 'admin123';
-        
-        if (req.headers['x-admin-pass'] !== actualPassword) {
-            return res.status(403).json({ error: 'Unauthorized' });
-        }
+        if (req.headers['x-admin-pass'] !== actualPassword) return res.status(403).json({ error: 'Unauthorized' });
         next();
-    } catch (error) {
-        res.status(500).json({ error: 'Database Error verifiying admin credentials' });
-    }
+    } catch (error) { res.status(500).json({ error: 'Database Error' }); }
 };
 
 app.get('/api/admin/data', checkAdmin, async (req, res) => {
@@ -263,7 +262,8 @@ io.on('connection', (socket) => {
         room.seats[seatIndex] = { 
             username: user.username, color: user.nameColor, socketId: socket.id, 
             credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], 
-            currentHand: 0, kickAt: Date.now() + 5000 
+            currentHand: 0,
+            kickAt: Date.now() + 5000 
         };
         
         if (room.status === 'waiting') room.status = 'betting';
@@ -279,16 +279,25 @@ io.on('connection', (socket) => {
         }
     });
 
+    // ATOMIC BET LOCK
     socket.on('place_bet', async ({ roomId, username, seatIndex, betAmount }) => {
         let room = rooms[roomId]; if (!room) return;
         const seat = room.seats[seatIndex];
         if (!seat || seat.username !== username || room.status !== 'betting') return;
         
-        if (seat.credits >= betAmount && betAmount >= 1000) {
-            seat.hands[0].bet = betAmount; seat.credits -= betAmount;
+        if (betAmount >= 1000) {
+            const updatedUser = await User.findOneAndUpdate(
+                { username: seat.username, credits: { $gte: betAmount } },
+                { $inc: { credits: -betAmount } },
+                { new: true }
+            );
+            
+            if (!updatedUser) return; // Not enough funds
+            
+            seat.credits = updatedUser.credits;
+            seat.hands[0].bet = betAmount;
             seat.kickAt = null; 
             
-            await User.updateOne({ username: seat.username }, { credits: seat.credits });
             await new Transaction({ username: seat.username, type: 'bet placed', amount: -betAmount }).save();
             
             room.betEndTime = Date.now() + 15000;
@@ -314,12 +323,14 @@ io.on('connection', (socket) => {
         const seat = room.seats[seatIndex]; if (seat.username !== username) return;
         
         const hand = seat.hands[seat.currentHand];
+        if (hand.status !== 'waiting') return;
+
         hand.cards.push(room.deck.pop()); 
         hand.value = calculateValue(hand.cards);
         
         if (hand.value > 21) { 
             hand.status = 'bust'; 
-            hand.result = 'bust'; // Flag for UI
+            hand.result = 'bust'; 
             moveToNextTurn(roomId); 
         }
         else if (hand.value === 21) { 
@@ -337,21 +348,29 @@ io.on('connection', (socket) => {
         let room = rooms[roomId]; if (!room) return;
         if (room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return;
         const seat = room.seats[seatIndex]; if (seat.username !== username) return;
-        
-        seat.hands[seat.currentHand].status = 'stand';
+        const hand = seat.hands[seat.currentHand];
+        if (hand.status !== 'waiting') return;
+
+        hand.status = 'stand';
         moveToNextTurn(roomId); 
     });
 
+    // ATOMIC DOUBLE DOWN LOCK
     socket.on('player_action_double', async ({ roomId, username, seatIndex }) => {
         let room = rooms[roomId]; if (!room) return;
         if (room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return;
         const seat = room.seats[seatIndex]; if (seat.username !== username) return;
         const hand = seat.hands[seat.currentHand];
+        if (hand.status !== 'waiting' || hand.cards.length !== 2) return;
         
-        if (hand.cards.length !== 2 || seat.credits < hand.bet) return; 
-
-        seat.credits -= hand.bet; 
-        await User.updateOne({ username: seat.username }, { credits: seat.credits });
+        const updatedUser = await User.findOneAndUpdate(
+            { username: seat.username, credits: { $gte: hand.bet } },
+            { $inc: { credits: -hand.bet } },
+            { new: true }
+        );
+        if (!updatedUser) return;
+        
+        seat.credits = updatedUser.credits;
         await new Transaction({ username: seat.username, type: 'double down', amount: -hand.bet }).save();
         hand.bet *= 2;
         
@@ -363,15 +382,26 @@ io.on('connection', (socket) => {
         moveToNextTurn(roomId); 
     });
 
+    // STRICT ONCE-PER-HAND SPLIT RULE
     socket.on('player_action_split', async ({ roomId, username, seatIndex }) => {
         let room = rooms[roomId]; if (!room) return;
         if (room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return;
         const seat = room.seats[seatIndex]; if (seat.username !== username) return;
-        const hand = seat.hands[seat.currentHand];
         
-        if (hand.cards.length === 2 && hand.cards[0].weight === hand.cards[1].weight && seat.credits >= hand.bet) {
-            seat.credits -= hand.bet;
-            await User.updateOne({ username: seat.username }, { credits: seat.credits });
+        if (seat.hands.length >= 2) return; 
+
+        const hand = seat.hands[seat.currentHand];
+        if (hand.status !== 'waiting' || hand.cards.length !== 2) return;
+
+        if (hand.cards[0].weight === hand.cards[1].weight) {
+            const updatedUser = await User.findOneAndUpdate(
+                { username: seat.username, credits: { $gte: hand.bet } },
+                { $inc: { credits: -hand.bet } },
+                { new: true }
+            );
+            if (!updatedUser) return; 
+            
+            seat.credits = updatedUser.credits;
             await new Transaction({ username: seat.username, type: 'split bet', amount: -hand.bet }).save();
             
             const splitCard = hand.cards.pop();
@@ -420,7 +450,9 @@ io.on('connection', (socket) => {
                 const seat = rooms[rId].seats.find(s => s && s.username === username); 
                 if(seat) { seat.credits = user.credits; emitGameState(rId); }
             });
-        } else { socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); }
+        } else { 
+            socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); 
+        }
     });
 
     socket.on('send_chat', ({ roomId, username, message }) => { 
@@ -487,6 +519,7 @@ function moveToNextTurn(roomId) {
     if (seat && seat.currentHand < seat.hands.length - 1) { 
         seat.currentHand++; 
         if (seat.hands[seat.currentHand].status !== 'waiting') return moveToNextTurn(roomId); 
+        
         room.turnEndTime = Date.now() + 15000;
         startTurnTimer(roomId);
         emitGameState(roomId);
@@ -509,6 +542,7 @@ function moveToNextTurn(roomId) {
     }
 }
 
+// DEALER ANIMATION DELAY LOGIC
 async function processDealerTurn(roomId) {
     let room = rooms[roomId]; if (!room) return;
     room.status = 'dealerTurn'; room.activeSeatIndex = -1; 
@@ -531,7 +565,7 @@ async function processDealerTurn(roomId) {
                 resolveBets(roomId, dealerValue);
             }
         }, 1000);
-    }, 1000);
+    }, 1500); // 1.5s pause to watch the flip before drawing more
 }
 
 async function resolveBets(roomId, dealerValue) {
@@ -545,7 +579,6 @@ async function resolveBets(roomId, dealerValue) {
                 if (hand.bet > 0) {
                     let payout = 0;
                     
-                    // EVALUATE WIN/LOSE FOR UI STAMP
                     if (hand.status === 'blackjack' && dealerValue !== 21) { payout = hand.bet * 2.5; hand.result = 'win-bj'; } 
                     else if (hand.status !== 'bust' && (dealerValue > 21 || hand.value > dealerValue)) { payout = hand.bet * 2; hand.result = 'win'; } 
                     else if (hand.status !== 'bust' && hand.value === dealerValue) { payout = hand.bet; hand.result = 'push'; }
