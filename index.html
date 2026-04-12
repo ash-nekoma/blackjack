@@ -100,24 +100,36 @@
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
         .global-timer.warning { background: #eab308; color: #000; top: 230px; font-size: 24px; font-weight: bold; text-shadow: none !important;}
 
-        .seat { position: absolute; width: 140px; min-height: 180px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s;}
+        .seat { position: absolute; width: 150px; min-height: 180px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s;}
         .seat-empty-box { width: 100%; height: 100%; border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); }
 
         .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
         
-        /* 15s IN-SEAT TIMER BAR */
         .turn-bar-container { width: 100%; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
         .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
 
-        .seat-header { background: rgba(0,0,0,0.8); color: #fff; font-size: 16px; font-weight: bold; padding: 4px 10px; border-radius: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 2px solid var(--border-std); margin-bottom: 10px; box-shadow: 2px 2px 0 #000;}
-        .seat-bet { color: var(--warning); font-size: 14px; font-weight: bold; margin-top: 8px; background: rgba(0,0,0,0.8); padding: 4px 12px; border-radius: 20px; border: 2px solid var(--warning); box-shadow: 2px 2px 0 rgba(0,0,0,0.8); text-align: center; z-index: 5;}
+        /* PLAYER NAME AND BET PLATE */
+        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.7); border: 2px solid var(--border-std); border-radius: 6px; padding: 4px 15px; margin-top: 5px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1.1; min-width: 100px;}
+        .player-bet-text { color: var(--warning); font-size: 18px; font-weight: bold; text-shadow: 1px 1px 0 #000; }
+        .player-name-text { font-size: 14px; font-weight: bold; text-transform: uppercase; text-shadow: 1px 1px 0 #000; margin-top: 2px;}
 
-        /* PERFECTLY ALIGNED BET BOX */
-        .seat-bet-box { display: flex; width: 100%; gap: 6px; margin-top: 10px; }
-        .seat-bet-box input { flex: 1; padding: 4px; text-align: center; font-size: 16px; margin: 0; outline: none; background: #1e293b; color: #fff; border: 2px solid var(--border-std); border-radius: 4px; font-family: var(--clear-font); min-width: 0;}
-        .s-btn { padding: 6px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 14px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5);}
-        .s-btn.btn-bet { width: 50px; background: var(--success); color: #000; flex-shrink: 0;}
+        /* CHIP BETTING UI */
+        .chip-rack { display: flex; gap: 4px; justify-content: center; margin-top: 8px; flex-wrap: wrap; width: 100%;}
+        .chip { width: 34px; height: 34px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 11px; font-weight: bold; border: 2px dashed #fff; cursor: pointer; transition: 0.1s; box-shadow: 2px 2px 0 rgba(0,0,0,0.5); font-family: Arial, sans-serif;}
+        .chip:active { transform: scale(0.9); box-shadow: 0 0 0; }
+        .chip-1k { background: #3b82f6; }
+        .chip-5k { background: #ef4444; }
+        .chip-10k { background: #10b981; }
+        .chip-50k { background: #f97316; }
+        .chip-100k { background: #000; border: 2px dashed var(--warning); color: var(--warning); }
+        
+        .bet-action-row { display: flex; width: 100%; gap: 4px; margin-top: 6px; }
+
+        .s-btn { padding: 6px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 12px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5); flex: 1; display: flex; justify-content: center; align-items: center; text-align: center;}
+        .s-btn.btn-bet { background: var(--warning); color: #000; }
+        .s-btn.btn-clear { background: #475569; color: #fff; }
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
+        .s-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.5; box-shadow: none;}
 
         .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; }
         .btn-hit { background: var(--success); color: #000; }
@@ -125,17 +137,18 @@
         .btn-double { background: var(--accent-glow-2); color: #fff; }
         .btn-split { background: var(--accent-glow); color: #fff; }
         
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; padding: 8px; font-weight: bold; cursor: pointer; border: 2px solid var(--border-std); border-radius: 4px; margin-top: 10px; font-family: var(--clear-font); box-shadow: 2px 2px 0 #000; box-sizing: border-box;}
-        .btn-inseat-standup:active { transform: scale(0.95); }
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; padding: 6px; font-weight: bold; cursor: pointer; border: 2px solid var(--border-std); border-radius: 4px; margin-top: 6px; font-family: var(--clear-font); box-shadow: 2px 2px 0 #000; box-sizing: border-box; text-transform: uppercase; font-size: 12px;}
+        .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0; }
 
         @keyframes flyOut { 0% { transform: translateY(-100px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         @keyframes flipCard { 0% { transform: rotateY(180deg); } 100% { transform: rotateY(0deg); } }
 
-        .hands-wrapper { display: flex; gap: 15px; justify-content: center; }
+        .hands-wrapper { display: flex; gap: 15px; justify-content: center; transition: 0.3s; transform-origin: bottom center;}
         .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; }
         .hand-container { position: relative; display: flex; justify-content: center; margin-bottom: 5px; }
         
-        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -35px; animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: Arial, Helvetica, sans-serif; }
+        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -35px; font-family: Arial, Helvetica, sans-serif; }
+        .card.card-animate { animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .card:first-child { margin-left: 0; }
         .card.red { color: #d00; }
         .card.black { color: #000; }
@@ -147,10 +160,8 @@
         .card.dealer-hidden { background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); color: transparent; transform: rotateY(180deg); animation: none;}
         .card.flip-reveal { animation: flipCard 0.6s ease-out forwards; }
 
-        /* PERFECT CENTERED BADGE */
         .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10; font-family: Arial, sans-serif; line-height: 1; padding: 0; padding-top: 1px;}
 
-        /* HAND RESULT STAMP OVERLAYS */
         .hand-status-label { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); font-size: 24px; font-weight: bold; font-family: 'VT323'; text-shadow: 2px 2px 0 #000; padding: 2px 10px; border: 3px solid currentColor; border-radius: 4px; background: rgba(0,0,0,0.85); z-index: 20; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 10px rgba(0,0,0,0.5);}
         .hand-status-bust { color: var(--danger); }
         .hand-status-win { color: var(--success); }
@@ -253,6 +264,7 @@
                         <li><strong>The 15s Action Timer:</strong> You have 15 seconds to make your decision (Hit, Stand, Double, Split). Failing to act will auto-stand your hand.</li>
                         <li><strong>Payouts:</strong> Standard wins pay 1:1 (2x). Blackjack pays 3:2 (2.5x). Pushes refund the bet.</li>
                         <li><strong>Dealer Rules:</strong> Dealer must stand on all 17s. Dealer peeks for Blackjack instantly.</li>
+                        <li><strong>Splits & Doubles:</strong> You can Double Down on your first two cards. You can Split any pairs (ONCE per hand).</li>
                     </ul>
                 </div>
                 <div id="tab-sys" class="tab-content custom-scroll">
@@ -454,7 +466,10 @@
         let currentUser = null; let currentGameState = null; let currentRoomId = null; let mySeatIndex = -1;
         let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let idleTimerInt = null;
         let dailyRewardNextClaim = new Date(0); let rewardTimerInt = null; let isPickingReward = false;
-        let lastBetAmount = 1000; 
+        
+        // Anti-spam locks and bet memory
+        let actionLocked = false; 
+        window.tempBets = {}; 
 
         // UI HELPERS
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -599,7 +614,7 @@
 
         // --- GAME ACTIONS & RENDER ---
         function joinRoom(roomId) { 
-            currentRoomId = roomId; hideModal('play-modal');
+            currentRoomId = roomId; hideModal('play-modal'); window.tempBets = {};
             document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); 
             socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId });
         }
@@ -618,31 +633,72 @@
         document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat(); });
         socket.on('receive_chat', data => { const msgs = document.getElementById('chat-messages'); msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; });
 
-        window.actSitDown = function(idx) { socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        // CHIP BETTING LOGIC
+        window.addBet = function(idx, amt) {
+            if (!window.tempBets[idx]) window.tempBets[idx] = 0;
+            if (window.tempBets[idx] + amt > 100000) window.tempBets[idx] = 100000;
+            else window.tempBets[idx] += amt;
+            renderTable(currentGameState);
+        }
+        window.clearBet = function(idx) { window.tempBets[idx] = 0; renderTable(currentGameState); }
+
+        window.actSitDown = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            window.tempBets[idx] = 0;
+            socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+        }
         
         window.actPlaceBet = function(idx) { 
-            const amtStr = document.getElementById(`inseat-bet-${idx}`).value; 
-            const amt = parseInt(amtStr.replace(/,/g, '')); 
-            if (isNaN(amt) || amt < 1000) return alert("Minimum bet is 1,000 credits.");
+            if(actionLocked) return;
+            const amt = window.tempBets[idx] || 0;
+            if (amt < 1000) return alert("Minimum bet is 1,000 credits.");
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
-            lastBetAmount = amt; 
+            actionLocked = true;
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
         }
         
-        window.actEjectSeat = function(idx) { socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actHit = function(idx) { clearInterval(turnTimerVisualInt); document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actStand = function(idx) { clearInterval(turnTimerVisualInt); document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actDouble = function(idx) { clearInterval(turnTimerVisualInt); document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actSplit = function(idx) { clearInterval(turnTimerVisualInt); document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actEjectSeat = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            window.tempBets[idx] = 0;
+            socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+        }
+        
+        window.actHit = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            clearInterval(turnTimerVisualInt); document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
+            socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+        }
+        
+        window.actStand = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            clearInterval(turnTimerVisualInt); document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
+            socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+        }
+        
+        window.actDouble = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            clearInterval(turnTimerVisualInt); document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
+            socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+        }
+        
+        window.actSplit = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            clearInterval(turnTimerVisualInt); document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
+            socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+        }
 
-        function formatCardHTML(c) {
-            if (c.hidden) return `<div class="card dealer-hidden"></div>`;
+        // NON-REFRESHING CARD RENDERER
+        window.handCardCounts = {}; // Stores { 'seat-X-hand-Y': 2, 'dealer': 1 }
+        
+        function formatCardHTML(c, isNew, isHidden) {
+            let animClass = (isNew && !isHidden) ? 'card-animate' : '';
+            if (isHidden) return `<div class="card dealer-hidden"></div>`;
             const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : 'black';
             const suitSym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit];
-            const flipClass = (currentGameState.status === 'resolving' && currentGameState.dealerCards.length >= 2) ? 'flip-reveal' : '';
+            const flipClass = (currentGameState.status === 'resolving' && currentGameState.dealerCards.length >= 2 && isNew) ? 'flip-reveal' : '';
             return `
-                <div class="card ${flipClass} ${colorClass}">
+                <div class="card ${animClass} ${flipClass} ${colorClass}">
                     <div class="card-corner top-left">${c.value}<br>${suitSym}</div>
                     <div class="card-center-suit">${suitSym}</div>
                     <div class="card-corner bottom-right">${c.value}<br>${suitSym}</div>
@@ -650,7 +706,9 @@
         }
 
         socket.on('game_state_update', (state) => {
+            actionLocked = false; 
             currentGameState = state; 
+            if(state.status === 'waiting') window.handCardCounts = {}; // Reset counters for new round
             if(currentUser && currentRoomId && !document.getElementById('game-interface').classList.contains('hidden')) { updateLobby(state); renderTable(state); manageTimers(state); }
         });
 
@@ -667,16 +725,21 @@
             document.getElementById('phase-display').innerText = state.status === 'resolving' ? 'RESULTS' : state.status.toUpperCase();
             
             const dCards = document.getElementById('dealer-cards'); dCards.innerHTML = ''; const dBadge = document.getElementById('dealer-val');
-            state.dealerCards.forEach(c => { dCards.innerHTML += formatCardHTML(c); });
             
-            // Show Dealer Badge if there's any visible cards
+            // Dealer Cards Render
+            let dCount = window.handCardCounts['dealer'] || 0;
+            state.dealerCards.forEach((c, idx) => { 
+                let isNew = (idx >= dCount);
+                if (state.status === 'resolving' && idx === 1 && dCount === 1) isNew = true; // Force flip reveal
+                dCards.innerHTML += formatCardHTML(c, isNew, c.hidden); 
+            });
+            window.handCardCounts['dealer'] = state.dealerCards.length;
+            
             const visibleDealerCards = state.dealerCards.filter(c => !c.hidden);
             if (visibleDealerCards.length > 0) {
                 dBadge.innerText = calculateValue(visibleDealerCards);
                 dBadge.classList.remove('hidden');
-            } else {
-                dBadge.classList.add('hidden');
-            }
+            } else { dBadge.classList.add('hidden'); }
 
             const seatsArea = document.getElementById('seats-area'); seatsArea.innerHTML = '';
             let activeElements = [];
@@ -705,7 +768,7 @@
                     seatDiv.classList.add('occupied'); if (isMySeat) seatDiv.classList.add('my-seat'); 
                     if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
 
-                    let html = `<div class="seat-header" style="color:${seatData.color}">${seatData.username}</div>`;
+                    let html = ``;
                     
                     let wrapperScale = seatData.hands.length > 1 ? "transform: scale(0.85); width: 125%;" : "";
                     html += `<div class="hands-wrapper" style="${wrapperScale}">`;
@@ -714,10 +777,17 @@
                         let activeHandClass = (state.activeSeatIndex === index && seatData.currentHand === hIdx && hand.status === 'waiting') ? 'active-hand' : '';
                         html += `<div class="hand-box ${activeHandClass}">`;
                         html += `<div class="hand-container">`;
-                        hand.cards.forEach(c => html += formatCardHTML(c));
+                        
+                        let handKey = `seat-${index}-hand-${hIdx}`;
+                        let prevCount = window.handCardCounts[handKey] || 0;
+                        hand.cards.forEach((c, cIdx) => {
+                            let isNew = (cIdx >= prevCount);
+                            html += formatCardHTML(c, isNew, false);
+                        });
+                        window.handCardCounts[handKey] = hand.cards.length;
+
                         if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
                         
-                        // HAND RESULT STAMPS
                         if (hand.status === 'bust' || hand.result === 'bust') {
                             html += `<div class="hand-status-label hand-status-bust">BUST</div>`;
                         } else if (hand.result) {
@@ -728,24 +798,44 @@
                             html += `<div class="hand-status-label hand-status-blackjack">21!</div>`;
                         }
 
-                        html += `</div>`; // Close hand-container
+                        html += `</div>`; 
                         
                         if (activeHandClass) {
                             html += `<div class="turn-bar-container"><div class="turn-bar-fill" id="turn-bar-${index}"></div></div>`;
                         }
-
-                        if (hand.bet > 0) html += `<div class="seat-bet">${formatNumber(hand.bet)}</div>`;
-                        html += `</div>`; // Close hand-box
+                        html += `</div>`; 
                     });
                     html += `</div>`;
+
+                    // SEAT INFO & BET PLATE (MERGED, NO SPACING)
+                    let currentDisplayBet = seatData.hands[0].bet > 0 ? seatData.hands[0].bet : 0;
+                    html += `
+                        <div class="player-info-plate">
+                            <div class="player-bet-text">${currentDisplayBet > 0 ? formatNumber(currentDisplayBet) : ''}</div>
+                            <div class="player-name-text" style="color:${seatData.color}">${seatData.username}</div>
+                        </div>
+                    `;
 
                     if (isMySeat && state.status === 'waiting') {
                         html += `<button class="btn-inseat-standup" onclick="actEjectSeat(${index})">STAND UP</button>`;
                     }
                     if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
                         if (seatData.hands[0].bet === 0) {
-                            html += `<div class="seat-bet-box"><input type="number" id="inseat-bet-${index}" class="retro-input" value="${lastBetAmount}" min="1000"><button class="s-btn btn-bet" onclick="actPlaceBet(${index})">BET</button></div>`;
-                            html += `<button class="btn-inseat-standup" onclick="actEjectSeat(${index})">STAND UP</button>`;
+                            let tBet = window.tempBets[index] || 0;
+                            html += `
+                                <div class="chip-rack">
+                                    <div class="chip chip-1k" onclick="addBet(${index}, 1000)">1K</div>
+                                    <div class="chip chip-5k" onclick="addBet(${index}, 5000)">5K</div>
+                                    <div class="chip chip-10k" onclick="addBet(${index}, 10000)">10K</div>
+                                    <div class="chip chip-50k" onclick="addBet(${index}, 50000)">50K</div>
+                                    <div class="chip chip-100k" onclick="addBet(${index}, 100000)">100K</div>
+                                </div>
+                                <div class="bet-action-row">
+                                    <button class="s-btn btn-clear" onclick="clearBet(${index})">CLEAR</button>
+                                    <button class="s-btn btn-bet" style="flex:2;" onclick="actPlaceBet(${index})">LOCK BET: ${formatNumber(tBet)}</button>
+                                </div>
+                            `;
+                            html += `<button class="btn-inseat-standup" style="margin-top: 5px;" onclick="actEjectSeat(${index})">STAND UP</button>`;
                         }
                     }
                     if (isMySeat && state.status === 'playing' && state.activeSeatIndex === index) {
@@ -757,7 +847,7 @@
                             
                             if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) {
                                 html += `<button class="s-btn btn-double" onclick="actDouble(${index})">2X</button>`;
-                                if (cHand.cards[0].weight === cHand.cards[1].weight) {
+                                if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) {
                                     html += `<button class="s-btn btn-split" onclick="actSplit(${index})">SPLIT</button>`;
                                 }
                             }
@@ -811,7 +901,6 @@
                 } else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
             } else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
 
-            // ACTIVE PLAYER 15S TURN BAR ANIMATION
             clearInterval(turnTimerVisualInt);
             if (state.status === 'playing' && state.turnTimeLeft > 0 && state.activeSeatIndex !== -1) {
                 const bar = document.getElementById(`turn-bar-${state.activeSeatIndex}`);
@@ -829,10 +918,10 @@
         }
 
         function layoutArc(elements, totalSeats) {
-            const centerX = 480; const centerY = 180; 
-            const radiusX = totalSeats === 5 ? 400 : 320; 
+            const centerX = 500; const centerY = 240; 
+            const radiusX = totalSeats === 5 ? 420 : 340; 
             const radiusY = totalSeats === 5 ? 260 : 200; 
-            const widthOffset = 70; 
+            const widthOffset = 75; 
 
             elements.forEach((el, i) => {
                 let angle = totalSeats === 1 ? Math.PI / 2 : (Math.PI * 0.85) - (i * ((Math.PI * 0.70) / (totalSeats - 1)));
@@ -840,8 +929,6 @@
                 el.style.top = `${centerY + Math.sin(angle) * radiusY - 90}px`;
             });
         }
-
-        function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
     </script>
     
     <script>
