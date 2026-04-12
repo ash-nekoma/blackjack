@@ -44,7 +44,7 @@
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 #000; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.7; }
         
-        .coming-soon-badge { background: var(--danger); font-size: 14px; padding: 2px 8px; border-radius: 4px; margin-left: 10px; border: 1px solid #fff; animation: pulse-glow 2s infinite;}
+        .coming-soon-badge { background: var(--danger); font-size: 14px; padding: 2px 8px; border-radius: 4px; margin-left: 10px; border: 1px solid #fff; }
 
         .tab-buttons { display: flex; border-bottom: 2px solid var(--border-std); margin-bottom: 15px; }
         .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-family: 'VT323'; font-size: 22px; cursor: pointer; }
@@ -100,13 +100,14 @@
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
         .global-timer.warning { background: #eab308; color: #000; top: 230px; font-size: 24px; font-weight: bold;}
 
-        @keyframes pulse-glow { 0% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } 50% { box-shadow: 0 0 40px #fff; border-color: #fff; } 100% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } }
-        
         .seat { position: absolute; width: 140px; min-height: 180px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s;}
         .seat-empty-box { width: 100%; height: 100%; border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); }
 
-        .seat.active-turn .hand-box.active-hand { animation: pulse-glow 1.5s infinite; border-radius: 8px; background: rgba(251, 191, 36, 0.2); padding: 10px; border: 2px solid var(--warning);}
-        
+        /* SUBTLE ACTIVE TURN GLOW & TIMER BAR */
+        .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
+        .turn-bar-container { width: 100%; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
+        .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
+
         .seat-header { background: rgba(0,0,0,0.8); color: #fff; font-size: 16px; font-weight: bold; padding: 4px 10px; border-radius: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 2px solid var(--border-std); margin-bottom: 10px; box-shadow: 2px 2px 0 #000;}
         .seat-bet { color: var(--warning); font-size: 14px; font-weight: bold; margin-top: 8px; background: rgba(0,0,0,0.8); padding: 4px 12px; border-radius: 20px; border: 2px solid var(--warning); box-shadow: 2px 2px 0 rgba(0,0,0,0.8); text-align: center; z-index: 5;}
 
@@ -143,7 +144,8 @@
         .card.dealer-hidden { background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); color: transparent; transform: rotateY(180deg); animation: none;}
         .card.flip-reveal { animation: flipCard 0.6s ease-out forwards; }
 
-        .hd-badge { position: absolute; top: -10px; left: -15px; width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10;}
+        /* CENTERED BADGE */
+        .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10;}
 
         .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 20px; background: #0f172a; margin-bottom: 5px; border-radius: 4px;}
         .ledger-desc { color: #94a3b8; }
@@ -238,10 +240,9 @@
                         <li><strong>1-Seat Limit:</strong> You may only occupy one seat per room.</li>
                         <li><strong>Minimum Bet:</strong> The minimum bet per hand is 1,000 credits.</li>
                         <li><strong>The 5s Kick Timer:</strong> Once you sit, you have exactly 5 seconds to place a bet. If you fail, you are auto-ejected.</li>
-                        <li><strong>The 15s Lobby Timer:</strong> The game starts 15 seconds after a bet is placed. Any new bet resets the timer to 15s to allow others to join.</li>
+                        <li><strong>The 15s Action Timer:</strong> You have 15 seconds to make your decision (Hit, Stand, Double, Split). Failing to act will auto-stand your hand.</li>
                         <li><strong>Payouts:</strong> Standard wins pay 1:1 (2x). Blackjack pays 3:2 (2.5x). Pushes refund the bet.</li>
                         <li><strong>Dealer Rules:</strong> Dealer must stand on all 17s. Dealer peeks for Blackjack instantly.</li>
-                        <li><strong>Splits & Doubles:</strong> You can Double Down on your first two cards. You can Split any pairs.</li>
                     </ul>
                 </div>
                 <div id="tab-sys" class="tab-content custom-scroll">
@@ -250,7 +251,6 @@
                         <li><strong>Banking Limits:</strong> The absolute minimum for both deposits and withdrawals is 100,000. The maximum deposit per request is 100,000.</li>
                         <li><strong>Admin Approval:</strong> All new account signups and bank transfers pend manual Admin review.</li>
                         <li><strong>Daily Rewards:</strong> Available every 24 hours. Pick a mystery box for a 1-in-6 chance to win huge payouts.</li>
-                        <li><strong>Fair Play:</strong> Using multiple accounts to farm Daily Rewards is strictly prohibited and results in an IP ban.</li>
                     </ul>
                 </div>
                 <div id="tab-upc" class="tab-content custom-scroll">
@@ -260,7 +260,6 @@
                     <ul>
                         <li><strong>The Track:</strong> Multiplayer, real-time pixel horse racing with dynamic odds.</li>
                         <li><strong>The Pit:</strong> Fast-paced high-stakes dice throws and 50/50 coin flip lobbies.</li>
-                        <li><strong>Cosmetic Store:</strong> Spend your winnings on custom name neon glows and exclusive card decks.</li>
                     </ul>
                 </div>
 
@@ -410,7 +409,7 @@
                     <div class="banker-station clear-text">
                         <div style="font-size: 20px; font-weight: bold; color: #f8fafc; margin-bottom: 5px; text-shadow: 0 0 5px #000;">DEALER</div>
                         <div id="dealer-cards" class="hand-container" style="min-height: 80px;"></div>
-                        <div id="dealer-val" class="hd-badge hidden" style="left: -15px;"></div>
+                        <div id="dealer-val" class="hd-badge hidden"></div>
                     </div>
 
                     <div id="global-timer" class="global-timer pixel-text hidden">BETS CLOSING: <span id="g-time">15</span>s</div>
@@ -448,7 +447,7 @@
         let currentUser = null; let currentGameState = null; let currentRoomId = null; let mySeatIndex = -1;
         let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let idleTimerInt = null;
         let dailyRewardNextClaim = new Date(0); let rewardTimerInt = null; let isPickingReward = false;
-        let lastBetAmount = 1000; // Memorizes your last bet
+        let lastBetAmount = 1000; 
 
         // UI HELPERS
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -701,6 +700,11 @@
                         hand.cards.forEach(c => html += formatCardHTML(c));
                         if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
                         html += `</div>`;
+                        
+                        if (activeHandClass) {
+                            html += `<div class="turn-bar-container"><div class="turn-bar-fill" id="turn-bar-${index}"></div></div>`;
+                        }
+
                         if (hand.bet > 0) html += `<div class="seat-bet"><span class="coin-icon">🪙</span> ${formatNumber(hand.bet)}</div>`;
                         html += `</div>`;
                     });
@@ -709,9 +713,7 @@
                     if (isMySeat && state.status === 'waiting') {
                         html += `<button class="btn-inseat-standup" onclick="actEjectSeat(${index})">STAND UP</button>`;
                     }
-                    
-                    // BUG FIX: Show the bet box if room is 'waiting' OR 'betting' to ensure it reappears instantly!
-                    if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
+                    if (isMySeat && state.status === 'betting') {
                         if (seatData.hands[0].bet === 0) {
                             html += `<div class="seat-bet-box"><input type="number" id="inseat-bet-${index}" class="retro-input" value="${lastBetAmount}" min="1000" style="padding:4px; font-size:16px; width:80px;"><button class="s-btn btn-bet" onclick="actPlaceBet(${index})">BET</button></div>`;
                             html += `<button class="btn-inseat-standup" style="margin-top: 5px;" onclick="actEjectSeat(${index})">STAND UP</button>`;
@@ -738,6 +740,8 @@
             }
             layoutArc(activeElements, totalSeats);
         }
+
+        let turnTimerVisualInt = null;
 
         function manageTimers(state) {
             const gTimerUI = document.getElementById('global-timer'); const nTimerUI = document.getElementById('next-round-timer'); const iTimerUI = document.getElementById('idle-timer');
@@ -777,6 +781,22 @@
                     }, 1000);
                 } else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
             } else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
+
+            // ACTIVE PLAYER 15S TURN BAR ANIMATION
+            clearInterval(turnTimerVisualInt);
+            if (state.status === 'playing' && state.turnTimeLeft > 0 && state.activeSeatIndex !== -1) {
+                const bar = document.getElementById(`turn-bar-${state.activeSeatIndex}`);
+                if (bar) {
+                    let remaining = state.turnTimeLeft;
+                    turnTimerVisualInt = setInterval(() => {
+                        remaining -= 200;
+                        if (remaining < 0) remaining = 0;
+                        const pct = (remaining / 15000) * 100;
+                        bar.style.width = `${pct}%`;
+                        if (remaining <= 0) clearInterval(turnTimerVisualInt);
+                    }, 200);
+                }
+            }
         }
 
         function layoutArc(elements, totalSeats) {
@@ -794,10 +814,8 @@
     </script>
     
     <script>
-        // Disable Right-Click Context Menu
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // Disable standard Developer Tools keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
             if (e.key === 'F11' || e.keyCode === 122) { e.preventDefault(); return false; }
