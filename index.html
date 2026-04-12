@@ -615,7 +615,8 @@
         window.actSitDown = function(idx) { socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
         
         window.actPlaceBet = function(idx) { 
-            const amt = parseInt(document.getElementById(`inseat-bet-${idx}`).value); 
+            const amtStr = document.getElementById(`inseat-bet-${idx}`).value; 
+            const amt = parseInt(amtStr.replace(/,/g, '')); // Strips commas just in case
             if (isNaN(amt) || amt < 1000) return alert("Minimum bet is 1,000 credits.");
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
@@ -739,6 +740,7 @@
         function manageTimers(state) {
             const gTimerUI = document.getElementById('global-timer'); const nTimerUI = document.getElementById('next-round-timer'); const iTimerUI = document.getElementById('idle-timer');
             
+            // PREVENT CLOCK DRIFT: Use exact server remaining time
             if (state.status === 'betting' && state.betTimeLeft > 0) {
                 let left = Math.ceil(state.betTimeLeft / 1000);
                 gTimerUI.classList.remove('hidden'); clearInterval(globalTimerInt); nTimerUI.classList.add('hidden');
