@@ -69,7 +69,7 @@ function createRoom(numSeats) {
 
 const socketUserMap = {}; 
 
-// 7-SECOND IDLE KICK LOOP
+// 7-SECOND KICK TIMER LOOP
 setInterval(() => {
     const now = Date.now();
     Object.keys(rooms).forEach(roomId => {
@@ -166,20 +166,24 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
 
+// STRICT BANKING LIMITS (Min Dep: 10k, Min With: 50k, Max Both: 100k)
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
-    if (amount < 100000) return res.status(400).json({ error: 'Minimum request is 100,000.' });
-    if (type === 'deposit' && amount > 100000) return res.status(400).json({ error: 'Max deposit is 100,000 per request.' });
-    if (type === 'withdrawal' && amount > 100000) return res.status(400).json({ error: 'Max withdrawal is 100,000 per request.' });
-    
-    if (type === 'withdrawal') {
+    if (type === 'deposit') {
+        if (amount < 10000) return res.status(400).json({ error: 'Minimum deposit is 10,000.' });
+        if (amount > 100000) return res.status(400).json({ error: 'Maximum deposit is 100,000.' });
+    } else if (type === 'withdrawal') {
+        if (amount < 50000) return res.status(400).json({ error: 'Minimum withdrawal is 50,000.' });
+        if (amount > 100000) return res.status(400).json({ error: 'Maximum withdrawal is 100,000.' });
+        
         const user = await User.findOneAndUpdate(
             { username, credits: { $gte: amount } }, 
             { $inc: { credits: -amount } },
             { new: true }
         );
-        if (!user) return res.status(400).json({ error: 'Insufficient funds or transaction in progress.' });
+        if (!user) return res.status(400).json({ error: 'Insufficient funds.' });
     }
+    
     await new Transaction({ username, type: `${type} req`, amount, status: 'pending' }).save();
     res.json({ success: true });
 });
@@ -262,7 +266,7 @@ io.on('connection', (socket) => {
             username: user.username, color: user.nameColor, socketId: socket.id, 
             credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], 
             currentHand: 0,
-            kickAt: Date.now() + 7000 // 7 SECOND KICK TIMER
+            kickAt: Date.now() + 7000 // 7 SECOND KICK
         };
         
         if (room.status === 'waiting') room.status = 'betting';
@@ -515,6 +519,7 @@ function moveToNextTurn(roomId) {
     if (seat && seat.currentHand < seat.hands.length - 1) { 
         seat.currentHand++; 
         if (seat.hands[seat.currentHand].status !== 'waiting') return moveToNextTurn(roomId); 
+        
         room.turnEndTime = Date.now() + 15000;
         startTurnTimer(roomId);
         emitGameState(roomId);
@@ -600,7 +605,7 @@ async function resolveBets(roomId, dealerValue) {
                 if(seat) { 
                     seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; 
                     seat.currentHand = 0; 
-                    seat.kickAt = Date.now() + 7000; // 7s Kick Timer resets
+                    seat.kickAt = Date.now() + 7000; 
                 } 
             });
             const anyoneSeated = room.seats.some(s => s !== null);
