@@ -100,19 +100,9 @@ function getNewDeck() {
     return deck.sort(() => Math.random() - 0.5);
 }
 
-function dealCard(room) {
-    let card = room.deck.pop();
-    card.dealtAt = Date.now(); // Stamps card for frontend animations
-    return card;
-}
-
 function calculateValue(cards) {
     let val = 0; let aces = 0;
-    cards.forEach(c => { 
-        if(c.hidden) return; // Ignore hidden cards for math
-        val += c.weight; 
-        if(c.value==='A') aces++; 
-    });
+    cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; });
     while(val > 21 && aces > 0) { val -= 10; aces--; } return val;
 }
 
@@ -124,17 +114,15 @@ function emitGameState(roomId) {
     let safeState = JSON.parse(JSON.stringify(serializableRoom));
     
     const now = Date.now();
-    safeState.serverTime = now; // Syncs frontend animations
-    
     safeState.seats.forEach(s => {
         if (s && s.kickAt) s.kickTimeLeft = Math.max(0, s.kickAt - now);
     });
     if (safeState.betEndTime) safeState.betTimeLeft = Math.max(0, safeState.betEndTime - now);
     if (safeState.nextRoundTime) safeState.nextRoundTimeLeft = Math.max(0, safeState.nextRoundTime - now);
 
+    // Hide dealer's hole card during play
     if (safeState.status === 'playing' && safeState.dealerCards.length > 1) {
-        // Obscures second card, but preserves the dealtAt timestamp for UI formatting
-        safeState.dealerCards[1] = { hidden: true, dealtAt: safeState.dealerCards[1].dealtAt };
+        safeState.dealerCards[1] = { hidden: true };
     }
     io.to(roomId).emit('game_state_update', safeState);
 }
@@ -259,7 +247,7 @@ io.on('connection', (socket) => {
         
         room.seats[seatIndex] = { 
             username: user.username, color: user.nameColor, socketId: socket.id, 
-            credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0, lastAction: null }], 
+            credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], 
             currentHand: 0,
             kickAt: Date.now() + 5000 
         };
@@ -312,11 +300,10 @@ io.on('connection', (socket) => {
         const seat = room.seats[seatIndex]; if (seat.username !== username) return;
         
         const hand = seat.hands[seat.currentHand];
-        hand.cards.push(dealCard(room)); 
+        hand.cards.push(room.deck.pop()); 
         hand.value = calculateValue(hand.cards);
-        hand.lastAction = 'HIT';
         
-        if (hand.value > 21) { hand.status = 'bust'; hand.lastAction = 'BUST'; moveToNextTurn(roomId); }
+        if (hand.value > 21) { hand.status = 'bust'; moveToNextTurn(roomId); }
         else if (hand.value === 21) { hand.status = 'stand'; moveToNextTurn(roomId); }
         else emitGameState(roomId);
     });
@@ -327,7 +314,6 @@ io.on('connection', (socket) => {
         const seat = room.seats[seatIndex]; if (seat.username !== username) return;
         
         seat.hands[seat.currentHand].status = 'stand';
-        seat.hands[seat.currentHand].lastAction = 'STAND';
         moveToNextTurn(roomId); 
     });
 
@@ -344,11 +330,10 @@ io.on('connection', (socket) => {
         await new Transaction({ username: seat.username, type: 'double down', amount: -hand.bet }).save();
         hand.bet *= 2;
         
-        hand.cards.push(dealCard(room)); 
+        hand.cards.push(room.deck.pop()); 
         hand.value = calculateValue(hand.cards);
-        hand.lastAction = 'DOUBLE';
         
-        if (hand.value > 21) { hand.status = 'bust'; hand.lastAction = 'BUST'; } else hand.status = 'stand'; 
+        if (hand.value > 21) hand.status = 'bust'; else hand.status = 'stand'; 
         moveToNextTurn(roomId); 
     });
 
@@ -364,11 +349,10 @@ io.on('connection', (socket) => {
             await new Transaction({ username: seat.username, type: 'split bet', amount: -hand.bet }).save();
             
             const splitCard = hand.cards.pop();
-            const newHand = { cards: [splitCard], bet: hand.bet, status: 'waiting', value: 0, lastAction: 'SPLIT' };
-            hand.lastAction = 'SPLIT';
+            const newHand = { cards: [splitCard], bet: hand.bet, status: 'waiting', value: 0 };
             
-            hand.cards.push(dealCard(room));
-            newHand.cards.push(dealCard(room));
+            hand.cards.push(room.deck.pop());
+            newHand.cards.push(room.deck.pop());
             
             hand.value = calculateValue(hand.cards);
             newHand.value = calculateValue(newHand.cards);
@@ -437,27 +421,15 @@ function startGame(roomId) {
     let room = rooms[roomId]; if (!room) return;
     room.status = 'playing'; room.deck = getNewDeck(); room.dealerCards = [];
     
+    // Wipe players who failed to bet
     room.seats = room.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
     
     for (let i = 0; i < 2; i++) {
-        room.seats.forEach(seat => { 
-            if (seat) {
-                seat.hands[0].cards.push(dealCard(room));
-                seat.hands[0].lastAction = null; // Clear actions
-            } 
-        });
-        room.dealerCards.push(dealCard(room));
+        room.seats.forEach(seat => { if (seat) seat.hands[0].cards.push(room.deck.pop()); });
+        room.dealerCards.push(room.deck.pop());
     }
     
-    room.seats.forEach(seat => { 
-        if (seat) { 
-            seat.hands[0].value = calculateValue(seat.hands[0].cards); 
-            if(seat.hands[0].value === 21) {
-                seat.hands[0].status = 'blackjack'; 
-                seat.hands[0].lastAction = 'BLACKJACK';
-            }
-        } 
-    });
+    room.seats.forEach(seat => { if (seat) { seat.hands[0].value = calculateValue(seat.hands[0].cards); if(seat.hands[0].value === 21) seat.hands[0].status = 'blackjack'; } });
     
     let dealerInitialValue = calculateValue(room.dealerCards);
     if (dealerInitialValue === 21) { resolveBets(roomId, 21); return; }
@@ -491,10 +463,7 @@ async function processDealerTurn(roomId) {
     let room = rooms[roomId]; if (!room) return;
     room.status = 'dealerTurn'; room.activeSeatIndex = -1; emitGameState(roomId);
     let dealerValue = calculateValue(room.dealerCards);
-    while (dealerValue < 17) { 
-        room.dealerCards.push(dealCard(room)); 
-        dealerValue = calculateValue(room.dealerCards); 
-    }
+    while (dealerValue < 17) { room.dealerCards.push(room.deck.pop()); dealerValue = calculateValue(room.dealerCards); }
     resolveBets(roomId, dealerValue);
 }
 
@@ -529,14 +498,20 @@ async function resolveBets(roomId, dealerValue) {
         if (Date.now() >= room.nextRoundTime) {
             clearInterval(room.nextRoundInterval);
             room.dealerCards = [];
+            
+            // Re-open seats and instantly start the 5s idle timer for anyone still seated
             room.seats.forEach(seat => { 
                 if(seat) { 
-                    seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0, lastAction: null }]; 
+                    seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; 
                     seat.currentHand = 0; 
                     seat.kickAt = Date.now() + 5000; 
                 } 
             });
-            room.status = 'waiting'; 
+            
+            // FIX: If players are still seated, shift immediately back to 'betting' so the UI displays the inputs.
+            const anyoneSeated = room.seats.some(s => s !== null);
+            room.status = anyoneSeated ? 'betting' : 'waiting';
+            
             emitGameState(roomId);
         }
     }, 1000);
