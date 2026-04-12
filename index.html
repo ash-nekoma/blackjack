@@ -70,18 +70,23 @@
         .reward-box .front { background: #1e293b; font-size: 40px; }
         .reward-box .back { background: #000; transform: rotateY(180deg); font-family: 'VT323'; font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
 
-        /* --- REDESIGNED 2-COLUMN SEPARATED LAYOUT --- */
+        /* --- 2-COLUMN SEPARATED LAYOUT --- */
         #game-interface { display: flex; gap: 20px; padding: 20px; width: 100%; height: 100%; background: #000; box-sizing: border-box; }
         
         /* LEFT: GAME BOARD */
-        #game-area { flex: 1; position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        #game-area { flex: 1; position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
         
         /* RIGHT: PLAYERS & CHAT */
-        #right-panel-col { width: 340px; display: flex; flex-direction: column; gap: 20px; height: 100%; }
+        #right-panel-col { width: 360px; display: flex; flex-direction: column; gap: 20px; height: 100%; }
         
         #lobby-panel-col, #chat-panel-col { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
 
-        .top-hud { position: absolute; top: 0; left: 0; width: 100%; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); }
+        /* HUD WITH LEFT/CENTER/RIGHT ALIGNMENT */
+        .top-hud { width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); box-sizing: border-box; }
+        .top-hud .hud-left { justify-self: start; }
+        .top-hud .hud-center { justify-self: center; text-align: center; }
+        .top-hud .hud-right { justify-self: end; }
+
         .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
@@ -95,32 +100,34 @@
         .chat-input-area input { flex: 1; padding: 12px; font-size: 20px; margin:0; border:none; text-align: left; font-family: 'VT323'; background: transparent; color: #fff; outline: none;}
         .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-family: 'VT323'; font-size: 24px; cursor: pointer; }
 
-        .table-surface { flex: 1; width: 100%; height: 100%; position: relative; background: transparent; border: none; }
+        .table-surface { flex: 1; width: 100%; position: relative; background: transparent; border: none; }
         
-        .banker-station { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
+        .banker-station { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; }
         
-        .global-timer { position: absolute; top: 250px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
+        .global-timer { position: absolute; top: 220px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
-        .global-timer.warning { background: #eab308; color: #000; top: 310px; font-size: 24px; font-weight: bold; text-shadow: none !important; }
+        .global-timer.warning { background: #eab308; color: #000; top: 280px; font-size: 24px; font-weight: bold; text-shadow: none !important; }
 
         @keyframes pulse-glow { 0% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } 50% { box-shadow: 0 0 40px #fff; border-color: #fff; } 100% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } }
         
-        /* CLEAN SEAT BOXES */
-        .seat { position: absolute; width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s; }
+        .seat { position: absolute; width: 180px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s; padding-bottom: 10px;}
         
-        /* ACTIVE GLOW */
+        /* MINIMALIST EMPTY SEAT BOX */
+        .seat-empty-box { box-sizing: border-box; width: 100%; height: 100%; border: none; background: transparent; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+
         .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
         
         .turn-bar-container { width: 100%; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
         .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
 
+        /* PIXELATED PLAYER NAME & BET PLATE */
         .player-info-plate { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.8); border: 2px solid var(--border-std); border-radius: 6px; padding: 4px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1.1; min-width: 120px; z-index: 5; font-family: 'VT323', monospace; letter-spacing: 1px; text-align: center; box-sizing: border-box;}
         .player-bet-text { color: var(--warning); font-size: 22px; font-weight: bold; text-shadow: 2px 2px 0 #000; }
         .player-name-text { font-size: 18px; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 0 #000;}
 
-        /* BETTING INPUT BAR RESTORED */
-        .seat-bet-box { display: flex; width: 100%; gap: 6px; margin-top: 10px; }
-        .seat-bet-box input { flex: 1; padding: 6px 4px; text-align: center; font-size: 16px; margin: 0; outline: none; background: #1e293b; color: #fff; border: 2px solid var(--border-std); border-radius: 4px; font-family: var(--clear-font); min-width: 0; font-weight: bold;}
+        /* INPUT BAR RESTORED WITH BUTTON GRID */
+        .seat-bet-box { display: flex; flex-direction: column; width: 100%; margin-top: 10px; }
+        .seat-bet-box input { width: 100%; padding: 6px 4px; text-align: center; font-size: 16px; margin: 0; outline: none; background: #1e293b; color: #fff; border: 2px solid var(--border-std); border-radius: 4px; font-family: var(--clear-font); box-sizing: border-box; font-weight: bold;}
         
         .s-btn { padding: 6px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 12px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box;}
         .s-btn.btn-bet { background: var(--success); color: #000; font-size: 14px;}
@@ -133,14 +140,20 @@
         .btn-double { background: var(--accent-glow-2); color: #fff; }
         .btn-split { background: var(--accent-glow); color: #fff; }
         
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 14px; padding: 8px;}
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 6px; font-size: 20px; font-family: 'VT323', monospace; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box;}
 
-        /* CARDS & BADGES */
+        @keyframes flyOut { 0% { transform: translateY(-100px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes flipCard { 0% { transform: rotateY(180deg); } 100% { transform: rotateY(0deg); } }
+
+        /* CARDS & BADGES - FIXED WITH RELATIVE MARGIN OVERLAP */
         .hands-wrapper { display: flex; gap: 15px; justify-content: center; transition: 0.3s; transform-origin: bottom center; min-height: 88px; min-width: 62px;}
         .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; min-height: 88px; min-width: 62px;}
-        .hand-container { position: relative; display: flex; justify-content: center; margin-bottom: 5px; min-height: 88px; min-width: 62px;}
+        .hand-container { position: relative; display: flex; flex-direction: row; justify-content: center; margin-bottom: 5px; min-height: 88px; min-width: 62px;}
         
-        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: absolute; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; transition: left 0.3s;}
+        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; margin-left: -35px; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; }
+        .card:first-child { margin-left: 0; }
+        
+        .card.card-animate { animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .card.red { color: #d00; }
         .card.black { color: #000; }
         .card-corner { position: absolute; font-size: 15px; font-weight: bold; line-height: 1; text-align: center; letter-spacing: -1px;}
@@ -313,14 +326,6 @@
                     <button class="wood-btn pixel-text" style="flex: 1; width:auto; background: var(--warning);" onclick="submitBank('withdrawal')">WITHDRAW</button>
                 </div>
                 
-                <div style="background: #111; padding: 15px; border: 2px solid var(--success); border-radius: 8px;">
-                    <h3 class="pixel-text" style="color: #fff; margin-bottom: 10px; text-align: left;">REDEEM GIFT CODE</h3>
-                    <div class="input-group" style="margin:0;">
-                        <input type="text" id="gift-code" class="retro-input" placeholder="ENTER CODE">
-                        <button class="wood-btn pixel-text" style="width: 150px; margin-bottom:0; background: var(--success);" onclick="redeemCode()">REDEEM</button>
-                    </div>
-                </div>
-                
                 <p id="bank-msg" class="pixel-text" style="font-size: 24px; margin-top: 15px;"></p>
                 <div style="display: flex; justify-content: center; margin-top: 15px;">
                     <button class="wood-btn pixel-text" style="background: var(--danger); width:100%;" onclick="hideModal('bank-modal')">CLOSE</button>
@@ -332,16 +337,16 @@
             
             <div id="game-area">
                 <div class="top-hud">
-                    <button class="btn-menu" onclick="exitToMenu()">◄ DASHBOARD</button>
-                    <div style="font-size: 32px; color: var(--accent-glow-2);" id="phase-display" class="pixel-text">WAITING</div>
-                    <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="hud-credits"></span></div>
+                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu()">◄ DASHBOARD</button></div>
+                    <div class="hud-center"><div style="font-size: 32px; color: var(--accent-glow-2);" id="phase-display" class="pixel-text">WAITING</div></div>
+                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="hud-credits"></span></div></div>
                 </div>
 
                 <div class="table-surface">
                     <div class="banker-station clear-text">
-                        <div class="pixel-text" style="font-size: 24px; font-weight: bold; color: #f8fafc; margin-bottom: 5px; text-shadow: 0 0 5px #000;">DEALER</div>
-                        <div class="hand-container" style="min-height: 88px;">
-                            <div id="dealer-cards"></div>
+                        <div class="pixel-text" style="font-size: 32px; color: #f8fafc; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; letter-spacing: 2px;">DEALER</div>
+                        <div class="hand-container">
+                            <div id="dealer-cards" style="display: flex; justify-content: center;"></div>
                             <div id="dealer-val" class="hd-badge hidden"></div>
                         </div>
                     </div>
@@ -380,7 +385,7 @@
         let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let idleTimerInt = null;
         
         let actionLocked = false; 
-        window.lastBetAmount = 0; // Starts at 0
+        window.lastBetAmount = 0; 
 
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
@@ -460,14 +465,6 @@
             setTimeout(()=> msgBox.innerText='', 3000);
         }
 
-        async function redeemCode() {
-            const code = document.getElementById('gift-code').value; const msgBox = document.getElementById('bank-msg');
-            const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
-            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; document.getElementById('hud-credits').innerText = formatNumber(currentUser.credits); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code').value='';}
-            else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
-            setTimeout(()=> msgBox.innerText='', 3000);
-        }
-
         function joinRoom(roomId) { 
             currentRoomId = roomId; hideModal('play-modal'); 
             document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); 
@@ -488,20 +485,36 @@
         document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat(); });
         socket.on('receive_chat', data => { const msgs = document.getElementById('chat-messages'); msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; });
 
+        // BETTING LOGIC
         window.actSitDown = function(idx) { 
             if(actionLocked) return; actionLocked = true; 
             socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
         }
         
+        window.updateBetInput = function(idx, amt) {
+            const input = document.getElementById(`inseat-bet-${idx}`);
+            if(!input) return;
+            let current = parseInt(input.value) || 0;
+            let newVal = current + amt;
+            if (newVal > 100000) newVal = 100000;
+            input.value = newVal;
+        }
+        
+        window.clearBetInput = function(idx) {
+            const input = document.getElementById(`inseat-bet-${idx}`);
+            if(input) input.value = 0;
+        }
+
         window.actPlaceBet = function(idx) { 
             if(actionLocked) return;
-            const amtStr = document.getElementById(`inseat-bet-${idx}`).value; 
-            const amt = parseInt(amtStr.replace(/,/g, '')); 
+            const input = document.getElementById(`inseat-bet-${idx}`);
+            const amt = input ? parseInt(input.value) : 0;
+            
             if (isNaN(amt) || amt < 1000) return alert("Minimum bet is 1,000 credits.");
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
             actionLocked = true;
-            window.lastBetAmount = amt; 
+            window.lastBetAmount = amt; // SAVE FOR NEXT ROUND
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
         }
         
@@ -534,13 +547,14 @@
             socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
         }
 
-        function formatCardHTML(c, isHidden, leftOffset) {
-            if (isHidden) return `<div class="card dealer-hidden" style="left: ${leftOffset}px;"></div>`;
+        // CARDS RENDER ENGINE (FIXED NO ABSOLUTE HACKS)
+        function formatCardHTML(c, isHidden) {
+            if (isHidden) return `<div class="card dealer-hidden"></div>`;
             const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : 'black';
             const suitSym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit];
             
             return `
-                <div class="card ${colorClass}" style="left: ${leftOffset}px;">
+                <div class="card ${colorClass}">
                     <div class="card-corner top-left">${c.value}<br>${suitSym}</div>
                     <div class="card-center-suit">${suitSym}</div>
                     <div class="card-corner bottom-right">${c.value}<br>${suitSym}</div>
@@ -567,9 +581,8 @@
             
             const dCards = document.getElementById('dealer-cards'); dCards.innerHTML = ''; const dBadge = document.getElementById('dealer-val');
             
-            state.dealerCards.forEach((c, idx) => { 
-                let offset = idx * 30;
-                dCards.innerHTML += formatCardHTML(c, c.hidden, offset); 
+            state.dealerCards.forEach(c => { 
+                dCards.innerHTML += formatCardHTML(c, c.hidden); 
             });
             
             const visibleDealerCards = state.dealerCards.filter(c => !c.hidden);
@@ -597,8 +610,8 @@
 
                 if (!seatData) {
                     if (state.status === 'waiting' || state.status === 'betting') {
-                        let sitBtn = !hasSeatAnywhere ? `<button class="s-btn btn-bet pixel-text" style="padding: 10px 20px; font-size: 24px; box-shadow: 4px 4px 0 #000;" onclick="actSitDown(${index})">SIT</button>` : '';
-                        seatDiv.innerHTML = sitBtn;
+                        let sitBtn = !hasSeatAnywhere ? `<button class="s-btn btn-bet pixel-text" style="font-size: 24px; padding: 12px 30px; box-shadow: 4px 4px 0 #000;" onclick="actSitDown(${index})">SIT</button>` : '';
+                        seatDiv.innerHTML = `<div class="seat-empty-box">${sitBtn}</div>`;
                         activeElements.push(seatDiv);
                     }
                 } else {
@@ -613,13 +626,10 @@
                     seatData.hands.forEach((hand, hIdx) => {
                         let activeHandClass = (state.activeSeatIndex === index && seatData.currentHand === hIdx && hand.status === 'waiting') ? 'active-hand' : '';
                         html += `<div class="hand-box ${activeHandClass}">`;
+                        html += `<div class="hand-container">`;
                         
-                        const containerWidth = hand.cards.length > 0 ? 62 + ((hand.cards.length - 1) * 30) : 62;
-                        html += `<div class="hand-container" style="width: ${containerWidth}px;">`;
-                        
-                        hand.cards.forEach((c, cIdx) => {
-                            let offset = cIdx * 30;
-                            html += formatCardHTML(c, false, offset);
+                        hand.cards.forEach(c => {
+                            html += formatCardHTML(c, false);
                         });
 
                         if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
@@ -643,6 +653,7 @@
                     });
                     html += `</div>`;
 
+                    // PLATE
                     let currentDisplayBet = seatData.hands[0].bet > 0 ? seatData.hands[0].bet : 0;
                     if(currentDisplayBet > 0 || state.status === 'playing' || state.status === 'dealerTurn' || state.status === 'resolving') {
                         html += `
@@ -655,12 +666,23 @@
                         html += `<div class="player-info-plate"><div class="player-name-text" style="color:${seatData.color}">${seatData.username}</div></div>`;
                     }
 
+                    // BETTING UI
                     if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
                         if (seatData.hands[0].bet === 0) {
+                            let startBet = window.lastBetAmount || 0;
                             html += `
                                 <div class="seat-bet-box">
-                                    <input type="number" id="inseat-bet-${index}" class="retro-input" value="${window.lastBetAmount}" min="1000">
-                                    <button class="s-btn btn-bet" onclick="actPlaceBet(${index})">BET</button>
+                                    <input type="number" id="inseat-bet-${index}" value="${startBet}" min="1000" max="100000">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px;">
+                                        <button class="s-btn" style="background:#3b82f6; color:#fff;" onclick="updateBetInput(${index}, 5000)">+5K</button>
+                                        <button class="s-btn" style="background:#10b981; color:#000;" onclick="updateBetInput(${index}, 20000)">+20K</button>
+                                        <button class="s-btn" style="background:#f97316; color:#fff;" onclick="updateBetInput(${index}, 50000)">+50K</button>
+                                        <button class="s-btn" style="background:#fbbf24; color:#000;" onclick="updateBetInput(${index}, 100000)">+100K</button>
+                                    </div>
+                                    <div style="display: flex; gap: 4px; margin-top: 4px;">
+                                        <button class="s-btn btn-clear" style="flex:1;" onclick="clearBetInput(${index})">CLR</button>
+                                        <button class="s-btn btn-bet" style="flex:2;" onclick="actPlaceBet(${index})">BET</button>
+                                    </div>
                                 </div>
                             `;
                         }
@@ -753,29 +775,15 @@
             const w = board ? board.clientWidth : 900;
             const h = board ? board.clientHeight : 600;
 
-            if (totalSeats === 3) {
-                // 3 SEATS: PERFECT STRAIGHT HORIZONTAL LINE ACROSS THE BOTTOM
-                const totalWidth = 600; // Total spread width
-                const startX = (w / 2) - (totalWidth / 2);
-                const gap = totalWidth / 2;
-                
-                elements.forEach((el, i) => {
-                    el.style.left = `${startX + (i * gap) - 80}px`; // -80px to center the 160px seat
-                    el.style.top = `${h - 220}px`; // Flush to the bottom
-                });
-            } else {
-                // 5 SEATS: WIDE ARC
-                const centerX = w / 2; 
-                const centerY = h / 2 + 50; 
-                const radiusX = 380; 
-                const radiusY = 220; 
+            const seatWidth = 180;
+            const gap = 20;
+            const totalWidth = (totalSeats * seatWidth) + ((totalSeats - 1) * gap);
+            const startX = (w - totalWidth) / 2;
 
-                elements.forEach((el, i) => {
-                    let angle = (Math.PI * 0.85) - (i * ((Math.PI * 0.70) / (totalSeats - 1)));
-                    el.style.left = `${centerX + Math.cos(angle) * radiusX - 80}px`; 
-                    el.style.top = `${centerY + Math.sin(angle) * radiusY - 90}px`;
-                });
-            }
+            elements.forEach((el, i) => {
+                el.style.left = `${startX + (i * (seatWidth + gap))}px`; 
+                el.style.top = `${h - 280}px`; 
+            });
         }
     </script>
     
