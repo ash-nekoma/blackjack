@@ -69,6 +69,7 @@ function createRoom(numSeats) {
 
 const socketUserMap = {}; 
 
+// 7-SECOND IDLE KICK LOOP
 setInterval(() => {
     const now = Date.now();
     Object.keys(rooms).forEach(roomId => {
@@ -142,7 +143,7 @@ function startTurnTimer(roomId) {
     }, 500);
 }
 
-// --- PLAYER REST APIs ---
+// --- REST APIs ---
 app.post('/api/signup', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -165,7 +166,6 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
 
-// ATOMIC BANK TRANSACTIONS
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
     if (amount < 100000) return res.status(400).json({ error: 'Minimum request is 100,000.' });
@@ -197,7 +197,6 @@ app.get('/api/profile/ledger/:username', async (req, res) => {
     const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50); res.json(txs);
 });
 
-// --- ADMIN APIs ---
 const checkAdmin = async (req, res, next) => {
     try {
         const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
@@ -263,7 +262,7 @@ io.on('connection', (socket) => {
             username: user.username, color: user.nameColor, socketId: socket.id, 
             credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], 
             currentHand: 0,
-            kickAt: Date.now() + 5000 
+            kickAt: Date.now() + 7000 // 7 SECOND KICK TIMER
         };
         
         if (room.status === 'waiting') room.status = 'betting';
@@ -279,7 +278,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // ATOMIC BET LOCK
     socket.on('place_bet', async ({ roomId, username, seatIndex, betAmount }) => {
         let room = rooms[roomId]; if (!room) return;
         const seat = room.seats[seatIndex];
@@ -292,7 +290,7 @@ io.on('connection', (socket) => {
                 { new: true }
             );
             
-            if (!updatedUser) return; // Not enough funds
+            if (!updatedUser) return; 
             
             seat.credits = updatedUser.credits;
             seat.hands[0].bet = betAmount;
@@ -355,7 +353,6 @@ io.on('connection', (socket) => {
         moveToNextTurn(roomId); 
     });
 
-    // ATOMIC DOUBLE DOWN LOCK
     socket.on('player_action_double', async ({ roomId, username, seatIndex }) => {
         let room = rooms[roomId]; if (!room) return;
         if (room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return;
@@ -382,7 +379,6 @@ io.on('connection', (socket) => {
         moveToNextTurn(roomId); 
     });
 
-    // STRICT ONCE-PER-HAND SPLIT RULE
     socket.on('player_action_split', async ({ roomId, username, seatIndex }) => {
         let room = rooms[roomId]; if (!room) return;
         if (room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return;
@@ -519,7 +515,6 @@ function moveToNextTurn(roomId) {
     if (seat && seat.currentHand < seat.hands.length - 1) { 
         seat.currentHand++; 
         if (seat.hands[seat.currentHand].status !== 'waiting') return moveToNextTurn(roomId); 
-        
         room.turnEndTime = Date.now() + 15000;
         startTurnTimer(roomId);
         emitGameState(roomId);
@@ -542,7 +537,6 @@ function moveToNextTurn(roomId) {
     }
 }
 
-// DEALER ANIMATION DELAY LOGIC
 async function processDealerTurn(roomId) {
     let room = rooms[roomId]; if (!room) return;
     room.status = 'dealerTurn'; room.activeSeatIndex = -1; 
@@ -565,7 +559,7 @@ async function processDealerTurn(roomId) {
                 resolveBets(roomId, dealerValue);
             }
         }, 1000);
-    }, 1500); // 1.5s pause to watch the flip before drawing more
+    }, 1500); 
 }
 
 async function resolveBets(roomId, dealerValue) {
@@ -606,7 +600,7 @@ async function resolveBets(roomId, dealerValue) {
                 if(seat) { 
                     seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; 
                     seat.currentHand = 0; 
-                    seat.kickAt = Date.now() + 5000; 
+                    seat.kickAt = Date.now() + 7000; // 7s Kick Timer resets
                 } 
             });
             const anyoneSeated = room.seats.some(s => s !== null);
