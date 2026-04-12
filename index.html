@@ -74,7 +74,6 @@
         .reward-box .back { background: #000; transform: rotateY(180deg); font-family: 'VT323'; font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
         .reward-box .back.zero { color: #94a3b8; border-color: #475569; }
 
-        /* GAME LAYOUT: ENTIRE AREA IS THE GREEN FELT NOW */
         #game-area { width: 75%; position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); display: flex; flex-direction: column; align-items: center; overflow: hidden;}
         #sidebar { width: 25%; background: var(--bg-darker); border-left: 2px solid var(--border-std); display: flex; flex-direction: column; height: 100%; z-index: 50;}
 
@@ -94,11 +93,9 @@
         .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-family: 'VT323'; font-size: 24px; cursor: pointer; }
         .chat-input-area button:active { background: #059669; }
 
-        /* TABLE SURFACE CONTAINER (Invisible mapping layer) */
         .table-surface { flex: 1; width: 100%; position: relative; background: transparent; border: none; }
         .banker-station { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
         
-        /* CLEAN TIMERS */
         .global-timer { position: absolute; top: 170px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
         .global-timer.warning { background: #eab308; color: #000; top: 230px; font-size: 24px; font-weight: bold;}
@@ -239,6 +236,7 @@
                     <h3>BLACKJACK MECHANICS</h3>
                     <ul>
                         <li><strong>1-Seat Limit:</strong> You may only occupy one seat per room.</li>
+                        <li><strong>Minimum Bet:</strong> The minimum bet per hand is 1,000 credits.</li>
                         <li><strong>The 5s Kick Timer:</strong> Once you sit, you have exactly 5 seconds to place a bet. If you fail, you are auto-ejected.</li>
                         <li><strong>The 15s Lobby Timer:</strong> The game starts 15 seconds after a bet is placed. Any new bet resets the timer to 15s to allow others to join.</li>
                         <li><strong>Payouts:</strong> Standard wins pay 1:1 (2x). Blackjack pays 3:2 (2.5x). Pushes refund the bet.</li>
@@ -441,11 +439,16 @@
     </div>
 
     <script>
+        // FORMAT HELPER
+        function formatNumber(num) {
+            return num.toLocaleString();
+        }
+
         const socket = io();
         let currentUser = null; let currentGameState = null; let currentRoomId = null; let mySeatIndex = -1;
         let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let idleTimerInt = null;
         let dailyRewardNextClaim = new Date(0); let rewardTimerInt = null; let isPickingReward = false;
-        let lastBetAmount = 100000; // Memorizes your last bet
+        let lastBetAmount = 1000; // Memorizes your last bet
 
         // UI HELPERS
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -469,7 +472,7 @@
             const data = await res.json();
             if(res.ok) {
                 currentUser = data; document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
-                document.getElementById('hud-credits').innerText = currentUser.credits;
+                document.getElementById('hud-credits').innerText = formatNumber(currentUser.credits);
                 dailyRewardNextClaim = new Date(data.nextClaim);
                 selectColor(currentUser.nameColor || '#f8fafc', null);
             } else document.getElementById('login-error').innerText = data.error;
@@ -491,7 +494,7 @@
         function showProfile() {
             document.getElementById('profile-username-preview').innerText = currentUser.username;
             document.getElementById('profile-username-preview').style.color = selectedColor;
-            document.getElementById('profile-credits-preview').innerText = currentUser.credits;
+            document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits);
             document.getElementById('ledger-container').classList.add('hidden');
             showModal('profile-modal');
         }
@@ -515,7 +518,7 @@
             const list = document.getElementById('ledger-list'); list.innerHTML = '';
             data.forEach(tx => {
                 let color = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff');
-                list.innerHTML += `<div class="ledger-item"><span class="ledger-desc">${tx.type.toUpperCase()} [${tx.status}]</span> <span style="color:${color}">${tx.amount > 0 ? '+' : ''}${tx.amount} <span class="coin-icon">🪙</span></span></div>`;
+                list.innerHTML += `<div class="ledger-item"><span class="ledger-desc">${tx.type.toUpperCase()} [${tx.status}]</span> <span style="color:${color}">${tx.amount > 0 ? '+' : ''}${formatNumber(tx.amount)} <span class="coin-icon">🪙</span></span></div>`;
             });
         }
 
@@ -531,7 +534,7 @@
         async function redeemCode() {
             const code = document.getElementById('gift-code').value; const msgBox = document.getElementById('bank-msg');
             const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
-            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; document.getElementById('hud-credits').innerText = currentUser.credits; msgBox.style.color="var(--success)"; msgBox.innerText = "+"+d.amount+" CREDITS!"; document.getElementById('gift-code').value='';}
+            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; document.getElementById('hud-credits').innerText = formatNumber(currentUser.credits); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code').value='';}
             else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
             setTimeout(()=> msgBox.innerText='', 3000);
         }
@@ -567,13 +570,13 @@
             if(data.success) {
                 data.allPrizes.forEach((prize, i) => {
                     const backEl = document.getElementById(`box-val-${i}`);
-                    backEl.innerHTML = prize > 0 ? `+${prize} <span class="coin-icon">🪙</span>` : 'EMPTY';
+                    backEl.innerHTML = prize > 0 ? `+${formatNumber(prize)} <span class="coin-icon">🪙</span>` : 'EMPTY';
                     if(prize === 0) backEl.classList.add('zero'); else backEl.classList.remove('zero');
                     setTimeout(() => document.querySelectorAll('.reward-box')[i].classList.add('open'), i * 100);
                 });
-                currentUser.credits = data.credits; document.getElementById('hud-credits').innerText = currentUser.credits; dailyRewardNextClaim = new Date(data.nextClaim);
+                currentUser.credits = data.credits; document.getElementById('hud-credits').innerText = formatNumber(currentUser.credits); dailyRewardNextClaim = new Date(data.nextClaim);
                 const msg = document.getElementById('reward-msg');
-                if (data.wonAmount > 0) { msg.style.color = "var(--success)"; msg.innerText = `YOU WON ${data.wonAmount} CREDITS!`; }
+                if (data.wonAmount > 0) { msg.style.color = "var(--success)"; msg.innerText = `YOU WON ${formatNumber(data.wonAmount)} CREDITS!`; }
                 else { msg.style.color = "var(--danger)"; msg.innerText = "BETTER LUCK NEXT TIME!"; }
                 setTimeout(() => { showRewards(); }, 4000); 
             }
@@ -613,7 +616,7 @@
         
         window.actPlaceBet = function(idx) { 
             const amt = parseInt(document.getElementById(`inseat-bet-${idx}`).value); 
-            if (isNaN(amt) || amt < 100000) return alert("Minimum bet is 100,000 credits.");
+            if (isNaN(amt) || amt < 1000) return alert("Minimum bet is 1,000 credits.");
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
             lastBetAmount = amt; // Memory for next round
@@ -665,7 +668,7 @@
             
             if(currentUser) {
                  const mySeatData = state.seats.find(s => s && s.username === currentUser.username);
-                 if(mySeatData) { currentUser.credits = mySeatData.credits; document.getElementById('hud-credits').innerText = currentUser.credits; mySeatIndex = state.seats.indexOf(mySeatData);}
+                 if(mySeatData) { currentUser.credits = mySeatData.credits; document.getElementById('hud-credits').innerText = formatNumber(currentUser.credits); mySeatIndex = state.seats.indexOf(mySeatData);}
                  else { mySeatIndex = -1; }
             }
 
@@ -697,7 +700,7 @@
                         hand.cards.forEach(c => html += formatCardHTML(c));
                         if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
                         html += `</div>`;
-                        if (hand.bet > 0) html += `<div class="seat-bet"><span class="coin-icon">🪙</span> ${hand.bet}</div>`;
+                        if (hand.bet > 0) html += `<div class="seat-bet"><span class="coin-icon">🪙</span> ${formatNumber(hand.bet)}</div>`;
                         html += `</div>`;
                     });
                     html += `</div>`;
@@ -707,7 +710,7 @@
                     }
                     if (isMySeat && state.status === 'betting') {
                         if (seatData.hands[0].bet === 0) {
-                            html += `<div class="seat-bet-box"><input type="number" id="inseat-bet-${index}" class="retro-input" value="${lastBetAmount}" min="100000" style="padding:4px; font-size:16px; width:80px;"><button class="s-btn btn-bet" onclick="actPlaceBet(${index})">BET</button></div>`;
+                            html += `<div class="seat-bet-box"><input type="number" id="inseat-bet-${index}" class="retro-input" value="${lastBetAmount}" min="1000" style="padding:4px; font-size:16px; width:80px;"><button class="s-btn btn-bet" onclick="actPlaceBet(${index})">BET</button></div>`;
                             html += `<button class="btn-inseat-standup" style="margin-top: 5px;" onclick="actEjectSeat(${index})">STAND UP</button>`;
                         }
                     }
@@ -736,7 +739,6 @@
         function manageTimers(state) {
             const gTimerUI = document.getElementById('global-timer'); const nTimerUI = document.getElementById('next-round-timer'); const iTimerUI = document.getElementById('idle-timer');
             
-            // PREVENT CLOCK DRIFT: Use exact server remaining time
             if (state.status === 'betting' && state.betTimeLeft > 0) {
                 let left = Math.ceil(state.betTimeLeft / 1000);
                 gTimerUI.classList.remove('hidden'); clearInterval(globalTimerInt); nTimerUI.classList.add('hidden');
@@ -786,6 +788,21 @@
                 el.style.top = `${centerY + Math.sin(angle) * radiusY - 90}px`;
             });
         }
+    </script>
+    
+    <script>
+        // Disable Right-Click Context Menu
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Disable standard Developer Tools keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
+            if (e.key === 'F11' || e.keyCode === 122) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
+        });
     </script>
 </body>
 </html>
