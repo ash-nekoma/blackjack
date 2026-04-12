@@ -94,30 +94,31 @@
         .chat-input-area button:active { background: #059669; }
 
         .table-surface { flex: 1; width: 100%; position: relative; background: transparent; border: none; }
-        .banker-station { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
         
-        .global-timer { position: absolute; top: 170px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
+        .banker-station { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; }
+        .banker-station .hand-container { position: relative; display: flex; justify-content: center; min-height: 88px; }
+        
+        .global-timer { position: absolute; top: 150px; left: 50%; transform: translateX(-50%); font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
-        .global-timer.warning { background: #eab308; color: #000; top: 230px; font-size: 24px; font-weight: bold; text-shadow: none !important;}
+        .global-timer.warning { background: #eab308; color: #000; top: 210px; font-size: 24px; font-weight: bold; text-shadow: none !important; }
 
         @keyframes pulse-glow { 0% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } 50% { box-shadow: 0 0 40px #fff; border-color: #fff; } 100% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } }
         
-        .seat { position: absolute; width: 150px; min-height: 180px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s;}
-        .seat-empty-box { width: 100%; height: 100%; border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); }
+        .seat { position: absolute; width: 160px; min-height: 180px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s;}
+        .seat-empty-box { box-sizing: border-box; width: 100%; height: 180px; border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); }
 
-        .seat.active-turn .hand-box.active-hand { animation: pulse-glow 1.5s infinite; border-radius: 8px; background: rgba(251, 191, 36, 0.2); padding: 10px; border: 2px solid var(--warning);}
+        .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
         
         .turn-bar-container { width: 100%; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
         .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
 
-        /* PLAYER INFO PLATE ALIGNED */
-        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.7); border: 2px solid var(--border-std); border-radius: 6px; padding: 4px 15px; margin-top: 5px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1.1; min-width: 100px; z-index: 5;}
-        .player-bet-text { color: var(--warning); font-size: 16px; font-weight: bold; text-shadow: 1px 1px 0 #000; }
-        .player-name-text { font-size: 14px; font-weight: bold; text-transform: uppercase; text-shadow: 1px 1px 0 #000; margin-top: 2px;}
+        /* PIXELATED PLAYER NAME & BET PLATE */
+        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.8); border: 2px solid var(--border-std); border-radius: 6px; padding: 4px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1.1; min-width: 100px; z-index: 5; font-family: 'VT323', monospace; letter-spacing: 1px;}
+        .player-bet-text { color: var(--warning); font-size: 22px; font-weight: bold; text-shadow: 2px 2px 0 #000; }
+        .player-name-text { font-size: 18px; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 0 #000; margin-top: 2px;}
 
-        .s-btn { padding: 6px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 12px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5); flex: 1; display: flex; justify-content: center; align-items: center; text-align: center;}
-        .s-btn.btn-bet { background: var(--success); color: #000; }
-        .s-btn.btn-clear { background: #475569; color: #fff; }
+        /* BUTTON GRIDS */
+        .s-btn { padding: 6px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 12px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box;}
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
         .s-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.5; box-shadow: none;}
 
@@ -127,19 +128,17 @@
         .btn-double { background: var(--accent-glow-2); color: #fff; }
         .btn-split { background: var(--accent-glow); color: #fff; }
         
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; padding: 6px; font-weight: bold; cursor: pointer; border: 2px solid var(--border-std); border-radius: 4px; margin-top: 6px; font-family: var(--clear-font); box-shadow: 2px 2px 0 #000; box-sizing: border-box;}
-        .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0; }
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 6px;}
 
         @keyframes flyOut { 0% { transform: translateY(-100px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         @keyframes flipCard { 0% { transform: rotateY(180deg); } 100% { transform: rotateY(0deg); } }
 
-        .hands-wrapper { display: flex; gap: 15px; justify-content: center; transition: 0.3s; transform-origin: bottom center;}
-        .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; }
-        .hand-container { position: relative; display: flex; justify-content: center; margin-bottom: 5px; }
+        .hands-wrapper { display: flex; gap: 15px; justify-content: center; transition: 0.3s; transform-origin: bottom center; min-height: 88px;}
+        .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; min-height: 88px;}
+        .hand-container { position: relative; display: flex; justify-content: center; margin-bottom: 5px; min-height: 88px;}
         
-        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); margin-left: -35px; font-family: Arial, Helvetica, sans-serif; }
+        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: absolute; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; }
         .card.card-animate { animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .card:first-child { margin-left: 0; }
         .card.red { color: #d00; }
         .card.black { color: #000; }
         .card-corner { position: absolute; font-size: 15px; font-weight: bold; line-height: 1; text-align: center; letter-spacing: -1px;}
@@ -150,7 +149,8 @@
         .card.dealer-hidden { background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); color: transparent; transform: rotateY(180deg); animation: none;}
         .card.flip-reveal { animation: flipCard 0.6s ease-out forwards; }
 
-        .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10; font-family: Arial, sans-serif; line-height: 1; padding: 0; padding-top: 1px;}
+        /* CENTERED BADGE */
+        .hd-badge { position: absolute; top: 50%; left: -20px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10; font-family: Arial, sans-serif; line-height: 1; padding: 0; padding-top: 1px;}
 
         .hand-status-label { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); font-size: 24px; font-weight: bold; font-family: 'VT323'; text-shadow: 2px 2px 0 #000; padding: 2px 10px; border: 3px solid currentColor; border-radius: 4px; background: rgba(0,0,0,0.85); z-index: 20; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 10px rgba(0,0,0,0.5);}
         .hand-status-bust { color: var(--danger); }
@@ -260,7 +260,7 @@
                 <div id="tab-sys" class="tab-content custom-scroll">
                     <h3>ECONOMY & SYSTEM</h3>
                     <ul>
-                        <li><strong>Banking Limits:</strong> The absolute minimum for both deposits and withdrawals is 100,000. The maximum deposit per request is 100,000.</li>
+                        <li><strong>Banking Limits:</strong> The minimum deposit is 10,000. The minimum withdrawal is 50,000. The maximum for both per request is 100,000.</li>
                         <li><strong>Admin Approval:</strong> All new account signups and bank transfers pend manual Admin review.</li>
                         <li><strong>Daily Rewards:</strong> Available every 24 hours. Pick a mystery box for a 1-in-6 chance to win huge payouts.</li>
                     </ul>
@@ -359,7 +359,7 @@
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 20px;">SYSTEM BANKING</h2>
                 
                 <div class="terms-box custom-scroll" style="height: 90px;">
-                    <strong style="color: var(--warning);">BANK RULES:</strong> Minimum request amount is 100,000. Maximum deposit per request is strictly 100,000. All transfers pend Admin approval.
+                    <strong style="color: var(--warning);">BANK RULES:</strong> Minimum deposit is 10,000. Minimum withdrawal is 50,000. Maximum per request is 100,000.
                 </div>
 
                 <div class="input-group">
@@ -420,8 +420,10 @@
                 <div class="table-surface">
                     <div class="banker-station clear-text">
                         <div style="font-size: 20px; font-weight: bold; color: #f8fafc; margin-bottom: 5px; text-shadow: 0 0 5px #000;">DEALER</div>
-                        <div id="dealer-cards" class="hand-container" style="min-height: 80px;"></div>
-                        <div id="dealer-val" class="hd-badge hidden"></div>
+                        <div style="position:relative;">
+                            <div id="dealer-cards" class="hand-container" style="min-height: 88px;"></div>
+                            <div id="dealer-val" class="hd-badge hidden"></div>
+                        </div>
                     </div>
 
                     <div id="global-timer" class="global-timer pixel-text hidden">BETS CLOSING: <span id="g-time">15</span>s</div>
@@ -459,7 +461,7 @@
         
         let actionLocked = false; 
         window.tempBets = {}; 
-        window.handCardCounts = {}; // Stores animated card states
+        window.handCardCounts = {}; 
 
         // UI HELPERS
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -533,8 +535,11 @@
             });
         }
 
+        // BANKING
         async function submitBank(type) {
-            const amt = parseInt(document.getElementById('bank-amount').value); const msgBox = document.getElementById('bank-msg'); if(!amt || amt <= 0) return;
+            const amtStr = document.getElementById('bank-amount').value; const msgBox = document.getElementById('bank-msg'); 
+            const amt = parseInt(amtStr.replace(/,/g, ''));
+            if(isNaN(amt) || amt <= 0) return;
             const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount: amt}) });
             if(res.ok) { msgBox.style.color = "var(--success)"; msgBox.innerText = "REQUEST SENT TO ADMIN."; document.getElementById('bank-amount').value=''; }
             else { const d = await res.json(); msgBox.style.color = "var(--danger)"; msgBox.innerText = d.error; }
@@ -549,6 +554,7 @@
             setTimeout(()=> msgBox.innerText='', 3000);
         }
 
+        // DAILY REWARDS
         function showRewards() {
             showModal('reward-modal'); document.getElementById('reward-msg').innerText = '';
             document.querySelectorAll('.reward-box').forEach(b => b.classList.remove('open')); isPickingReward = false;
@@ -591,6 +597,7 @@
             }
         });
 
+        // SETTINGS / MUSIC
         let bgm = document.getElementById('sfx-bgm'); let musicOn = false;
         function toggleMusic() { 
             musicOn = !musicOn; 
@@ -622,7 +629,7 @@
 
         // CHIP BETTING LOGIC
         window.addBet = function(idx, amt) {
-            if (window.tempBets[idx] === undefined) window.tempBets[idx] = window.lastBetAmount || 1000;
+            if (window.tempBets[idx] === undefined) window.tempBets[idx] = 0;
             if (window.tempBets[idx] + amt > 100000) window.tempBets[idx] = 100000;
             else window.tempBets[idx] += amt;
             renderTable(currentGameState);
@@ -631,18 +638,17 @@
 
         window.actSitDown = function(idx) { 
             if(actionLocked) return; actionLocked = true; 
-            window.tempBets[idx] = window.lastBetAmount || 1000;
+            window.tempBets[idx] = 0;
             socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
         }
         
         window.actPlaceBet = function(idx) { 
             if(actionLocked) return;
-            const amt = window.tempBets[idx] !== undefined ? window.tempBets[idx] : (window.lastBetAmount || 1000);
+            const amt = window.tempBets[idx] || 0;
             if (amt < 1000) return alert("Minimum bet is 1,000 credits.");
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
             actionLocked = true;
-            window.lastBetAmount = amt; 
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
         }
         
@@ -682,9 +688,13 @@
             if (isHidden) return `<div class="card dealer-hidden"></div>`;
             const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : 'black';
             const suitSym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit];
-            const flipClass = (currentGameState.status === 'resolving' && currentGameState.dealerCards.length >= 2 && isNew) ? 'flip-reveal' : '';
+            
+            // Apply flip animation only to the second dealer card during reveal
+            const isDealerReveal = (currentGameState.status === 'dealerTurn' || currentGameState.status === 'resolving') && currentGameState.dealerCards.length >= 2;
+            const flipClass = (isDealerReveal && isNew) ? 'flip-reveal' : '';
+            
             return `
-                <div class="card ${animClass} ${flipClass} ${colorClass}">
+                <div class="card ${animClass} ${flipClass} ${colorClass}" style="position: absolute;">
                     <div class="card-corner top-left">${c.value}<br>${suitSym}</div>
                     <div class="card-center-suit">${suitSym}</div>
                     <div class="card-corner bottom-right">${c.value}<br>${suitSym}</div>
@@ -716,8 +726,12 @@
             let dCount = window.handCardCounts['dealer'] || 0;
             state.dealerCards.forEach((c, idx) => { 
                 let isNew = (idx >= dCount);
-                if (state.status === 'resolving' && idx === 1 && dCount === 1) isNew = true; // Force flip reveal
-                dCards.innerHTML += formatCardHTML(c, isNew, c.hidden); 
+                if ((state.status === 'dealerTurn' || state.status === 'resolving') && idx === 1 && dCount === 1) isNew = true; // Force flip reveal
+                
+                let cardHTML = formatCardHTML(c, isNew, c.hidden);
+                // Adjust position for overlapping stack effect
+                cardHTML = cardHTML.replace('style="position: absolute;"', `style="position: absolute; left: ${idx * 30}px;"`);
+                dCards.innerHTML += cardHTML; 
             });
             window.handCardCounts['dealer'] = state.dealerCards.length;
             
@@ -768,9 +782,16 @@
                         let prevCount = window.handCardCounts[handKey] || 0;
                         hand.cards.forEach((c, cIdx) => {
                             let isNew = (cIdx >= prevCount);
-                            html += formatCardHTML(c, isNew, false);
+                            let cardHTML = formatCardHTML(c, isNew, false);
+                            // Adjust position for overlapping stack effect
+                            cardHTML = cardHTML.replace('style="position: absolute;"', `style="position: absolute; left: ${cIdx * 30}px;"`);
+                            html += cardHTML;
                         });
                         window.handCardCounts[handKey] = hand.cards.length;
+
+                        // Ensure container width expands with cards
+                        const containerWidth = hand.cards.length > 0 ? 62 + ((hand.cards.length - 1) * 30) : 62;
+                        html = html.replace('<div class="hand-container">', `<div class="hand-container" style="width: ${containerWidth}px;">`);
 
                         if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
                         
@@ -796,7 +817,7 @@
 
                     // SEAT INFO & BET PLATE (MERGED, NO SPACING)
                     let currentDisplayBet = seatData.hands[0].bet > 0 ? seatData.hands[0].bet : 0;
-                    if(currentDisplayBet > 0 || state.status === 'playing' || state.status === 'resolving') {
+                    if(currentDisplayBet > 0 || state.status === 'playing' || state.status === 'dealerTurn' || state.status === 'resolving') {
                         html += `
                             <div class="player-info-plate">
                                 <div class="player-bet-text">${currentDisplayBet > 0 ? formatNumber(currentDisplayBet) : ''}</div>
@@ -812,20 +833,18 @@
                     }
                     if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
                         if (seatData.hands[0].bet === 0) {
-                            let tBet = window.tempBets[index];
-                            if (tBet === undefined) tBet = window.lastBetAmount || 1000;
+                            let tBet = window.tempBets[index] || 0;
                             
                             html += `
-                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 100%; margin-top: 10px;">
-                                    <button class="s-btn" style="background:#3b82f6; color:#fff;" onclick="addBet(${index}, 1000)">1K</button>
-                                    <button class="s-btn" style="background:#ef4444; color:#fff;" onclick="addBet(${index}, 5000)">5K</button>
-                                    <button class="s-btn" style="background:#10b981; color:#000;" onclick="addBet(${index}, 10000)">10K</button>
+                                <div style="display: flex; gap: 4px; width: 100%; margin-top: 10px;">
+                                    <button class="s-btn" style="background:#3b82f6; color:#fff;" onclick="addBet(${index}, 5000)">5K</button>
+                                    <button class="s-btn" style="background:#10b981; color:#000;" onclick="addBet(${index}, 20000)">20K</button>
                                     <button class="s-btn" style="background:#f97316; color:#fff;" onclick="addBet(${index}, 50000)">50K</button>
                                     <button class="s-btn" style="background:#fbbf24; color:#000;" onclick="addBet(${index}, 100000)">100K</button>
                                 </div>
                                 <div style="display: flex; gap: 4px; margin-top: 4px; width: 100%;">
-                                    <button class="s-btn" style="background:#475569; color:#fff; flex: 1;" onclick="clearBet(${index})">CLEAR</button>
-                                    <button class="s-btn" style="background:var(--success); color:#000; flex: 2;" onclick="actPlaceBet(${index})">BET: ${formatNumber(tBet)}</button>
+                                    <button class="s-btn btn-clear" onclick="clearBet(${index})">CLEAR</button>
+                                    <button class="s-btn btn-bet" style="flex:2;" onclick="actPlaceBet(${index})">BET: ${formatNumber(tBet)}</button>
                                 </div>
                             `;
                             html += `<button class="btn-inseat-standup" style="margin-top: 5px;" onclick="actEjectSeat(${index})">STAND UP</button>`;
@@ -911,7 +930,7 @@
         }
 
         function layoutArc(elements, totalSeats) {
-            const centerX = 500; const centerY = 240; 
+            const centerX = 500; const centerY = 260; 
             const radiusX = totalSeats === 5 ? 420 : 340; 
             const radiusY = totalSeats === 5 ? 260 : 200; 
             const widthOffset = 75; 
