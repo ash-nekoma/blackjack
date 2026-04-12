@@ -100,33 +100,23 @@
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
         .global-timer.warning { background: #eab308; color: #000; top: 230px; font-size: 24px; font-weight: bold; text-shadow: none !important;}
 
+        @keyframes pulse-glow { 0% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } 50% { box-shadow: 0 0 40px #fff; border-color: #fff; } 100% { box-shadow: 0 0 20px var(--warning); border-color: var(--warning); } }
+        
         .seat { position: absolute; width: 150px; min-height: 180px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 5; transition: 0.3s;}
         .seat-empty-box { width: 100%; height: 100%; border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); }
 
-        .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
+        .seat.active-turn .hand-box.active-hand { animation: pulse-glow 1.5s infinite; border-radius: 8px; background: rgba(251, 191, 36, 0.2); padding: 10px; border: 2px solid var(--warning);}
         
         .turn-bar-container { width: 100%; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
         .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
 
-        /* PLAYER NAME AND BET PLATE */
-        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.7); border: 2px solid var(--border-std); border-radius: 6px; padding: 4px 15px; margin-top: 5px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1.1; min-width: 100px;}
-        .player-bet-text { color: var(--warning); font-size: 18px; font-weight: bold; text-shadow: 1px 1px 0 #000; }
+        /* PLAYER INFO PLATE ALIGNED */
+        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.7); border: 2px solid var(--border-std); border-radius: 6px; padding: 4px 15px; margin-top: 5px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1.1; min-width: 100px; z-index: 5;}
+        .player-bet-text { color: var(--warning); font-size: 16px; font-weight: bold; text-shadow: 1px 1px 0 #000; }
         .player-name-text { font-size: 14px; font-weight: bold; text-transform: uppercase; text-shadow: 1px 1px 0 #000; margin-top: 2px;}
 
-        /* CHIP BETTING UI */
-        .chip-rack { display: flex; gap: 4px; justify-content: center; margin-top: 8px; flex-wrap: wrap; width: 100%;}
-        .chip { width: 34px; height: 34px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 11px; font-weight: bold; border: 2px dashed #fff; cursor: pointer; transition: 0.1s; box-shadow: 2px 2px 0 rgba(0,0,0,0.5); font-family: Arial, sans-serif;}
-        .chip:active { transform: scale(0.9); box-shadow: 0 0 0; }
-        .chip-1k { background: #3b82f6; }
-        .chip-5k { background: #ef4444; }
-        .chip-10k { background: #10b981; }
-        .chip-50k { background: #f97316; }
-        .chip-100k { background: #000; border: 2px dashed var(--warning); color: var(--warning); }
-        
-        .bet-action-row { display: flex; width: 100%; gap: 4px; margin-top: 6px; }
-
         .s-btn { padding: 6px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; font-family: var(--clear-font); transition: 0.1s; font-size: 12px; text-transform: uppercase; box-shadow: 2px 2px 0 rgba(0,0,0,0.5); flex: 1; display: flex; justify-content: center; align-items: center; text-align: center;}
-        .s-btn.btn-bet { background: var(--warning); color: #000; }
+        .s-btn.btn-bet { background: var(--success); color: #000; }
         .s-btn.btn-clear { background: #475569; color: #fff; }
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
         .s-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.5; box-shadow: none;}
@@ -137,7 +127,7 @@
         .btn-double { background: var(--accent-glow-2); color: #fff; }
         .btn-split { background: var(--accent-glow); color: #fff; }
         
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; padding: 6px; font-weight: bold; cursor: pointer; border: 2px solid var(--border-std); border-radius: 4px; margin-top: 6px; font-family: var(--clear-font); box-shadow: 2px 2px 0 #000; box-sizing: border-box; text-transform: uppercase; font-size: 12px;}
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; padding: 6px; font-weight: bold; cursor: pointer; border: 2px solid var(--border-std); border-radius: 4px; margin-top: 6px; font-family: var(--clear-font); box-shadow: 2px 2px 0 #000; box-sizing: border-box;}
         .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0; }
 
         @keyframes flyOut { 0% { transform: translateY(-100px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
@@ -260,7 +250,7 @@
                     <ul>
                         <li><strong>1-Seat Limit:</strong> You may only occupy one seat per room.</li>
                         <li><strong>Minimum Bet:</strong> The minimum bet per hand is 1,000 credits.</li>
-                        <li><strong>The 5s Kick Timer:</strong> Once you sit, you have exactly 5 seconds to place a bet. If you fail, you are auto-ejected.</li>
+                        <li><strong>The 7s Kick Timer:</strong> Once you sit, you have exactly 7 seconds to place a bet. If you fail, you are auto-ejected.</li>
                         <li><strong>The 15s Action Timer:</strong> You have 15 seconds to make your decision (Hit, Stand, Double, Split). Failing to act will auto-stand your hand.</li>
                         <li><strong>Payouts:</strong> Standard wins pay 1:1 (2x). Blackjack pays 3:2 (2.5x). Pushes refund the bet.</li>
                         <li><strong>Dealer Rules:</strong> Dealer must stand on all 17s. Dealer peeks for Blackjack instantly.</li>
@@ -436,7 +426,7 @@
 
                     <div id="global-timer" class="global-timer pixel-text hidden">BETS CLOSING: <span id="g-time">15</span>s</div>
                     <div id="next-round-timer" class="global-timer pixel-text blue hidden">NEXT ROUND: <span id="n-time">5</span>s</div>
-                    <div id="idle-timer" class="global-timer pixel-text warning hidden">PLACE BET OR LOSE SEAT: <span id="i-time">5</span>s</div>
+                    <div id="idle-timer" class="global-timer pixel-text warning hidden">PLACE BET OR LOSE SEAT: <span id="i-time">7</span>s</div>
 
                     <div id="seats-area"></div>
                 </div>
@@ -467,9 +457,9 @@
         let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let idleTimerInt = null;
         let dailyRewardNextClaim = new Date(0); let rewardTimerInt = null; let isPickingReward = false;
         
-        // Anti-spam locks and bet memory
         let actionLocked = false; 
         window.tempBets = {}; 
+        window.handCardCounts = {}; // Stores animated card states
 
         // UI HELPERS
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -543,7 +533,6 @@
             });
         }
 
-        // BANKING
         async function submitBank(type) {
             const amt = parseInt(document.getElementById('bank-amount').value); const msgBox = document.getElementById('bank-msg'); if(!amt || amt <= 0) return;
             const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount: amt}) });
@@ -560,7 +549,6 @@
             setTimeout(()=> msgBox.innerText='', 3000);
         }
 
-        // DAILY REWARDS
         function showRewards() {
             showModal('reward-modal'); document.getElementById('reward-msg').innerText = '';
             document.querySelectorAll('.reward-box').forEach(b => b.classList.remove('open')); isPickingReward = false;
@@ -603,7 +591,6 @@
             }
         });
 
-        // SETTINGS / MUSIC
         let bgm = document.getElementById('sfx-bgm'); let musicOn = false;
         function toggleMusic() { 
             musicOn = !musicOn; 
@@ -614,7 +601,7 @@
 
         // --- GAME ACTIONS & RENDER ---
         function joinRoom(roomId) { 
-            currentRoomId = roomId; hideModal('play-modal'); window.tempBets = {};
+            currentRoomId = roomId; hideModal('play-modal'); window.tempBets = {}; window.handCardCounts = {};
             document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); 
             socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId });
         }
@@ -635,7 +622,7 @@
 
         // CHIP BETTING LOGIC
         window.addBet = function(idx, amt) {
-            if (!window.tempBets[idx]) window.tempBets[idx] = 0;
+            if (window.tempBets[idx] === undefined) window.tempBets[idx] = window.lastBetAmount || 1000;
             if (window.tempBets[idx] + amt > 100000) window.tempBets[idx] = 100000;
             else window.tempBets[idx] += amt;
             renderTable(currentGameState);
@@ -644,17 +631,18 @@
 
         window.actSitDown = function(idx) { 
             if(actionLocked) return; actionLocked = true; 
-            window.tempBets[idx] = 0;
+            window.tempBets[idx] = window.lastBetAmount || 1000;
             socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
         }
         
         window.actPlaceBet = function(idx) { 
             if(actionLocked) return;
-            const amt = window.tempBets[idx] || 0;
+            const amt = window.tempBets[idx] !== undefined ? window.tempBets[idx] : (window.lastBetAmount || 1000);
             if (amt < 1000) return alert("Minimum bet is 1,000 credits.");
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
             actionLocked = true;
+            window.lastBetAmount = amt; 
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
         }
         
@@ -689,8 +677,6 @@
         }
 
         // NON-REFRESHING CARD RENDERER
-        window.handCardCounts = {}; // Stores { 'seat-X-hand-Y': 2, 'dealer': 1 }
-        
         function formatCardHTML(c, isNew, isHidden) {
             let animClass = (isNew && !isHidden) ? 'card-animate' : '';
             if (isHidden) return `<div class="card dealer-hidden"></div>`;
@@ -788,6 +774,7 @@
 
                         if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
                         
+                        // HAND RESULT STAMPS
                         if (hand.status === 'bust' || hand.result === 'bust') {
                             html += `<div class="hand-status-label hand-status-bust">BUST</div>`;
                         } else if (hand.result) {
@@ -809,30 +796,36 @@
 
                     // SEAT INFO & BET PLATE (MERGED, NO SPACING)
                     let currentDisplayBet = seatData.hands[0].bet > 0 ? seatData.hands[0].bet : 0;
-                    html += `
-                        <div class="player-info-plate">
-                            <div class="player-bet-text">${currentDisplayBet > 0 ? formatNumber(currentDisplayBet) : ''}</div>
-                            <div class="player-name-text" style="color:${seatData.color}">${seatData.username}</div>
-                        </div>
-                    `;
+                    if(currentDisplayBet > 0 || state.status === 'playing' || state.status === 'resolving') {
+                        html += `
+                            <div class="player-info-plate">
+                                <div class="player-bet-text">${currentDisplayBet > 0 ? formatNumber(currentDisplayBet) : ''}</div>
+                                <div class="player-name-text" style="color:${seatData.color}">${seatData.username}</div>
+                            </div>
+                        `;
+                    } else {
+                        html += `<div class="player-info-plate"><div class="player-name-text" style="color:${seatData.color}">${seatData.username}</div></div>`;
+                    }
 
                     if (isMySeat && state.status === 'waiting') {
                         html += `<button class="btn-inseat-standup" onclick="actEjectSeat(${index})">STAND UP</button>`;
                     }
                     if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
                         if (seatData.hands[0].bet === 0) {
-                            let tBet = window.tempBets[index] || 0;
+                            let tBet = window.tempBets[index];
+                            if (tBet === undefined) tBet = window.lastBetAmount || 1000;
+                            
                             html += `
-                                <div class="chip-rack">
-                                    <div class="chip chip-1k" onclick="addBet(${index}, 1000)">1K</div>
-                                    <div class="chip chip-5k" onclick="addBet(${index}, 5000)">5K</div>
-                                    <div class="chip chip-10k" onclick="addBet(${index}, 10000)">10K</div>
-                                    <div class="chip chip-50k" onclick="addBet(${index}, 50000)">50K</div>
-                                    <div class="chip chip-100k" onclick="addBet(${index}, 100000)">100K</div>
+                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 100%; margin-top: 10px;">
+                                    <button class="s-btn" style="background:#3b82f6; color:#fff;" onclick="addBet(${index}, 1000)">1K</button>
+                                    <button class="s-btn" style="background:#ef4444; color:#fff;" onclick="addBet(${index}, 5000)">5K</button>
+                                    <button class="s-btn" style="background:#10b981; color:#000;" onclick="addBet(${index}, 10000)">10K</button>
+                                    <button class="s-btn" style="background:#f97316; color:#fff;" onclick="addBet(${index}, 50000)">50K</button>
+                                    <button class="s-btn" style="background:#fbbf24; color:#000;" onclick="addBet(${index}, 100000)">100K</button>
                                 </div>
-                                <div class="bet-action-row">
-                                    <button class="s-btn btn-clear" onclick="clearBet(${index})">CLEAR</button>
-                                    <button class="s-btn btn-bet" style="flex:2;" onclick="actPlaceBet(${index})">LOCK BET: ${formatNumber(tBet)}</button>
+                                <div style="display: flex; gap: 4px; margin-top: 4px; width: 100%;">
+                                    <button class="s-btn" style="background:#475569; color:#fff; flex: 1;" onclick="clearBet(${index})">CLEAR</button>
+                                    <button class="s-btn" style="background:var(--success); color:#000; flex: 2;" onclick="actPlaceBet(${index})">BET: ${formatNumber(tBet)}</button>
                                 </div>
                             `;
                             html += `<button class="btn-inseat-standup" style="margin-top: 5px;" onclick="actEjectSeat(${index})">STAND UP</button>`;
