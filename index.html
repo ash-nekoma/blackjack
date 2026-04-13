@@ -17,7 +17,6 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         
-        /* GLOBAL PIXEL FONT */
         body, input, button, table, th, td, select { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
         body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
@@ -26,7 +25,6 @@
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
-        /* RETRO SLIDERS FOR VOLUME */
         input[type="range"] { -webkit-appearance: none; background: transparent; height: 10px; border-radius: 5px; border: 2px solid var(--border-std); outline: none; margin: 0 10px; cursor: pointer; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 14px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 2px; cursor: pointer; }
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; }
@@ -50,7 +48,6 @@
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.7; }
 
-        /* INFO BOXES & TABS */
         .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
         .info-box strong { color: var(--warning); font-size: 28px; display: block; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px;}
         .info-box ul { padding-left: 25px; margin-top: 10px;}
@@ -73,50 +70,38 @@
         .reward-box .front { background: #1e293b; font-size: 40px; }
         .reward-box .back { background: #000; transform: rotateY(180deg); font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
 
-        /* --- 2-COLUMN PERFECT GRID LAYOUT --- */
         .game-interface { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; width: 100%; height: 100%; background: #000; box-sizing: border-box; }
-        
-        /* LEFT: GAME BOARD */
         .game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px;}
         .game-area.dice-bg { background: radial-gradient(circle at center, #7e22ce 0%, #4c1d95 100%); }
         .game-area.coin-bg { background: radial-gradient(circle at center, #9a3412 0%, #7c2d12 100%); }
         
-        /* RIGHT: SIDEBAR LOBBY */
         .sidebar-col { display: flex; flex-direction: column; gap: 20px; height: 100%; flex-shrink: 0;}
         .sidebar-box { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         
-        /* PLAYER POPOVER LOGIC */
-        .popover-container { position: relative; flex: 0; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); overflow: visible; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
-        .popover-list { position: absolute; top: 100%; left: -2px; width: calc(100% + 4px); max-height: 250px; background: rgba(15,23,42,0.95); border: 2px solid var(--border-std); border-top: none; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; z-index: 100; overflow-y: auto; padding: 10px; }
+        /* INLINE SYNCED POPOVER ACCORDION */
+        .popover-container { background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); flex-shrink: 0;}
+        .popover-list { padding: 10px; border-top: 2px dashed #333; background: transparent; max-height: 150px; overflow-y: auto;}
 
-        /* PERFECT HUD ALIGNMENT */
         .top-hud { width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); box-sizing: border-box; flex-shrink: 0;}
-        .hud-left { justify-self: start; }
-        .hud-center { justify-self: center; text-align: center; }
-        .hud-right { justify-self: end; }
-
+        .hud-left { justify-self: start; } .hud-center { justify-self: center; text-align: center; } .hud-right { justify-self: end; }
         .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
 
         .sidebar-header { background: #1e293b; color: #fff; padding: 10px; text-align: center; font-size: 28px; border-bottom: 2px solid var(--border-std); display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000; font-weight: bold; flex-shrink: 0;}
         .lobby-player { font-size: 26px; margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 5px; text-shadow: 1px 1px 0 #000;}
-        
         .chat-messages { flex: 1; padding: 10px; font-size: 22px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word;}
         .chat-input-area { display: flex; border-top: 2px solid var(--border-std); background: #000; flex-shrink: 0;}
         .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none; font-family: 'VT323';}
         .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold; font-family: 'VT323';}
 
         .table-surface { flex: 1; display: flex; flex-direction: column; width: 100%; position: relative; }
-        
-        /* DEAD CENTER DEALER */
         .banker-station { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; width: 100%;}
         #timers-container { position: absolute; top: 240px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; z-index: 20; width: 100%; pointer-events: none;}
         .global-timer { font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000; white-space: nowrap;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
         .global-timer.warning { background: #eab308; color: #000; font-size: 32px; font-weight: bold; text-shadow: none !important; border: 2px solid #000;}
 
-        /* SEATS */
         #seats-area { position: absolute; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center; align-items: flex-end; box-sizing: border-box; z-index: 5; height: auto; min-height: 250px; gap: 30px;}
         .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0; position: relative;}
         .seat-empty-box { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 160px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 8px; background: rgba(0,0,0,0.3); padding: 10px;}
@@ -128,13 +113,11 @@
         .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
         .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
 
-        /* ANIMATIONS */
         @keyframes coinCollect { 0% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;} 50% { transform: translateY(-20px) scale(1.2); color: #fff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24; } 100% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;} }
         @keyframes loseDrop { 0% { transform: translateY(0); color: var(--warning); } 50% { transform: translateY(5px); color: var(--danger); text-shadow: 0 0 10px var(--danger); } 100% { transform: translateY(10px); color: #555; opacity: 0.5; } }
         .anim-win { animation: coinCollect 0.8s ease-out forwards; } .anim-lose { animation: loseDrop 0.8s ease-out forwards; }
         .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
 
-        /* BETTING UI */
         .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
         .seat-bet-box select { flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none; font-family: 'VT323', monospace; letter-spacing: 1px;}
         .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; font-family: 'VT323', monospace; letter-spacing: 1px; font-size: 20px;}
@@ -145,7 +128,6 @@
         .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323';}
         .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
-        /* CARDS */
         .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 120px; width: 100%; margin-bottom: 12px;}
         .hand-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative; min-height: 120px;}
         .hand-container { position: relative; display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px;}
@@ -163,7 +145,6 @@
         .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 24px; background: #0f172a; margin-bottom: 5px; border-radius: 4px;}
         .coin-icon { color:#fbbf24; text-shadow: 1px 1px 0 #000; font-family: 'Segoe UI Emoji', sans-serif;}
         
-        /* DICE UI */
         .dice-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1; perspective: 1000px; }
         .dice { font-size: 120px; color: #fff; text-shadow: 0 0 30px var(--accent-glow); line-height: 1; font-family: Arial, sans-serif; }
         .dice.shake { animation: shake 0.5s infinite; color: var(--warning); text-shadow: 0 0 40px var(--warning);}
@@ -173,7 +154,6 @@
         .dice-bet-title { font-size: 36px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 10px; }
         .dice-bet-payout { font-size: 24px; color: var(--success); margin-bottom: 15px; }
 
-        /* COIN FLIP UI */
         .coin-3d { width: 150px; height: 150px; background: #fbbf24; border-radius: 50%; border: 10px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 80px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 50px #fbbf24; font-family: Arial; }
         .coin-3d.flipping { animation: flipCoin 0.3s infinite linear; }
         @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
@@ -218,7 +198,7 @@
                 <button class="wood-btn" style="background: var(--warning); color:#000;" onclick="showBank()">BANKING</button>
                 <button class="wood-btn" style="background: #10b981; color:#000;" onclick="showProfile()">PROFILE</button>
                 <button class="wood-btn" style="background: #0f766e;" onclick="showRewards()">DAILY REWARDS</button>
-                <button class="wood-btn" style="background: #d946ef;" onclick="showModal('store-modal')">COSMETIC STORE</button>
+                <button class="wood-btn" style="background: #d946ef;" onclick="showModal('redeem-modal')">REDEEM CODE</button>
                 <button class="wood-btn" style="background: #64748b;" onclick="showModal('settings-modal')">SYSTEM SETTINGS</button>
                 <button class="wood-btn" style="background: var(--danger); grid-column: span 2;" onclick="showModal('logout-modal')">LOGOUT</button>
             </div>
@@ -246,7 +226,6 @@
         <div id="how-to-play-modal" class="overlay-menu hidden">
             <div class="modal-box custom-scroll" style="width: 700px;">
                 <h2 class="pixel-text" style="margin-bottom: 15px; font-size: 40px;">ARCADE RULES</h2>
-                
                 <div class="tab-buttons">
                     <button class="tab-btn active" onclick="switchTab('tab-bj', this)">BLACKJACK</button>
                     <button class="tab-btn" onclick="switchTab('tab-dice', this)">DICE</button>
@@ -287,7 +266,6 @@
                         <li><strong>Daily Rewards:</strong> Available every 24 hours.</li>
                     </ul>
                 </div>
-
                 <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('how-to-play-modal')">CLOSE</button>
             </div>
         </div>
@@ -300,17 +278,22 @@
             </div>
         </div>
 
-        <div id="store-modal" class="overlay-menu hidden">
+        <div id="redeem-modal" class="overlay-menu hidden">
             <div class="modal-box custom-scroll">
-                <h2 class="pixel-text" style="color: #d946ef; margin-bottom: 20px; font-size: 60px;">V.I.P. STORE</h2>
-                <div class="pixel-text" style="font-size: 30px; margin: 40px 0; color: #94a3b8;">[ NEW INVENTORY ARRIVING SOON ]</div>
-                <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('store-modal')">CLOSE</button>
+                <h2 class="pixel-text" style="color: #d946ef; margin-bottom: 20px; font-size: 60px;">REDEEM CODE</h2>
+                <div class="input-group" style="margin: 20px 0;">
+                    <input type="text" id="gift-code-main" class="retro-input pixel-text" placeholder="ENTER PROMO CODE" style="text-transform:uppercase;">
+                    <button class="wood-btn" style="width: 150px; margin-bottom:0; background: var(--success); color:#000;" onclick="redeemCodeMain()">REDEEM</button>
+                </div>
+                <p id="redeem-msg" class="pixel-text" style="font-size: 28px; margin-bottom: 10px;"></p>
+                <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('redeem-modal')">CLOSE</button>
             </div>
         </div>
 
         <div id="profile-modal" class="overlay-menu hidden">
             <div class="modal-box custom-scroll" style="width: 750px;">
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 50px;">PLAYER DOSSIER</h2>
+                <div class="profile-preview pixel-text" id="profile-username-preview" style="color: #fff;">USERNAME</div>
                 <div class="profile-credits pixel-text" style="margin-bottom: 15px; font-size: 36px;">TOTAL BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
                 <button class="wood-btn pixel-text" style="background: #475569;" onclick="openProfileLedger()">VIEW TRANSACTION LEDGER</button>
                 <div style="margin-top: 15px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('profile-modal')">CLOSE</button></div>
@@ -329,11 +312,15 @@
             <div class="modal-box custom-scroll" style="width: 700px;">
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 5px; font-size: 50px;">SYSTEM BANKING</h2>
                 <div class="pixel-text" style="font-size: 28px; margin-bottom: 20px;">CURRENT BALANCE: <span class="coin-icon">🪙</span> <span id="bank-balance-display" style="font-size: 40px;">0</span></div>
-                <div class="input-group"><input type="number" id="bank-amount" class="retro-input pixel-text" placeholder="ENTER AMOUNT"></div>
+                
+                <div class="input-group">
+                    <input type="text" id="bank-amount" class="retro-input pixel-text" placeholder="ENTER AMOUNT" oninput="formatInput(this)">
+                </div>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <button class="wood-btn" style="flex: 1; background: var(--accent-glow-2);" onclick="showBankConfirm('deposit')">DEPOSIT</button>
                     <button class="wood-btn" style="flex: 1; background: var(--warning); color:#000;" onclick="showBankConfirm('withdrawal')">WITHDRAW</button>
                 </div>
+                
                 <button class="wood-btn pixel-text" style="background: #475569;" onclick="openBankLedger()">VIEW BANK REQUESTS</button>
                 <div style="margin-top: 10px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('bank-modal')">CLOSE</button></div>
             </div>
@@ -448,17 +435,17 @@
                 <div class="dice-bet-area">
                     <div class="dice-bet-box">
                         <div class="dice-bet-title pixel-text">UNDER 7</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
-                        <input type="number" id="bet-under" class="retro-input pixel-text" placeholder="AMOUNT" style="width:100%; margin-bottom:10px;">
+                        <input type="text" id="bet-under" class="retro-input pixel-text" placeholder="AMOUNT" oninput="formatInput(this)" style="width:100%; margin-bottom:10px;">
                         <button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="placeDiceBet('under')">BET UNDER</button>
                     </div>
                     <div class="dice-bet-box">
                         <div class="dice-bet-title pixel-text">EXACTLY 7</div><div class="dice-bet-payout pixel-text">PAYS 4:1</div>
-                        <input type="number" id="bet-seven" class="retro-input pixel-text" placeholder="AMOUNT" style="width:100%; margin-bottom:10px;">
+                        <input type="text" id="bet-seven" class="retro-input pixel-text" placeholder="AMOUNT" oninput="formatInput(this)" style="width:100%; margin-bottom:10px;">
                         <button class="wood-btn pixel-text" style="background: #a855f7;" onclick="placeDiceBet('seven')">BET EXACT</button>
                     </div>
                     <div class="dice-bet-box">
                         <div class="dice-bet-title pixel-text">OVER 7</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
-                        <input type="number" id="bet-over" class="retro-input pixel-text" placeholder="AMOUNT" style="width:100%; margin-bottom:10px;">
+                        <input type="text" id="bet-over" class="retro-input pixel-text" placeholder="AMOUNT" oninput="formatInput(this)" style="width:100%; margin-bottom:10px;">
                         <button class="wood-btn pixel-text" style="background: var(--success); color:#000;" onclick="placeDiceBet('over')">BET OVER</button>
                     </div>
                 </div>
@@ -501,12 +488,12 @@
                 <div class="dice-bet-area">
                     <div class="dice-bet-box" style="width: 300px;">
                         <div class="dice-bet-title pixel-text">HEADS</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
-                        <input type="number" id="bet-heads" class="retro-input pixel-text" placeholder="AMOUNT" style="width:100%; margin-bottom:10px;">
+                        <input type="text" id="bet-heads" class="retro-input pixel-text" placeholder="AMOUNT" oninput="formatInput(this)" style="width:100%; margin-bottom:10px;">
                         <button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="placeCoinBet('heads')">BET HEADS</button>
                     </div>
                     <div class="dice-bet-box" style="width: 300px;">
                         <div class="dice-bet-title pixel-text">TAILS</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
-                        <input type="number" id="bet-tails" class="retro-input pixel-text" placeholder="AMOUNT" style="width:100%; margin-bottom:10px;">
+                        <input type="text" id="bet-tails" class="retro-input pixel-text" placeholder="AMOUNT" oninput="formatInput(this)" style="width:100%; margin-bottom:10px;">
                         <button class="wood-btn pixel-text" style="background: #ea580c;" onclick="placeCoinBet('tails')">BET TAILS</button>
                     </div>
                 </div>
@@ -538,11 +525,19 @@
 
     <script>
         function formatNumber(num) { return num.toLocaleString(); }
+        
+        // Auto-Format Comma Inputs
+        function formatInput(el) {
+            let val = el.value.replace(/\D/g, '');
+            el.value = val ? parseInt(val).toLocaleString() : '';
+        }
+
         const socket = io();
         let currentUser = null; let currentGameState = null; let currentRoomId = null; let mySeatIndex = -1;
         let globalTimerInt = null; let nextRoundTimerInt = null; let idleTimerInt = null; let turnTimerVisualInt = null;
         let rewardTimerInt = null; let actionLocked = false; window.lastBetAmount = 0; let pendingBankAction = null; 
-        
+        let rewardCooldownSeconds = 0;
+
         const audioNodes = { bgm: document.getElementById('sfx-bgm'), deal: document.getElementById('sfx-deal'), bet: document.getElementById('sfx-bet'), win: document.getElementById('sfx-win'), lose: document.getElementById('sfx-lose') };
         audioNodes.bgm.volume = 0; 
         function updateVol(type, val) {
@@ -551,7 +546,7 @@
         }
         function playSfx(id) { if(audioNodes[id] && audioNodes[id].volume > 0) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } }
 
-        function showModal(id) { if(!currentUser && id !== 'how-to-play-modal') return; document.getElementById(id).classList.remove('hidden'); }
+        function showModal(id) { if(!currentUser && id !== 'how-to-play-modal' && id !== 'tos-modal') return; document.getElementById(id).classList.remove('hidden'); }
         function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
         
         function switchTab(tabId, btnEl) {
@@ -575,7 +570,10 @@
             const data = await res.json();
             if(res.ok) {
                 currentUser = data; document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
-                updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; playSfx('deal');
+                updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; 
+                const userPreview = document.getElementById('profile-username-preview');
+                if(userPreview) userPreview.innerText = currentUser.username;
+                playSfx('deal');
             } else document.getElementById('login-error').innerText = data.error;
         }
 
@@ -665,6 +663,7 @@
                         let activeHandClass = (state.activeSeatIndex === index && seatData.currentHand === hIdx && hand.status === 'waiting') ? 'active-hand' : '';
                         html += `<div class="hand-box ${activeHandClass}"><div class="hand-container">`;
                         hand.cards.forEach(c => { html += formatCardHTML(c, false); }); if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
+                        
                         if (hand.status === 'bust' || hand.result === 'bust') html += `<div class="hand-status-label hand-status-bust">BUST</div>`;
                         else if (hand.result) {
                             if(hand.result === 'win' || hand.result === 'win-bj') html += `<div class="hand-status-label hand-status-win">${hand.result==='win-bj'?'BLACKJACK':'WIN'}</div>`;
@@ -761,7 +760,7 @@
         socket.on('dice_bet_placed', (data) => { currentUser.credits = data.credits; updateAllCredits(); playSfx('bet'); document.getElementById('dice-result-text').innerText = "BET ACCEPTED!"; });
         socket.on('dice_error', (msg) => alert(msg));
         window.placeDiceBet = function(choice) {
-            const amt = parseInt(document.getElementById(`bet-${choice}`).value);
+            const amt = parseInt(document.getElementById(`bet-${choice}`).value.replace(/,/g, ''));
             if (isNaN(amt) || amt < 100) return alert("Min bet is 100"); if (amt > currentUser.credits) return alert("Insufficient credits");
             socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt }); document.getElementById(`bet-${choice}`).value = '';
         };
@@ -787,7 +786,7 @@
         socket.on('coin_bet_placed', (data) => { currentUser.credits = data.credits; updateAllCredits(); playSfx('bet'); document.getElementById('coin-result-text').innerText = "BET ACCEPTED!"; });
         socket.on('coin_error', (msg) => alert(msg));
         window.placeCoinBet = function(choice) {
-            const amt = parseInt(document.getElementById(`bet-${choice}`).value);
+            const amt = parseInt(document.getElementById(`bet-${choice}`).value.replace(/,/g, ''));
             if (isNaN(amt) || amt < 100) return alert("Min bet is 100"); if (amt > currentUser.credits) return alert("Insufficient credits");
             socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); document.getElementById(`bet-${choice}`).value = '';
         };
@@ -808,11 +807,11 @@
             if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
         });
 
+        function showProfile() { if(!currentUser) return; document.getElementById('profile-username-preview').innerText = currentUser.username; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showModal('profile-modal'); }
+        function showBank() { if(!currentUser) return; document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showModal('bank-modal'); }
         function openProfileLedger() { if(!currentUser) return; hideModal('profile-modal'); showModal('profile-ledger-modal'); loadLedger(false); }
         function openBankLedger() { if(!currentUser) return; hideModal('bank-modal'); showModal('bank-ledger-modal'); loadLedger(true); }
-        function showProfile() { if(!currentUser) return; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showModal('profile-modal'); }
-        function showBank() { if(!currentUser) return; document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showModal('bank-modal'); }
-
+        
         async function loadLedger(isBankOnly) {
             const res = await fetch(`/api/profile/ledger/${currentUser.username}`); const data = await res.json();
             const list = document.getElementById(isBankOnly ? 'bank-ledger-list' : 'ledger-list'); list.innerHTML = '';
@@ -848,10 +847,12 @@
             setTimeout(()=> msgBox.innerText='', 3000); pendingBankAction = null;
         }
 
-        async function redeemCode() {
-            const code = document.getElementById('gift-code').value; const msgBox = document.getElementById('bank-msg');
+        async function redeemCodeMain() {
+            if(!currentUser) return;
+            const code = document.getElementById('gift-code-main').value; const msgBox = document.getElementById('redeem-msg');
+            if(!code) return;
             const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
-            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; updateAllCredits(); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code').value=''; playSfx('win'); }
+            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; updateAllCredits(); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code-main').value=''; playSfx('win'); }
             else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
             setTimeout(()=> msgBox.innerText='', 3000);
         }
