@@ -16,11 +16,8 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(async () => {
         console.log('MongoDB Connected Successfully');
         
-        // Checks the database for the admin configuration
         const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
         
-        // If it doesn't exist (first boot), it securely seeds the database 
-        // using your Railway Variable, leaving NO hardcoded passwords in the file.
         if (!adminConfig) {
             const initialPassword = process.env.ADMIN_PASSWORD || 'admin123';
             await new SystemConfig({ configName: 'admin_password', configValue: initialPassword }).save();
@@ -157,7 +154,6 @@ function getGameTitle(roomId) {
 // --- STRICT DATABASE ADMIN SECURITY ---
 const checkAdmin = async (req, res, next) => {
     try {
-        // Exclusively queries the database for the active password
         const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
         
         if (!adminConfig || !adminConfig.configValue) {
@@ -238,8 +234,6 @@ app.post('/api/login', async (req, res) => {
     });
 });
 
-app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
-
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
     let txType = type === 'deposit' ? 'BANK DEPOSIT' : 'BANK WITHDRAWAL';
@@ -284,7 +278,7 @@ io.on('connection', (socket) => {
         socketUserMap[socket.id] = { username, roomId };
         const user = await User.findOne({ username });
         if (user && !rooms[roomId].lobby.find(p => p.username === username)) {
-            rooms[roomId].lobby.push({ username: user.username, color: user.nameColor });
+            rooms[roomId].lobby.push({ username: user.username });
         }
         emitGameState(roomId);
     });
@@ -311,7 +305,7 @@ io.on('connection', (socket) => {
         if (!user) return;
         
         room.seats[seatIndex] = { 
-            username: user.username, color: user.nameColor, socketId: socket.id, 
+            username: user.username, socketId: socket.id, 
             credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], 
             currentHand: 0, kickAt: Date.now() + 7000 
         };
