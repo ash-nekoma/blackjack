@@ -42,12 +42,15 @@
         .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.8; }
-        .wood-btn.locked { border-color: #555; background: #333; color: #aaa; box-shadow: none; transform: translate(2px, 2px); }
 
         .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
         .info-box strong { color: var(--warning); font-size: 28px; display: block; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px;}
         .info-box ul { padding-left: 25px; margin-top: 10px;} .info-box li { margin-bottom: 10px;}
 
+        .tab-buttons { display: flex; border-bottom: 2px solid var(--border-std); margin-bottom: 15px; flex-shrink: 0;}
+        .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-size: 22px; cursor: pointer; font-family: 'VT323'; letter-spacing: 1px;}
+        .tab-btn.active { background: var(--accent-glow); color: #fff; box-shadow: inset 0 3px 0 #fff; }
+        
         .profile-preview { font-size: 50px; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; text-transform: uppercase;}
         
         .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
@@ -104,18 +107,16 @@
         .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
         .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
 
+        @keyframes coinCollect { 0% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;} 50% { transform: translateY(-20px) scale(1.2); color: #fff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24; } 100% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;} }
         @keyframes loseDrop { 0% { transform: translateY(0); color: var(--warning); } 50% { transform: translateY(5px); color: var(--danger); text-shadow: 0 0 10px var(--danger); } 100% { transform: translateY(10px); color: #555; opacity: 0.5; } }
         .anim-win { animation: coinCollect 0.8s ease-out forwards; } .anim-lose { animation: loseDrop 0.8s ease-out forwards; }
         .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
-
-        .bet-input-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
-        .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #0f172a; border: 2px solid var(--border-std); border-radius: 4px; font-size: 28px; font-weight: bold; z-index: 10; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
 
         .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
         .seat-bet-box select { flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none; font-family: 'VT323', monospace; letter-spacing: 1px;}
         .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; font-family: 'VT323', monospace; letter-spacing: 1px; font-size: 20px;}
         .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 12px;}
-        .s-btn:active:not(:disabled) { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
+        .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
         .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; box-sizing: border-box;}
         .btn-hit { background: var(--success); color: #000; font-size: 18px; padding: 6px;} .btn-stand { background: #b45309; color: #fff; font-size: 18px; padding: 6px;} .btn-double { background: var(--accent-glow-2); color: #fff; font-size: 18px; padding: 6px;} .btn-split { background: var(--accent-glow); color: #fff; font-size: 18px; padding: 6px;}
         .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323';}
@@ -134,6 +135,7 @@
         .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10; font-family: Arial, sans-serif; line-height: 1; padding: 0; padding-top: 1px;}
         .hand-status-label { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); font-size: 28px; font-weight: bold; text-shadow: 2px 2px 0 #000; padding: 2px 10px; border: 3px solid currentColor; border-radius: 4px; background: rgba(0,0,0,0.85); z-index: 20; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 10px rgba(0,0,0,0.5);}
         .hand-status-bust { color: var(--danger); } .hand-status-win { color: var(--success); } .hand-status-lose { color: var(--danger); } .hand-status-push { color: #94a3b8; } .hand-status-blackjack { color: var(--warning); }
+
         .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 24px; background: #0f172a; margin-bottom: 5px; border-radius: 4px;}
         .coin-icon { color:#fbbf24; text-shadow: 1px 1px 0 #000; font-family: 'Segoe UI Emoji', sans-serif;}
         
@@ -143,9 +145,12 @@
         @keyframes subtleShake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -1px) rotate(-2deg); } 50% { transform: translate(0px, 1px) rotate(2deg); } 75% { transform: translate(1px, -1px) rotate(-1deg); } 100% { transform: translate(-1px, 0px) rotate(1deg); } }
         
         .dice-bet-area { display: flex; justify-content: center; gap: 20px; padding: 30px; background: rgba(0,0,0,0.6); border-top: 2px solid var(--border-std); }
-        .dice-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 15px; text-align: center; width: 220px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: space-between;}
+        .dice-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 15px; text-align: center; width: 220px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; position: relative; transition: 0.1s;}
+        .dice-bet-box:active:not(.locked) { transform: scale(0.95); }
+        .dice-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
         .dice-bet-title { font-size: 36px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 5px; }
         .dice-bet-payout { font-size: 24px; color: var(--success); margin-bottom: 10px; }
+
         .coin-3d { width: 150px; height: 150px; background: #fbbf24; border-radius: 50%; border: 10px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 80px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 50px #fbbf24; font-family: Arial; }
         .coin-3d.flipping { animation: flipCoin 0.3s infinite linear; }
         @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
@@ -165,8 +170,10 @@
         .color-bet-box.br-green { border-top-color: #10b981; } .color-bet-box.br-pink { border-top-color: #ec4899; } .color-bet-box.br-white { border-top-color: #f8fafc; }
         .color-bet-title { font-size: 40px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 5px; text-transform: uppercase;}
         
-        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 28px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20;}
+        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 28px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20; pointer-events:none;}
         .color-payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 38px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 30;}
+        
+        .history-list-item { font-size: 24px; border-bottom: 1px dashed #333; padding: 8px 0; text-align: center; }
     </style>
 </head>
 <body>
@@ -444,34 +451,30 @@
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="dice-credits"></span></div></div>
                 </div>
                 <div class="dice-container"><div id="die1" class="dice">⚀</div><div id="die2" class="dice">⚀</div></div>
-                <div style="text-align: center; margin-bottom: 20px;">
+                <div style="text-align: center; margin-bottom: 10px;">
                     <div id="dice-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
                     <div id="dice-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
                 </div>
-                <div class="dice-bet-area">
-                    <div class="dice-bet-box">
-                        <div class="dice-bet-title pixel-text">UNDER 7</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
-                        <div class="bet-input-wrapper">
-                            <select id="bet-under" class="retro-input pixel-text" style="width:100%;"><option value="0" selected>0</option><option value="1000">1,000</option><option value="5000">5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
-                            <div id="payout-under" class="payout-overlay hidden"></div>
-                        </div>
-                        <button class="wood-btn pixel-text dice-bet-btn" style="background: var(--accent-glow-2);" onclick="placeDiceBet('under')">BET UNDER</button>
+                <div style="padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6);">
+                    <div style="display:flex; justify-content: center; margin-bottom: 10px;">
+                        <select id="dice-master-bet" class="retro-input pixel-text" style="max-width: 300px; font-size: 28px;">
+                            <option value="0" selected>0</option><option value="1000">1,000</option><option value="5000">5,000</option>
+                            <option value="20000">20,000</option><option value="50000">50,000</option>
+                        </select>
                     </div>
-                    <div class="dice-bet-box">
-                        <div class="dice-bet-title pixel-text">EXACTLY 7</div><div class="dice-bet-payout pixel-text">PAYS 4:1</div>
-                        <div class="bet-input-wrapper">
-                            <select id="bet-seven" class="retro-input pixel-text" style="width:100%;"><option value="0" selected>0</option><option value="1000">1,000</option><option value="5000">5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
-                            <div id="payout-seven" class="payout-overlay hidden"></div>
+                    <div style="display: flex; justify-content: center; gap: 20px;">
+                        <div id="dice-btn-under" class="dice-bet-box color-bet-btn" onclick="placeDiceBet('under')">
+                            <div class="bet-badge pixel-text hidden" id="badge-under">0</div><div class="color-payout-overlay hidden" id="payout-under"></div>
+                            <div class="dice-bet-title pixel-text">UNDER 7</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
                         </div>
-                        <button class="wood-btn pixel-text dice-bet-btn" style="background: #a855f7;" onclick="placeDiceBet('seven')">BET EXACT</button>
-                    </div>
-                    <div class="dice-bet-box">
-                        <div class="dice-bet-title pixel-text">OVER 7</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
-                        <div class="bet-input-wrapper">
-                            <select id="bet-over" class="retro-input pixel-text" style="width:100%;"><option value="0" selected>0</option><option value="1000">1,000</option><option value="5000">5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
-                            <div id="payout-over" class="payout-overlay hidden"></div>
+                        <div id="dice-btn-seven" class="dice-bet-box color-bet-btn" onclick="placeDiceBet('seven')">
+                            <div class="bet-badge pixel-text hidden" id="badge-seven">0</div><div class="color-payout-overlay hidden" id="payout-seven"></div>
+                            <div class="dice-bet-title pixel-text" style="color:#a855f7;">EXACTLY 7</div><div class="dice-bet-payout pixel-text">PAYS 4:1</div>
                         </div>
-                        <button class="wood-btn pixel-text dice-bet-btn" style="background: var(--success); color:#000;" onclick="placeDiceBet('over')">BET OVER</button>
+                        <div id="dice-btn-over" class="dice-bet-box color-bet-btn" onclick="placeDiceBet('over')">
+                            <div class="bet-badge pixel-text hidden" id="badge-over">0</div><div class="color-payout-overlay hidden" id="payout-over"></div>
+                            <div class="dice-bet-title pixel-text" style="color:var(--success);">OVER 7</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -482,7 +485,7 @@
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">ROLL HISTORY</div>
-                    <div id="dice-history" style="flex: 1; padding: 10px; overflow-y: auto; font-size:40px; text-align:center; letter-spacing:5px;" class="pixel-text custom-scroll"></div>
+                    <div id="dice-history" style="flex: 1; padding: 10px; overflow-y: auto; text-align:center; display:flex; flex-direction:column; gap:5px;" class="pixel-text custom-scroll"></div>
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
@@ -503,26 +506,26 @@
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="coin-credits"></span></div></div>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; flex: 1;"><div id="global-coin-visual" class="coin-3d">?</div></div>
-                <div style="text-align: center; margin-bottom: 20px;">
+                <div style="text-align: center; margin-bottom: 10px;">
                     <div id="coin-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">FLIPPING...</div>
                     <div id="coin-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
                 </div>
-                <div class="dice-bet-area">
-                    <div class="dice-bet-box" style="width: 300px;">
-                        <div class="dice-bet-title pixel-text">HEADS</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
-                        <div class="bet-input-wrapper">
-                            <select id="bet-heads" class="retro-input pixel-text" style="width:100%;"><option value="0" selected>0</option><option value="1000">1,000</option><option value="5000">5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
-                            <div id="payout-heads" class="payout-overlay hidden"></div>
-                        </div>
-                        <button class="wood-btn pixel-text coin-bet-btn" style="background: var(--accent-glow-2);" onclick="placeCoinBet('heads')">BET HEADS</button>
+                <div style="padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6);">
+                    <div style="display:flex; justify-content: center; margin-bottom: 10px;">
+                        <select id="coin-master-bet" class="retro-input pixel-text" style="max-width: 300px; font-size: 28px;">
+                            <option value="0" selected>0</option><option value="1000">1,000</option><option value="5000">5,000</option>
+                            <option value="20000">20,000</option><option value="50000">50,000</option>
+                        </select>
                     </div>
-                    <div class="dice-bet-box" style="width: 300px;">
-                        <div class="dice-bet-title pixel-text">TAILS</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
-                        <div class="bet-input-wrapper">
-                            <select id="bet-tails" class="retro-input pixel-text" style="width:100%;"><option value="0" selected>0</option><option value="1000">1,000</option><option value="5000">5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
-                            <div id="payout-tails" class="payout-overlay hidden"></div>
+                    <div style="display: flex; justify-content: center; gap: 20px;">
+                        <div id="coin-btn-heads" class="dice-bet-box color-bet-btn" onclick="placeCoinBet('heads')">
+                            <div class="bet-badge pixel-text hidden" id="badge-heads">0</div><div class="color-payout-overlay hidden" id="payout-heads"></div>
+                            <div class="dice-bet-title pixel-text" style="color:var(--accent-glow-2);">HEADS</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
                         </div>
-                        <button class="wood-btn pixel-text coin-bet-btn" style="background: #ea580c;" onclick="placeCoinBet('tails')">BET TAILS</button>
+                        <div id="coin-btn-tails" class="dice-bet-box color-bet-btn" onclick="placeCoinBet('tails')">
+                            <div class="bet-badge pixel-text hidden" id="badge-tails">0</div><div class="color-payout-overlay hidden" id="payout-tails"></div>
+                            <div class="dice-bet-title pixel-text" style="color:#ea580c;">TAILS</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -533,7 +536,7 @@
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">FLIP HISTORY</div>
-                    <div id="coin-history" style="flex: 1; padding: 10px; overflow-y: auto; font-size:30px; text-align:center;" class="pixel-text custom-scroll"></div>
+                    <div id="coin-history" style="flex: 1; padding: 10px; overflow-y: auto; text-align:center; display:flex; flex-direction:column; gap:5px;" class="pixel-text custom-scroll"></div>
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
@@ -553,6 +556,7 @@
                     <div class="hud-center"><div style="font-size: 36px; color: var(--success);" id="color-phase-display" class="pixel-text">BETS OPEN</div></div>
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="color-credits"></span></div></div>
                 </div>
+                
                 <div class="color-die-container">
                     <div id="col-die1" class="color-die bg-red"></div>
                     <div id="col-die2" class="color-die bg-blue"></div>
@@ -599,7 +603,7 @@
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">ROLL HISTORY</div>
-                    <div id="color-history" style="flex: 1; padding: 10px; overflow-y: auto; text-align:center; line-height: 1.2;" class="pixel-text custom-scroll"></div>
+                    <div id="color-history" style="flex: 1; padding: 10px; overflow-y: auto; text-align:center; display:flex; flex-direction:column; gap:5px;" class="pixel-text custom-scroll"></div>
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
@@ -821,8 +825,8 @@
         });
 
         // --- ARCADE UTILS ---
-        function lockBets(game) { document.querySelectorAll(`.${game}-bet-btn`).forEach(b => { b.disabled = true; b.classList.add('locked'); }); }
-        function unlockBets(game) { document.querySelectorAll(`.${game}-bet-btn`).forEach(b => { b.disabled = false; b.classList.remove('locked'); }); }
+        function lockBets(game) { document.querySelectorAll(`.${game}-bet-btn`).forEach(b => { b.disabled = true; b.classList.add('locked'); if(b.tagName === 'BUTTON') b.innerText = 'LOCKED'; }); }
+        function unlockBets(game) { document.querySelectorAll(`.${game}-bet-btn`).forEach(b => { b.disabled = false; b.classList.remove('locked'); if(b.tagName === 'BUTTON') b.innerText = b.dataset.originalText || 'BET'; }); }
         function showPayoutAnim(choiceId, amount, isWin) {
             const c = document.getElementById(`payout-${choiceId}`); if(!c) return;
             c.innerHTML = `<span style="color:${isWin?'var(--success)':'var(--danger)'}">${isWin ? '+' : ''}${formatNumber(amount)}</span>`;
@@ -835,7 +839,7 @@
             const statusText = document.getElementById('dice-result-text'); const timerText = document.getElementById('dice-timer');
             const d1 = document.getElementById('die1'); const d2 = document.getElementById('die2');
             
-            if(data.history) document.getElementById('dice-history').innerHTML = data.history.map(n => `<span style="color:${n===7?'#a855f7':(n<7?'var(--accent-glow-2)':'var(--success)')}">${n}</span> `).join('');
+            if(data.history) document.getElementById('dice-history').innerHTML = data.history.map(n => `<div class="history-list-item"><span style="color:${n[0]+n[1]===7?'#a855f7':(n[0]+n[1]<7?'var(--accent-glow-2)':'var(--success)')}">${diceFaces[n[0]-1]} ${diceFaces[n[1]-1]} = ${n[0]+n[1]}</span></div>`).join('');
 
             if (data.status === 'betting') {
                 statusText.innerText = "PLACE YOUR BETS"; d1.classList.remove('shake'); d2.classList.remove('shake'); unlockBets('dice'); myDiceBet = 0; clearInterval(diceInterval);
@@ -855,8 +859,8 @@
         
         window.placeDiceBet = function(choice) {
             if(isBetting) return; const btn = document.querySelector(`.dice-bet-btn[onclick="placeDiceBet('${choice}')"]`); if(btn && btn.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`bet-${choice}`).value.replace(/,/g, ''));
-            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount."); 
+            const amt = parseInt(document.getElementById(`dice-master-bet`).value);
+            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
             if (amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
             isBetting = true; socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt }); myDiceBet = amt; setTimeout(()=>{ isBetting = false; }, 750);
         };
@@ -865,7 +869,7 @@
         let coinInterval = null;
         socket.on('coin_state_update', (data) => {
             const statusText = document.getElementById('coin-result-text'); const timerText = document.getElementById('coin-timer'); const coinVis = document.getElementById('global-coin-visual');
-            if(data.history) { document.getElementById('coin-history').innerHTML = data.history.map(r => `<span style="color:${r==='heads'?'var(--accent-glow-2)':'#ea580c'}">${r.toUpperCase()}</span> `).join(''); }
+            if(data.history) { document.getElementById('coin-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${r==='heads'?'var(--accent-glow-2)':'#ea580c'}">${r.toUpperCase()}</span></div>`).join(''); }
 
             if (data.status === 'betting') {
                 statusText.innerText = "PLACE YOUR BETS"; coinVis.classList.remove('flipping'); coinVis.innerText = '?'; unlockBets('coin'); myCoinBet = 0; clearInterval(coinInterval);
@@ -884,8 +888,8 @@
         });
         window.placeCoinBet = function(choice) {
             if(isBetting) return; const btn = document.querySelector(`.coin-bet-btn[onclick="placeCoinBet('${choice}')"]`); if(btn && btn.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`bet-${choice}`).value.replace(/,/g, ''));
-            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount."); 
+            const amt = parseInt(document.getElementById(`coin-master-bet`).value);
+            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
             if (amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
             isBetting = true; socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); myCoinBet = amt; setTimeout(()=>{ isBetting = false; }, 750);
         };
@@ -896,7 +900,7 @@
             const statusText = document.getElementById('color-result-text'); const timerText = document.getElementById('color-timer');
             const d1 = document.getElementById('col-die1'); const d2 = document.getElementById('col-die2'); const d3 = document.getElementById('col-die3');
             
-            if(data.history) { document.getElementById('color-history').innerHTML = data.history.map(r => `<div><span style="color:${getColorHex(r[0])}; font-size: 50px; text-shadow: 2px 2px 0 #000;">■</span><span style="color:${getColorHex(r[1])}; font-size: 50px; text-shadow: 2px 2px 0 #000;">■</span><span style="color:${getColorHex(r[2])}; font-size: 50px; text-shadow: 2px 2px 0 #000;">■</span></div>`).join(''); }
+            if(data.history) { document.getElementById('color-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${getColorHex(r[0])}; font-size: 40px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[1])}; font-size: 40px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[2])}; font-size: 40px; text-shadow: 2px 2px 0 #000;">■</span></div>`).join(''); }
 
             if (data.status === 'betting') {
                 statusText.innerText = "PLACE YOUR BETS"; unlockBets('color'); myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 }; d1.classList.remove('shake'); d2.classList.remove('shake'); d3.classList.remove('shake'); clearInterval(colorInterval);
@@ -935,16 +939,26 @@
         });
 
         socket.on('arcade_bet_placed', (data) => { 
-            if(data.game==='dice') { lockBets('dice'); } 
-            else if(data.game==='coin') { lockBets('coin'); } 
+            if(data.game==='dice') { 
+                const btn = document.querySelector(`.dice-bet-btn[onclick="placeDiceBet('${data.choice}')"]`);
+                if(btn) { btn.disabled = true; btn.classList.add('locked'); btn.innerText = 'LOCKED'; }
+            } 
+            else if(data.game==='coin') { 
+                const btn = document.querySelector(`.coin-bet-btn[onclick="placeCoinBet('${data.choice}')"]`);
+                if(btn) { btn.disabled = true; btn.classList.add('locked'); btn.innerText = 'LOCKED'; }
+            } 
             else if(data.game==='color') { 
                 const badge = document.getElementById(`badge-${data.choice}`); 
                 badge.innerText = formatNumber(data.totalChoiceBet); 
                 badge.classList.remove('hidden');
+                if(data.totalChoiceBet >= 50000) {
+                    const box = document.getElementById(`color-btn-${data.choice}`);
+                    if(box) box.classList.add('locked');
+                }
             } 
             currentUser.credits = data.credits; updateAllCredits(); playSfx('bet'); 
         });
-        socket.on('arcade_error', (msg) => { alert(msg); });
+        socket.on('arcade_error', (msg) => { alert(msg); isBetting = false; });
 
         window.placeColorBet = function(choice) {
             if(isBetting) return; const btn = document.getElementById(`color-btn-${choice}`); if(btn && btn.classList.contains('locked')) return;
@@ -976,6 +990,81 @@
             const msgs = document.getElementById(boxId);
             if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
         });
+
+        // Initialize original text tracking for buttons
+        document.querySelectorAll('.wood-btn, .color-bet-btn').forEach(b => { if(b.innerText.includes('BET')) b.dataset.originalText = b.innerText; });
+
+        // SHOW MODAL FIX
+        function openProfileLedger() { if(!currentUser) return; hideModal('profile-modal'); showModal('profile-ledger-modal'); loadLedger(false); }
+        function openBankLedger() { if(!currentUser) return; hideModal('bank-modal'); showModal('bank-ledger-modal'); loadLedger(true); }
+        
+        async function loadLedger(isBankOnly) {
+            const res = await fetch(`/api/profile/ledger/${currentUser.username}`); const data = await res.json();
+            const list = document.getElementById(isBankOnly ? 'bank-ledger-list' : 'ledger-list'); list.innerHTML = '';
+            let filteredData = isBankOnly ? data.filter(tx => tx.type.includes('BANK')) : data;
+            if (filteredData.length === 0) { list.innerHTML = '<div style="color:#475569; text-align:center; margin-top:20px;">No records found.</div>'; return; }
+            filteredData.forEach(tx => {
+                let statusBadge = ''; let amtColor = '#fff'; let displayAmt = Math.abs(tx.amount); let prefix = '';
+                if (tx.type.includes('BANK')) {
+                    let isWithdrawal = tx.type.includes('WITHDRAWAL'); prefix = isWithdrawal ? '-' : '+';
+                    if (tx.status === 'pending') amtColor = '#94a3b8'; else if (tx.status === 'completed') amtColor = isWithdrawal ? 'var(--danger)' : 'var(--success)'; else amtColor = 'var(--danger)'; 
+                    let stColor = tx.status === 'pending' ? '#fbbf24' : (tx.status === 'completed' ? '#10b981' : '#ef4444'); statusBadge = ` <span style="color:${stColor}; font-size:20px;">[${(tx.status === 'completed' ? 'APPROVED' : tx.status).toUpperCase()}]</span>`;
+                } else { amtColor = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff'); prefix = tx.amount > 0 ? '+' : (tx.amount < 0 ? '-' : ''); }
+                list.innerHTML += `<div class="ledger-item"><span class="ledger-desc">${tx.type.toUpperCase()}${statusBadge}</span> <span style="color:${amtColor}">${prefix}${formatNumber(displayAmt)} <span class="coin-icon">🪙</span></span></div>`;
+            });
+        }
+
+        // BANKING FIX
+        function showBankConfirm(type) {
+            const amtInput = document.getElementById('bank-amount').value.replace(/,/g, '');
+            const amt = parseInt(amtInput);
+            if(isNaN(amt) || amt <= 0) return alert("Enter a valid amount.");
+            if (type === 'deposit' && (amt < 10000 || amt > 100000)) return alert("Deposit must be between 10,000 and 100,000.");
+            if (type === 'withdrawal' && (amt < 50000 || amt > 100000)) return alert("Withdrawal must be between 50,000 and 100,000.");
+            if (type === 'withdrawal' && amt > currentUser.credits) return alert("Insufficient funds.");
+            
+            pendingBankAction = { type, amount: amt }; 
+            document.getElementById('confirm-bank-type').innerText = type.toUpperCase(); 
+            document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
+            
+            document.getElementById('bank-confirm-msg').innerText = '';
+            document.getElementById('bank-confirm-btn-row').innerHTML = `
+                <button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button>
+                <button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>
+            `;
+
+            hideModal('bank-modal'); showModal('bank-confirm-modal');
+        }
+
+        async function executeBankRequest() {
+            if(!pendingBankAction) return; 
+            const { type, amount } = pendingBankAction;
+            
+            const btnRow = document.getElementById('bank-confirm-btn-row');
+            const statusMsg = document.getElementById('bank-confirm-msg');
+            
+            statusMsg.style.color = "#fff"; statusMsg.innerText = "SENDING REQUEST...";
+
+            const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount}) });
+            
+            if(res.ok) { 
+                statusMsg.style.color = "var(--success)"; statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; 
+                document.getElementById('bank-amount').value=''; playSfx('deal'); 
+                btnRow.innerHTML = `<button class="wood-btn pixel-text" style="width:100%; background: #475569;" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">BACK TO BANK</button>`;
+            }
+            else { const d = await res.json(); statusMsg.style.color = "var(--danger)"; statusMsg.innerText = d.error; }
+            pendingBankAction = null;
+        }
+
+        async function redeemCodeMain() {
+            if(!currentUser) return;
+            const code = document.getElementById('gift-code-main').value; const msgBox = document.getElementById('redeem-msg');
+            if(!code) return;
+            const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
+            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; updateAllCredits(); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code-main').value=''; playSfx('win'); }
+            else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
+            setTimeout(()=> msgBox.innerText='', 3000);
+        }
 
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', function(e) {
