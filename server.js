@@ -55,7 +55,7 @@ const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['r
 
 const socketUserMap = {}; let diceLobby = []; let coinLobby = []; let colorLobby = [];
 
-// GAME LOOPS
+// --- GAME LOOPS ---
 setInterval(() => {
     const now = Date.now();
     Object.keys(rooms).forEach(roomId => {
@@ -130,6 +130,7 @@ setInterval(() => {
     }
 }, 1000);
 
+// --- HELPER FUNCTIONS ---
 function getNewDeck() { let deck = []; for (let i = 0; i < 6; i++) { for (let s of suits) for (let v of values) deck.push({ suit: s, value: v, weight: ['J','Q','K'].includes(v) ? 10 : (v==='A'?11:parseInt(v)) }); } return deck.sort(() => Math.random() - 0.5); }
 function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
 
@@ -151,7 +152,7 @@ function startTurnTimer(roomId) {
 }
 function getGameTitle(roomId) { return roomId === '3seat' ? '3-SEAT BLACKJACK' : '5-SEAT BLACKJACK'; }
 
-// --- ADMIN SECURITY ---
+// --- ADMIN SECURITY & REST APIs ---
 const checkAdmin = async (req, res, next) => {
     try {
         const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
@@ -164,7 +165,6 @@ const checkAdmin = async (req, res, next) => {
 app.get('/api/admin/data', checkAdmin, async (req, res) => { const users = await User.find({}, '-password'); const txs = await Transaction.find({ status: 'pending' }); const codes = await GiftCode.find(); res.json({ users, txs, codes }); });
 app.post('/api/admin/user/status', checkAdmin, async (req, res) => { await User.updateOne({ username: req.body.username }, { status: req.body.status }); res.json({ success: true }); });
 
-// LIVE BANKING SYNC
 app.post('/api/admin/tx/resolve', checkAdmin, async (req, res) => {
     const { id, action } = req.body; const tx = await Transaction.findById(id); if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
     let updatedUser;
@@ -174,7 +174,6 @@ app.post('/api/admin/tx/resolve', checkAdmin, async (req, res) => {
 });
 app.post('/api/admin/giftcode', checkAdmin, async (req, res) => { await new GiftCode(req.body).save(); res.json({ success: true }); });
 
-// --- APIs ---
 app.post('/api/signup', async (req, res) => { try { await new User({ username: req.body.username, password: req.body.password, tosAccepted: true }).save(); res.status(201).json({ message: 'Account requested. Pending Admin Approval.' }); } catch (err) { res.status(400).json({ error: 'Username taken.' }); } });
 app.post('/api/login', async (req, res) => {
     const user = await User.findOne({ username: req.body.username, password: req.body.password });
@@ -203,9 +202,10 @@ app.post('/api/bank/giftcode', async (req, res) => {
 
 app.get('/api/profile/ledger/:username', async (req, res) => { const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50); res.json(txs); });
 
-// --- SOCKET LOGIC ---
+// --- SOCKET SYSTEM ---
 io.on('connection', (socket) => {
     
+    // ARCADE LOBBIES
     socket.on('enter_arcade', async ({ username, game }) => {
         const user = await User.findOne({ username }); if (!user) return;
         socket.join('arcade_' + game); socketUserMap[socket.id] = { username, arcadeGame: game, roomId: game };
@@ -233,7 +233,7 @@ io.on('connection', (socket) => {
     // --- ARCADE BETS ---
     socket.on('get_dice_state', () => { socket.emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); });
     socket.on('place_dice_bet', async ({ username, choice, amount }) => {
-        if (diceGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are closed!');
+        if (diceGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
         if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
         let existingBet = diceGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
         if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
@@ -246,7 +246,7 @@ io.on('connection', (socket) => {
 
     socket.on('get_coin_state', () => { socket.emit('coin_state_update', { status: coinGame.status, betEndTime: coinGame.betEndTime, history: coinGame.history }); });
     socket.on('place_coin_bet', async ({ username, choice, amount }) => {
-        if (coinGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are closed!');
+        if (coinGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
         if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
         let existingBet = coinGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
         if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
@@ -259,10 +259,10 @@ io.on('connection', (socket) => {
 
     socket.on('get_color_state', () => { socket.emit('color_state_update', { status: colorGame.status, betEndTime: colorGame.betEndTime, history: colorGame.history }); });
     socket.on('place_color_bet', async ({ username, choice, amount }) => {
-        if (colorGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are closed!');
-        if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+        if (colorGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
+        if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
         let existingBet = colorGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
-        if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+        if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
 
         const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
         if (!user) return socket.emit('arcade_error', 'Insufficient credits');
@@ -341,6 +341,7 @@ io.on('connection', (socket) => {
     });
 });
 
+// BLACKJACK RESOLUTION LOGIC
 function startGame(roomId) {
     let room = rooms[roomId]; if (!room) return; room.status = 'playing'; room.deck = getNewDeck(); room.dealerCards = []; room.seats = room.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
     for (let i = 0; i < 2; i++) { room.seats.forEach(seat => { if (seat) seat.hands[0].cards.push(room.deck.pop()); }); room.dealerCards.push(room.deck.pop()); }
