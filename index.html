@@ -70,34 +70,17 @@
         .reward-box .front { background: #1e293b; font-size: 40px; }
         .reward-box .back { background: #000; transform: rotateY(180deg); font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
 
-        /* --- BULLETPROOF FLEXBOX FIX --- */
-        /* overflow: hidden added to game interface to lock it */
         .game-interface { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; width: 100%; height: 100%; background: #000; box-sizing: border-box; overflow: hidden;}
         .game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px;}
         .game-area.dice-bg { background: radial-gradient(circle at center, #7e22ce 0%, #4c1d95 100%); }
         .game-area.coin-bg { background: radial-gradient(circle at center, #9a3412 0%, #7c2d12 100%); }
         
-        /* min-height: 0 ensures flex items cannot grow infinitely */
         .sidebar-col { display: flex; flex-direction: column; gap: 20px; height: 100%; flex-shrink: 0; min-height: 0; overflow: hidden;}
         .sidebar-box { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); min-height: 0;}
         
-        /* --- NEW ACCORDION POPOVER FIX --- */
-        .popover-container { background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.8); flex-shrink: 0; transition: max-height 0.3s ease;}
-        .popover-list { 
-            max-height: 0; 
-            padding: 0 10px; 
-            border-top: 0px dashed #333; 
-            overflow: hidden; 
-            transition: all 0.3s ease; 
-            background: transparent; 
-        }
-        /* When toggled open, it expands with smooth animation */
-        .popover-list.open { 
-            max-height: 200px; 
-            padding: 10px; 
-            border-top: 2px dashed #333; 
-            overflow-y: auto; 
-        }
+        /* BULLETPROOF POPOVER FIX */
+        .popover-container { background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.8); flex-shrink: 0;}
+        .popover-list { padding: 10px; border-top: 2px dashed #333; background: transparent; max-height: 200px; overflow-y: auto;}
 
         .top-hud { width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); box-sizing: border-box; flex-shrink: 0;}
         .hud-left { justify-self: start; } .hud-center { justify-self: center; text-align: center; } .hud-right { justify-self: end; }
@@ -162,7 +145,6 @@
         .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 24px; background: #0f172a; margin-bottom: 5px; border-radius: 4px;}
         .coin-icon { color:#fbbf24; text-shadow: 1px 1px 0 #000; font-family: 'Segoe UI Emoji', sans-serif;}
         
-        /* DICE UI */
         .dice-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1; perspective: 1000px; }
         .dice { font-size: 120px; color: #fff; text-shadow: 0 0 30px var(--accent-glow); line-height: 1; font-family: Arial, sans-serif; }
         .dice.shake { animation: shake 0.5s infinite; color: var(--warning); text-shadow: 0 0 40px var(--warning);}
@@ -172,7 +154,6 @@
         .dice-bet-title { font-size: 36px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 10px; }
         .dice-bet-payout { font-size: 24px; color: var(--success); margin-bottom: 15px; }
 
-        /* COIN FLIP UI */
         .coin-3d { width: 150px; height: 150px; background: #fbbf24; border-radius: 50%; border: 10px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 80px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 50px #fbbf24; font-family: Arial; }
         .coin-3d.flipping { animation: flipCoin 0.3s infinite linear; }
         @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
@@ -494,7 +475,7 @@
                     <div class="sidebar-header pixel-text" style="cursor: pointer;" onclick="togglePopover('dice-players-popover')">
                         <span>PLAYERS</span> <span id="dice-player-count" style="color:var(--accent-glow-2);">0</span> ▼
                     </div>
-                    <div id="dice-players-popover" class="popover-list custom-scroll pixel-text"></div>
+                    <div id="dice-players-popover" class="hidden popover-list custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">ROLL HISTORY</div>
@@ -542,7 +523,7 @@
                     <div class="sidebar-header pixel-text" style="cursor: pointer;" onclick="togglePopover('coin-players-popover')">
                         <span>PLAYERS</span> <span id="coin-player-count" style="color:var(--accent-glow-2);">0</span> ▼
                     </div>
-                    <div id="coin-players-popover" class="popover-list custom-scroll pixel-text"></div>
+                    <div id="coin-players-popover" class="hidden popover-list custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">FLIP HISTORY</div>
@@ -593,9 +574,12 @@
             document.getElementById(tabId).classList.add('active'); btnEl.classList.add('active');
         }
 
+        // FIX: Dead Simple Toggle
         function togglePopover(id) {
             const pop = document.getElementById(id);
-            pop.classList.toggle('open');
+            if (pop) {
+                pop.classList.toggle('hidden');
+            }
         }
 
         function toggleAuth(panel) {
@@ -856,116 +840,7 @@
             if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
         });
 
-        // --- UI MENUS ---
-        function showProfile() { if(!currentUser) return; document.getElementById('profile-username-preview').innerText = currentUser.username; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showModal('profile-modal'); }
-        function showBank() { if(!currentUser) return; document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showModal('bank-modal'); }
-        function openProfileLedger() { if(!currentUser) return; hideModal('profile-modal'); showModal('profile-ledger-modal'); loadLedger(false); }
-        function openBankLedger() { if(!currentUser) return; hideModal('bank-modal'); showModal('bank-ledger-modal'); loadLedger(true); }
-        
-        async function loadLedger(isBankOnly) {
-            const res = await fetch(`/api/profile/ledger/${currentUser.username}`); const data = await res.json();
-            const list = document.getElementById(isBankOnly ? 'bank-ledger-list' : 'ledger-list'); list.innerHTML = '';
-            let filteredData = isBankOnly ? data.filter(tx => tx.type.includes('BANK')) : data;
-            if (filteredData.length === 0) { list.innerHTML = '<div style="color:#475569; text-align:center; margin-top:20px;">No records found.</div>'; return; }
-            filteredData.forEach(tx => {
-                let statusBadge = ''; let amtColor = '#fff'; let displayAmt = Math.abs(tx.amount); let prefix = '';
-                if (tx.type.includes('BANK')) {
-                    let isWithdrawal = tx.type.includes('WITHDRAWAL'); prefix = isWithdrawal ? '-' : '+';
-                    if (tx.status === 'pending') amtColor = '#94a3b8'; else if (tx.status === 'completed') amtColor = isWithdrawal ? 'var(--danger)' : 'var(--success)'; else amtColor = 'var(--danger)'; 
-                    let stColor = tx.status === 'pending' ? '#fbbf24' : (tx.status === 'completed' ? '#10b981' : '#ef4444'); statusBadge = ` <span style="color:${stColor}; font-size:20px;">[${(tx.status === 'completed' ? 'APPROVED' : tx.status).toUpperCase()}]</span>`;
-                } else { amtColor = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff'); prefix = tx.amount > 0 ? '+' : (tx.amount < 0 ? '-' : ''); }
-                list.innerHTML += `<div class="ledger-item"><span class="ledger-desc">${tx.type.toUpperCase()}${statusBadge}</span> <span style="color:${amtColor}">${prefix}${formatNumber(displayAmt)} <span class="coin-icon">🪙</span></span></div>`;
-            });
-        }
-
-        // --- BANKING FIX ---
-        function showBankConfirm(type) {
-            const amtInput = document.getElementById('bank-amount').value.replace(/,/g, '');
-            const amt = parseInt(amtInput);
-            if(isNaN(amt) || amt <= 0) return alert("Enter a valid amount.");
-            if (type === 'deposit' && (amt < 10000 || amt > 100000)) return alert("Deposit must be between 10,000 and 100,000.");
-            if (type === 'withdrawal' && (amt < 50000 || amt > 100000)) return alert("Withdrawal must be between 50,000 and 100,000.");
-            if (type === 'withdrawal' && amt > currentUser.credits) return alert("Insufficient funds.");
-            
-            pendingBankAction = { type, amount: amt }; 
-            document.getElementById('confirm-bank-type').innerText = type.toUpperCase(); 
-            document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
-            
-            document.getElementById('bank-confirm-msg').innerText = '';
-            document.getElementById('bank-confirm-btn-row').innerHTML = `
-                <button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button>
-                <button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>
-            `;
-
-            hideModal('bank-modal'); showModal('bank-confirm-modal');
-        }
-
-        async function executeBankRequest() {
-            if(!pendingBankAction) return; 
-            const { type, amount } = pendingBankAction;
-            
-            const btnRow = document.getElementById('bank-confirm-btn-row');
-            const statusMsg = document.getElementById('bank-confirm-msg');
-            
-            statusMsg.style.color = "#fff";
-            statusMsg.innerText = "SENDING REQUEST...";
-
-            const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount}) });
-            
-            if(res.ok) { 
-                statusMsg.style.color = "var(--success)"; 
-                statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; 
-                document.getElementById('bank-amount').value=''; 
-                playSfx('deal'); 
-                btnRow.innerHTML = `<button class="wood-btn pixel-text" style="width:100%; background: #475569;" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">BACK TO BANK</button>`;
-            }
-            else { 
-                const d = await res.json(); 
-                statusMsg.style.color = "var(--danger)"; 
-                statusMsg.innerText = d.error; 
-            }
-            pendingBankAction = null;
-        }
-
-        async function redeemCodeMain() {
-            if(!currentUser) return;
-            const code = document.getElementById('gift-code-main').value; const msgBox = document.getElementById('redeem-msg');
-            if(!code) return;
-            const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
-            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; updateAllCredits(); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code-main').value=''; playSfx('win'); }
-            else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
-            setTimeout(()=> msgBox.innerText='', 3000);
-        }
-        
-        function updateRewardTimerUI() {
-            if (rewardCooldownSeconds <= 0) { clearInterval(rewardTimerInt); showRewards(); return; }
-            let h = Math.floor(rewardCooldownSeconds / 3600); let m = Math.floor((rewardCooldownSeconds % 3600) / 60); let s = rewardCooldownSeconds % 60;
-            const tEl = document.getElementById('reward-timer'); if(tEl) tEl.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        }
-        function startRewardTimer() { clearInterval(rewardTimerInt); updateRewardTimerUI(); rewardTimerInt = setInterval(() => { rewardCooldownSeconds--; updateRewardTimerUI(); }, 1000); }
-        function showRewards() {
-            if(!currentUser) return; showModal('reward-modal'); document.getElementById('reward-msg').innerText = ''; document.querySelectorAll('.reward-box').forEach(b => b.classList.remove('open')); isPickingReward = false;
-            if (rewardCooldownSeconds <= 0) { document.getElementById('reward-active-view').classList.remove('hidden'); document.getElementById('reward-cooldown-view').classList.add('hidden'); } 
-            else { document.getElementById('reward-active-view').classList.add('hidden'); document.getElementById('reward-cooldown-view').classList.remove('hidden'); startRewardTimer(); }
-        }
-
-        let isPickingReward = false;
-        function pickRewardBox(index) { if(isPickingReward) return; isPickingReward = true; socket.emit('claim_daily_reward_box', { username: currentUser.username, boxIndex: index }); }
-        socket.on('reward_box_opened', (data) => {
-            isPickingReward = false; 
-            if(data.success) {
-                data.allPrizes.forEach((prize, i) => {
-                    const backEl = document.getElementById(`box-val-${i}`); backEl.innerHTML = prize > 0 ? `+${formatNumber(prize)} <span class="coin-icon">🪙</span>` : 'EMPTY';
-                    if(prize === 0) backEl.classList.add('zero'); else backEl.classList.remove('zero'); setTimeout(() => document.querySelectorAll('.reward-box')[i].classList.add('open'), i * 100);
-                });
-                currentUser.credits = data.credits; updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; startRewardTimer();
-                const msg = document.getElementById('reward-msg');
-                if (data.wonAmount > 0) { msg.style.color = "var(--success)"; msg.innerText = `YOU WON ${formatNumber(data.wonAmount)} CREDITS!`; playSfx('win'); }
-                else { msg.style.color = "var(--danger)"; msg.innerText = "BETTER LUCK NEXT TIME!"; playSfx('lose');}
-                setTimeout(() => { showRewards(); }, 4000); 
-            } else { alert(data.message); showRewards(); }
-        });
-
+        // Disable Dev Tools
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
