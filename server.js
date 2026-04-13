@@ -36,7 +36,8 @@ const User = mongoose.model('User', new mongoose.Schema({
     status: { type: String, default: 'pending' }, 
     nameColor: { type: String, default: '#f8fafc' },
     ipAddress: String, tosAccepted: Boolean,
-    lastRewardClaim: { type: Date, default: null }
+    lastRewardClaim: { type: Date, default: null },
+    createdAt: { type: Date, default: Date.now }
 }));
 
 const Transaction = mongoose.model('Transaction', new mongoose.Schema({
@@ -162,17 +163,20 @@ app.post('/api/login', async (req, res) => {
     if (user.status === 'pending') return res.status(401).json({ error: 'Account pending admin approval.' });
     if (user.status === 'banned') return res.status(401).json({ error: 'Account banned.' });
     
-    // Timezone-proof logic: Send remaining seconds directly
     const now = new Date();
     const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
     const nextClaim = new Date(lastClaim.getTime() + 24 * 60 * 60 * 1000);
     const msLeft = nextClaim.getTime() - now.getTime();
     const cooldownSeconds = msLeft > 0 ? Math.floor(msLeft / 1000) : 0;
 
-    res.json({ username: user.username, credits: user.credits, nameColor: user.nameColor, cooldownSeconds });
+    res.json({ 
+        username: user.username, 
+        credits: user.credits, 
+        status: user.status,
+        createdAt: user.createdAt,
+        cooldownSeconds 
+    });
 });
-
-app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
 
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
@@ -192,8 +196,6 @@ app.post('/api/bank/request', async (req, res) => {
         );
         if (!user) return res.status(400).json({ error: 'Insufficient funds.' });
     }
-    
-    // Using clean type descriptions
     await new Transaction({ username, type: txType, amount, status: 'pending' }).save();
     res.json({ success: true });
 });
