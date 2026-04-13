@@ -26,7 +26,7 @@
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
-        /* RETRO SLIDERS */
+        /* RETRO SLIDERS FOR VOLUME */
         input[type="range"] { -webkit-appearance: none; background: transparent; height: 10px; border-radius: 5px; border: 2px solid var(--border-std); outline: none; margin: 0 10px; cursor: pointer; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 14px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 2px; cursor: pointer; }
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; }
@@ -39,7 +39,6 @@
         .full-menu { background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); }
         .overlay-menu { background: rgba(0,0,0,0.9); z-index: 300; }
         
-        /* RESPONSIVE MODAL FIX */
         .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; max-width: 90%; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 85%; display: flex; flex-direction: column;}
         
         .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; flex-shrink: 0;}
@@ -87,7 +86,7 @@
         .hud-center { justify-self: center; text-align: center; }
         .hud-right { justify-self: end; }
 
-        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; text-shadow: 2px 2px 0 #000; font-family: 'VT323';}
+        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
 
@@ -103,63 +102,58 @@
         /* FLEXBOX GAME BOARD CONTENTS */
         .table-surface { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; position: relative; padding: 30px 0 20px 0; box-sizing: border-box;}
         
-        /* DEAD CENTER DEALER (ELEVATED) */
-        .banker-station { display: flex; flex-direction: column; align-items: center; z-index: 10; }
+        /* ELEVATED DEALER */
+        .banker-station { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; }
         
-        /* CENTERED TIMERS DYNAMIC STACK */
-        #timers-container { display: flex; flex-direction: column; gap: 15px; align-items: center; z-index: 20; width: 100%; margin: auto 0;}
+        /* CENTERED TIMERS STACK */
+        #timers-container { position: absolute; top: 220px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 20; width: 100%; pointer-events: none;}
         .global-timer { font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000; white-space: nowrap;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
         .global-timer.warning { background: #eab308; color: #000; font-size: 32px; font-weight: bold; text-shadow: none !important; border: 2px solid #000;}
 
-        /* FLEXBOX SEAT CONTAINER (Fixes all cutoffs & naturally straightens) */
-        #seats-area { display: flex; justify-content: center; align-items: flex-end; width: 100%; padding: 0 20px; box-sizing: border-box; z-index: 5; gap: 15px; flex-wrap: nowrap;}
+        /* FLEXBOX SEAT CONTAINER (DYNAMIC CENTERING - NO INVISIBLE LINES) */
+        #seats-area { display: flex; justify-content: center; align-items: flex-end; width: 100%; padding: 0 20px; box-sizing: border-box; z-index: 5; height: 350px; gap: 40px;}
 
-        /* CASINO STATION SEAT DESIGN */
-        .seat { width: 175px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.3s ease; flex-shrink: 0;}
+        .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0;}
         
-        .seat.occupied { background: rgba(15, 23, 42, 0.8); border: 2px solid #334155; border-radius: 12px; padding: 15px 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); border-bottom: 4px solid #1e293b; margin: 0 5px;}
-        .seat.my-seat { border-color: var(--accent-glow-2); border-bottom-color: var(--accent-glow-2); background: rgba(30, 58, 138, 0.4); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
-        .seat.active-turn { box-shadow: 0 0 25px var(--warning); border-color: var(--warning); border-bottom-color: var(--warning);}
-
-        /* MINIMALIST SIT BUTTON */
-        .seat-empty-box { display: flex; justify-content: center; align-items: center; width: 100%; padding: 10px; }
-        .btn-sit-empty { background: #10b981; color: #000; font-size: 28px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 8px 30px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s; font-family: 'VT323'; text-shadow: none;}
+        /* MINIMALIST SIT BUTTON & BOX */
+        .seat-empty-box { box-sizing: border-box; width: 100%; height: 160px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); padding: 10px; margin-bottom: 20px;}
+        .btn-sit-empty { background: #10b981; color: #000; font-size: 26px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 6px 24px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s; font-family: 'VT323'; text-shadow: none;}
         .btn-sit-empty:active { transform: translate(4px, 4px); box-shadow: 0 0 0 transparent; }
 
         .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
         .turn-bar-container { width: 100%; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
         .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
 
-        /* PLAYER PLATE (CLEAN NAME) */
-        .player-info-plate { display: flex; flex-direction: column; align-items: center; text-align: center; box-sizing: border-box; width: 100%; border-bottom: 2px solid #334155; padding-bottom: 5px; margin-bottom: 10px;}
+        /* PLAYER PLATE */
+        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
         .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
 
-        /* INDIVIDUAL HAND BET TEXT (Dynamic updates on result) */
-        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
+        /* BET TEXT (Dynamic updates on result) */
+        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box;}
 
         /* REDESIGNED DROPDOWN BETTING UI */
-        .seat-bet-box { display: flex; flex-direction: row; width: 100%; gap: 6px; justify-content: center; align-items: stretch; margin-bottom: 10px;}
-        .seat-bet-box select { flex: 2; padding: 6px; font-size: 22px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; font-family: 'VT323';}
+        .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
+        .seat-bet-box select { flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;}
         
-        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; font-family: 'VT323'; letter-spacing: 1px; font-size: 20px;}
-        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 22px; padding: 6px 12px; flex: 1;}
+        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; letter-spacing: 1px; font-size: 20px;}
+        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 16px;}
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
         .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; box-sizing: border-box;}
-        .btn-hit { background: var(--success); color: #000; font-size: 20px; padding: 6px;}
-        .btn-stand { background: #b45309; color: #fff; font-size: 20px; padding: 6px;}
-        .btn-double { background: var(--accent-glow-2); color: #fff; font-size: 20px; padding: 6px;}
-        .btn-split { background: var(--accent-glow); color: #fff; font-size: 20px; padding: 6px;}
+        .btn-hit { background: var(--success); color: #000; font-size: 18px; padding: 6px;}
+        .btn-stand { background: #b45309; color: #fff; font-size: 18px; padding: 6px;}
+        .btn-double { background: var(--accent-glow-2); color: #fff; font-size: 18px; padding: 6px;}
+        .btn-split { background: var(--accent-glow); color: #fff; font-size: 18px; padding: 6px;}
         
         /* STAND UP BUTTON */
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323'; margin-top: 5px;}
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold;}
         .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
         /* NATIVE CSS CARDS (GUARANTEED TO RENDER & OVERLAP) */
-        .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 88px; width: 100%;}
-        .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; min-height: 88px; width: 100%;}
-        .hand-container { display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px; position: relative;}
+        .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 88px;}
+        .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; min-height: 88px;}
+        .hand-container { position: relative; display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px;}
         
         .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; margin-left: -35px; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; flex-shrink: 0; z-index: 2;}
         .card:first-child { margin-left: 0; z-index: 1;}
@@ -218,10 +212,7 @@
                 <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD">
                 <div class="terms-box custom-scroll pixel-text" style="font-size: 20px; text-align: left;">
                     <strong style="color:var(--warning); font-size: 24px;">SYSTEM TERMS OF SERVICE:</strong><br><br>
-                    By requesting access to Neon Royale, you agree to the Fair Play Policy:<br>
-                    - Maximum of ONE active seat per room.<br>
-                    - Using macros or alt-accounts to farm daily rewards is strictly prohibited and results in an IP Ban.<br>
-                    - All accounts require manual Admin approval.
+                    By registering for Neon Royale, you agree to our strict Fair Play Policy. Maximum of ONE seat per room. Use of third-party macros, automation, or multiple alt-accounts to abuse daily rewards will result in an immediate, permanent IP ban. All transactions are subject to manual Admin review.
                 </div>
                 <label class="pixel-text" style="font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
                     <input type="checkbox" id="tos-checkbox" style="width: 24px; height: 24px; margin:0;"> I ACCEPT THE TERMS
@@ -307,19 +298,30 @@
         </div>
 
         <div id="profile-modal" class="overlay-menu hidden">
-            <div class="modal-box" style="width: 700px; max-height: 90%; display: flex; flex-direction: column;">
+            <div class="modal-box" style="width: 750px; max-height: 90%; display: flex; flex-direction: column;">
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 50px;">PLAYER DOSSIER</h2>
                 
                 <div style="background: #000; border: 2px solid var(--border-std); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                     <div class="profile-preview pixel-text" id="profile-username-preview" style="color: #fff;">USERNAME</div>
-                    <div class="pixel-text" style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">ACCOUNT STATUS: <span id="profile-status" style="color:var(--success); text-transform:uppercase;">ACTIVE</span></div>
-                    <div class="pixel-text" style="font-size: 28px; color: #94a3b8; margin-bottom: 15px;">JOIN DATE: <span id="profile-date">MM/DD/YYYY</span></div>
-                    <div class="profile-credits pixel-text">TOTAL BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
+                    
+                    <div style="display: flex; justify-content: space-around; margin: 15px 0; border-top: 1px dashed #333; border-bottom: 1px dashed #333; padding: 10px 0;">
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8;">STATUS: <br><span id="profile-status" style="color:var(--success); text-transform:uppercase; font-size: 28px;">ACTIVE</span></div>
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8;">JOIN DATE: <br><span id="profile-date" style="color:#fff; font-size: 28px;">MM/DD/YYYY</span></div>
+                    </div>
+
+                    <div class="profile-credits pixel-text" style="margin-bottom: 15px;">TOTAL BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #0f172a; padding: 15px; border-radius: 6px; border: 1px solid #334155;">
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">🏆 BIGGEST WIN: <span style="color:#fbbf24; float: right;">[ SYNCING ]</span></div>
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">🃏 HANDS PLAYED: <span style="color:#fbbf24; float: right;">[ SYNCING ]</span></div>
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">📈 WIN RATE: <span style="color:#fbbf24; float: right;">[ SYNCING ]</span></div>
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">🌟 VIP TIER: <span style="color:#fbbf24; float: right;">BRONZE</span></div>
+                    </div>
                 </div>
 
                 <div id="ledger-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
                     <h3 class="pixel-text" style="text-align: left; margin-bottom: 5px; font-size: 30px;">TRANSACTION LEDGER</h3>
-                    <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 250px;"></div>
+                    <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 200px;"></div>
                 </div>
                 
                 <div style="display: flex; justify-content: center; margin-top: 15px;">
@@ -363,10 +365,10 @@
                 
                 <div class="terms-box custom-scroll pixel-text" style="height: 110px; font-size: 22px; line-height: 1.2; text-align: left;">
                     <strong style="color: var(--warning); font-size: 24px;">BANK RULES:</strong><br>
-                    - All deposit and withdrawal requests pend Admin review.<br>
-                    - Minimum transaction is 10,000 for Deposits, 50,000 for Withdrawals.<br>
-                    - Maximum limit per transaction is 100,000 credits.<br>
-                    - Gift Codes are validated and credited instantly.
+                    All transactions pend manual Admin review to ensure ecosystem integrity.<br>
+                    Minimum deposit is 10,000 credits. Minimum withdrawal is 50,000 credits.<br>
+                    Maximum transaction limit is 100,000 credits per request.<br>
+                    Gift Codes bypass review and are credited instantly.
                 </div>
 
                 <div class="input-group">
@@ -633,7 +635,7 @@
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
             actionLocked = true;
-            window.lastBetAmount = amt; // SAVE FOR NEXT ROUND
+            window.lastBetAmount = amt; 
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
             playSfx('bet');
         }
@@ -719,6 +721,7 @@
             else { dBadge.classList.add('hidden'); }
 
             const seatsArea = document.getElementById('seats-area'); seatsArea.innerHTML = '';
+            let activeElements = [];
             
             if(currentUser) {
                  const mySeatData = state.seats.find(s => s && s.username === currentUser.username);
@@ -726,15 +729,17 @@
                  else { mySeatIndex = -1; }
             }
 
-            for(let index=0; index<state.seats.length; index++) {
+            const totalSeats = state.seats.length;
+
+            for(let index=0; index<totalSeats; index++) {
                 let seatData = state.seats[index];
                 let isMySeat = currentUser && seatData && seatData.username === currentUser.username;
                 let hasSeatAnywhere = state.seats.some(s => s && s.username === currentUser.username);
 
-                // DYNAMIC SEAT RENDERING
+                const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
+
                 if (!seatData) {
                     if (state.status === 'waiting' || state.status === 'betting') {
-                        const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
                         let sitBtn = !hasSeatAnywhere ? `<button class="btn-sit-empty pixel-text" onclick="actSitDown(${index})">SIT</button>` : '';
                         seatDiv.innerHTML = `
                             <div class="seat-empty-box">
@@ -742,11 +747,10 @@
                                 ${sitBtn}
                             </div>
                         `;
-                        seatsArea.appendChild(seatDiv);
+                        activeElements.push(seatDiv);
                     }
                 } else {
-                    const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text occupied'; seatDiv.id = `seat-${index}`;
-                    if (isMySeat) seatDiv.classList.add('my-seat'); 
+                    seatDiv.classList.add('occupied'); if (isMySeat) seatDiv.classList.add('my-seat'); 
                     if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
 
                     let html = ``;
@@ -793,7 +797,7 @@
                     // BETTING UI
                     if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
                         if (seatData.hands[0].bet === 0) {
-                            let startBet = window.lastBetAmount || 1000;
+                            let startBet = window.lastBetAmount || 0;
                             let opts = [1000, 10000, 25000, 50000, 100000];
                             if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
                             
@@ -803,7 +807,7 @@
                             html += `
                                 <div class="seat-bet-box">
                                     <div style="display: flex; gap: 8px;">
-                                        <select id="inseat-bet-${index}" class="pixel-text" style="flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer;">
+                                        <select id="inseat-bet-${index}" class="pixel-text" style="flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;">
                                             ${optHTML}
                                         </select>
                                         <button class="s-btn btn-bet pixel-text" style="font-size: 24px; padding: 6px 12px;" onclick="actPlaceBet(${index})">BET</button>
@@ -821,13 +825,13 @@
                         const cHand = seatData.hands[seatData.currentHand];
                         if (cHand && cHand.status === 'waiting') {
                             html += `<div class="seat-controls">`;
-                            html += `<button class="s-btn btn-hit pixel-text" style="font-size:20px;" onclick="actHit(${index})">HIT</button>`;
-                            html += `<button class="s-btn btn-stand pixel-text" style="font-size:20px;" onclick="actStand(${index})">STAND</button>`;
+                            html += `<button class="s-btn btn-hit pixel-text" style="font-size:18px;" onclick="actHit(${index})">HIT</button>`;
+                            html += `<button class="s-btn btn-stand pixel-text" style="font-size:18px;" onclick="actStand(${index})">STAND</button>`;
                             
                             if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) {
-                                html += `<button class="s-btn btn-double pixel-text" style="font-size:20px;" onclick="actDouble(${index})">2X</button>`;
+                                html += `<button class="s-btn btn-double pixel-text" style="font-size:18px;" onclick="actDouble(${index})">2X</button>`;
                                 if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) {
-                                    html += `<button class="s-btn btn-split pixel-text" style="font-size:20px;" onclick="actSplit(${index})">SPLIT</button>`;
+                                    html += `<button class="s-btn btn-split pixel-text" style="font-size:18px;" onclick="actSplit(${index})">SPLIT</button>`;
                                 }
                             }
                             html += `</div>`;
@@ -835,9 +839,10 @@
                     }
                     
                     seatDiv.innerHTML += html; 
-                    seatsArea.appendChild(seatDiv);
+                    activeElements.push(seatDiv);
                 }
             }
+            layoutArc(activeElements, totalSeats);
         }
 
         let turnTimerVisualInt = null;
@@ -894,6 +899,38 @@
                         if (remaining <= 0) clearInterval(turnTimerVisualInt);
                     }, 200);
                 }
+            }
+        }
+
+        // PERFECT FLEXBOX SEAT CENTERING
+        function layoutArc(elements, totalSeats) {
+            const seatsArea = document.getElementById('seats-area');
+            seatsArea.innerHTML = ''; 
+
+            if (currentGameState.status === 'playing' || currentGameState.status === 'dealerTurn' || currentGameState.status === 'resolving') {
+                elements.forEach(el => {
+                    el.style.position = 'relative';
+                    el.style.transform = 'none';
+                    el.style.left = 'auto'; el.style.bottom = 'auto';
+                    seatsArea.appendChild(el);
+                });
+            } else {
+                elements.forEach((el, i) => {
+                    el.style.position = 'absolute';
+                    el.style.transform = 'translate(-50%, 0)'; 
+                    
+                    if (totalSeats === 3) {
+                        const pos = [25, 50, 75];
+                        el.style.left = `${pos[i]}%`;
+                        el.style.bottom = `5%`; 
+                    } else if (totalSeats === 5) {
+                        const posX = [12, 31, 50, 69, 88]; 
+                        const posY = [25, 12, 5, 12, 25]; 
+                        el.style.left = `${posX[i]}%`;
+                        el.style.bottom = `${posY[i]}%`;
+                    }
+                    seatsArea.appendChild(el);
+                });
             }
         }
         
