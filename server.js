@@ -143,6 +143,10 @@ function startTurnTimer(roomId) {
     }, 500);
 }
 
+function getGameTitle(roomId) {
+    return roomId === '3seat' ? '3-SEAT BLACKJACK' : '5-SEAT BLACKJACK';
+}
+
 // --- REST APIs ---
 app.post('/api/signup', async (req, res) => {
     try {
@@ -158,15 +162,22 @@ app.post('/api/login', async (req, res) => {
     if (user.status === 'pending') return res.status(401).json({ error: 'Account pending admin approval.' });
     if (user.status === 'banned') return res.status(401).json({ error: 'Account banned.' });
     
+    // Timezone-proof logic: Send remaining seconds directly
+    const now = new Date();
     const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
-    const nextClaim = new Date(lastClaim.getTime() + 24*60*60*1000);
-    res.json({ username: user.username, credits: user.credits, nameColor: user.nameColor, nextClaim: nextClaim.toISOString() });
+    const nextClaim = new Date(lastClaim.getTime() + 24 * 60 * 60 * 1000);
+    const msLeft = nextClaim.getTime() - now.getTime();
+    const cooldownSeconds = msLeft > 0 ? Math.floor(msLeft / 1000) : 0;
+
+    res.json({ username: user.username, credits: user.credits, nameColor: user.nameColor, cooldownSeconds });
 });
 
 app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
 
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
+    let txType = type === 'deposit' ? 'BANK DEPOSIT' : 'BANK WITHDRAWAL';
+
     if (type === 'deposit') {
         if (amount < 10000) return res.status(400).json({ error: 'Minimum deposit is 10,000.' });
         if (amount > 100000) return res.status(400).json({ error: 'Maximum deposit is 100,000.' });
@@ -181,7 +192,9 @@ app.post('/api/bank/request', async (req, res) => {
         );
         if (!user) return res.status(400).json({ error: 'Insufficient funds.' });
     }
-    await new Transaction({ username, type: `${type} req`, amount, status: 'pending' }).save();
+    
+    // Using clean type descriptions
+    await new Transaction({ username, type: txType, amount, status: 'pending' }).save();
     res.json({ success: true });
 });
 
@@ -190,7 +203,7 @@ app.post('/api/bank/giftcode', async (req, res) => {
     const gc = await GiftCode.findOneAndUpdate({ code, usesLeft: { $gt: 0 } }, { $inc: { usesLeft: -1 } });
     if (!gc) return res.status(400).json({ error: 'Invalid or expired code.' });
     await User.updateOne({ username }, { $inc: { credits: gc.amount } }); 
-    await new Transaction({ username, type: 'giftcode', amount: gc.amount, status: 'completed' }).save();
+    await new Transaction({ username, type: 'GIFT CODE', amount: gc.amount, status: 'completed' }).save();
     res.json({ success: true, amount: gc.amount });
 });
 
@@ -270,7 +283,7 @@ io.on('connection', (socket) => {
             seat.hands[0].bet = betAmount;
             seat.kickAt = null; 
             
-            await new Transaction({ username: seat.username, type: 'bet placed', amount: -betAmount }).save();
+            await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -betAmount }).save();
             
             room.betEndTime = Date.now() + 15000;
             clearInterval(room.betTimerInterval);
@@ -341,7 +354,7 @@ io.on('connection', (socket) => {
         if (!updatedUser) return;
         
         seat.credits = updatedUser.credits;
-        await new Transaction({ username: seat.username, type: 'double down', amount: -hand.bet }).save();
+        await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save();
         hand.bet *= 2;
         
         hand.cards.push(room.deck.pop()); 
@@ -371,7 +384,7 @@ io.on('connection', (socket) => {
             if (!updatedUser) return; 
             
             seat.credits = updatedUser.credits;
-            await new Transaction({ username: seat.username, type: 'split bet', amount: -hand.bet }).save();
+            await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save();
             
             const splitCard = hand.cards.pop();
             const newHand = { cards: [splitCard], bet: hand.bet, status: 'waiting', value: 0 };
@@ -401,8 +414,9 @@ io.on('connection', (socket) => {
             const user = await User.findOne({ username }); if (!user) return;
             const now = new Date(); 
             const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
+            const msIn24Hours = 24 * 60 * 60 * 1000;
             
-            if (now.getTime() - lastClaim.getTime() >= 24 * 60 * 60 * 1000) {
+            if (now.getTime() - lastClaim.getTime() >= msIn24Hours) {
                 let prizes = [1000, 0, 0, 0, 5000, 10000];
                 prizes = prizes.sort(() => Math.random() - 0.5);
                 const wonAmount = prizes[boxIndex];
@@ -410,12 +424,14 @@ io.on('connection', (socket) => {
                 user.lastRewardClaim = now;
                 if (wonAmount > 0) {
                     user.credits += wonAmount;
-                    await new Transaction({ username, type: 'daily reward', amount: wonAmount, status: 'completed' }).save();
+                    await new Transaction({ username, type: 'DAILY REWARD', amount: wonAmount, status: 'completed' }).save();
                 }
                 await user.save();
                 
-                const nextClaim = new Date(now.getTime() + (24 * 60 * 60 * 1000));
-                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, nextClaim: nextClaim.toISOString() });
+                const msLeft = msIn24Hours;
+                const cooldownSeconds = Math.floor(msLeft / 1000);
+                
+                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, cooldownSeconds });
                 
                 Object.keys(rooms).forEach(rId => {
                     const seat = rooms[rId].seats.find(s => s && s.username === username); 
@@ -561,7 +577,7 @@ async function resolveBets(roomId, dealerValue) {
                     if (payout > 0) {
                         seat.credits += payout;
                         await User.updateOne({ username: seat.username }, { $inc: { credits: payout } });
-                        await new Transaction({ username: seat.username, type: payout === hand.bet ? 'push refund' : 'win payout', amount: payout }).save();
+                        await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: payout }).save();
                     }
                 }
             }
