@@ -114,7 +114,7 @@ setInterval(() => {
         colorGame.status = 'rolling'; io.to('arcade_color').emit('color_state_update', { status: colorGame.status, timeLeft: 0, history: colorGame.history });
         setTimeout(async () => {
             colorGame.dice = [ PERYA_COLORS[Math.floor(Math.random() * 6)], PERYA_COLORS[Math.floor(Math.random() * 6)], PERYA_COLORS[Math.floor(Math.random() * 6)] ];
-            colorGame.status = 'resolving'; colorGame.history.unshift(colorGame.dice); if(colorGame.history.length > 6) colorGame.history.pop();
+            colorGame.status = 'resolving'; colorGame.history.unshift(colorGame.dice); if(colorGame.history.length > 8) colorGame.history.pop();
             let winners = [];
             for (let b of colorGame.bets) {
                 let matches = colorGame.dice.filter(c => c === b.choice).length;
@@ -234,28 +234,40 @@ io.on('connection', (socket) => {
     socket.on('get_dice_state', () => { socket.emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); });
     socket.on('place_dice_bet', async ({ username, choice, amount }) => {
         if (diceGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are closed!');
+        if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+        let existingBet = diceGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+        if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+
         const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
         if (!user) return socket.emit('arcade_error', 'Insufficient credits');
         await new Transaction({ username, type: 'HIGH-LOW DICE', amount: -amount }).save();
-        diceGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits, choice });
+        diceGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
     });
 
     socket.on('get_coin_state', () => { socket.emit('coin_state_update', { status: coinGame.status, betEndTime: coinGame.betEndTime, history: coinGame.history }); });
     socket.on('place_coin_bet', async ({ username, choice, amount }) => {
         if (coinGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are closed!');
+        if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+        let existingBet = coinGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+        if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+
         const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
         if (!user) return socket.emit('arcade_error', 'Insufficient credits');
         await new Transaction({ username, type: 'COIN FLIP', amount: -amount }).save();
-        coinGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'coin', credits: user.credits, choice });
+        coinGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'coin', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
     });
 
     socket.on('get_color_state', () => { socket.emit('color_state_update', { status: colorGame.status, betEndTime: colorGame.betEndTime, history: colorGame.history }); });
     socket.on('place_color_bet', async ({ username, choice, amount }) => {
         if (colorGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are closed!');
+        if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+        let existingBet = colorGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+        if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+
         const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
         if (!user) return socket.emit('arcade_error', 'Insufficient credits');
         await new Transaction({ username, type: 'COLOR GAME', amount: -amount }).save();
-        colorGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, amount });
+        colorGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
     });
 
     // --- BLACKJACK SOCKETS ---
@@ -281,7 +293,7 @@ io.on('connection', (socket) => {
     });
     socket.on('place_bet', async ({ roomId, username, seatIndex, betAmount }) => {
         let room = rooms[roomId]; if (!room) return; const seat = room.seats[seatIndex]; if (!seat || seat.username !== username || room.status !== 'betting') return;
-        if (betAmount >= 1000) {
+        if (betAmount >= 1000 && betAmount <= 50000) {
             const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
             if (!updatedUser) return; 
             seat.credits = updatedUser.credits; seat.hands[0].bet = betAmount; seat.kickAt = null; await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -betAmount }).save();
