@@ -50,9 +50,18 @@
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.7; }
 
-        /* INFO BOXES */
+        /* CLEAN INFO BOXES */
         .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
-        
+        .info-box strong { color: var(--warning); font-size: 28px; display: block; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px;}
+        .info-box ul { padding-left: 25px; margin-top: 10px;}
+        .info-box li { margin-bottom: 10px;}
+
+        .tab-buttons { display: flex; border-bottom: 2px solid var(--border-std); margin-bottom: 15px; flex-shrink: 0;}
+        .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-size: 22px; cursor: pointer; font-family: 'VT323'; letter-spacing: 1px;}
+        .tab-btn.active { background: var(--accent-glow); color: #fff; box-shadow: inset 0 3px 0 #fff; }
+        .tab-content { display: none; text-align: left; font-size: 24px; color: #e2e8f0; line-height: 1.3;}
+        .tab-content.active { display: block; }
+
         .profile-preview { font-size: 50px; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; text-transform: uppercase;}
         
         .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
@@ -64,33 +73,114 @@
         .reward-box .front { background: #1e293b; font-size: 40px; }
         .reward-box .back { background: #000; transform: rotateY(180deg); font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
 
-        /* GAME BOARDS */
+        /* --- 2-COLUMN PERFECT GRID LAYOUT --- */
         .game-interface { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; width: 100%; height: 100%; background: #000; box-sizing: border-box; }
+        
+        /* LEFT: GAME BOARD */
         .game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px;}
         .game-area.dice-bg { background: radial-gradient(circle at center, #7e22ce 0%, #4c1d95 100%); }
         .game-area.coin-bg { background: radial-gradient(circle at center, #9a3412 0%, #7c2d12 100%); }
+        
+        /* RIGHT: LOBBY & CHAT */
+        #right-panel-col { display: flex; flex-direction: column; gap: 20px; height: 100%; flex-shrink: 0;}
+        #lobby-panel-col, #chat-panel-col { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
 
+        /* PERFECT HUD ALIGNMENT */
         .top-hud { width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); box-sizing: border-box; flex-shrink: 0;}
-        .hud-left { justify-self: start; } .hud-center { justify-self: center; text-align: center; } .hud-right { justify-self: end; }
+        .hud-left { justify-self: start; }
+        .hud-center { justify-self: center; text-align: center; }
+        .hud-right { justify-self: end; }
+
         .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
 
-        /* BLACKJACK SEATS */
-        #seats-area { position: absolute; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center; align-items: flex-end; box-sizing: border-box; z-index: 5; height: auto; min-height: 250px; gap: 30px;}
-        .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0; position: relative;}
-        .seat-empty-box { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 160px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 8px; background: rgba(0,0,0,0.3); padding: 10px;}
+        .sidebar-header { background: #1e293b; color: #fff; padding: 10px; text-align: center; font-size: 28px; border-bottom: 2px solid var(--border-std); display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000; font-weight: bold; flex-shrink: 0;}
+        .lobby-panel { flex: 1; padding: 10px; overflow-y: auto; background: var(--bg-darker); }
+        .lobby-player { font-size: 26px; margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 5px; text-shadow: 1px 1px 0 #000;}
         
+        .chat-messages { flex: 1; padding: 10px; font-size: 22px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word;}
+        .chat-input-area { display: flex; border-top: 2px solid var(--border-std); background: #000; flex-shrink: 0;}
+        .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none; font-family: 'VT323';}
+        .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold; font-family: 'VT323';}
+
+        .table-surface { flex: 1; display: flex; flex-direction: column; width: 100%; position: relative; }
+        
+        /* TIMERS PERFECTLY CENTERED DYNAMIC STACK */
+        #timers-container { position: absolute; top: 240px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; z-index: 20; width: 100%; pointer-events: none;}
+        .global-timer { font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000; white-space: nowrap;}
+        .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
+        .global-timer.warning { background: #eab308; color: #000; font-size: 32px; font-weight: bold; text-shadow: none !important; border: 2px solid #000;}
+
+        /* ABSOLUTE BOTTOM FLEXBOX SEATS CONTAINER */
+        #seats-area { position: absolute; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center; align-items: flex-end; box-sizing: border-box; z-index: 5; height: auto; min-height: 250px; gap: 30px;}
+
+        .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0; position: relative;}
+        
+        .seat-empty-box { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 160px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 8px; background: rgba(0,0,0,0.3); padding: 10px;}
+        .btn-sit-empty { background: #10b981; color: #000; font-size: 26px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 6px 30px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s; font-family: 'VT323'; text-shadow: none;}
+        .btn-sit-empty:active { transform: translate(4px, 4px); box-shadow: 0 0 0 transparent; }
+
+        .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
+        .turn-bar-container { width: 100%; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
+        .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
+
+        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
+        .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
+
+        /* MARIO COIN COLLECT / LOSE ANIMATIONS */
+        @keyframes coinCollect {
+            0% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;}
+            50% { transform: translateY(-20px) scale(1.2); color: #fff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24; }
+            100% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;}
+        }
+        @keyframes loseDrop {
+            0% { transform: translateY(0); color: var(--warning); }
+            50% { transform: translateY(5px); color: var(--danger); text-shadow: 0 0 10px var(--danger); }
+            100% { transform: translateY(10px); color: #555; opacity: 0.5; }
+        }
+        .anim-win { animation: coinCollect 0.8s ease-out forwards; }
+        .anim-lose { animation: loseDrop 0.8s ease-out forwards; }
+
+        /* BET TEXT W/ OVERLAP FIX MARGIN */
+        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
+
+        /* REDESIGNED DROPDOWN BETTING UI */
+        .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
+        .seat-bet-box select { flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none; font-family: 'VT323', monospace; letter-spacing: 1px;}
+        
+        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; font-family: 'VT323', monospace; letter-spacing: 1px; font-size: 20px;}
+        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 12px;}
+        .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
+
+        .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; box-sizing: border-box;}
+        .btn-hit { background: var(--success); color: #000; font-size: 18px; padding: 6px;}
+        .btn-stand { background: #b45309; color: #fff; font-size: 18px; padding: 6px;}
+        .btn-double { background: var(--accent-glow-2); color: #fff; font-size: 18px; padding: 6px;}
+        .btn-split { background: var(--accent-glow); color: #fff; font-size: 18px; padding: 6px;}
+        
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323';}
+        .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
+
+        /* NATIVE CSS CARDS */
         .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 120px; width: 100%; margin-bottom: 12px;}
         .hand-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative; min-height: 120px;}
         .hand-container { position: relative; display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px;}
+        
         .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; margin-left: -35px; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; flex-shrink: 0; z-index: 2;}
         .card:first-child { margin-left: 0; z-index: 1;}
         .card.red { color: #d00; } .card.black { color: #000; }
         .card-corner { position: absolute; font-size: 15px; font-weight: bold; line-height: 1; text-align: center; letter-spacing: -1px; font-family: Arial;}
         .card-corner.top-left { top: 3px; left: 3px; } .card-corner.bottom-right { bottom: 3px; right: 3px; transform: rotate(180deg); }
         .card-center-suit { font-size: 34px; font-family: Arial;}
+        
         .card.dealer-hidden { background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); color: transparent; }
+        .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10; font-family: Arial, sans-serif; line-height: 1; padding: 0; padding-top: 1px;}
+        .hand-status-label { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); font-size: 28px; font-weight: bold; text-shadow: 2px 2px 0 #000; padding: 2px 10px; border: 3px solid currentColor; border-radius: 4px; background: rgba(0,0,0,0.85); z-index: 20; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 10px rgba(0,0,0,0.5);}
+        .hand-status-bust { color: var(--danger); } .hand-status-win { color: var(--success); } .hand-status-lose { color: var(--danger); } .hand-status-push { color: #94a3b8; } .hand-status-blackjack { color: var(--warning); }
+
+        .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 24px; background: #0f172a; margin-bottom: 5px; border-radius: 4px;}
+        .coin-icon { color:#fbbf24; text-shadow: 1px 1px 0 #000; font-family: 'Segoe UI Emoji', sans-serif;}
         
         /* DICE UI */
         .dice-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1; perspective: 1000px; }
@@ -110,13 +200,6 @@
         .coin-3d { width: 150px; height: 150px; background: #fbbf24; border-radius: 50%; border: 10px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 80px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 50px #fbbf24; font-family: Arial; }
         .coin-3d.flipping { animation: flipCoin 0.3s infinite linear; }
         @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
-
-        /* COMMON ANIMATIONS */
-        @keyframes coinCollect { 0% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;} 50% { transform: translateY(-20px) scale(1.2); color: #fff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24; } 100% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;} }
-        @keyframes loseDrop { 0% { transform: translateY(0); color: var(--warning); } 50% { transform: translateY(5px); color: var(--danger); text-shadow: 0 0 10px var(--danger); } 100% { transform: translateY(10px); color: #555; opacity: 0.5; } }
-        .anim-win { animation: coinCollect 0.8s ease-out forwards; } .anim-lose { animation: loseDrop 0.8s ease-out forwards; }
-        
-        .coin-icon { color:#fbbf24; text-shadow: 1px 1px 0 #000; font-family: 'Segoe UI Emoji', sans-serif;}
     </style>
 </head>
 <body>
@@ -152,23 +235,35 @@
         <div id="main-menu-view" class="full-menu hidden">
             <h1 class="pixel-text" style="font-size: 80px; margin-bottom: 10px; text-shadow: 4px 4px 0px #000;">ARCADE DASHBOARD</h1>
             <div class="menu-grid">
-                <button class="wood-btn" style="background: var(--success);" onclick="showModal('play-modal')">BLACKJACK</button>
-                <button class="wood-btn" style="background: #a855f7;" onclick="joinDice()">HIGH-LOW DICE</button>
-                <button class="wood-btn" style="background: #ea580c;" onclick="joinCoinFlip()">COIN DUELS</button>
+                <button class="wood-btn" style="background: var(--success);" onclick="showModal('play-modal')">PLAY</button>
+                <button class="wood-btn" style="background: #3b82f6;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
+                <button class="wood-btn" style="background: #8b5cf6;" onclick="showModal('leaderboard-modal')">LEADERBOARDS</button>
                 <button class="wood-btn" style="background: var(--warning); color:#000;" onclick="showBank()">BANKING</button>
                 <button class="wood-btn" style="background: #10b981; color:#000;" onclick="showProfile()">PROFILE</button>
                 <button class="wood-btn" style="background: #0f766e;" onclick="showRewards()">DAILY REWARDS</button>
-                <button class="wood-btn" style="background: #64748b;" onclick="showModal('settings-modal')">SETTINGS</button>
-                <button class="wood-btn" style="background: var(--danger);" onclick="logout()">LOGOUT</button>
+                <button class="wood-btn" style="background: #d946ef;" onclick="showModal('store-modal')">COSMETIC STORE</button>
+                <button class="wood-btn" style="background: #64748b;" onclick="showModal('settings-modal')">SYSTEM SETTINGS</button>
+                <button class="wood-btn" style="background: var(--danger); grid-column: span 2;" onclick="showModal('logout-modal')">LOGOUT</button>
             </div>
         </div>
 
         <div id="play-modal" class="overlay-menu hidden">
-            <div class="modal-box custom-scroll">
-                <h2 class="pixel-text" style="margin-bottom: 20px; font-size: 40px;">SELECT ROOM</h2>
+            <div class="modal-box custom-scroll" style="width: 600px;">
+                <h2 class="pixel-text" style="margin-bottom: 20px; font-size: 40px;">SELECT GAME</h2>
                 <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-                    <button class="wood-btn" style="background: var(--accent-glow);" onclick="joinRoom('3seat')">3-SEAT VIP TABLE</button>
-                    <button class="wood-btn" style="background: var(--success); color:#000;" onclick="joinRoom('5seat')">5-SEAT CLASSIC TABLE</button>
+                    
+                    <div style="width: 100%; border-bottom: 2px dashed #333; margin-bottom: 10px; padding-bottom: 10px;">
+                        <h3 class="pixel-text" style="color: var(--success); font-size: 30px; margin-bottom: 10px;">BLACKJACK</h3>
+                        <button class="wood-btn" style="background: var(--accent-glow); margin-bottom: 10px;" onclick="joinRoom('3seat')">3-SEAT VIP TABLE</button>
+                        <button class="wood-btn" style="background: var(--success); color:#000;" onclick="joinRoom('5seat')">5-SEAT CLASSIC TABLE</button>
+                    </div>
+
+                    <div style="width: 100%; border-bottom: 2px dashed #333; margin-bottom: 10px; padding-bottom: 10px;">
+                        <h3 class="pixel-text" style="color: var(--warning); font-size: 30px; margin-bottom: 10px;">ARCADE CASINO</h3>
+                        <button class="wood-btn" style="background: #a855f7; margin-bottom: 10px;" onclick="joinDice()">HIGH-LOW DICE</button>
+                        <button class="wood-btn" style="background: #ea580c;" onclick="joinCoinFlip()">COIN DUELS</button>
+                    </div>
+
                     <button class="wood-btn" style="background: var(--danger); margin-top: 10px;" onclick="hideModal('play-modal')">BACK TO DASHBOARD</button>
                 </div>
             </div>
@@ -178,7 +273,18 @@
             <div class="modal-box custom-scroll" style="width: 750px;">
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 50px;">PLAYER DOSSIER</h2>
                 <div class="profile-credits pixel-text" style="margin-bottom: 15px; font-size: 36px;">TOTAL BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
-                <button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('profile-modal')">CLOSE</button>
+                <button class="wood-btn pixel-text" style="background: #475569;" onclick="openProfileLedger()">VIEW TRANSACTION LEDGER</button>
+                <div style="margin-top: 15px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('profile-modal')">CLOSE</button></div>
+            </div>
+        </div>
+
+        <div id="profile-ledger-modal" class="overlay-menu hidden">
+            <div class="modal-box custom-scroll" style="width: 700px;">
+                <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 50px;">TRANSACTION LEDGER</h2>
+                <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 300px; margin-bottom: 15px;"></div>
+                <div style="display: flex; justify-content: center;">
+                    <button class="wood-btn pixel-text" style="background: var(--danger); width:100%;" onclick="hideModal('profile-ledger-modal'); showModal('profile-modal');">BACK TO PROFILE</button>
+                </div>
             </div>
         </div>
         
@@ -191,7 +297,18 @@
                     <button class="wood-btn" style="flex: 1; background: var(--accent-glow-2);" onclick="showBankConfirm('deposit')">DEPOSIT</button>
                     <button class="wood-btn" style="flex: 1; background: var(--warning); color:#000;" onclick="showBankConfirm('withdrawal')">WITHDRAW</button>
                 </div>
-                <button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('bank-modal')">CLOSE</button>
+                <button class="wood-btn pixel-text" style="background: #475569;" onclick="openBankLedger()">VIEW BANK REQUESTS</button>
+                <div style="margin-top: 10px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('bank-modal')">CLOSE</button></div>
+            </div>
+        </div>
+
+        <div id="bank-ledger-modal" class="overlay-menu hidden">
+            <div class="modal-box custom-scroll" style="width: 700px;">
+                <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 50px;">BANK REQUESTS</h2>
+                <div id="bank-ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 300px; margin-bottom: 15px;"></div>
+                <div style="display: flex; justify-content: center;">
+                    <button class="wood-btn pixel-text" style="background: var(--danger); width:100%;" onclick="hideModal('bank-ledger-modal'); showModal('bank-modal');">BACK TO BANK</button>
+                </div>
             </div>
         </div>
 
@@ -218,7 +335,8 @@
                 <div id="reward-cooldown-view" class="hidden">
                     <div class="pixel-text" id="reward-timer" style="font-size: 60px; color: var(--danger);">00:00:00</div>
                 </div>
-                <button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('reward-modal')">CLOSE</button>
+                <p id="reward-msg" class="pixel-text" style="font-size: 32px; margin-top: 15px;"></p>
+                <div style="margin-top: 15px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('reward-modal')">CLOSE</button></div>
             </div>
         </div>
 
@@ -324,8 +442,7 @@
                     <button class="wood-btn pixel-text" style="background: #ea580c; width: 250px;" onclick="createCoinDuel()">CREATE DUEL</button>
                 </div>
 
-                <div id="coin-duels-list" class="coin-duels-list pixel-text">
-                    </div>
+                <div id="coin-duels-list" class="coin-duels-list pixel-text"></div>
             </div>
         </div>
 
@@ -386,11 +503,13 @@
         }
 
         function joinDice() {
+            hideModal('play-modal');
             document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden');
             socket.emit('get_dice_state'); playSfx('deal');
         }
 
         function joinCoinFlip() {
+            hideModal('play-modal');
             document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('coin-interface').classList.remove('hidden');
             socket.emit('get_coin_duels'); playSfx('deal');
         }
@@ -516,6 +635,13 @@
                 
                 setTimeout(() => { overlay.classList.add('hidden'); }, 4000);
             }, 3000);
+        });
+        
+        // Disable Dev Tools (Anti-Cheat)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
         });
 
     </script>
