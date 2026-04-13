@@ -58,7 +58,6 @@ function createRoom(numSeats) {
 const diceGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: [1, 1], bets: [], history: [] };
 const coinGame = { status: 'betting', betEndTime: Date.now() + 15000, result: 'heads', bets: [], history: [] };
 
-// Track users in socket
 const socketUserMap = {}; 
 let diceLobby = [];
 let coinLobby = [];
@@ -168,11 +167,22 @@ const checkAdmin = async (req, res, next) => {
 
 app.get('/api/admin/data', checkAdmin, async (req, res) => { const users = await User.find({}, '-password'); const txs = await Transaction.find({ status: 'pending' }); const codes = await GiftCode.find(); res.json({ users, txs, codes }); });
 app.post('/api/admin/user/status', checkAdmin, async (req, res) => { await User.updateOne({ username: req.body.username }, { status: req.body.status }); res.json({ success: true }); });
+
+// LIVE BANKING SYNC
 app.post('/api/admin/tx/resolve', checkAdmin, async (req, res) => {
     const { id, action } = req.body; const tx = await Transaction.findById(id); if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
-    if (action === 'approve') { tx.status = 'completed'; if (tx.type === 'BANK DEPOSIT') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); } 
-    else { tx.status = 'denied'; if (tx.type === 'BANK WITHDRAWAL') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); }
-    await tx.save(); res.json({ success: true });
+    let updatedUser;
+    if (action === 'approve') { 
+        tx.status = 'completed'; 
+        if (tx.type === 'BANK DEPOSIT') { updatedUser = await User.findOneAndUpdate({ username: tx.username }, { $inc: { credits: tx.amount } }, { new: true }); }
+    } 
+    else { 
+        tx.status = 'denied'; 
+        if (tx.type === 'BANK WITHDRAWAL') { updatedUser = await User.findOneAndUpdate({ username: tx.username }, { $inc: { credits: tx.amount } }, { new: true }); }
+    }
+    await tx.save(); 
+    if(updatedUser) io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
+    res.json({ success: true });
 });
 app.post('/api/admin/giftcode', checkAdmin, async (req, res) => { await new GiftCode(req.body).save(); res.json({ success: true }); });
 
@@ -193,15 +203,23 @@ app.post('/api/login', async (req, res) => {
     res.json({ username: user.username, credits: user.credits, status: user.status, createdAt: user.createdAt, cooldownSeconds: msLeft > 0 ? Math.floor(msLeft / 1000) : 0 });
 });
 
+app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
+
+// LIVE BANKING SYNC
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body; let txType = type === 'deposit' ? 'BANK DEPOSIT' : 'BANK WITHDRAWAL';
-    if (type === 'deposit') { if (amount < 10000 || amount > 100000) return res.status(400).json({ error: 'Limits: 10k - 100k.' }); } 
+    let currentCredits = undefined;
+    if (type === 'deposit') { 
+        if (amount < 10000 || amount > 100000) return res.status(400).json({ error: 'Limits: 10k - 100k.' }); 
+    } 
     else if (type === 'withdrawal') {
         if (amount < 50000 || amount > 100000) return res.status(400).json({ error: 'Limits: 50k - 100k.' });
         const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
         if (!user) return res.status(400).json({ error: 'Insufficient funds.' });
+        currentCredits = user.credits;
     }
-    await new Transaction({ username, type: txType, amount, status: 'pending' }).save(); res.json({ success: true });
+    await new Transaction({ username, type: txType, amount, status: 'pending' }).save(); 
+    res.json({ success: true, newCredits: currentCredits });
 });
 
 app.post('/api/bank/giftcode', async (req, res) => {
@@ -216,7 +234,6 @@ app.get('/api/profile/ledger/:username', async (req, res) => { const txs = await
 // --- SOCKET LOGIC ---
 io.on('connection', (socket) => {
     
-    // --- ARCADE LOBBIES ---
     socket.on('enter_arcade', async ({ username, game }) => {
         const user = await User.findOne({ username }); if (!user) return;
         socket.join('arcade_' + game);
@@ -242,7 +259,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // --- BLACKJACK SOCKETS ---
     socket.on('enter_room', async ({ username, roomId }) => {
         if (!rooms[roomId]) return; socket.join(roomId); socketUserMap[socket.id] = { username, roomId };
         const user = await User.findOne({ username }); if (user && !rooms[roomId].lobby.find(p => p.username === username)) rooms[roomId].lobby.push({ username: user.username, color: user.nameColor });
@@ -318,7 +334,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // --- DICE SOCKETS ---
     socket.on('get_dice_state', () => { socket.emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); });
     socket.on('place_dice_bet', async ({ username, choice, amount }) => {
         if (diceGame.status !== 'betting') return socket.emit('dice_error', 'Bets are closed!');
@@ -329,7 +344,6 @@ io.on('connection', (socket) => {
         diceGame.bets.push({ username, choice, amount }); socket.emit('dice_bet_placed', { credits: user.credits });
     });
 
-    // --- COIN FLIP SOCKETS ---
     socket.on('get_coin_state', () => { socket.emit('coin_state_update', { status: coinGame.status, betEndTime: coinGame.betEndTime, history: coinGame.history }); });
     socket.on('place_coin_bet', async ({ username, choice, amount }) => {
         if (coinGame.status !== 'betting') return socket.emit('coin_error', 'Bets are closed!');
@@ -340,11 +354,11 @@ io.on('connection', (socket) => {
         coinGame.bets.push({ username, choice, amount }); socket.emit('coin_bet_placed', { credits: user.credits });
     });
 
-    // --- DAILY REWARDS ---
     socket.on('claim_daily_reward_box', async ({ username, boxIndex }) => {
         try {
             const user = await User.findOne({ username }); if (!user) return; const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); const msIn24Hours = 24 * 60 * 60 * 1000;
             if (now.getTime() - lastClaim.getTime() >= msIn24Hours) {
+                // DAILY REWARDS LOGIC (6 Choices)
                 let prizes = [1000, 0, 0, 0, 5000, 10000]; prizes = prizes.sort(() => Math.random() - 0.5); const wonAmount = prizes[boxIndex]; user.lastRewardClaim = now;
                 if (wonAmount > 0) { user.credits += wonAmount; await new Transaction({ username, type: 'DAILY REWARD', amount: wonAmount, status: 'completed' }).save(); } await user.save();
                 const msLeft = new Date(now.getTime() + msIn24Hours).getTime() - now.getTime(); const cooldownSeconds = Math.floor(msLeft / 1000);
@@ -375,7 +389,6 @@ io.on('connection', (socket) => {
     });
 });
 
-// BLACKJACK RESOLUTION LOGIC
 function startGame(roomId) {
     let room = rooms[roomId]; if (!room) return; room.status = 'playing'; room.deck = getNewDeck(); room.dealerCards = []; room.seats = room.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
     for (let i = 0; i < 2; i++) { room.seats.forEach(seat => { if (seat) seat.hands[0].cards.push(room.deck.pop()); }); room.dealerCards.push(room.deck.pop()); }
