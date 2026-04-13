@@ -42,15 +42,12 @@
         .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.8; }
+        .wood-btn.locked { border-color: #555; background: #333; color: #aaa; box-shadow: none; transform: translate(2px, 2px); }
 
         .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
         .info-box strong { color: var(--warning); font-size: 28px; display: block; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px;}
         .info-box ul { padding-left: 25px; margin-top: 10px;} .info-box li { margin-bottom: 10px;}
 
-        .tab-buttons { display: flex; border-bottom: 2px solid var(--border-std); margin-bottom: 15px; flex-shrink: 0;}
-        .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-size: 22px; cursor: pointer; font-family: 'VT323'; letter-spacing: 1px;}
-        .tab-btn.active { background: var(--accent-glow); color: #fff; box-shadow: inset 0 3px 0 #fff; }
-        
         .profile-preview { font-size: 50px; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; text-transform: uppercase;}
         
         .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
@@ -135,8 +132,7 @@
         .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10; font-family: Arial, sans-serif; line-height: 1; padding: 0; padding-top: 1px;}
         .hand-status-label { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); font-size: 28px; font-weight: bold; text-shadow: 2px 2px 0 #000; padding: 2px 10px; border: 3px solid currentColor; border-radius: 4px; background: rgba(0,0,0,0.85); z-index: 20; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 10px rgba(0,0,0,0.5);}
         .hand-status-bust { color: var(--danger); } .hand-status-win { color: var(--success); } .hand-status-lose { color: var(--danger); } .hand-status-push { color: #94a3b8; } .hand-status-blackjack { color: var(--warning); }
-
-        .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #333; font-size: 24px; background: #0f172a; margin-bottom: 5px; border-radius: 4px;}
+        .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px dashed #333; font-size: 24px; margin-bottom: 5px; border-radius: 4px;}
         .coin-icon { color:#fbbf24; text-shadow: 1px 1px 0 #000; font-family: 'Segoe UI Emoji', sans-serif;}
         
         .dice-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1; perspective: 1000px; }
@@ -145,7 +141,7 @@
         @keyframes subtleShake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -1px) rotate(-2deg); } 50% { transform: translate(0px, 1px) rotate(2deg); } 75% { transform: translate(1px, -1px) rotate(-1deg); } 100% { transform: translate(-1px, 0px) rotate(1deg); } }
         
         .dice-bet-area { display: flex; justify-content: center; gap: 20px; padding: 30px; background: rgba(0,0,0,0.6); border-top: 2px solid var(--border-std); }
-        .dice-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 15px; text-align: center; width: 220px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; position: relative; transition: 0.1s;}
+        .dice-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; width: 220px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; cursor: pointer; transition: 0.1s; position: relative; height: 130px;}
         .dice-bet-box:active:not(.locked) { transform: scale(0.95); }
         .dice-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
         .dice-bet-title { font-size: 36px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 5px; }
@@ -163,17 +159,12 @@
         .bg-red { background-color: #ef4444; } .bg-blue { background-color: #3b82f6; } .bg-yellow { background-color: #eab308; } 
         .bg-green { background-color: #10b981; } .bg-pink { background-color: #ec4899; } .bg-white { background-color: #f8fafc; }
         
-        .color-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; cursor: pointer; transition: 0.1s; position: relative; height: 140px;}
-        .color-bet-box:active:not(.locked) { transform: scale(0.95); }
-        .color-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
-        .color-bet-box.br-red { border-top-color: #ef4444; } .color-bet-box.br-blue { border-top-color: #3b82f6; } .color-bet-box.br-yellow { border-top-color: #eab308; }
-        .color-bet-box.br-green { border-top-color: #10b981; } .color-bet-box.br-pink { border-top-color: #ec4899; } .color-bet-box.br-white { border-top-color: #f8fafc; }
         .color-bet-title { font-size: 40px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 5px; text-transform: uppercase;}
         
         .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 28px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20; pointer-events:none;}
         .color-payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 38px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 30;}
         
-        .history-list-item { font-size: 24px; border-bottom: 1px dashed #333; padding: 8px 0; text-align: center; }
+        .history-list-item { font-size: 28px; border-bottom: 1px dashed #333; padding: 4px 0; text-align: center; }
     </style>
 </head>
 <body>
@@ -188,20 +179,26 @@
         
         <div id="auth-view" class="full-menu">
             <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 10px;">CASINO ROYALE</h1>
+            
             <div id="panel-login" class="modal-box custom-scroll">
                 <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 15px; font-size: 40px;">MEMBER LOGIN</h2>
-                <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME">
-                <input type="password" id="login-pass" class="retro-input pixel-text" placeholder="PASSWORD">
+                <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME" style="color:#fff;">
+                <input type="password" id="login-pass" class="retro-input pixel-text" placeholder="PASSWORD" style="color:#fff;">
                 <div style="display: flex; justify-content: center; margin-top: 15px;"><button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="login()">LOGIN</button></div>
                 <p id="login-error" class="pixel-text" style="color: var(--danger); font-size: 24px;"></p>
                 <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('signup')">New Player? Request Access Here</div>
             </div>
+
             <div id="panel-signup" class="modal-box hidden custom-scroll">
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 15px; font-size: 40px;">REQUEST ACCESS</h2>
-                <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME">
-                <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD">
-                <div class="clear-text pixel-text" style="color: var(--warning); cursor: pointer; text-decoration: underline; margin: 15px 0; font-size: 22px;" onclick="showModal('tos-modal')">READ SYSTEM TERMS</div>
-                <label class="pixel-text" style="font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;"><input type="checkbox" id="tos-checkbox" style="width: 24px; height: 24px; margin:0;"> I ACCEPT THE TERMS</label>
+                <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME" style="color:#fff;">
+                <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD" style="color:#fff;">
+                
+                <div class="clear-text pixel-text" style="color: var(--warning); cursor: pointer; text-decoration: underline; margin: 15px 0; font-size: 22px;" onclick="showSpecificModal('tos-modal')">READ SYSTEM TERMS</div>
+                <label class="pixel-text" style="font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                    <input type="checkbox" id="tos-checkbox" style="width: 24px; height: 24px; margin:0;"> I ACCEPT THE TERMS
+                </label>
+
                 <div style="display: flex; justify-content: center; margin-top: 15px;"><button class="wood-btn pixel-text" style="background: var(--success);" onclick="signup()">SUBMIT REQUEST</button></div>
                 <p id="signup-msg" class="pixel-text" style="font-size: 24px;"></p>
                 <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('login')">Back to Login</div>
@@ -211,15 +208,15 @@
         <div id="main-menu-view" class="full-menu hidden">
             <h1 class="pixel-text" style="font-size: 80px; margin-bottom: 10px; text-shadow: 4px 4px 0px #000;">ARCADE DASHBOARD</h1>
             <div class="menu-grid">
-                <button class="wood-btn" style="background: var(--success);" onclick="showModal('play-modal')">PLAY GAMES</button>
-                <button class="wood-btn" style="background: #3b82f6;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
-                <button class="wood-btn" style="background: #8b5cf6;" onclick="showModal('leaderboard-modal')">LEADERBOARDS</button>
+                <button class="wood-btn" style="background: var(--success);" onclick="showSpecificModal('play-modal')">PLAY GAMES</button>
+                <button class="wood-btn" style="background: #3b82f6;" onclick="showSpecificModal('how-to-play-modal')">HOW TO PLAY</button>
+                <button class="wood-btn" style="background: #8b5cf6;" onclick="showSpecificModal('leaderboard-modal')">LEADERBOARDS</button>
                 <button class="wood-btn" style="background: var(--warning); color:#000;" onclick="showBank()">BANKING</button>
                 <button class="wood-btn" style="background: #10b981; color:#000;" onclick="showProfile()">PROFILE</button>
                 <button class="wood-btn" style="background: #0f766e;" onclick="showRewards()">DAILY REWARDS</button>
-                <button class="wood-btn" style="background: #d946ef;" onclick="showModal('redeem-modal')">REDEEM CODE</button>
-                <button class="wood-btn" style="background: #64748b;" onclick="showModal('settings-modal')">SYSTEM SETTINGS</button>
-                <button class="wood-btn" style="background: var(--danger); grid-column: span 2;" onclick="showModal('logout-modal')">LOGOUT</button>
+                <button class="wood-btn" style="background: #d946ef;" onclick="showSpecificModal('redeem-modal')">REDEEM CODE</button>
+                <button class="wood-btn" style="background: #64748b;" onclick="showSpecificModal('settings-modal')">SYSTEM SETTINGS</button>
+                <button class="wood-btn" style="background: var(--danger); grid-column: span 2;" onclick="showSpecificModal('logout-modal')">LOGOUT</button>
             </div>
         </div>
 
@@ -244,35 +241,41 @@
         </div>
 
         <div id="how-to-play-modal" class="overlay-menu hidden">
-            <div class="modal-box custom-scroll" style="width: 800px; padding: 20px;">
+            <div class="modal-box custom-scroll" style="width: 850px; padding: 20px;">
                 <h2 class="pixel-text" style="margin-bottom: 15px; font-size: 40px;">ARCADE RULES</h2>
-                <div style="display: flex; gap: 20px; height: 100%; align-items: stretch;">
+                <div style="display: flex; gap: 20px; height: 100%; align-items: stretch; text-align: left;">
+                    
                     <div style="flex: 1; border-right: 2px dashed #334155; padding-right: 20px; display: flex; flex-direction: column;">
-                        <select id="rules-select" class="retro-input pixel-text" style="width:100%; margin-bottom:15px; background:var(--accent-glow); cursor:pointer;" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');">
+                        <select id="rules-select" class="retro-input pixel-text" style="width:100%; max-width: 250px; margin-bottom:15px; background:var(--accent-glow); cursor:pointer;" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');">
                             <option value="rule-bj">BLACKJACK</option>
                             <option value="rule-dice">HIGH-LOW DICE</option>
                             <option value="rule-coin">GLOBAL COIN FLIP</option>
                             <option value="rule-color">CLASSIC COLOR GAME</option>
                         </select>
                         <div id="rule-bj" class="rule-content info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
-                            <strong class="info-title">BLACKJACK</strong><ul><li><strong>Limit:</strong> Occupy one seat per room. Max bet 50k (Split allowed for 100k total).</li><li><strong>15s Action Timer:</strong> Hit/Stand/Double.</li><li><strong>Payouts:</strong> Standard wins pay 1:1. Blackjack pays 3:2. Pushes refund the bet.</li><li><strong>Dealer Rules:</strong> Dealer must stand on all 17s.</li></ul>
+                            <strong class="info-title">BLACKJACK</strong>
+                            <ul><li><strong>Objective:</strong> Beat the Dealer's hand without going over 21. Face cards are 10, Aces are 1 or 11.</li><li><strong>Limits:</strong> Max 1 seat per player. Max initial bet is 50,000 (Splitting allows up to 100,000 total).</li><li><strong>Action Timer:</strong> You have exactly 15 seconds to Hit, Stand, Double, or Split.</li><li><strong>Payouts:</strong> Standard wins pay 1:1. Blackjack pays 3:2. Pushes refund the bet.</li><li><strong>Dealer Rules:</strong> Dealer must draw to 16 and stand on all 17s.</li></ul>
                         </div>
                         <div id="rule-dice" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
-                            <strong class="info-title">HIGH-LOW DICE</strong><ul><li><strong>Global Betting:</strong> Everyone bets on the same two dice. Max 50,000 per tile.</li><li><strong>Under 7 / Over 7:</strong> Pays 1:1.</li><li><strong>Exactly 7:</strong> Pays 4:1.</li></ul>
+                            <strong class="info-title">HIGH-LOW DICE</strong>
+                            <ul><li><strong>Global Betting:</strong> Two 6-sided dice are rolled globally. You must bet on the total sum.</li><li><strong>Limits:</strong> Maximum bet is strictly 50,000 credits per tile.</li><li><strong>Under 7:</strong> Pays 1:1 if the total sum is 2, 3, 4, 5, or 6.</li><li><strong>Over 7:</strong> Pays 1:1 if the total sum is 8, 9, 10, 11, or 12.</li><li><strong>Exactly 7:</strong> The Jackpot. Pays massive 4:1 odds if the total is exactly 7.</li></ul>
                         </div>
                         <div id="rule-coin" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
-                            <strong class="info-title">GLOBAL COIN FLIP</strong><ul><li><strong>Global Betting:</strong> 15-second intervals to place bets on Heads or Tails. Max 50,000 per tile.</li><li><strong>Payouts:</strong> Winning the flip doubles your bet (Pays 1:1).</li></ul>
+                            <strong class="info-title">GLOBAL COIN FLIP</strong>
+                            <ul><li><strong>Global Betting:</strong> A single global coin is flipped. Bet on Heads or Tails before the 15-second timer expires.</li><li><strong>Limits:</strong> Maximum bet is strictly 50,000 credits per tile.</li><li><strong>Payouts:</strong> Correct guesses double your money (Pays 1:1).</li></ul>
                         </div>
                         <div id="rule-color" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
-                            <strong class="info-title">CLASSIC COLOR GAME</strong><ul><li><strong>Global Betting:</strong> Select bet amount, then tap colors to bet. Max 50,000 per color.</li><li><strong>Payouts:</strong> 1 Match pays 1:1. 2 Matches pays 2:1. 3 Matches pays 3:1.</li></ul>
+                            <strong class="info-title">CLASSIC COLOR GAME</strong>
+                            <ul><li><strong>Global Betting:</strong> 3 colored dice are rolled. Pick your bet amount at the top, then tap the colored tiles to place your chips.</li><li><strong>Limits:</strong> Maximum bet is strictly 50,000 credits per color.</li><li><strong>Payouts:</strong> Depends on how many dice match your chosen color.<br>- 1 Match: Pays 1:1<br>- 2 Matches: Pays 2:1<br>- 3 Matches: Pays 3:1</li></ul>
                         </div>
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column;">
                         <div class="info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
                             <strong class="info-title" style="color: #10b981;">SYSTEM RULES</strong>
-                            <ul><li><strong>Banking Limits:</strong> Deposit: 10k-100k. Withdraw: 50k-100k.</li><li><strong>Daily Rewards:</strong> Available every 24 hours.</li><li><strong>Spam Protection:</strong> Arcade buttons lock temporarily to prevent multi-clicks.</li></ul>
+                            <ul><li><strong>Banking Limits:</strong><br>- Deposit: 10,000 to 100,000 credits.<br>- Withdraw: 50,000 to 100,000 credits.</li><li><strong>Daily Rewards:</strong> Mystery boxes available exactly every 24 hours.</li><li><strong>Spam Protection:</strong> Arcade buttons lock for a brief period to prevent accidental multi-clicks or glitches.</li></ul>
                         </div>
                     </div>
+
                 </div>
                 <button class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 15px;" onclick="hideModal('how-to-play-modal')">CLOSE</button>
             </div>
@@ -281,7 +284,12 @@
         <div id="tos-modal" class="overlay-menu hidden" style="z-index: 400;">
             <div class="modal-box custom-scroll" style="width: 600px;">
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 20px; font-size: 40px;">TERMS OF SERVICE</h2>
-                <div class="info-box custom-scroll">By requesting access to Casino Royale, you agree to the Fair Play Policy:<br><br>- Maximum of ONE active seat per room.<br>- Using macros or alt-accounts to farm rewards is strictly prohibited and results in an IP Ban.<br>- All accounts require manual Admin approval.</div>
+                <div class="info-box custom-scroll">
+                    By requesting access to Casino Royale, you agree to the Fair Play Policy:<br><br>
+                    - Maximum of ONE active seat per room.<br>
+                    - Using macros or alt-accounts to farm rewards is strictly prohibited and results in an IP Ban.<br>
+                    - All accounts require manual Admin approval.
+                </div>
                 <div style="display: flex; justify-content: center; margin-top: 15px;"><button class="wood-btn" style="background: var(--success); width: 100%; color:#000;" onclick="hideModal('tos-modal')">I UNDERSTAND</button></div>
             </div>
         </div>
@@ -328,7 +336,10 @@
             <div class="modal-box custom-scroll" style="width: 700px;">
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 5px; font-size: 50px;">SYSTEM BANKING</h2>
                 <div class="pixel-text" style="font-size: 28px; margin-bottom: 20px;">CURRENT BALANCE: <span class="coin-icon">🪙</span> <span id="bank-balance-display" style="font-size: 40px;">0</span></div>
-                <div class="input-group"><input type="text" id="bank-amount" class="retro-input pixel-text" placeholder="ENTER AMOUNT" oninput="formatInput(this)"></div>
+                
+                <div class="input-group">
+                    <input type="text" id="bank-amount" class="retro-input pixel-text" placeholder="ENTER AMOUNT" oninput="formatInput(this)">
+                </div>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <button class="wood-btn" style="flex: 1; background: var(--accent-glow-2);" onclick="showBankConfirm('deposit')">DEPOSIT</button>
                     <button class="wood-btn" style="flex: 1; background: var(--warning); color:#000;" onclick="showBankConfirm('withdrawal')">WITHDRAW</button>
@@ -350,10 +361,13 @@
             <div class="modal-box custom-scroll" style="width: 500px;">
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 10px; font-size: 40px;">CONFIRM REQUEST</h2>
                 <div class="pixel-text" style="font-size: 32px; color: #fff; margin-bottom: 10px;"><span id="confirm-bank-type"></span>: <span style="color: var(--success);"><span class="coin-icon">🪙</span> <span id="confirm-bank-amt"></span></span></div>
+                
                 <div class="info-box" style="margin: 20px 0; text-align: center; border: none; background: transparent; box-shadow: none;">
                     <p style="margin-bottom: 10px; color: #fff; font-family: 'VT323'; font-size: 24px;">Please notify the admin for your request:</p>
                     <div style="display: flex; justify-content: center; align-items: center; gap: 20px; font-size: 18px; color: var(--accent-glow-2); font-weight: bold; font-family: 'Segoe UI', sans-serif;">
-                        <span style="display: flex; align-items: center;"><svg class="discord-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36" style="width: 24px; height: 24px; fill: currentColor; margin-right: 8px;"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91,65.69,84.69,65.69Z"/></svg> @ashley.gg</span>
+                        <span style="display: flex; align-items: center;">
+                            <svg class="discord-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36" style="width: 24px; height: 24px; fill: currentColor; margin-right: 8px;"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91,65.69,84.69,65.69Z"/></svg> @ashley.gg
+                        </span>
                         <span>SNT: @AshleyChan</span>
                     </div>
                 </div>
@@ -451,14 +465,14 @@
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="dice-credits"></span></div></div>
                 </div>
                 <div class="dice-container"><div id="die1" class="dice">⚀</div><div id="die2" class="dice">⚀</div></div>
-                <div style="text-align: center; margin-bottom: 10px;">
+                <div style="text-align: center; margin-bottom: 20px;">
                     <div id="dice-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
                     <div id="dice-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
                 </div>
                 <div style="padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6);">
                     <div style="display:flex; justify-content: center; margin-bottom: 10px;">
                         <select id="dice-master-bet" class="retro-input pixel-text" style="max-width: 300px; font-size: 28px;">
-                            <option value="0" selected>0</option><option value="1000">1,000</option><option value="5000">5,000</option>
+                            <option value="1000" selected>1,000</option><option value="5000">5,000</option>
                             <option value="20000">20,000</option><option value="50000">50,000</option>
                         </select>
                     </div>
@@ -485,7 +499,7 @@
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">ROLL HISTORY</div>
-                    <div id="dice-history" style="flex: 1; padding: 10px; overflow-y: auto; text-align:center; display:flex; flex-direction:column; gap:5px;" class="pixel-text custom-scroll"></div>
+                    <div id="dice-history" style="flex: 1; padding: 5px; overflow-y: auto; display:flex; flex-direction:column; gap:2px;" class="pixel-text custom-scroll"></div>
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
@@ -506,23 +520,23 @@
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="coin-credits"></span></div></div>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; flex: 1;"><div id="global-coin-visual" class="coin-3d">?</div></div>
-                <div style="text-align: center; margin-bottom: 10px;">
+                <div style="text-align: center; margin-bottom: 20px;">
                     <div id="coin-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">FLIPPING...</div>
                     <div id="coin-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
                 </div>
                 <div style="padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6);">
                     <div style="display:flex; justify-content: center; margin-bottom: 10px;">
                         <select id="coin-master-bet" class="retro-input pixel-text" style="max-width: 300px; font-size: 28px;">
-                            <option value="0" selected>0</option><option value="1000">1,000</option><option value="5000">5,000</option>
+                            <option value="1000" selected>1,000</option><option value="5000">5,000</option>
                             <option value="20000">20,000</option><option value="50000">50,000</option>
                         </select>
                     </div>
                     <div style="display: flex; justify-content: center; gap: 20px;">
-                        <div id="coin-btn-heads" class="dice-bet-box color-bet-btn" onclick="placeCoinBet('heads')">
+                        <div id="coin-btn-heads" class="dice-bet-box color-bet-btn" onclick="placeCoinBet('heads')" style="width:300px;">
                             <div class="bet-badge pixel-text hidden" id="badge-heads">0</div><div class="color-payout-overlay hidden" id="payout-heads"></div>
                             <div class="dice-bet-title pixel-text" style="color:var(--accent-glow-2);">HEADS</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
                         </div>
-                        <div id="coin-btn-tails" class="dice-bet-box color-bet-btn" onclick="placeCoinBet('tails')">
+                        <div id="coin-btn-tails" class="dice-bet-box color-bet-btn" onclick="placeCoinBet('tails')" style="width:300px;">
                             <div class="bet-badge pixel-text hidden" id="badge-tails">0</div><div class="color-payout-overlay hidden" id="payout-tails"></div>
                             <div class="dice-bet-title pixel-text" style="color:#ea580c;">TAILS</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
                         </div>
@@ -536,7 +550,7 @@
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">FLIP HISTORY</div>
-                    <div id="coin-history" style="flex: 1; padding: 10px; overflow-y: auto; text-align:center; display:flex; flex-direction:column; gap:5px;" class="pixel-text custom-scroll"></div>
+                    <div id="coin-history" style="flex: 1; padding: 5px; overflow-y: auto; text-align:center; display:flex; flex-direction:column; gap:2px;" class="pixel-text custom-scroll"></div>
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
@@ -569,7 +583,7 @@
                 <div style="padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6);">
                     <div style="display:flex; justify-content: center; margin-bottom: 10px;">
                         <select id="color-master-bet" class="retro-input pixel-text" style="max-width: 300px; font-size: 28px;">
-                            <option value="0" selected>0</option><option value="1000">1,000</option><option value="5000">5,000</option>
+                            <option value="1000" selected>1,000</option><option value="5000">5,000</option>
                             <option value="20000">20,000</option><option value="50000">50,000</option>
                         </select>
                     </div>
@@ -603,7 +617,7 @@
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">ROLL HISTORY</div>
-                    <div id="color-history" style="flex: 1; padding: 10px; overflow-y: auto; text-align:center; display:flex; flex-direction:column; gap:5px;" class="pixel-text custom-scroll"></div>
+                    <div id="color-history" style="flex: 1; padding: 5px; overflow-y: auto; text-align:center; display:flex; flex-direction:column; gap:2px;" class="pixel-text custom-scroll"></div>
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
@@ -628,7 +642,8 @@
         let rewardTimerInt = null; let actionLocked = false; window.lastBetAmount = 0; let pendingBankAction = null; 
         let rewardCooldownSeconds = 0;
 
-        let myDiceBet = 0; let myCoinBet = 0; 
+        let myDiceBets = { under: 0, seven: 0, over: 0 }; 
+        let myCoinBets = { heads: 0, tails: 0 }; 
         let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
         let isBetting = false;
 
@@ -638,7 +653,7 @@
         function playSfx(id) { if(audioNodes[id] && audioNodes[id].volume > 0) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } }
 
         // --- GLOBAL MENU LOGIC ---
-        function showModal(id) { if(!currentUser && id !== 'how-to-play-modal' && id !== 'tos-modal') return; const el = document.getElementById(id); if(el) el.classList.remove('hidden'); }
+        function showSpecificModal(id) { if(!currentUser && id !== 'how-to-play-modal' && id !== 'tos-modal') return; const el = document.getElementById(id); if(el) el.classList.remove('hidden'); }
         function hideModal(id) { const el = document.getElementById(id); if(el) el.classList.add('hidden'); }
         function togglePlayerList(id) { const list = document.getElementById(id); if(list) list.classList.toggle('hidden'); }
         function toggleAuth(panel) { if(panel === 'login') { document.getElementById('panel-signup').classList.add('hidden'); document.getElementById('panel-login').classList.remove('hidden'); } else { document.getElementById('panel-login').classList.add('hidden'); document.getElementById('panel-signup').classList.remove('hidden'); } }
@@ -689,7 +704,7 @@
         window.actSitDown = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
         window.actPlaceBet = function(idx) { 
             if(actionLocked) return; const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value.replace(/,/g, '')) : 0;
-            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount."); if (amt > 50000) return alert("Maximum bet is 50,000 credits."); if (amt > currentUser.credits) return alert("Insufficient credits!");
+            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount."); if (amt > 50000) return alert("Maximum initial bet is 50,000 credits."); if (amt > currentUser.credits) return alert("Insufficient credits!");
             actionLocked = true; window.lastBetAmount = amt; socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet');
         }
         window.actEjectSeat = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
@@ -771,8 +786,8 @@
 
                     if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
                         if (seatData.hands[0].bet === 0) {
-                            let startBet = window.lastBetAmount || 0; let opts = [1000, 5000, 20000, 50000]; if(!opts.includes(startBet) && startBet !== 0) startBet = 0;
-                            let optHTML = `<option value="0" ${startBet === 0 ? 'selected' : ''}>0</option>`; optHTML += opts.map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
+                            let startBet = window.lastBetAmount || 0; let opts = [1000, 5000, 20000, 50000]; if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
+                            let optHTML = `<option value="1000" ${startBet === 1000 || startBet === 0 ? 'selected' : ''}>1,000</option>`; optHTML += [5000, 20000, 50000].map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
                             html += `<div class="seat-bet-box"><div style="display: flex; gap: 8px;"><select id="inseat-bet-${index}" class="pixel-text" style="flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;">${optHTML}</select><button class="s-btn btn-bet pixel-text" style="font-size: 24px; padding: 6px 12px;" onclick="actPlaceBet(${index})">BET</button></div></div><div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
                         }
                     } else if (isMySeat && state.status === 'waiting') { html += `<div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`; }
@@ -825,8 +840,8 @@
         });
 
         // --- ARCADE UTILS ---
-        function lockBets(game) { document.querySelectorAll(`.${game}-bet-btn`).forEach(b => { b.disabled = true; b.classList.add('locked'); if(b.tagName === 'BUTTON') b.innerText = 'LOCKED'; }); }
-        function unlockBets(game) { document.querySelectorAll(`.${game}-bet-btn`).forEach(b => { b.disabled = false; b.classList.remove('locked'); if(b.tagName === 'BUTTON') b.innerText = b.dataset.originalText || 'BET'; }); }
+        function lockBets(game) { document.querySelectorAll(`.${game}-bet-btn`).forEach(b => { b.classList.add('locked'); }); }
+        function unlockBets(game) { document.querySelectorAll(`.${game}-bet-btn`).forEach(b => { b.classList.remove('locked'); }); }
         function showPayoutAnim(choiceId, amount, isWin) {
             const c = document.getElementById(`payout-${choiceId}`); if(!c) return;
             c.innerHTML = `<span style="color:${isWin?'var(--success)':'var(--danger)'}">${isWin ? '+' : ''}${formatNumber(amount)}</span>`;
@@ -842,27 +857,33 @@
             if(data.history) document.getElementById('dice-history').innerHTML = data.history.map(n => `<div class="history-list-item"><span style="color:${n[0]+n[1]===7?'#a855f7':(n[0]+n[1]<7?'var(--accent-glow-2)':'var(--success)')}">${diceFaces[n[0]-1]} ${diceFaces[n[1]-1]} = ${n[0]+n[1]}</span></div>`).join('');
 
             if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; d1.classList.remove('shake'); d2.classList.remove('shake'); unlockBets('dice'); myDiceBet = 0; clearInterval(diceInterval);
+                statusText.innerText = "PLACE YOUR BETS"; d1.classList.remove('shake'); d2.classList.remove('shake'); unlockBets('dice'); myDiceBets = { under: 0, seven: 0, over: 0 }; clearInterval(diceInterval);
+                document.querySelectorAll('.bet-badge').forEach(b => b.classList.add('hidden'));
                 diceInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(diceInterval); }, 1000);
             } 
             else if (data.status === 'rolling') { lockBets('dice'); statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); playSfx('deal'); } 
             else if (data.status === 'resolving') {
                 d1.classList.remove('shake'); d2.classList.remove('shake'); d1.innerText = diceFaces[data.dice[0]-1]; d2.innerText = diceFaces[data.dice[1]-1]; statusText.innerText = `RESULT: ${data.total}`;
-                if (myDiceBet > 0) {
-                    let myWin = data.winners.find(w => w.username === currentUser.username);
-                    let betChoice = data.bets.find(b => b.username === currentUser.username).choice;
-                    if (myWin) { timerText.innerText = `YOU WON ${formatNumber(myWin.amount)}!`; playSfx('win'); showPayoutAnim(betChoice, myWin.amount, true); } 
-                    else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); showPayoutAnim(betChoice, 0, false); }
+                
+                let totalDiceBet = Object.values(myDiceBets).reduce((a,b)=>a+b, 0);
+                if (totalDiceBet > 0) {
+                    let myWins = data.winners.filter(w => w.username === currentUser.username);
+                    if (myWins.length > 0) { 
+                        let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
+                        timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
+                        myWins.forEach(w => showPayoutAnim(w.choice, w.amount, true));
+                    } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
+                    ['under', 'seven', 'over'].forEach(c => { if(myDiceBets[c] > 0 && !myWins.find(w=>w.choice===c)) showPayoutAnim(c, 0, false); });
                 }
             }
         });
         
         window.placeDiceBet = function(choice) {
-            if(isBetting) return; const btn = document.querySelector(`.dice-bet-btn[onclick="placeDiceBet('${choice}')"]`); if(btn && btn.classList.contains('locked')) return;
+            if(isBetting) return; const btn = document.getElementById(`dice-btn-${choice}`); if(btn && btn.classList.contains('locked')) return;
             const amt = parseInt(document.getElementById(`dice-master-bet`).value);
             if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-            if (amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            isBetting = true; socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt }); myDiceBet = amt; setTimeout(()=>{ isBetting = false; }, 750);
+            if (myDiceBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
+            isBetting = true; myDiceBets[choice] += amt; socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt }); setTimeout(()=>{ isBetting = false; }, 750);
         };
 
         // --- GLOBAL COIN FLIP LOGIC ---
@@ -872,26 +893,32 @@
             if(data.history) { document.getElementById('coin-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${r==='heads'?'var(--accent-glow-2)':'#ea580c'}">${r.toUpperCase()}</span></div>`).join(''); }
 
             if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; coinVis.classList.remove('flipping'); coinVis.innerText = '?'; unlockBets('coin'); myCoinBet = 0; clearInterval(coinInterval);
+                statusText.innerText = "PLACE YOUR BETS"; coinVis.classList.remove('flipping'); coinVis.innerText = '?'; unlockBets('coin'); myCoinBets = { heads: 0, tails: 0 }; clearInterval(coinInterval);
+                document.querySelectorAll('.bet-badge').forEach(b => b.classList.add('hidden'));
                 coinInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(coinInterval); }, 1000);
             }
             else if (data.status === 'flipping') { lockBets('coin'); statusText.innerText = "FLIPPING..."; timerText.innerText = "NO MORE BETS"; coinVis.classList.add('flipping'); playSfx('deal'); }
             else if (data.status === 'resolving') {
                 coinVis.classList.remove('flipping'); coinVis.innerText = data.result === 'heads' ? 'H' : 'T'; statusText.innerText = `RESULT: ${data.result.toUpperCase()}`;
-                if (myCoinBet > 0) {
-                    let myWin = data.winners.find(w => w.username === currentUser.username);
-                    let betChoice = data.bets.find(b => b.username === currentUser.username).choice;
-                    if (myWin) { timerText.innerText = `YOU WON ${formatNumber(myWin.amount)}!`; playSfx('win'); showPayoutAnim(betChoice, myWin.amount, true); } 
-                    else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); showPayoutAnim(betChoice, 0, false); }
+                
+                let totalCoinBet = Object.values(myCoinBets).reduce((a,b)=>a+b, 0);
+                if (totalCoinBet > 0) {
+                    let myWins = data.winners.filter(w => w.username === currentUser.username);
+                    if (myWins.length > 0) { 
+                        let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
+                        timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
+                        myWins.forEach(w => showPayoutAnim(w.choice, w.amount, true));
+                    } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
+                    ['heads', 'tails'].forEach(c => { if(myCoinBets[c] > 0 && !myWins.find(w=>w.choice===c)) showPayoutAnim(c, 0, false); });
                 }
             }
         });
         window.placeCoinBet = function(choice) {
-            if(isBetting) return; const btn = document.querySelector(`.coin-bet-btn[onclick="placeCoinBet('${choice}')"]`); if(btn && btn.classList.contains('locked')) return;
+            if(isBetting) return; const btn = document.getElementById(`coin-btn-${choice}`); if(btn && btn.classList.contains('locked')) return;
             const amt = parseInt(document.getElementById(`coin-master-bet`).value);
             if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-            if (amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            isBetting = true; socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); myCoinBet = amt; setTimeout(()=>{ isBetting = false; }, 750);
+            if (myCoinBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
+            isBetting = true; myCoinBets[choice] += amt; socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); setTimeout(()=>{ isBetting = false; }, 750);
         };
 
         // --- CLASSIC COLOR GAME LOGIC ---
@@ -928,46 +955,26 @@
                             timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
                             myWins.forEach(w => showPayoutAnim(w.choice, w.amount, true));
                         } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
-                        
-                        // Show loss for lost bets
-                        ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => {
-                            if(myColorBets[c] > 0 && !myWins.find(w=>w.choice===c)) showPayoutAnim(c, 0, false);
-                        });
+                        ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { if(myColorBets[c] > 0 && !myWins.find(w=>w.choice===c)) showPayoutAnim(c, 0, false); });
                     }
                 }, 600);
             }
         });
-
-        socket.on('arcade_bet_placed', (data) => { 
-            if(data.game==='dice') { 
-                const btn = document.querySelector(`.dice-bet-btn[onclick="placeDiceBet('${data.choice}')"]`);
-                if(btn) { btn.disabled = true; btn.classList.add('locked'); btn.innerText = 'LOCKED'; }
-            } 
-            else if(data.game==='coin') { 
-                const btn = document.querySelector(`.coin-bet-btn[onclick="placeCoinBet('${data.choice}')"]`);
-                if(btn) { btn.disabled = true; btn.classList.add('locked'); btn.innerText = 'LOCKED'; }
-            } 
-            else if(data.game==='color') { 
-                const badge = document.getElementById(`badge-${data.choice}`); 
-                badge.innerText = formatNumber(data.totalChoiceBet); 
-                badge.classList.remove('hidden');
-                if(data.totalChoiceBet >= 50000) {
-                    const box = document.getElementById(`color-btn-${data.choice}`);
-                    if(box) box.classList.add('locked');
-                }
-            } 
-            currentUser.credits = data.credits; updateAllCredits(); playSfx('bet'); 
-        });
-        socket.on('arcade_error', (msg) => { alert(msg); isBetting = false; });
-
         window.placeColorBet = function(choice) {
             if(isBetting) return; const btn = document.getElementById(`color-btn-${choice}`); if(btn && btn.classList.contains('locked')) return;
             const amt = parseInt(document.getElementById(`color-master-bet`).value);
             if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-            if (myColorBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); 
-            if (amt > currentUser.credits) return alert("Insufficient credits!");
+            if (myColorBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
             isBetting = true; myColorBets[choice] += amt; socket.emit('place_color_bet', { username: currentUser.username, choice, amount: amt }); setTimeout(()=>{ isBetting = false; }, 750);
         };
+
+        socket.on('arcade_bet_placed', (data) => { 
+            const badge = document.getElementById(`badge-${data.choice}`); 
+            if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); badge.classList.remove('hidden'); }
+            if(data.totalChoiceBet >= 50000) { let prefix = data.game === 'dice' ? 'dice-btn' : (data.game === 'coin' ? 'coin-btn' : 'color-btn'); const box = document.getElementById(`${prefix}-${data.choice}`); if(box) box.classList.add('locked'); }
+            currentUser.credits = data.credits; updateAllCredits(); playSfx('bet'); 
+        });
+        socket.on('arcade_error', (msg) => { alert(msg); isBetting = false; });
 
         function getColorHex(c) {
             if(c==='red') return '#ef4444'; if(c==='blue') return '#3b82f6'; if(c==='yellow') return '#eab308';
@@ -991,10 +998,9 @@
             if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
         });
 
-        // Initialize original text tracking for buttons
-        document.querySelectorAll('.wood-btn, .color-bet-btn').forEach(b => { if(b.innerText.includes('BET')) b.dataset.originalText = b.innerText; });
-
-        // SHOW MODAL FIX
+        // --- UI MENUS ---
+        function showProfile() { if(!currentUser) return; document.getElementById('profile-username-preview').innerText = currentUser.username; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showModal('profile-modal'); }
+        function showBank() { if(!currentUser) return; document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showModal('bank-modal'); }
         function openProfileLedger() { if(!currentUser) return; hideModal('profile-modal'); showModal('profile-ledger-modal'); loadLedger(false); }
         function openBankLedger() { if(!currentUser) return; hideModal('bank-modal'); showModal('bank-ledger-modal'); loadLedger(true); }
         
@@ -1014,57 +1020,65 @@
             });
         }
 
-        // BANKING FIX
+        // --- BANKING ---
         function showBankConfirm(type) {
-            const amtInput = document.getElementById('bank-amount').value.replace(/,/g, '');
-            const amt = parseInt(amtInput);
+            const amtInput = document.getElementById('bank-amount').value.replace(/,/g, ''); const amt = parseInt(amtInput);
             if(isNaN(amt) || amt <= 0) return alert("Enter a valid amount.");
             if (type === 'deposit' && (amt < 10000 || amt > 100000)) return alert("Deposit must be between 10,000 and 100,000.");
             if (type === 'withdrawal' && (amt < 50000 || amt > 100000)) return alert("Withdrawal must be between 50,000 and 100,000.");
             if (type === 'withdrawal' && amt > currentUser.credits) return alert("Insufficient funds.");
-            
-            pendingBankAction = { type, amount: amt }; 
-            document.getElementById('confirm-bank-type').innerText = type.toUpperCase(); 
-            document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
-            
+            pendingBankAction = { type, amount: amt }; document.getElementById('confirm-bank-type').innerText = type.toUpperCase(); document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
             document.getElementById('bank-confirm-msg').innerText = '';
-            document.getElementById('bank-confirm-btn-row').innerHTML = `
-                <button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button>
-                <button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>
-            `;
-
+            document.getElementById('bank-confirm-btn-row').innerHTML = `<button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button><button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>`;
             hideModal('bank-modal'); showModal('bank-confirm-modal');
         }
 
         async function executeBankRequest() {
-            if(!pendingBankAction) return; 
-            const { type, amount } = pendingBankAction;
-            
-            const btnRow = document.getElementById('bank-confirm-btn-row');
-            const statusMsg = document.getElementById('bank-confirm-msg');
-            
+            if(!pendingBankAction) return; const { type, amount } = pendingBankAction;
+            const btnRow = document.getElementById('bank-confirm-btn-row'); const statusMsg = document.getElementById('bank-confirm-msg');
             statusMsg.style.color = "#fff"; statusMsg.innerText = "SENDING REQUEST...";
-
             const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount}) });
-            
-            if(res.ok) { 
-                statusMsg.style.color = "var(--success)"; statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; 
-                document.getElementById('bank-amount').value=''; playSfx('deal'); 
-                btnRow.innerHTML = `<button class="wood-btn pixel-text" style="width:100%; background: #475569;" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">BACK TO BANK</button>`;
-            }
+            if(res.ok) { statusMsg.style.color = "var(--success)"; statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; document.getElementById('bank-amount').value=''; playSfx('deal'); btnRow.innerHTML = `<button class="wood-btn pixel-text" style="width:100%; background: #475569;" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">BACK TO BANK</button>`; }
             else { const d = await res.json(); statusMsg.style.color = "var(--danger)"; statusMsg.innerText = d.error; }
             pendingBankAction = null;
         }
 
         async function redeemCodeMain() {
-            if(!currentUser) return;
-            const code = document.getElementById('gift-code-main').value; const msgBox = document.getElementById('redeem-msg');
-            if(!code) return;
-            const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
+            if(!currentUser) return; const code = document.getElementById('gift-code-main').value; const msgBox = document.getElementById('redeem-msg');
+            if(!code) return; const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
             if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; updateAllCredits(); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code-main').value=''; playSfx('win'); }
             else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
             setTimeout(()=> msgBox.innerText='', 3000);
         }
+        
+        function updateRewardTimerUI() {
+            if (rewardCooldownSeconds <= 0) { clearInterval(rewardTimerInt); showRewards(); return; }
+            let h = Math.floor(rewardCooldownSeconds / 3600); let m = Math.floor((rewardCooldownSeconds % 3600) / 60); let s = rewardCooldownSeconds % 60;
+            const tEl = document.getElementById('reward-timer'); if(tEl) tEl.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
+        function startRewardTimer() { clearInterval(rewardTimerInt); updateRewardTimerUI(); rewardTimerInt = setInterval(() => { rewardCooldownSeconds--; updateRewardTimerUI(); }, 1000); }
+        function showRewards() {
+            if(!currentUser) return; showModal('reward-modal'); document.getElementById('reward-msg').innerText = ''; document.querySelectorAll('.reward-box').forEach(b => b.classList.remove('open')); isPickingReward = false;
+            if (rewardCooldownSeconds <= 0) { document.getElementById('reward-active-view').classList.remove('hidden'); document.getElementById('reward-cooldown-view').classList.add('hidden'); } 
+            else { document.getElementById('reward-active-view').classList.add('hidden'); document.getElementById('reward-cooldown-view').classList.remove('hidden'); startRewardTimer(); }
+        }
+
+        let isPickingReward = false;
+        function pickRewardBox(index) { if(isPickingReward) return; isPickingReward = true; socket.emit('claim_daily_reward_box', { username: currentUser.username, boxIndex: index }); }
+        socket.on('reward_box_opened', (data) => {
+            isPickingReward = false; 
+            if(data.success) {
+                data.allPrizes.forEach((prize, i) => {
+                    const backEl = document.getElementById(`box-val-${i}`); backEl.innerHTML = prize > 0 ? `+${formatNumber(prize)} <span class="coin-icon">🪙</span>` : 'EMPTY';
+                    if(prize === 0) backEl.classList.add('zero'); else backEl.classList.remove('zero'); setTimeout(() => document.querySelectorAll('.reward-box')[i].classList.add('open'), i * 100);
+                });
+                currentUser.credits = data.credits; updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; startRewardTimer();
+                const msg = document.getElementById('reward-msg');
+                if (data.wonAmount > 0) { msg.style.color = "var(--success)"; msg.innerText = `YOU WON ${formatNumber(data.wonAmount)} CREDITS!`; playSfx('win'); }
+                else { msg.style.color = "var(--danger)"; msg.innerText = "BETTER LUCK NEXT TIME!"; playSfx('lose');}
+                setTimeout(() => { showRewards(); }, 4000); 
+            } else { alert(data.message); showRewards(); }
+        });
 
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', function(e) {
