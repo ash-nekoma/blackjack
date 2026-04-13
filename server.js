@@ -34,6 +34,7 @@ const User = mongoose.model('User', new mongoose.Schema({
     password: { type: String, required: true },
     credits: { type: Number, default: 0 },
     status: { type: String, default: 'pending' }, 
+    nameColor: { type: String, default: '#f8fafc' },
     ipAddress: String, tosAccepted: Boolean,
     lastRewardClaim: { type: Date, default: null },
     createdAt: { type: Date, default: Date.now }
@@ -69,6 +70,7 @@ function createRoom(numSeats) {
 
 const socketUserMap = {}; 
 
+// 7-SECOND KICK TIMER LOOP
 setInterval(() => {
     const now = Date.now();
     Object.keys(rooms).forEach(roomId => {
@@ -428,8 +430,11 @@ io.on('connection', (socket) => {
                 }
                 await user.save();
                 
-                const nextClaim = new Date(now.getTime() + (24 * 60 * 60 * 1000));
-                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, cooldownSeconds: 86400 });
+                const nextClaim = new Date(now.getTime() + msIn24Hours);
+                const msLeft = nextClaim.getTime() - now.getTime();
+                const cooldownSeconds = Math.floor(msLeft / 1000);
+                
+                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, cooldownSeconds });
                 
                 Object.keys(rooms).forEach(rId => {
                     const seat = rooms[rId].seats.find(s => s && s.username === username); 
