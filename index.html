@@ -51,10 +51,10 @@
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.7; }
 
         /* CLEAN INFO BOXES */
-        .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 15px; text-align: left; font-size: 22px; color: #cbd5e1; line-height: 1.3; margin-bottom: 15px; max-height: 180px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
-        .info-box strong { color: var(--warning); font-size: 26px; display: block; margin-bottom: 5px; border-bottom: 1px dashed #333; padding-bottom: 5px;}
-        .info-box ul { padding-left: 20px; margin-top: 5px;}
-        .info-box li { margin-bottom: 8px;}
+        .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
+        .info-box strong { color: var(--warning); font-size: 28px; display: block; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px;}
+        .info-box ul { padding-left: 25px; margin-top: 10px;}
+        .info-box li { margin-bottom: 10px;}
 
         .tab-buttons { display: flex; border-bottom: 2px solid var(--border-std); margin-bottom: 15px; flex-shrink: 0;}
         .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-size: 22px; cursor: pointer; font-family: 'VT323'; letter-spacing: 1px;}
@@ -102,9 +102,9 @@
         .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none; font-family: 'VT323';}
         .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold; font-family: 'VT323';}
 
-        .table-surface { flex: 1; width: 100%; height: 100%; position: relative; background: transparent; border: none; }
+        .table-surface { flex: 1; display: flex; flex-direction: column; width: 100%; position: relative; }
         
-        /* DEAD CENTER DEALER (ELEVATED TO TOP) */
+        /* DEAD CENTER DEALER (ELEVATED) */
         .banker-station { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; width: 100%;}
         
         /* TIMERS PERFECTLY CENTERED DYNAMIC STACK */
@@ -126,13 +126,14 @@
         .turn-bar-container { width: 100%; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
         .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
 
+        /* PLAYER PLATE */
         .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
         .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
 
         /* MARIO COIN COLLECT / LOSE ANIMATIONS */
         @keyframes coinCollect {
             0% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;}
-            50% { transform: translateY(-15px) scale(1.3); color: #fff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24; }
+            50% { transform: translateY(-20px) scale(1.2); color: #fff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24; }
             100% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;}
         }
         @keyframes loseDrop {
@@ -143,13 +144,15 @@
         .anim-win { animation: coinCollect 0.8s ease-out forwards; }
         .anim-lose { animation: loseDrop 0.8s ease-out forwards; }
 
-        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
+        /* BET TEXT (Dynamically spaced to prevent overlaps) */
+        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 6px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
 
+        /* REDESIGNED DROPDOWN BETTING UI */
         .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
         .seat-bet-box select { flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none; font-family: 'VT323', monospace; letter-spacing: 1px;}
         
         .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; font-family: 'VT323', monospace; letter-spacing: 1px; font-size: 20px;}
-        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 12px;}
+        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 16px;}
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
         .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; box-sizing: border-box;}
@@ -158,11 +161,13 @@
         .btn-double { background: var(--accent-glow-2); color: #fff; font-size: 18px; padding: 6px;}
         .btn-split { background: var(--accent-glow); color: #fff; font-size: 18px; padding: 6px;}
         
+        /* STAND UP BUTTON */
         .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323';}
         .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
-        .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 88px;}
-        .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; min-height: 88px;}
+        /* NATIVE CSS CARDS (GUARANTEED TO RENDER WITH BUFFER SPACE FOR PILL ANIMATIONS) */
+        .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 120px; width: 100%; margin-bottom: 12px;}
+        .hand-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative; min-height: 120px;}
         .hand-container { position: relative; display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px;}
         
         .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; margin-left: -35px; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; flex-shrink: 0; z-index: 2;}
@@ -222,15 +227,7 @@
                 <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME">
                 <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD">
                 
-                <div class="info-box custom-scroll">
-                    <strong class="info-title">SYSTEM TERMS OF SERVICE</strong>
-                    By requesting access to Neon Royale, you agree to the Fair Play Policy:
-                    <ul>
-                        <li>Maximum of ONE active seat per room.</li>
-                        <li>Using macros or alt-accounts to farm rewards is strictly prohibited and results in an IP Ban.</li>
-                        <li>All accounts require manual Admin approval.</li>
-                    </ul>
-                </div>
+                <div class="clear-text pixel-text" style="color: var(--warning); cursor: pointer; text-decoration: underline; margin: 15px 0; font-size: 22px;" onclick="showModal('tos-modal')">READ SYSTEM TERMS</div>
 
                 <label class="pixel-text" style="font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
                     <input type="checkbox" id="tos-checkbox" style="width: 24px; height: 24px; margin:0;"> I ACCEPT THE TERMS
@@ -318,14 +315,58 @@
             </div>
         </div>
 
+        <div id="tos-modal" class="overlay-menu hidden" style="z-index: 400;">
+            <div class="modal-box custom-scroll" style="width: 600px;">
+                <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 20px; font-size: 40px;">TERMS OF SERVICE</h2>
+                <div class="info-box custom-scroll">
+                    By requesting access to Neon Royale, you agree to the Fair Play Policy:<br><br>
+                    - Maximum of ONE active seat per room.<br>
+                    - Using macros or alt-accounts to farm rewards is strictly prohibited and results in an IP Ban.<br>
+                    - All accounts require manual Admin approval.
+                </div>
+                <div style="display: flex; justify-content: center; margin-top: 15px;">
+                    <button class="wood-btn" style="background: var(--success); width: 100%; color:#000;" onclick="hideModal('tos-modal')">I UNDERSTAND</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="bank-rules-modal" class="overlay-menu hidden" style="z-index: 400;">
+            <div class="modal-box custom-scroll" style="width: 600px;">
+                <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 20px; font-size: 40px;">BANK RULES</h2>
+                <div class="info-box custom-scroll">
+                    <ul>
+                        <li>All deposit and withdrawal requests pend Admin review.</li>
+                        <li>Min deposit: 10,000. Min withdrawal: 50,000.</li>
+                        <li>Max limit per transaction is 100,000 credits.</li>
+                        <li>Gift Codes bypass review and are credited instantly.</li>
+                    </ul>
+                </div>
+                <div style="display: flex; justify-content: center; margin-top: 15px;">
+                    <button class="wood-btn" style="background: var(--success); width: 100%; color:#000;" onclick="hideModal('bank-rules-modal')">I UNDERSTAND</button>
+                </div>
+            </div>
+        </div>
+
         <div id="profile-modal" class="overlay-menu hidden">
-            <div class="modal-box custom-scroll" style="width: 500px;">
+            <div class="modal-box custom-scroll" style="width: 750px;">
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 50px;">PLAYER DOSSIER</h2>
                 
                 <div style="background: #000; border: 2px solid var(--border-std); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                     <div class="profile-preview pixel-text" id="profile-username-preview" style="color: #fff;">USERNAME</div>
-                    <div class="pixel-text" style="font-size: 24px; color: #94a3b8; margin-bottom: 15px;">JOIN DATE: <span id="profile-date" style="color:#fff;"></span></div>
-                    <div class="profile-credits pixel-text" style="margin-bottom: 0; font-size: 48px;">BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
+                    
+                    <div style="display: flex; justify-content: space-around; margin: 15px 0; border-top: 1px dashed #333; border-bottom: 1px dashed #333; padding: 10px 0;">
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8;">STATUS: <br><span id="profile-status" style="color:var(--success); text-transform:uppercase; font-size: 28px;">ACTIVE</span></div>
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8;">JOIN DATE: <br><span id="profile-date" style="color:#fff; font-size: 28px;">MM/DD/YYYY</span></div>
+                    </div>
+
+                    <div class="profile-credits pixel-text" style="margin-bottom: 15px; font-size: 36px;">TOTAL BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #0f172a; padding: 15px; border-radius: 6px; border: 1px solid #334155;">
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">🏆 BIGGEST WIN: <span style="color:#fbbf24; float: right;">[ SYNCING ]</span></div>
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">🃏 HANDS PLAYED: <span style="color:#fbbf24; float: right;">[ SYNCING ]</span></div>
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">📈 WIN RATE: <span style="color:#fbbf24; float: right;">[ SYNCING ]</span></div>
+                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">🌟 VIP TIER: <span style="color:#fbbf24; float: right;">BRONZE</span></div>
+                    </div>
                 </div>
 
                 <button class="wood-btn pixel-text" style="background: #475569;" onclick="toggleLedger()">VIEW TRANSACTION LEDGER</button>
@@ -373,15 +414,7 @@
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 5px; font-size: 50px;">SYSTEM BANKING</h2>
                 <div class="pixel-text" style="font-size: 28px; margin-bottom: 20px;">CURRENT BALANCE: <span class="coin-icon">🪙</span> <span id="bank-balance-display" style="font-size: 40px;">0</span></div>
                 
-                <div class="info-box custom-scroll">
-                    <strong class="info-title">BANK RULES</strong>
-                    <ul>
-                        <li>All deposit and withdrawal requests pend Admin review.</li>
-                        <li>Min deposit: 10,000. Min withdrawal: 50,000.</li>
-                        <li>Max limit per transaction is 100,000 credits.</li>
-                        <li>Gift Codes bypass review and are credited instantly.</li>
-                    </ul>
-                </div>
+                <button class="wood-btn pixel-text" style="background: #334155; font-size: 20px; padding: 6px; margin-bottom: 15px;" onclick="showModal('bank-rules-modal')">VIEW BANK RULES</button>
 
                 <div class="input-group">
                     <input type="number" id="bank-amount" class="retro-input pixel-text" placeholder="ENTER AMOUNT">
@@ -425,7 +458,7 @@
                     <span id="confirm-bank-type"></span>: <span style="color: var(--success);"><span class="coin-icon">🪙</span> <span id="confirm-bank-amt"></span></span>
                 </div>
                 
-                <div class="info-box" style="margin: 20px 0; text-align: center;">
+                <div class="info-box" style="margin: 20px 0; text-align: center; border: none; background: transparent; box-shadow: none;">
                     <p style="margin-bottom: 10px; color: #fff;">Please notify Admin to process your request:</p>
                     <div style="display: flex; justify-content: center; align-items: center; gap: 20px; font-size: 18px; color: var(--accent-glow-2); font-weight: bold;">
                         <span style="display: flex; align-items: center;">
@@ -531,8 +564,7 @@
         let rewardTimerInt = null; 
         
         let actionLocked = false; 
-        window.lastBetAmount = 0; 
-        let pendingBankAction = null; // Stores Deposit/Withdraw info for Confirm Modal
+        let pendingBankAction = null; 
 
         // VOLUME ENGINE
         const audioNodes = { bgm: document.getElementById('sfx-bgm'), deal: document.getElementById('sfx-deal'), bet: document.getElementById('sfx-bet'), win: document.getElementById('sfx-win'), lose: document.getElementById('sfx-lose') };
@@ -566,7 +598,6 @@
             else { document.getElementById('panel-login').classList.add('hidden'); document.getElementById('panel-signup').classList.remove('hidden'); }
         }
 
-        // TIMEZONE-PROOF DAILY REWARD TIMER
         let rewardCooldownSeconds = 0;
         function startRewardTimer() {
             clearInterval(rewardTimerInt);
@@ -589,6 +620,7 @@
                 document.getElementById('profile-username-preview').innerText = currentUser.username;
                 let dateStr = new Date(data.createdAt).toLocaleDateString();
                 document.getElementById('profile-date').innerText = dateStr;
+                document.getElementById('profile-status').innerText = data.status;
 
                 playSfx('deal');
             } else document.getElementById('login-error').innerText = data.error;
@@ -626,14 +658,13 @@
                 let displayAmt = Math.abs(tx.amount);
                 let prefix = '';
 
-                // SMART LEDGER LOGIC
                 if (tx.type.includes('BANK')) {
                     let isWithdrawal = tx.type.includes('WITHDRAWAL');
                     prefix = isWithdrawal ? '-' : '+';
                     
-                    if (tx.status === 'pending') amtColor = '#94a3b8'; // Grey out if pending
+                    if (tx.status === 'pending') amtColor = '#94a3b8'; 
                     else if (tx.status === 'completed') amtColor = isWithdrawal ? 'var(--danger)' : 'var(--success)';
-                    else amtColor = 'var(--danger)'; // Denied
+                    else amtColor = 'var(--danger)'; 
                     
                     let stColor = tx.status === 'pending' ? '#fbbf24' : (tx.status === 'completed' ? '#10b981' : '#ef4444');
                     let displayStatus = tx.status === 'completed' ? 'APPROVED' : tx.status;
@@ -650,7 +681,6 @@
             });
         }
 
-        // BANKING CONFIRMATION SYSTEM
         function showBankConfirm(type) {
             const amtStr = document.getElementById('bank-amount').value;
             const amt = parseInt(amtStr.replace(/,/g, ''));
@@ -663,8 +693,7 @@
             document.getElementById('confirm-bank-type').innerText = type.toUpperCase();
             document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
             
-            hideModal('bank-modal');
-            showModal('bank-confirm-modal');
+            hideModal('bank-modal'); showModal('bank-confirm-modal');
         }
 
         async function executeBankRequest() {
@@ -673,8 +702,7 @@
             
             const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount}) });
             
-            hideModal('bank-confirm-modal');
-            showModal('bank-modal');
+            hideModal('bank-confirm-modal'); showModal('bank-modal');
             const msgBox = document.getElementById('bank-msg');
             
             if(res.ok) { msgBox.style.color = "var(--success)"; msgBox.innerText = "REQUEST SENT TO ADMIN."; document.getElementById('bank-amount').value=''; playSfx('deal'); }
@@ -687,7 +715,7 @@
         async function redeemCode() {
             const code = document.getElementById('gift-code').value; const msgBox = document.getElementById('bank-msg');
             const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
-            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; document.getElementById('hud-credits').innerText = formatNumber(currentUser.credits); document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code').value=''; playSfx('win');}
+            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; document.getElementById('hud-credits').innerText = formatNumber(currentUser.credits); document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code').value=''; playSfx('win'); loadLedger(true);}
             else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
             setTimeout(()=> msgBox.innerText='', 3000);
         }
@@ -708,58 +736,26 @@
         document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat(); });
         socket.on('receive_chat', data => { const msgs = document.getElementById('chat-messages'); msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; });
 
-        // BETTING LOGIC
-        window.actSitDown = function(idx) { 
-            if(actionLocked) return; actionLocked = true; 
-            socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); 
-        }
+        window.actSitDown = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
 
         window.actPlaceBet = function(idx) { 
             if(actionLocked) return;
             const selectEl = document.getElementById(`inseat-bet-${idx}`);
             const amt = selectEl ? parseInt(selectEl.value) : 0;
-            
             if (isNaN(amt) || amt < 1000) return alert("Minimum bet is 1,000 credits.");
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
-            actionLocked = true;
-            window.lastBetAmount = amt; // SAVE FOR NEXT ROUND
+            actionLocked = true; window.lastBetAmount = amt; 
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
             playSfx('bet');
         }
         
-        window.actEjectSeat = function(idx) { 
-            if(actionLocked) return; actionLocked = true; 
-            socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
-        }
-        
-        window.actHit = function(idx) { 
-            if(actionLocked) return; actionLocked = true; 
-            document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
-            socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
-        }
-        
-        window.actStand = function(idx) { 
-            if(actionLocked) return; actionLocked = true; 
-            document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
-            socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
-        }
-        
-        window.actDouble = function(idx) { 
-            if(actionLocked) return; actionLocked = true; 
-            document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
-            socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
-            playSfx('bet');
-        }
-        
-        window.actSplit = function(idx) { 
-            if(actionLocked) return; actionLocked = true; 
-            document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
-            socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
-            playSfx('bet');
-        }
+        window.actEjectSeat = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actHit = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actStand = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actDouble = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        window.actSplit = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
 
-        // CARDS RENDER ENGINE
         function formatCardHTML(c, isHidden) {
             if (isHidden) return `<div class="card dealer-hidden"></div>`;
             const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : 'black';
@@ -817,9 +813,7 @@
                  else { mySeatIndex = -1; }
             }
 
-            const totalSeats = state.seats.length;
-
-            for(let index=0; index<totalSeats; index++) {
+            for(let index=0; index<state.seats.length; index++) {
                 let seatData = state.seats[index];
                 let isMySeat = currentUser && seatData && seatData.username === currentUser.username;
                 let hasSeatAnywhere = state.seats.some(s => s && s.username === currentUser.username);
@@ -862,7 +856,7 @@
 
                         html += `</div>`; 
                         
-                        // MARIO COIN / LOSE ANIMATION INTEGRATION
+                        // BET DISPLAY W/ OVERLAP FIX
                         let handBet = hand.bet > 0 ? hand.bet : 0;
                         let betAnimClass = '';
 
@@ -881,7 +875,6 @@
                     });
                     html += `</div>`;
 
-                    // PLATE
                     html += `<div class="player-info-plate"><div class="player-name-text" style="color:${seatData.color}">${seatData.username}</div></div>`;
 
                     // BETTING UI
@@ -932,7 +925,7 @@
                     activeElements.push(seatDiv);
                 }
             }
-            layoutArc(activeElements, totalSeats);
+            layoutArc(activeElements, state.seats.length);
         }
 
         let turnTimerVisualInt = null;
@@ -992,7 +985,7 @@
             }
         }
 
-        // PERFECT FLEXBOX SEAT CENTERING
+        // PERFECT PERCENTAGE LAYOUT ENGINE
         function layoutArc(elements, totalSeats) {
             const seatsArea = document.getElementById('seats-area');
             seatsArea.innerHTML = ''; 
@@ -1054,7 +1047,6 @@
                 });
                 currentUser.credits = data.credits; document.getElementById('hud-credits').innerText = formatNumber(currentUser.credits); 
                 
-                // INSTANTLY START TIMER ON CLAIM
                 rewardCooldownSeconds = data.cooldownSeconds;
                 startRewardTimer();
 
@@ -1066,18 +1058,6 @@
             } else {
                 alert(data.message); showRewards();
             }
-        });
-    </script>
-    
-    <script>
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
-            if (e.key === 'F11' || e.keyCode === 122) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
-            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
         });
     </script>
 </body>
