@@ -82,7 +82,7 @@ setInterval(() => {
                 if (b.choice === 'seven' && total === 7) { won = true; payout = b.amount * 5; }
                 if (won) {
                     await User.updateOne({ username: b.username }, { $inc: { credits: payout } }); await new Transaction({ username: b.username, type: 'HIGH-LOW DICE', amount: payout }).save();
-                    winners.push({ username: b.username, amount: payout, net: payout - b.amount });
+                    winners.push({ username: b.username, choice: b.choice, amount: payout });
                 }
             }
             io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, dice: diceGame.dice, total, winners, bets: diceGame.bets, history: diceGame.history });
@@ -101,7 +101,7 @@ setInterval(() => {
                 if (b.choice === coinGame.result) {
                     const payout = b.amount * 2;
                     await User.updateOne({ username: b.username }, { $inc: { credits: payout } }); await new Transaction({ username: b.username, type: 'COIN FLIP', amount: payout }).save();
-                    winners.push({ username: b.username, amount: payout, net: payout - b.amount });
+                    winners.push({ username: b.username, choice: b.choice, amount: payout });
                 }
             }
             io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, result: coinGame.result, winners, bets: coinGame.bets, history: coinGame.history });
@@ -114,14 +114,14 @@ setInterval(() => {
         colorGame.status = 'rolling'; io.to('arcade_color').emit('color_state_update', { status: colorGame.status, timeLeft: 0, history: colorGame.history });
         setTimeout(async () => {
             colorGame.dice = [ PERYA_COLORS[Math.floor(Math.random() * 6)], PERYA_COLORS[Math.floor(Math.random() * 6)], PERYA_COLORS[Math.floor(Math.random() * 6)] ];
-            colorGame.status = 'resolving'; colorGame.history.unshift(colorGame.dice); if(colorGame.history.length > 5) colorGame.history.pop();
+            colorGame.status = 'resolving'; colorGame.history.unshift(colorGame.dice); if(colorGame.history.length > 6) colorGame.history.pop();
             let winners = [];
             for (let b of colorGame.bets) {
                 let matches = colorGame.dice.filter(c => c === b.choice).length;
                 if (matches > 0) {
                     const payout = b.amount + (b.amount * matches);
                     await User.updateOne({ username: b.username }, { $inc: { credits: payout } }); await new Transaction({ username: b.username, type: 'COLOR GAME', amount: payout }).save();
-                    winners.push({ username: b.username, amount: payout, net: payout - b.amount });
+                    winners.push({ username: b.username, choice: b.choice, amount: payout });
                 }
             }
             io.to('arcade_color').emit('color_state_update', { status: colorGame.status, dice: colorGame.dice, winners, bets: colorGame.bets, history: colorGame.history });
@@ -182,9 +182,7 @@ app.post('/api/login', async (req, res) => {
     const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); const msLeft = new Date(lastClaim.getTime() + 24 * 60 * 60 * 1000).getTime() - now.getTime();
     res.json({ username: user.username, credits: user.credits, status: user.status, createdAt: user.createdAt, cooldownSeconds: msLeft > 0 ? Math.floor(msLeft / 1000) : 0 });
 });
-app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
 
-// LIVE BANKING SYNC
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body; let txType = type === 'deposit' ? 'BANK DEPOSIT' : 'BANK WITHDRAWAL'; let currentCredits = undefined;
     if (type === 'deposit') { if (amount < 10000 || amount > 100000) return res.status(400).json({ error: 'Limits: 10k - 100k.' }); } 
@@ -207,6 +205,7 @@ app.get('/api/profile/ledger/:username', async (req, res) => { const txs = await
 
 // --- SOCKET LOGIC ---
 io.on('connection', (socket) => {
+    
     socket.on('enter_arcade', async ({ username, game }) => {
         const user = await User.findOne({ username }); if (!user) return;
         socket.join('arcade_' + game); socketUserMap[socket.id] = { username, arcadeGame: game, roomId: game };
@@ -238,7 +237,7 @@ io.on('connection', (socket) => {
         const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
         if (!user) return socket.emit('arcade_error', 'Insufficient credits');
         await new Transaction({ username, type: 'HIGH-LOW DICE', amount: -amount }).save();
-        diceGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits });
+        diceGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits, choice });
     });
 
     socket.on('get_coin_state', () => { socket.emit('coin_state_update', { status: coinGame.status, betEndTime: coinGame.betEndTime, history: coinGame.history }); });
@@ -247,7 +246,7 @@ io.on('connection', (socket) => {
         const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
         if (!user) return socket.emit('arcade_error', 'Insufficient credits');
         await new Transaction({ username, type: 'COIN FLIP', amount: -amount }).save();
-        coinGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'coin', credits: user.credits });
+        coinGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'coin', credits: user.credits, choice });
     });
 
     socket.on('get_color_state', () => { socket.emit('color_state_update', { status: colorGame.status, betEndTime: colorGame.betEndTime, history: colorGame.history }); });
@@ -256,7 +255,7 @@ io.on('connection', (socket) => {
         const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
         if (!user) return socket.emit('arcade_error', 'Insufficient credits');
         await new Transaction({ username, type: 'COLOR GAME', amount: -amount }).save();
-        colorGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits });
+        colorGame.bets.push({ username, choice, amount }); socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, amount });
     });
 
     // --- BLACKJACK SOCKETS ---
@@ -330,7 +329,6 @@ io.on('connection', (socket) => {
     });
 });
 
-// BLACKJACK RESOLUTION LOGIC
 function startGame(roomId) {
     let room = rooms[roomId]; if (!room) return; room.status = 'playing'; room.deck = getNewDeck(); room.dealerCards = []; room.seats = room.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
     for (let i = 0; i < 2; i++) { room.seats.forEach(seat => { if (seat) seat.hands[0].cards.push(room.deck.pop()); }); room.dealerCards.push(room.deck.pop()); }
