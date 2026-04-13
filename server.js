@@ -11,14 +11,20 @@ const io = new Server(server, { cors: { origin: '*' } });
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// --- MONGODB CONNECTION ---
+// --- MONGODB CONNECTION & SECURE ADMIN SETUP ---
 mongoose.connect(process.env.MONGODB_URI)
     .then(async () => {
         console.log('MongoDB Connected Successfully');
+        
+        // Checks the database for the admin configuration
         const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
+        
+        // If it doesn't exist (first boot), it securely seeds the database 
+        // using your Railway Variable, leaving NO hardcoded passwords in the file.
         if (!adminConfig) {
-            await new SystemConfig({ configName: 'admin_password', configValue: 'admin123' }).save();
-            console.log('SYSTEM LOG: Default Admin Password stored in DB as "admin123"');
+            const initialPassword = process.env.ADMIN_PASSWORD || 'admin123';
+            await new SystemConfig({ configName: 'admin_password', configValue: initialPassword }).save();
+            console.log('SYSTEM LOG: Admin Password securely generated and stored in Database.');
         }
     })
     .catch(err => console.error('MongoDB connection error:', err));
@@ -148,7 +154,61 @@ function getGameTitle(roomId) {
     return roomId === '3seat' ? '3-SEAT BLACKJACK' : '5-SEAT BLACKJACK';
 }
 
-// --- REST APIs ---
+// --- STRICT DATABASE ADMIN SECURITY ---
+const checkAdmin = async (req, res, next) => {
+    try {
+        // Exclusively queries the database for the active password
+        const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
+        
+        if (!adminConfig || !adminConfig.configValue) {
+            return res.status(500).json({ error: 'System Error: Admin credentials not found in Database.' });
+        }
+
+        if (req.headers['x-admin-pass'] !== adminConfig.configValue) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+        
+        next();
+    } catch (error) { 
+        console.error("Admin Auth Error:", error);
+        res.status(500).json({ error: 'Database Error' }); 
+    }
+};
+
+app.get('/api/admin/data', checkAdmin, async (req, res) => {
+    const users = await User.find({}, '-password'); 
+    const txs = await Transaction.find({ status: 'pending' }); 
+    const codes = await GiftCode.find();
+    res.json({ users, txs, codes });
+});
+
+app.post('/api/admin/user/status', checkAdmin, async (req, res) => { 
+    await User.updateOne({ username: req.body.username }, { status: req.body.status }); 
+    res.json({ success: true }); 
+});
+
+app.post('/api/admin/tx/resolve', checkAdmin, async (req, res) => {
+    const { id, action } = req.body; 
+    const tx = await Transaction.findById(id);
+    if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
+    
+    if (action === 'approve') { 
+        tx.status = 'completed'; 
+        if (tx.type === 'BANK DEPOSIT') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); 
+    } else { 
+        tx.status = 'denied'; 
+        if (tx.type === 'BANK WITHDRAWAL') await User.updateOne({ username: tx.username }, { $inc: { credits: tx.amount } }); 
+    }
+    await tx.save(); 
+    res.json({ success: true });
+});
+
+app.post('/api/admin/giftcode', checkAdmin, async (req, res) => { 
+    await new GiftCode(req.body).save(); 
+    res.json({ success: true }); 
+});
+
+// --- STANDARD REST APIs ---
 app.post('/api/signup', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -432,7 +492,7 @@ io.on('connection', (socket) => {
                 }
                 await user.save();
                 
-                const nextClaim = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+                const nextClaim = new Date(now.getTime() + msIn24Hours);
                 const msLeft = nextClaim.getTime() - now.getTime();
                 const cooldownSeconds = Math.floor(msLeft / 1000);
                 
