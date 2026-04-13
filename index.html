@@ -26,6 +26,11 @@
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
+        /* SLIDERS */
+        input[type="range"] { -webkit-appearance: none; background: transparent; height: 10px; border-radius: 5px; border: 2px solid var(--border-std); outline: none; margin: 0 10px; cursor: pointer; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 14px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 2px; cursor: pointer; }
+        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; }
+
         #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100vh; background: var(--bg-dark); border-radius: 12px; border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
         .custom-scroll::-webkit-scrollbar { width: 12px; background: #000; border-left: 2px solid var(--border-std);}
         .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border: 2px solid var(--border-std); box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
@@ -52,12 +57,9 @@
         .tab-content h3 { color: var(--warning); font-size: 32px; margin-bottom: 10px;}
         .tab-content ul { padding-left: 20px; }
 
-        .profile-preview { font-size: 50px; margin-bottom: 10px; text-shadow: 3px 3px 0 #000;}
-        .profile-credits { font-size: 30px; color: #fff; margin-bottom: 20px; text-shadow: 2px 2px 0 #000;}
-        .color-picker { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
-        .color-sq { width: 40px; height: 40px; border: 3px solid #333; cursor: pointer; transition: 0.2s; border-radius: 4px; box-shadow: 2px 2px 0 #000;}
-        .color-sq.selected { border-color: #fff; box-shadow: 0 0 15px #fff; }
-
+        .profile-preview { font-size: 50px; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; text-transform: uppercase;}
+        .profile-credits { font-size: 36px; color: #fff; margin-bottom: 20px; text-shadow: 2px 2px 0 #000; color: var(--warning);}
+        
         .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
         .reward-box { height: 100px; background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
         .reward-box:hover { background: #3b82f6; transform: translateY(-5px); }
@@ -96,25 +98,25 @@
         .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none;}
         .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold;}
 
-        /* FLEXBOX GAME BOARD CONTENTS */
         .table-surface { flex: 1; display: flex; flex-direction: column; width: 100%; position: relative; }
         
         /* DEAD CENTER DEALER (ELEVATED) */
-        .banker-station { position: absolute; top: 90px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; }
+        .banker-station { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; }
         
-        /* TIMERS PERFECTLY CENTERED (No overlap) */
-        .global-timer { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 20; text-align: center; text-shadow: 2px 2px 0 #000; width: auto; white-space: nowrap;}
+        /* CENTERED TIMERS DYNAMIC STACK */
+        #timers-container { position: absolute; top: 220px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 15px; align-items: center; z-index: 20; width: 100%;}
+        .global-timer { font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
-        .global-timer.warning { background: #eab308; color: #000; font-size: 32px; font-weight: bold; text-shadow: none !important; margin-top: 60px;}
+        .global-timer.warning { background: #eab308; color: #000; font-size: 30px; font-weight: bold; text-shadow: none; border: 2px solid #000;}
 
         /* DYNAMIC FLEXBOX SEATS CONTAINER (Centers automatically during active play!) */
-        #seats-area { display: flex; justify-content: center; align-items: flex-end; width: 100%; height: 100%; padding-bottom: 20px; box-sizing: border-box; z-index: 5; gap: 40px;}
+        #seats-area { display: flex; justify-content: center; align-items: flex-end; width: 100%; padding: 20px; box-sizing: border-box; z-index: 5; height: 350px; gap: 40px;}
 
         .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0;}
         
-        /* EMPTY SEAT BOX WITH TEXT & BUTTON */
-        .seat-empty-box { box-sizing: border-box; width: 100%; height: 160px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); padding: 10px; margin-bottom: 20px;}
-        .btn-sit-empty { background: #10b981; color: #000; font-size: 26px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 6px 24px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s; text-shadow: none;}
+        /* EMPTY SEAT BUTTON ONLY */
+        .seat-empty-box { display: flex; justify-content: center; align-items: center; width: 100%; height: 160px; }
+        .btn-sit-empty { background: #10b981; color: #000; font-size: 30px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 10px 30px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s;}
         .btn-sit-empty:active { transform: translate(4px, 4px); box-shadow: 0 0 0 transparent; }
 
         .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
@@ -126,14 +128,14 @@
         .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
 
         /* BET TEXT (Dynamic updates on result) */
-        .player-bet-text { background: #000; color: var(--warning); font-size: 22px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center;}
+        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box;}
 
-        /* BETTING UI */
-        .seat-bet-box { display: flex; flex-direction: column; width: 100%; margin-top: 10px; box-sizing: border-box;}
-        .seat-bet-box input { width: 100%; padding: 6px; text-align: center; font-size: 24px; margin: 0; outline: none; background: #020617; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; box-sizing: border-box; font-weight: bold; text-shadow: 1px 1px 0 #000;}
+        /* REDESIGNED DROPDOWN BETTING UI */
+        .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
+        .seat-bet-box select { flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;}
         
         .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; letter-spacing: 1px; font-size: 20px;}
-        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 22px; padding: 6px;}
+        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 16px;}
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
         .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; box-sizing: border-box;}
@@ -193,10 +195,10 @@
             <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 10px;">NEON ROYALE</h1>
             <div id="panel-login" class="modal-box">
                 <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 15px; font-size: 40px;">MEMBER LOGIN</h2>
-                <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME">
-                <input type="password" id="login-pass" class="retro-input pixel-text" placeholder="PASSWORD">
+                <input type="text" id="login-user" class="retro-input" placeholder="USERNAME">
+                <input type="password" id="login-pass" class="retro-input" placeholder="PASSWORD">
                 <div style="display: flex; justify-content: center; margin-top: 15px;">
-                    <button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="login()">LOGIN</button>
+                    <button class="wood-btn" style="background: var(--accent-glow-2);" onclick="login()">LOGIN</button>
                 </div>
                 <p id="login-error" class="pixel-text" style="color: var(--danger); font-size: 24px;"></p>
                 <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('signup')">New Player? Request Access Here</div>
@@ -204,16 +206,20 @@
 
             <div id="panel-signup" class="modal-box hidden">
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 15px; font-size: 40px;">REQUEST ACCESS</h2>
-                <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME">
-                <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD">
-                <div class="terms-box custom-scroll pixel-text" style="font-size: 20px;">
-                    <strong style="color:var(--warning);">SYSTEM TERMS:</strong> Strict 1-Seat limit per room. Play fair. Admin approval required.
+                <input type="text" id="signup-user" class="retro-input" placeholder="CHOOSE USERNAME">
+                <input type="password" id="signup-pass" class="retro-input" placeholder="CREATE PASSWORD">
+                <div class="terms-box custom-scroll" style="font-size: 22px; line-height: 1.2;">
+                    <strong style="color:var(--warning);">SYSTEM TERMS OF SERVICE:</strong><br>
+                    By registering, you agree to the Neon Royale Fair Play Policy.<br><br>
+                    - Maximum of ONE active seat per room.<br>
+                    - Use of automation, macros, or multiple accounts to farm rewards is strictly prohibited and will result in immediate IP bans.<br>
+                    - Management reserves the right to withhold payouts pending review.
                 </div>
-                <label class="pixel-text" style="font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                <label style="font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
                     <input type="checkbox" id="tos-checkbox" style="width: 20px; height: 20px; margin:0;"> I ACCEPT THE TERMS
                 </label>
                 <div style="display: flex; justify-content: center;">
-                    <button class="wood-btn pixel-text" style="background: var(--success);" onclick="signup()">SUBMIT REQUEST</button>
+                    <button class="wood-btn" style="background: var(--success);" onclick="signup()">SUBMIT REQUEST</button>
                 </div>
                 <p id="signup-msg" class="pixel-text" style="font-size: 24px;"></p>
                 <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('login')">Back to Login</div>
@@ -253,7 +259,7 @@
                     <button class="tab-btn active" onclick="switchTab('tab-bj', this)">BLACKJACK</button>
                     <button class="tab-btn" onclick="switchTab('tab-sys', this)">SYSTEM</button>
                 </div>
-                <div id="tab-bj" class="tab-content custom-scroll active pixel-text" style="font-size: 24px;">
+                <div id="tab-bj" class="tab-content custom-scroll active" style="font-size: 24px;">
                     <ul>
                         <li><strong>1-Seat Limit:</strong> Occupy one seat per room.</li>
                         <li><strong>Minimum Bet:</strong> 1,000 credits.</li>
@@ -264,7 +270,7 @@
                         <li><strong>Splits & Doubles:</strong> You can Double Down on your first two cards. You can Split any pairs (ONCE per hand).</li>
                     </ul>
                 </div>
-                <div id="tab-sys" class="tab-content custom-scroll pixel-text" style="font-size: 24px;">
+                <div id="tab-sys" class="tab-content custom-scroll" style="font-size: 24px;">
                     <ul>
                         <li><strong>Banking Limits:</strong> Deposit: 10k-100k. Withdraw: 50k-100k.</li>
                         <li><strong>Daily Rewards:</strong> Available every 24 hours.</li>
@@ -276,56 +282,40 @@
             </div>
         </div>
 
+        <div id="leaderboard-modal" class="overlay-menu hidden">
+            <div class="modal-box">
+                <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 20px; font-size: 60px;">HALL OF FAME</h2>
+                <div class="pixel-text" style="font-size: 30px; margin: 40px 0; color: #94a3b8;">[ DATABASE SYNCING - COMING SOON ]</div>
+                <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('leaderboard-modal')">CLOSE</button>
+            </div>
+        </div>
+        
+        <div id="store-modal" class="overlay-menu hidden">
+            <div class="modal-box">
+                <h2 class="pixel-text" style="color: #d946ef; margin-bottom: 20px; font-size: 60px;">V.I.P. STORE</h2>
+                <div class="pixel-text" style="font-size: 30px; margin: 40px 0; color: #94a3b8;">[ NEW INVENTORY ARRIVING SOON ]</div>
+                <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('store-modal')">CLOSE</button>
+            </div>
+        </div>
+
         <div id="profile-modal" class="overlay-menu hidden">
             <div class="modal-box" style="width: 700px; max-height: 90%; display: flex; flex-direction: column;">
-                <div class="profile-preview pixel-text" id="profile-username-preview">USERNAME</div>
-                <div class="profile-credits pixel-text">BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
+                <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 50px;">PLAYER DOSSIER</h2>
                 
-                <h3 class="pixel-text" style="margin-top: 10px; text-align: left; font-size: 30px;">USERNAME COLOR</h3>
-                <div class="color-picker" id="color-picker-ui">
-                    <div class="color-sq selected" style="background:#f8fafc" onclick="selectColor('#f8fafc', this)"></div>
-                    <div class="color-sq" style="background:#ef4444" onclick="selectColor('#ef4444', this)"></div>
-                    <div class="color-sq" style="background:#3b82f6" onclick="selectColor('#3b82f6', this)"></div>
-                    <div class="color-sq" style="background:#10b981" onclick="selectColor('#10b981', this)"></div>
-                    <div class="color-sq" style="background:#fbbf24" onclick="selectColor('#fbbf24', this)"></div>
-                </div>
-                
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button class="wood-btn" style="flex:1; background: var(--accent-glow-2);" onclick="saveColor()">SAVE COLOR</button>
-                    <button class="wood-btn" style="flex:1; background: #475569;" onclick="toggleLedger()">VIEW FULL LEDGER</button>
+                <div style="background: #000; border: 2px solid var(--border-std); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div class="profile-preview" id="profile-username-preview" style="color: #fff;">USERNAME</div>
+                    <div style="font-size: 24px; color: #94a3b8; margin-bottom: 5px;">ACCOUNT STATUS: <span id="profile-status" style="color:var(--success); text-transform:uppercase;">ACTIVE</span></div>
+                    <div style="font-size: 24px; color: #94a3b8; margin-bottom: 15px;">JOIN DATE: <span id="profile-date">MM/DD/YYYY</span></div>
+                    <div class="profile-credits">TOTAL BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
                 </div>
 
-                <div id="ledger-container" class="hidden" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; margin-top: 15px;">
-                    <h3 class="pixel-text" style="text-align: left; margin-bottom: 5px; font-size: 30px;">CREDIT LEDGER</h3>
-                    <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 200px;"></div>
+                <div id="ledger-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                    <h3 class="pixel-text" style="text-align: left; margin-bottom: 5px; font-size: 30px;">TRANSACTION LEDGER</h3>
+                    <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 250px;"></div>
                 </div>
                 
                 <div style="display: flex; justify-content: center; margin-top: 15px;">
                     <button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('profile-modal')">CLOSE</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="bank-modal" class="overlay-menu hidden">
-            <div class="modal-box" style="width: 600px;">
-                <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 5px; font-size: 50px;">SYSTEM BANKING</h2>
-                <div class="pixel-text" style="font-size: 28px; margin-bottom: 20px;">CURRENT BALANCE: <span class="coin-icon">🪙</span> <span id="bank-balance-display">0</span></div>
-                
-                <div class="terms-box custom-scroll pixel-text" style="height: 90px; font-size: 24px;">
-                    <strong style="color: var(--warning);">BANK RULES:</strong> Min deposit: 10K. Min withdrawal: 50K. Max: 100K.
-                </div>
-
-                <div class="input-group">
-                    <input type="number" id="bank-amount" class="retro-input pixel-text" placeholder="ENTER AMOUNT">
-                </div>
-                <div style="display: flex; gap: 10px; margin-bottom: 25px;">
-                    <button class="wood-btn" style="flex: 1; background: var(--accent-glow-2);" onclick="submitBank('deposit')">DEPOSIT</button>
-                    <button class="wood-btn" style="flex: 1; background: var(--warning); color:#000;" onclick="submitBank('withdrawal')">WITHDRAW</button>
-                </div>
-                
-                <p id="bank-msg" class="pixel-text" style="font-size: 28px; margin-top: 15px;"></p>
-                <div style="display: flex; justify-content: center; margin-top: 15px;">
-                    <button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('bank-modal')">CLOSE</button>
                 </div>
             </div>
         </div>
@@ -358,20 +348,61 @@
             </div>
         </div>
 
-        <div id="settings-modal" class="overlay-menu hidden">
-            <div class="modal-box">
-                <h2 class="pixel-text" style="font-size: 50px;">SYSTEM SETTINGS</h2>
+        <div id="bank-modal" class="overlay-menu hidden">
+            <div class="modal-box" style="width: 700px; max-height: 90vh; display: flex; flex-direction: column;">
+                <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 5px; font-size: 50px;">SYSTEM BANKING</h2>
+                <div class="pixel-text" style="font-size: 28px; margin-bottom: 20px;">CURRENT BALANCE: <span class="coin-icon">🪙</span> <span id="bank-balance-display">0</span></div>
                 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0; background: #000; padding: 15px; border: 2px solid var(--border-std);">
-                    <span class="pixel-text" style="font-size: 32px;">SOUND EFFECTS</span>
-                    <button id="btn-sfx" class="wood-btn" style="width: 150px; margin:0; background: var(--success); color:#000;" onclick="toggleSFX()">🔊 ON</button>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0; background: #000; padding: 15px; border: 2px solid var(--border-std);">
-                    <span class="pixel-text" style="font-size: 32px;">BACKGROUND MUSIC</span>
-                    <button id="btn-bgm" class="wood-btn" style="width: 150px; margin:0; background: #333;" onclick="toggleBGM()">🔇 OFF</button>
+                <div class="terms-box custom-scroll pixel-text" style="height: 110px; font-size: 22px; line-height: 1.2;">
+                    <strong style="color: var(--warning);">BANK RULES:</strong><br>
+                    All requests pend Admin review.<br>
+                    Minimum deposit is 10,000. Minimum withdrawal is 50,000.<br>
+                    Maximum limit per transaction is 100,000 credits.<br>
+                    Gift Codes are credited instantly.
                 </div>
 
-                <div style="display: flex; justify-content: center; margin-top: 15px;">
+                <div class="input-group">
+                    <input type="number" id="bank-amount" class="retro-input" placeholder="ENTER AMOUNT">
+                </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="wood-btn" style="flex: 1; background: var(--accent-glow-2);" onclick="submitBank('deposit')">DEPOSIT</button>
+                    <button class="wood-btn" style="flex: 1; background: var(--warning); color:#000;" onclick="submitBank('withdrawal')">WITHDRAW</button>
+                </div>
+
+                <div style="background: #000; padding: 15px; border: 2px solid var(--success); border-radius: 8px; margin-bottom: 15px;">
+                    <h3 class="pixel-text" style="color: #fff; margin-bottom: 10px; text-align: left; font-size:24px;">REDEEM GIFT CODE</h3>
+                    <div class="input-group" style="margin:0;">
+                        <input type="text" id="gift-code" class="retro-input" placeholder="ENTER CODE" style="text-transform:uppercase;">
+                        <button class="wood-btn" style="width: 150px; margin-bottom:0; background: var(--success); color:#000;" onclick="redeemCode()">REDEEM</button>
+                    </div>
+                </div>
+
+                <h3 class="pixel-text" style="text-align: left; margin-bottom: 5px; font-size: 24px;">RECENT BANK TRANSFERS</h3>
+                <div id="bank-ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 150px;"></div>
+                
+                <p id="bank-msg" class="pixel-text" style="font-size: 28px; margin-top: 10px;"></p>
+                <div style="display: flex; justify-content: center; margin-top: 10px;">
+                    <button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('bank-modal')">CLOSE</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-modal" class="overlay-menu hidden">
+            <div class="modal-box">
+                <h2 class="pixel-text" style="font-size: 50px; margin-bottom: 20px;">SYSTEM SETTINGS</h2>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; background: #000; padding: 15px; border: 2px solid var(--border-std);">
+                    <span class="pixel-text" style="font-size: 32px;">SOUND EFFECTS</span>
+                    <input type="range" id="vol-sfx" min="0" max="1" step="0.05" value="1" oninput="updateVol('sfx', this.value)" style="flex:1; max-width: 200px;">
+                    <span id="vol-sfx-text" class="pixel-text" style="width: 50px; text-align:right; font-size: 24px;">100%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; background: #000; padding: 15px; border: 2px solid var(--border-std);">
+                    <span class="pixel-text" style="font-size: 32px;">BACKGROUND MUSIC</span>
+                    <input type="range" id="vol-bgm" min="0" max="1" step="0.05" value="0" oninput="updateVol('bgm', this.value)" style="flex:1; max-width: 200px;">
+                    <span id="vol-bgm-text" class="pixel-text" style="width: 50px; text-align:right; font-size: 24px;">0%</span>
+                </div>
+
+                <div style="display: flex; justify-content: center; margin-top: 25px;">
                     <button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('settings-modal')">CLOSE</button>
                 </div>
             </div>
@@ -391,7 +422,7 @@
             
             <div id="game-area">
                 <div class="top-hud">
-                    <div class="hud-left"><button class="btn-menu pixel-text" onclick="exitToMenu()">◄ DASHBOARD</button></div>
+                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu()">◄ DASHBOARD</button></div>
                     <div class="hud-center"><div style="font-size: 36px; color: var(--accent-glow-2); text-shadow: 2px 2px 0 #000;" id="phase-display" class="pixel-text">WAITING</div></div>
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="hud-credits"></span></div></div>
                 </div>
@@ -405,9 +436,11 @@
                         </div>
                     </div>
 
-                    <div id="global-timer" class="global-timer pixel-text hidden">BETS CLOSING: <span id="g-time">15</span>s</div>
-                    <div id="next-round-timer" class="global-timer pixel-text blue hidden">NEXT ROUND: <span id="n-time">5</span>s</div>
-                    <div id="idle-timer" class="global-timer pixel-text warning hidden">PLACE BET OR LOSE SEAT: <span id="i-time">7</span>s</div>
+                    <div id="timers-container">
+                        <div id="global-timer" class="global-timer pixel-text hidden">BETS CLOSING: <span id="g-time">15</span>s</div>
+                        <div id="next-round-timer" class="global-timer pixel-text blue hidden">NEXT ROUND: <span id="n-time">5</span>s</div>
+                        <div id="idle-timer" class="global-timer pixel-text warning hidden">PLACE BET OR LOSE SEAT: <span id="i-time">7</span>s</div>
+                    </div>
 
                     <div id="seats-area"></div>
                 </div>
@@ -422,8 +455,8 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
-                        <button class="pixel-text" onclick="actSendChat()">SEND</button>
+                        <input type="text" id="chat-input" placeholder="Type message..." maxlength="100">
+                        <button onclick="actSendChat()">SEND</button>
                     </div>
                 </div>
             </div>
@@ -436,17 +469,29 @@
 
         const socket = io();
         let currentUser = null; let currentGameState = null; let currentRoomId = null; let mySeatIndex = -1;
-        let globalTimerInt = null; let nextRoundTimerInt = null; let selectedColor = '#f8fafc'; let idleTimerInt = null;
+        let globalTimerInt = null; let nextRoundTimerInt = null; let idleTimerInt = null;
+        let rewardTimerInt = null; 
         
         let actionLocked = false; 
         window.lastBetAmount = 0; 
 
-        // AUDIO ENGINE
-        let sfxEnabled = true; let bgmEnabled = false;
+        // VOLUME ENGINE
         const audioNodes = { bgm: document.getElementById('sfx-bgm'), deal: document.getElementById('sfx-deal'), bet: document.getElementById('sfx-bet'), win: document.getElementById('sfx-win'), lose: document.getElementById('sfx-lose') };
-        function playSfx(id) { if(sfxEnabled && audioNodes[id]) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } }
-        function toggleSFX() { sfxEnabled = !sfxEnabled; const btn = document.getElementById('btn-sfx'); if(sfxEnabled) { btn.innerText = '🔊 ON'; btn.style.background = 'var(--success)'; btn.style.color = '#000'; } else { btn.innerText = '🔇 OFF'; btn.style.background = '#333'; btn.style.color = '#fff'; } }
-        function toggleBGM() { bgmEnabled = !bgmEnabled; const btn = document.getElementById('btn-bgm'); if(bgmEnabled) { audioNodes.bgm.play().catch(()=>{}); btn.innerText = '🔊 ON'; btn.style.background = 'var(--success)'; btn.style.color = '#000'; } else { audioNodes.bgm.pause(); btn.innerText = '🔇 OFF'; btn.style.background = '#333'; btn.style.color = '#fff'; } }
+        audioNodes.bgm.volume = 0; // Starts silent
+        
+        function updateVol(type, val) {
+            const pct = Math.round(val * 100) + '%';
+            if (type === 'bgm') {
+                audioNodes.bgm.volume = val;
+                document.getElementById('vol-bgm-text').innerText = pct;
+                if(val > 0 && audioNodes.bgm.paused) audioNodes.bgm.play().catch(()=>{});
+            } else {
+                ['deal', 'bet', 'win', 'lose'].forEach(id => { if(audioNodes[id]) audioNodes[id].volume = val; });
+                document.getElementById('vol-sfx-text').innerText = pct;
+                if(val > 0) audioNodes.deal.play().catch(()=>{}); // Test sound
+            }
+        }
+        function playSfx(id) { if(audioNodes[id] && audioNodes[id].volume > 0) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } }
 
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
@@ -481,7 +526,13 @@
                 currentUser = data; document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
                 document.getElementById('hud-credits').innerText = formatNumber(currentUser.credits);
                 rewardCooldownSeconds = data.cooldownSeconds;
-                selectColor(currentUser.nameColor || '#f8fafc', null); playSfx('deal');
+                
+                document.getElementById('profile-username-preview').innerText = currentUser.username;
+                let dateStr = new Date(data.createdAt).toLocaleDateString();
+                document.getElementById('profile-date').innerText = dateStr;
+                document.getElementById('profile-status').innerText = data.status;
+
+                playSfx('deal');
             } else document.getElementById('login-error').innerText = data.error;
         }
 
@@ -497,24 +548,32 @@
         }
         function logout() { location.reload(); }
 
-        function showProfile() { document.getElementById('profile-username-preview').innerText = currentUser.username; document.getElementById('profile-username-preview').style.color = selectedColor; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); document.getElementById('ledger-container').classList.add('hidden'); showModal('profile-modal'); }
-        function showBank() { if(currentUser) document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showModal('bank-modal'); }
+        function showProfile() { document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); loadLedger(false); showModal('profile-modal'); }
+        function showBank() { if(currentUser) document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); loadLedger(true); showModal('bank-modal'); }
 
-        function selectColor(hex, el) {
-            selectedColor = hex; document.querySelectorAll('.color-sq').forEach(sq => sq.classList.remove('selected'));
-            if(el) el.classList.add('selected'); else { const match = Array.from(document.querySelectorAll('.color-sq')).find(s => s.style.background.includes(hex.replace('#',''))); if(match) match.classList.add('selected'); }
-            document.getElementById('profile-username-preview').style.color = hex;
-        }
-        async function saveColor() { await fetch('/api/profile/color', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, color: selectedColor}) }); currentUser.nameColor = selectedColor; hideModal('profile-modal'); }
-
-        function toggleLedger() { const container = document.getElementById('ledger-container'); if (container.classList.contains('hidden')) { container.classList.remove('hidden'); loadLedger(); } else { container.classList.add('hidden'); } }
-
-        async function loadLedger() {
+        async function loadLedger(isBankOnly) {
             const res = await fetch(`/api/profile/ledger/${currentUser.username}`); const data = await res.json();
-            const list = document.getElementById('ledger-list'); list.innerHTML = '';
-            data.forEach(tx => {
+            const list = document.getElementById(isBankOnly ? 'bank-ledger-list' : 'ledger-list'); list.innerHTML = '';
+            
+            let filteredData = isBankOnly ? data.filter(tx => tx.type.includes('BANK')) : data;
+
+            if (filteredData.length === 0) { list.innerHTML = '<div style="color:#475569; text-align:center; margin-top:20px;">No records found.</div>'; return; }
+
+            filteredData.forEach(tx => {
                 let color = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff');
-                list.innerHTML += `<div class="ledger-item"><span class="ledger-desc">${tx.type.toUpperCase()} [${tx.status}]</span> <span style="color:${color}">${tx.amount > 0 ? '+' : ''}${formatNumber(tx.amount)} <span class="coin-icon">🪙</span></span></div>`;
+                let statusBadge = '';
+                
+                // Only show status badges for bank requests
+                if (tx.type.includes('BANK')) {
+                    let stColor = tx.status === 'pending' ? '#fbbf24' : (tx.status === 'completed' ? '#10b981' : '#ef4444');
+                    let displayStatus = tx.status === 'completed' ? 'APPROVED' : tx.status;
+                    statusBadge = ` <span style="color:${stColor}; font-size:18px;">[${displayStatus.toUpperCase()}]</span>`;
+                }
+
+                list.innerHTML += `<div class="ledger-item">
+                    <span class="ledger-desc">${tx.type.toUpperCase()}${statusBadge}</span> 
+                    <span style="color:${color}">${tx.amount > 0 ? '+' : ''}${formatNumber(tx.amount)} <span class="coin-icon">🪙</span></span>
+                </div>`;
             });
         }
 
@@ -523,8 +582,16 @@
             const amt = parseInt(amtStr.replace(/,/g, ''));
             if(isNaN(amt) || amt <= 0) return;
             const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount: amt}) });
-            if(res.ok) { msgBox.style.color = "var(--success)"; msgBox.innerText = "REQUEST SENT TO ADMIN."; document.getElementById('bank-amount').value=''; playSfx('deal');}
+            if(res.ok) { msgBox.style.color = "var(--success)"; msgBox.innerText = "REQUEST SENT TO ADMIN."; document.getElementById('bank-amount').value=''; playSfx('deal'); loadLedger(true);}
             else { const d = await res.json(); msgBox.style.color = "var(--danger)"; msgBox.innerText = d.error; }
+            setTimeout(()=> msgBox.innerText='', 3000);
+        }
+
+        async function redeemCode() {
+            const code = document.getElementById('gift-code').value; const msgBox = document.getElementById('bank-msg');
+            const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
+            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; document.getElementById('hud-credits').innerText = formatNumber(currentUser.credits); document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code').value=''; playSfx('win'); loadLedger(true);}
+            else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
             setTimeout(()=> msgBox.innerText='', 3000);
         }
 
@@ -545,29 +612,55 @@
         socket.on('receive_chat', data => { const msgs = document.getElementById('chat-messages'); msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; });
 
         // BETTING LOGIC
-        window.actSitDown = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
-        
-        window.updateBetInput = function(idx, amt) {
-            const input = document.getElementById(`inseat-bet-${idx}`); if(!input) return;
-            let current = parseInt(input.value) || 0; let newVal = current + amt;
-            if (newVal > 100000) newVal = 100000; input.value = newVal; playSfx('bet');
+        window.actSitDown = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); 
         }
 
         window.actPlaceBet = function(idx) { 
             if(actionLocked) return;
-            const input = document.getElementById(`inseat-bet-${idx}`); const amt = input ? parseInt(input.value) : 0;
-            if (isNaN(amt) || amt < 1000) return alert("Minimum bet is 1,000 credits."); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            actionLocked = true; window.lastBetAmount = amt; playSfx('bet');
+            const selectEl = document.getElementById(`inseat-bet-${idx}`);
+            const amt = selectEl ? parseInt(selectEl.value) : 0;
+            
+            if (isNaN(amt) || amt < 1000) return alert("Minimum bet is 1,000 credits.");
+            if (amt > currentUser.credits) return alert("Insufficient credits!");
+            
+            actionLocked = true;
+            window.lastBetAmount = amt; 
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
+            playSfx('bet');
         }
         
-        window.actEjectSeat = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actHit = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('deal'); }
-        window.actStand = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actDouble = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
-        window.actSplit = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        window.actEjectSeat = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+        }
+        
+        window.actHit = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
+            socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+        }
+        
+        window.actStand = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
+            socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+        }
+        
+        window.actDouble = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
+            socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+        }
+        
+        window.actSplit = function(idx) { 
+            if(actionLocked) return; actionLocked = true; 
+            document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
+            socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+        }
 
-        // CARDS RENDER ENGINE (NATIVE FLEXBOX)
+        // CARDS RENDER ENGINE
         function formatCardHTML(c, isHidden) {
             if (isHidden) return `<div class="card dealer-hidden"></div>`;
             const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : 'black';
@@ -583,9 +676,9 @@
         socket.on('game_state_update', (state) => {
             if(currentGameState && currentGameState.status === 'dealerTurn' && state.status === 'resolving') {
                 if(mySeatIndex !== -1 && state.seats[mySeatIndex]) {
-                    const myResult = state.seats[mySeatIndex].hands[0].result;
-                    if(myResult === 'win' || myResult === 'win-bj') playSfx('win');
-                    else if (myResult === 'lose' || myResult === 'bust') playSfx('lose');
+                    let hasWin = state.seats[mySeatIndex].hands.some(h => h.result === 'win' || h.result === 'win-bj');
+                    let hasLose = state.seats[mySeatIndex].hands.some(h => h.result === 'lose' || h.result === 'bust');
+                    if(hasWin) playSfx('win'); else if (hasLose) playSfx('lose');
                 }
             }
             if(currentGameState && currentGameState.status === 'betting' && state.status === 'playing') playSfx('deal');
@@ -636,10 +729,10 @@
 
                 if (!seatData) {
                     if (state.status === 'waiting' || state.status === 'betting') {
-                        let sitBtn = !hasSeatAnywhere ? `<button class="btn-sit-empty pixel-text" onclick="actSitDown(${index})">SIT</button>` : '';
+                        let sitBtn = !hasSeatAnywhere ? `<button class="btn-sit-empty" onclick="actSitDown(${index})">SIT</button>` : '';
                         seatDiv.innerHTML = `
                             <div class="seat-empty-box">
-                                <div class="pixel-text" style="font-size:28px; color:#94a3b8; margin-bottom:10px;">EMPTY</div>
+                                <div style="font-size:24px; color:#94a3b8; margin-bottom:10px; font-weight:bold;">EMPTY</div>
                                 ${sitBtn}
                             </div>
                         `;
@@ -670,7 +763,7 @@
 
                         html += `</div>`; 
                         
-                        // DYNAMIC INDIVIDUAL BET DISPLAY UNDER EACH HAND
+                        // DYNAMIC INDIVIDUAL BET DISPLAY
                         let handBet = hand.bet > 0 ? hand.bet : 0;
                         if (state.status === 'resolving') {
                             if (hand.result === 'win') handBet = hand.bet * 2;
@@ -679,7 +772,7 @@
                             else handBet = 0;
                         }
                         if ((handBet > 0 || state.status === 'resolving') && (state.status === 'playing' || state.status === 'dealerTurn' || state.status === 'resolving' || state.status === 'betting')) {
-                            html += `<div class="player-bet-text pixel-text">${formatNumber(handBet)}</div>`;
+                            html += `<div class="player-bet-text">${formatNumber(handBet)}</div>`;
                         }
 
                         if (activeHandClass) html += `<div class="turn-bar-container"><div class="turn-bar-fill" id="turn-bar-${index}"></div></div>`;
@@ -687,31 +780,31 @@
                     });
                     html += `</div>`;
 
-                    // PLATE (NAME ONLY)
+                    // PLATE
                     html += `<div class="player-info-plate"><div class="player-name-text" style="color:${seatData.color}">${seatData.username}</div></div>`;
 
                     // BETTING UI
                     if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
                         if (seatData.hands[0].bet === 0) {
                             let startBet = window.lastBetAmount || 0;
+                            let opts = [1000, 10000, 25000, 50000, 100000];
+                            if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
+                            
+                            let optHTML = `<option value="0" ${startBet === 0 ? 'selected' : ''}>0</option>`;
+                            optHTML += opts.map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
+
                             html += `
                                 <div class="seat-bet-box">
-                                    <input type="number" id="inseat-bet-${index}" value="${startBet}" min="1000" max="100000" class="pixel-text" readonly>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px;">
-                                        <button class="s-btn pixel-text" style="background:#3b82f6; color:#fff;" onclick="updateBetInput(${index}, 5000)">+5K</button>
-                                        <button class="s-btn pixel-text" style="background:#10b981; color:#000;" onclick="updateBetInput(${index}, 20000)">+20K</button>
-                                        <button class="s-btn pixel-text" style="background:#f97316; color:#fff;" onclick="updateBetInput(${index}, 50000)">+50K</button>
-                                        <button class="s-btn pixel-text" style="background:#fbbf24; color:#000;" onclick="updateBetInput(${index}, 100000)">+100K</button>
-                                    </div>
-                                    <div style="width: 100%; margin-top: 4px;">
-                                        <button class="s-btn btn-bet pixel-text" style="width: 100%; font-size: 24px; padding: 8px;" onclick="actPlaceBet(${index})">BET</button>
-                                    </div>
+                                    <select id="inseat-bet-${index}">
+                                        ${optHTML}
+                                    </select>
+                                    <button class="s-btn btn-bet" onclick="actPlaceBet(${index})">BET</button>
                                 </div>
+                                <div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup" onclick="actEjectSeat(${index})">STAND UP</button></div>
                             `;
-                            html += `<div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
-                        } 
+                        }
                     } else if (isMySeat && state.status === 'waiting') {
-                        html += `<div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
+                        html += `<div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
                     }
 
                     // ACTIVE TURN CONTROLS
@@ -719,20 +812,20 @@
                         const cHand = seatData.hands[seatData.currentHand];
                         if (cHand && cHand.status === 'waiting') {
                             html += `<div class="seat-controls">`;
-                            html += `<button class="s-btn btn-hit pixel-text" style="font-size:18px;" onclick="actHit(${index})">HIT</button>`;
-                            html += `<button class="s-btn btn-stand pixel-text" style="font-size:18px;" onclick="actStand(${index})">STAND</button>`;
+                            html += `<button class="s-btn btn-hit" onclick="actHit(${index})">HIT</button>`;
+                            html += `<button class="s-btn btn-stand" onclick="actStand(${index})">STAND</button>`;
                             
                             if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) {
-                                html += `<button class="s-btn btn-double pixel-text" style="font-size:18px;" onclick="actDouble(${index})">2X</button>`;
+                                html += `<button class="s-btn btn-double" onclick="actDouble(${index})">2X</button>`;
                                 if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) {
-                                    html += `<button class="s-btn btn-split pixel-text" style="font-size:18px;" onclick="actSplit(${index})">SPLIT</button>`;
+                                    html += `<button class="s-btn btn-split" onclick="actSplit(${index})">SPLIT</button>`;
                                 }
                             }
                             html += `</div>`;
                         }
                     }
                     
-                    seatDiv.innerHTML += html; // SEAT HTML INJECTED
+                    seatDiv.innerHTML += html; 
                     activeElements.push(seatDiv);
                 }
             }
@@ -796,7 +889,7 @@
             }
         }
 
-        // PERFECT FLEXBOX SEAT CENTERING (No invisible boundaries)
+        // PERFECT PERCENTAGE LAYOUT ENGINE (SMILE ALIGNMENT & DYNAMIC CENTER)
         function layoutArc(elements, totalSeats) {
             const seatsArea = document.getElementById('seats-area');
             seatsArea.innerHTML = ''; 
@@ -855,10 +948,15 @@
                     setTimeout(() => document.querySelectorAll('.reward-box')[i].classList.add('open'), i * 100);
                 });
                 currentUser.credits = data.credits; document.getElementById('hud-credits').innerText = formatNumber(currentUser.credits); 
+                
+                // INSTANTLY START TIMER ON CLAIM
                 rewardCooldownSeconds = data.cooldownSeconds;
+                startRewardTimer();
+
                 const msg = document.getElementById('reward-msg');
                 if (data.wonAmount > 0) { msg.style.color = "var(--success)"; msg.innerText = `YOU WON ${formatNumber(data.wonAmount)} CREDITS!`; playSfx('win'); }
                 else { msg.style.color = "var(--danger)"; msg.innerText = "BETTER LUCK NEXT TIME!"; playSfx('lose');}
+                
                 setTimeout(() => { showRewards(); }, 4000); 
             } else {
                 alert(data.message); showRewards();
