@@ -102,9 +102,10 @@ setInterval(() => {
                 if (b.choice === 'over' && total > 7) { won = true; payout = b.amount * 2; }
                 if (b.choice === 'seven' && total === 7) { won = true; payout = b.amount * 5; }
                 if (won) {
-                    await User.updateOne({ username: b.username }, { $inc: { credits: payout } }); 
+                    const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
                     await new Transaction({ username: b.username, type: 'HIGH-LOW DICE', amount: payout }).save();
                     winners.push({ username: b.username, choice: b.choice, amount: payout });
+                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
                 }
             }
             io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, dice: diceGame.dice, total, winners, bets: diceGame.bets, history: diceGame.history });
@@ -133,9 +134,10 @@ setInterval(() => {
             for (let b of coinGame.bets) {
                 if (b.choice === coinGame.result) {
                     const payout = b.amount * 2;
-                    await User.updateOne({ username: b.username }, { $inc: { credits: payout } }); 
+                    const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
                     await new Transaction({ username: b.username, type: 'COIN FLIP', amount: payout }).save();
                     winners.push({ username: b.username, choice: b.choice, amount: payout });
+                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
                 }
             }
             io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, result: coinGame.result, winners, bets: coinGame.bets, history: coinGame.history });
@@ -169,9 +171,10 @@ setInterval(() => {
                 let matches = colorGame.dice.filter(c => c === b.choice).length;
                 if (matches > 0) {
                     const payout = b.amount + (b.amount * matches);
-                    await User.updateOne({ username: b.username }, { $inc: { credits: payout } }); 
+                    const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
                     await new Transaction({ username: b.username, type: 'COLOR GAME', amount: payout }).save();
                     winners.push({ username: b.username, choice: b.choice, amount: payout });
+                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
                 }
             }
             io.to('arcade_color').emit('color_state_update', { status: colorGame.status, dice: colorGame.dice, winners, bets: colorGame.bets, history: colorGame.history });
@@ -770,8 +773,9 @@ async function resolveBets(roomId, dealerValue) {
                     
                     if (payout > 0) { 
                         seat.credits += payout; 
-                        await User.updateOne({ username: seat.username }, { $inc: { credits: payout } }); 
+                        const updatedUser = await User.findOneAndUpdate({ username: seat.username }, { $inc: { credits: payout } }, {new: true}); 
                         await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: payout }).save(); 
+                        io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
                     }
                 }
             }
