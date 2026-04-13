@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arcade Casino</title>
+    <title>Casino Royale: Arcade Casino</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
@@ -16,7 +16,6 @@
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        
         body, input, button, table, th, td, select { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
         body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
@@ -70,7 +69,6 @@
         .reward-box .front { background: #1e293b; font-size: 40px; }
         .reward-box .back { background: #000; transform: rotateY(180deg); font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
 
-        /* GAME LAYOUTS */
         .game-interface { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; width: 100%; height: 100%; min-height: 0; background: #000; box-sizing: border-box; }
         .game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px; min-height: 0;}
         .game-area.dice-bg { background: radial-gradient(circle at center, #7e22ce 0%, #4c1d95 100%); }
@@ -79,7 +77,6 @@
         .sidebar-col { display: flex; flex-direction: column; gap: 20px; height: 100%; flex-shrink: 0; min-height: 0; position: relative;}
         .sidebar-box { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); min-height: 0; position: relative;}
         
-        /* PERFECTLY SYNCED DROPDOWN HEADER & CONTAINER */
         .dropdown-container { background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.8); flex-shrink: 0; position: relative; z-index: 50; }
         .dropdown-header { background: #1e293b; color: #fff; padding: 10px; font-size: 28px; display: flex; justify-content: space-between; align-items: center; text-shadow: 1px 1px 0 #000; font-weight: bold; cursor: pointer; border-radius: 10px; transition: 0.1s;}
         .dropdown-header:hover { filter: brightness(1.2); }
@@ -171,10 +168,8 @@
     <audio id="sfx-lose" src="lose.mp3" preload="auto"></audio>
 
     <div id="arcade-cabinet">
-        
         <div id="auth-view" class="full-menu">
-            <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 10px;">ARCADE CASINO</h1>
-            
+            <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 10px;">CASINO ROYALE</h1>
             <div id="panel-login" class="modal-box custom-scroll">
                 <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 15px; font-size: 40px;">MEMBER LOGIN</h2>
                 <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME">
@@ -267,7 +262,7 @@
             <div class="modal-box custom-scroll" style="width: 600px;">
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 20px; font-size: 40px;">TERMS OF SERVICE</h2>
                 <div class="info-box custom-scroll">
-                    By requesting access to Arcade Casino, you agree to the Fair Play Policy:<br><br>
+                    By requesting access to Casino Royale, you agree to the Fair Play Policy:<br><br>
                     - Maximum of ONE active seat per room.<br>
                     - Using macros or alt-accounts to farm rewards is strictly prohibited and results in an IP Ban.<br>
                     - All accounts require manual Admin approval.
@@ -347,7 +342,7 @@
                 <div class="pixel-text" style="font-size: 32px; color: #fff; margin-bottom: 10px;"><span id="confirm-bank-type"></span>: <span style="color: var(--success);"><span class="coin-icon">🪙</span> <span id="confirm-bank-amt"></span></span></div>
                 
                 <div class="info-box" style="margin: 20px 0; text-align: center; border: none; background: transparent; box-shadow: none;">
-                    <p style="margin-bottom: 10px; color: #fff; font-family: 'VT323'; font-size: 24px;">Notify the admin for your request:</p>
+                    <p style="margin-bottom: 10px; color: #fff; font-family: 'VT323'; font-size: 24px;">Please notify the admin for your request:</p>
                     <div style="display: flex; justify-content: center; align-items: center; gap: 20px; font-size: 18px; color: var(--accent-glow-2); font-weight: bold; font-family: 'Segoe UI', sans-serif;">
                         <span style="display: flex; align-items: center;">
                             <svg class="discord-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36" style="width: 24px; height: 24px; fill: currentColor; margin-right: 8px;">
@@ -376,6 +371,9 @@
                         <div class="reward-box" onclick="pickRewardBox(0)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-0"></div></div></div>
                         <div class="reward-box" onclick="pickRewardBox(1)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-1"></div></div></div>
                         <div class="reward-box" onclick="pickRewardBox(2)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-2"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(3)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-3"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(4)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-4"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(5)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-5"></div></div></div>
                     </div>
                 </div>
                 <div id="reward-cooldown-view" class="hidden">
@@ -611,10 +609,15 @@
         }
 
         async function login() {
-            const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: document.getElementById('login-user').value, password: document.getElementById('login-pass').value}) });
+            const u = document.getElementById('login-user').value;
+            const p = document.getElementById('login-pass').value;
+            const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
             const data = await res.json();
             if(res.ok) {
-                currentUser = data; document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
+                currentUser = data; 
+                localStorage.setItem('cr_user', u);
+                localStorage.setItem('cr_pass', p);
+                document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
                 updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; 
                 const userPreview = document.getElementById('profile-username-preview');
                 if(userPreview) userPreview.innerText = currentUser.username;
@@ -622,11 +625,33 @@
             } else document.getElementById('login-error').innerText = data.error;
         }
 
+        window.onload = () => {
+            const savedU = localStorage.getItem('cr_user');
+            const savedP = localStorage.getItem('cr_pass');
+            if(savedU && savedP) {
+                document.getElementById('login-user').value = savedU;
+                document.getElementById('login-pass').value = savedP;
+                login();
+            }
+        };
+
+        socket.on('credit_update', (data) => {
+            if(currentUser && currentUser.username === data.username) {
+                currentUser.credits = data.credits;
+                updateAllCredits();
+            }
+        });
+
         function updateAllCredits() {
             if(!currentUser) return; const creds = formatNumber(currentUser.credits);
             ['hud-credits', 'dice-credits', 'coin-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
         }
-        function logout() { location.reload(); }
+        
+        function logout() { 
+            localStorage.removeItem('cr_user'); 
+            localStorage.removeItem('cr_pass'); 
+            location.reload(); 
+        }
 
         function exitToMenu(game) { 
             document.getElementById('main-menu-view').classList.remove('hidden'); 
@@ -805,9 +830,11 @@
         socket.on('dice_bet_placed', (data) => { currentUser.credits = data.credits; updateAllCredits(); playSfx('bet'); document.getElementById('dice-result-text').innerText = "BET ACCEPTED!"; });
         socket.on('dice_error', (msg) => alert(msg));
         window.placeDiceBet = function(choice) {
-            const amt = parseInt(document.getElementById(`bet-${choice}`).value.replace(/,/g, ''));
+            // Keep value in input intentionally to lock it in
+            const inputEl = document.getElementById(`bet-${choice}`);
+            const amt = parseInt(inputEl.value.replace(/,/g, ''));
             if (isNaN(amt) || amt < 100) return alert("Min bet is 100"); if (amt > currentUser.credits) return alert("Insufficient credits");
-            socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt }); document.getElementById(`bet-${choice}`).value = '';
+            socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt }); 
         };
 
         // --- GLOBAL COIN FLIP LOGIC ---
@@ -831,9 +858,11 @@
         socket.on('coin_bet_placed', (data) => { currentUser.credits = data.credits; updateAllCredits(); playSfx('bet'); document.getElementById('coin-result-text').innerText = "BET ACCEPTED!"; });
         socket.on('coin_error', (msg) => alert(msg));
         window.placeCoinBet = function(choice) {
-            const amt = parseInt(document.getElementById(`bet-${choice}`).value.replace(/,/g, ''));
+            // Keep value in input intentionally to lock it in
+            const inputEl = document.getElementById(`bet-${choice}`);
+            const amt = parseInt(inputEl.value.replace(/,/g, ''));
             if (isNaN(amt) || amt < 100) return alert("Min bet is 100"); if (amt > currentUser.credits) return alert("Insufficient credits");
-            socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); document.getElementById(`bet-${choice}`).value = '';
+            socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); 
         };
 
         // --- UTILITY & CHAT ---
@@ -852,118 +881,7 @@
             if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
         });
 
-        // --- UI MENUS ---
-        function showProfile() { if(!currentUser) return; document.getElementById('profile-username-preview').innerText = currentUser.username; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showModal('profile-modal'); }
-        function showBank() { if(!currentUser) return; document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showModal('bank-modal'); }
-        function openProfileLedger() { if(!currentUser) return; hideModal('profile-modal'); showModal('profile-ledger-modal'); loadLedger(false); }
-        function openBankLedger() { if(!currentUser) return; hideModal('bank-modal'); showModal('bank-ledger-modal'); loadLedger(true); }
-        
-        async function loadLedger(isBankOnly) {
-            const res = await fetch(`/api/profile/ledger/${currentUser.username}`); const data = await res.json();
-            const list = document.getElementById(isBankOnly ? 'bank-ledger-list' : 'ledger-list'); list.innerHTML = '';
-            let filteredData = isBankOnly ? data.filter(tx => tx.type.includes('BANK')) : data;
-            if (filteredData.length === 0) { list.innerHTML = '<div style="color:#475569; text-align:center; margin-top:20px;">No records found.</div>'; return; }
-            filteredData.forEach(tx => {
-                let statusBadge = ''; let amtColor = '#fff'; let displayAmt = Math.abs(tx.amount); let prefix = '';
-                if (tx.type.includes('BANK')) {
-                    let isWithdrawal = tx.type.includes('WITHDRAWAL'); prefix = isWithdrawal ? '-' : '+';
-                    if (tx.status === 'pending') amtColor = '#94a3b8'; else if (tx.status === 'completed') amtColor = isWithdrawal ? 'var(--danger)' : 'var(--success)'; else amtColor = 'var(--danger)'; 
-                    let stColor = tx.status === 'pending' ? '#fbbf24' : (tx.status === 'completed' ? '#10b981' : '#ef4444'); statusBadge = ` <span style="color:${stColor}; font-size:20px;">[${(tx.status === 'completed' ? 'APPROVED' : tx.status).toUpperCase()}]</span>`;
-                } else { amtColor = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff'); prefix = tx.amount > 0 ? '+' : (tx.amount < 0 ? '-' : ''); }
-                list.innerHTML += `<div class="ledger-item"><span class="ledger-desc">${tx.type.toUpperCase()}${statusBadge}</span> <span style="color:${amtColor}">${prefix}${formatNumber(displayAmt)} <span class="coin-icon">🪙</span></span></div>`;
-            });
-        }
-
-        // --- BANKING FIX ---
-        function showBankConfirm(type) {
-            const amtInput = document.getElementById('bank-amount').value.replace(/,/g, '');
-            const amt = parseInt(amtInput);
-            if(isNaN(amt) || amt <= 0) return alert("Enter a valid amount.");
-            if (type === 'deposit' && (amt < 10000 || amt > 100000)) return alert("Deposit must be between 10,000 and 100,000.");
-            if (type === 'withdrawal' && (amt < 50000 || amt > 100000)) return alert("Withdrawal must be between 50,000 and 100,000.");
-            if (type === 'withdrawal' && amt > currentUser.credits) return alert("Insufficient funds.");
-            
-            pendingBankAction = { type, amount: amt }; 
-            document.getElementById('confirm-bank-type').innerText = type.toUpperCase(); 
-            document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
-            
-            // Reset modal state
-            document.getElementById('bank-confirm-msg').innerText = '';
-            document.getElementById('bank-confirm-btn-row').innerHTML = `
-                <button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button>
-                <button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>
-            `;
-
-            hideModal('bank-modal'); showModal('bank-confirm-modal');
-        }
-
-        async function executeBankRequest() {
-            if(!pendingBankAction) return; 
-            const { type, amount } = pendingBankAction;
-            
-            const btnRow = document.getElementById('bank-confirm-btn-row');
-            const statusMsg = document.getElementById('bank-confirm-msg');
-            
-            statusMsg.style.color = "#fff";
-            statusMsg.innerText = "SENDING REQUEST...";
-
-            const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount}) });
-            
-            if(res.ok) { 
-                statusMsg.style.color = "var(--success)"; 
-                statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; 
-                document.getElementById('bank-amount').value=''; 
-                playSfx('deal'); 
-                
-                btnRow.innerHTML = `<button class="wood-btn pixel-text" style="width:100%; background: #475569;" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">BACK TO BANK</button>`;
-            }
-            else { 
-                const d = await res.json(); 
-                statusMsg.style.color = "var(--danger)"; 
-                statusMsg.innerText = d.error; 
-            }
-            pendingBankAction = null;
-        }
-
-        async function redeemCodeMain() {
-            if(!currentUser) return;
-            const code = document.getElementById('gift-code-main').value; const msgBox = document.getElementById('redeem-msg');
-            if(!code) return;
-            const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
-            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; updateAllCredits(); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code-main').value=''; playSfx('win'); }
-            else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
-            setTimeout(()=> msgBox.innerText='', 3000);
-        }
-        
-        function updateRewardTimerUI() {
-            if (rewardCooldownSeconds <= 0) { clearInterval(rewardTimerInt); showRewards(); return; }
-            let h = Math.floor(rewardCooldownSeconds / 3600); let m = Math.floor((rewardCooldownSeconds % 3600) / 60); let s = rewardCooldownSeconds % 60;
-            const tEl = document.getElementById('reward-timer'); if(tEl) tEl.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        }
-        function startRewardTimer() { clearInterval(rewardTimerInt); updateRewardTimerUI(); rewardTimerInt = setInterval(() => { rewardCooldownSeconds--; updateRewardTimerUI(); }, 1000); }
-        function showRewards() {
-            if(!currentUser) return; showModal('reward-modal'); document.getElementById('reward-msg').innerText = ''; document.querySelectorAll('.reward-box').forEach(b => b.classList.remove('open')); isPickingReward = false;
-            if (rewardCooldownSeconds <= 0) { document.getElementById('reward-active-view').classList.remove('hidden'); document.getElementById('reward-cooldown-view').classList.add('hidden'); } 
-            else { document.getElementById('reward-active-view').classList.add('hidden'); document.getElementById('reward-cooldown-view').classList.remove('hidden'); startRewardTimer(); }
-        }
-
-        let isPickingReward = false;
-        function pickRewardBox(index) { if(isPickingReward) return; isPickingReward = true; socket.emit('claim_daily_reward_box', { username: currentUser.username, boxIndex: index }); }
-        socket.on('reward_box_opened', (data) => {
-            isPickingReward = false; 
-            if(data.success) {
-                data.allPrizes.forEach((prize, i) => {
-                    const backEl = document.getElementById(`box-val-${i}`); backEl.innerHTML = prize > 0 ? `+${formatNumber(prize)} <span class="coin-icon">🪙</span>` : 'EMPTY';
-                    if(prize === 0) backEl.classList.add('zero'); else backEl.classList.remove('zero'); setTimeout(() => document.querySelectorAll('.reward-box')[i].classList.add('open'), i * 100);
-                });
-                currentUser.credits = data.credits; updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; startRewardTimer();
-                const msg = document.getElementById('reward-msg');
-                if (data.wonAmount > 0) { msg.style.color = "var(--success)"; msg.innerText = `YOU WON ${formatNumber(data.wonAmount)} CREDITS!`; playSfx('win'); }
-                else { msg.style.color = "var(--danger)"; msg.innerText = "BETTER LUCK NEXT TIME!"; playSfx('lose');}
-                setTimeout(() => { showRewards(); }, 4000); 
-            } else { alert(data.message); showRewards(); }
-        });
-
+        // Disable Dev Tools
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
