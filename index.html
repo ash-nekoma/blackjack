@@ -19,6 +19,7 @@
         body, input, button, table, th, td, select { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
         body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
+        
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
         input[type="range"] { -webkit-appearance: none; background: transparent; height: 10px; border-radius: 5px; border: 2px solid var(--border-std); outline: none; margin: 0 10px; cursor: pointer; }
@@ -32,6 +33,7 @@
         .full-menu, .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
         .full-menu { background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); }
         .overlay-menu { background: rgba(0,0,0,0.9); z-index: 300; padding: 20px;}
+        
         .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; max-width: 100%; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 85vh; display: flex; flex-direction: column; overflow-y: auto;}
         
         .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; flex-shrink: 0;}
@@ -42,7 +44,6 @@
         .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.8; }
-        .wood-btn.locked { border-color: #555; background: #333; color: #aaa; box-shadow: none; transform: translate(2px, 2px); }
 
         .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
         .info-box strong { color: var(--warning); font-size: 28px; display: block; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px;}
@@ -104,16 +105,13 @@
         .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
         .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
 
-        @keyframes coinCollect { 0% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;} 50% { transform: translateY(-20px) scale(1.2); color: #fff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24; } 100% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;} }
-        @keyframes loseDrop { 0% { transform: translateY(0); color: var(--warning); } 50% { transform: translateY(5px); color: var(--danger); text-shadow: 0 0 10px var(--danger); } 100% { transform: translateY(10px); color: #555; opacity: 0.5; } }
-        .anim-win { animation: coinCollect 0.8s ease-out forwards; } .anim-lose { animation: loseDrop 0.8s ease-out forwards; }
-        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
-
         .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
         .seat-bet-box select { flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none; font-family: 'VT323', monospace; letter-spacing: 1px;}
         .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; font-family: 'VT323', monospace; letter-spacing: 1px; font-size: 20px;}
         .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 12px;}
-        .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
+        .s-btn:active:not(:disabled) { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
+        .s-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.8; }
+        
         .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; box-sizing: border-box;}
         .btn-hit { background: var(--success); color: #000; font-size: 18px; padding: 6px;} .btn-stand { background: #b45309; color: #fff; font-size: 18px; padding: 6px;} .btn-double { background: var(--accent-glow-2); color: #fff; font-size: 18px; padding: 6px;} .btn-split { background: var(--accent-glow); color: #fff; font-size: 18px; padding: 6px;}
         .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323';}
@@ -138,33 +136,47 @@
         .dice-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1; perspective: 1000px; }
         .dice { font-size: 120px; color: #fff; text-shadow: 0 0 30px var(--accent-glow); line-height: 1; font-family: Arial, sans-serif; }
         .dice.shake { animation: subtleShake 0.3s infinite; color: var(--warning); text-shadow: 0 0 40px var(--warning);}
-        @keyframes subtleShake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -1px) rotate(-2deg); } 50% { transform: translate(0px, 1px) rotate(2deg); } 75% { transform: translate(1px, -1px) rotate(-1deg); } 100% { transform: translate(-1px, 0px) rotate(1deg); } }
         
-        .dice-bet-area { display: flex; justify-content: center; gap: 20px; padding: 30px; background: rgba(0,0,0,0.6); border-top: 2px solid var(--border-std); }
-        .dice-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; width: 220px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; cursor: pointer; transition: 0.1s; position: relative; height: 130px;}
-        .dice-bet-box:active:not(.locked) { transform: scale(0.95); }
-        .dice-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
-        .dice-bet-title { font-size: 36px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 5px; }
-        .dice-bet-payout { font-size: 24px; color: var(--success); margin-bottom: 10px; }
+        /* Fixed: Subtle natural dice shake */
+        @keyframes subtleShake { 
+            0% { transform: translate(1px, 1px) rotate(0deg); } 
+            25% { transform: translate(-1px, -2px) rotate(-1deg); } 
+            50% { transform: translate(-2px, 1px) rotate(1deg); } 
+            75% { transform: translate(2px, 1px) rotate(-1deg); } 
+            100% { transform: translate(1px, -1px) rotate(1deg); } 
+        }
+        
+        .arcade-bet-area { padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6); }
+        .master-bet-row { display:flex; justify-content: center; margin-bottom: 15px; }
+        .arcade-grid { display: flex; justify-content: center; gap: 20px; }
+        
+        .arcade-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; width: 250px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; cursor: pointer; transition: 0.1s; position: relative; height: 160px;}
+        .arcade-bet-box:active:not(.locked) { transform: scale(0.95); }
+        .arcade-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
+        
+        .arcade-bet-title { font-size: 40px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 10px; text-transform: uppercase;}
+        .arcade-bet-payout { font-size: 24px; color: var(--success); font-weight: bold;}
+        
+        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 28px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20; pointer-events:none;}
+        .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 30;}
 
         .coin-3d { width: 150px; height: 150px; background: #fbbf24; border-radius: 50%; border: 10px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 80px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 50px #fbbf24; font-family: Arial; }
         .coin-3d.flipping { animation: flipCoin 0.3s infinite linear; }
         @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
 
         /* PERYA COLOR GAME */
-        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 800px; margin: 0 auto; }
+        .color-grid-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 850px; margin: 0 auto; }
         .color-die-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1;}
         .color-die { width: 100px; height: 100px; border: 6px solid var(--border-std); border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5); transition: background-color 0.1s;}
-        .color-die.shake { animation: subtleShake 0.3s infinite; }
+        .color-die.shake { animation: subtleShake 0.2s infinite; }
+        
         .bg-red { background-color: #ef4444; } .bg-blue { background-color: #3b82f6; } .bg-yellow { background-color: #eab308; } 
         .bg-green { background-color: #10b981; } .bg-pink { background-color: #ec4899; } .bg-white { background-color: #f8fafc; }
         
-        .color-bet-title { font-size: 40px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 5px; text-transform: uppercase;}
+        .br-red { border-top-color: #ef4444; } .br-blue { border-top-color: #3b82f6; } .br-yellow { border-top-color: #eab308; }
+        .br-green { border-top-color: #10b981; } .br-pink { border-top-color: #ec4899; } .br-white { border-top-color: #f8fafc; }
         
-        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 28px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20; pointer-events:none;}
-        .color-payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 38px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 30;}
-        
-        .history-list-item { font-size: 28px; border-bottom: 1px dashed #333; padding: 4px 0; text-align: center; }
+        .history-list-item { font-size: 32px; border-bottom: 1px dashed #333; padding: 6px 0; text-align: center; }
     </style>
 </head>
 <body>
@@ -235,7 +247,7 @@
                         <button class="wood-btn" style="background: #ea580c; margin-bottom: 10px;" onclick="joinCoinFlip()">GLOBAL COIN FLIP</button>
                         <button class="wood-btn" style="background: #ef4444;" onclick="joinColorGame()">CLASSIC COLOR GAME</button>
                     </div>
-                    <button class="wood-btn" style="background: var(--danger); margin-top: 10px;" onclick="hideModal('play-modal')">BACK TO DASHBOARD</button>
+                    <button class="wood-btn" style="background: var(--danger); margin-top: 10px;" onclick="hideSpecificModal('play-modal')">BACK TO DASHBOARD</button>
                 </div>
             </div>
         </div>
@@ -252,32 +264,39 @@
                             <option value="rule-coin">GLOBAL COIN FLIP</option>
                             <option value="rule-color">CLASSIC COLOR GAME</option>
                         </select>
+                        
                         <div id="rule-bj" class="rule-content info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
                             <strong class="info-title">BLACKJACK</strong>
-                            <ul><li><strong>Objective:</strong> Beat the Dealer's hand without going over 21. Face cards are 10, Aces are 1 or 11.</li><li><strong>Limits:</strong> Max 1 seat per player. Max initial bet is 50,000 (Splitting allows up to 100,000 total).</li><li><strong>Action Timer:</strong> You have exactly 15 seconds to Hit, Stand, Double, or Split.</li><li><strong>Payouts:</strong> Standard wins pay 1:1. Blackjack pays 3:2. Pushes refund the bet.</li><li><strong>Dealer Rules:</strong> Dealer must draw to 16 and stand on all 17s.</li></ul>
+                            <ul><li><strong>Objective:</strong> Beat the Dealer's hand without going over 21. Face cards are 10, Aces are 1 or 11.</li><li><strong>Limits:</strong> Max 1 seat per room. Max bet is 50,000 (Splitting allows up to 100,000 total).</li><li><strong>Action Timer:</strong> You have exactly 15 seconds to Hit, Stand, Double, or Split.</li><li><strong>Payouts:</strong> Standard wins pay 1:1. Blackjack pays 3:2. Pushes refund the bet.</li><li><strong>Dealer Rules:</strong> Dealer must draw to 16 and stand on all 17s.</li></ul>
                         </div>
                         <div id="rule-dice" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
                             <strong class="info-title">HIGH-LOW DICE</strong>
-                            <ul><li><strong>Global Betting:</strong> Two 6-sided dice are rolled globally. You must bet on the total sum.</li><li><strong>Limits:</strong> Maximum bet is strictly 50,000 credits per tile.</li><li><strong>Under 7:</strong> Pays 1:1 if the total sum is 2, 3, 4, 5, or 6.</li><li><strong>Over 7:</strong> Pays 1:1 if the total sum is 8, 9, 10, 11, or 12.</li><li><strong>Exactly 7:</strong> The Jackpot. Pays massive 4:1 odds if the total is exactly 7.</li></ul>
+                            <ul><li><strong>Global Betting:</strong> Two 6-sided dice are rolled globally. Select your bet amount from the top dropdown, then click the tile to place your bet.</li><li><strong>Limits:</strong> Maximum bet is strictly 50,000 credits per tile.</li><li><strong>Under 7:</strong> Pays 1:1 if the total sum is 2, 3, 4, 5, or 6.</li><li><strong>Over 7:</strong> Pays 1:1 if the total sum is 8, 9, 10, 11, or 12.</li><li><strong>Exactly 7:</strong> The Jackpot. Pays massive 4:1 odds if the total is exactly 7.</li></ul>
                         </div>
                         <div id="rule-coin" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
                             <strong class="info-title">GLOBAL COIN FLIP</strong>
-                            <ul><li><strong>Global Betting:</strong> A single global coin is flipped. Bet on Heads or Tails before the 15-second timer expires.</li><li><strong>Limits:</strong> Maximum bet is strictly 50,000 credits per tile.</li><li><strong>Payouts:</strong> Correct guesses double your money (Pays 1:1).</li></ul>
+                            <ul><li><strong>Global Betting:</strong> A single global coin is flipped. Select your bet amount from the top dropdown, then click Heads or Tails.</li><li><strong>Limits:</strong> Maximum bet is strictly 50,000 credits per tile.</li><li><strong>Payouts:</strong> Correct guesses double your money (Pays 1:1).</li></ul>
                         </div>
                         <div id="rule-color" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
                             <strong class="info-title">CLASSIC COLOR GAME</strong>
                             <ul><li><strong>Global Betting:</strong> 3 colored dice are rolled. Pick your bet amount at the top, then tap the colored tiles to place your chips.</li><li><strong>Limits:</strong> Maximum bet is strictly 50,000 credits per color.</li><li><strong>Payouts:</strong> Depends on how many dice match your chosen color.<br>- 1 Match: Pays 1:1<br>- 2 Matches: Pays 2:1<br>- 3 Matches: Pays 3:1</li></ul>
                         </div>
                     </div>
+                    
                     <div style="flex: 1; display: flex; flex-direction: column;">
                         <div class="info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
                             <strong class="info-title" style="color: #10b981;">SYSTEM RULES</strong>
-                            <ul><li><strong>Banking Limits:</strong><br>- Deposit: 10,000 to 100,000 credits.<br>- Withdraw: 50,000 to 100,000 credits.</li><li><strong>Daily Rewards:</strong> Mystery boxes available exactly every 24 hours.</li><li><strong>Spam Protection:</strong> Arcade buttons lock for a brief period to prevent accidental multi-clicks or glitches.</li></ul>
+                            <ul>
+                                <li><strong>Banking Limits:</strong><br>- Deposit: 10,000 to 100,000 credits.<br>- Withdraw: 50,000 to 100,000 credits.</li>
+                                <li><strong>Daily Rewards:</strong> Mystery boxes available exactly every 24 hours.</li>
+                                <li><strong>Spam Protection:</strong> Arcade buttons lock temporarily (750ms) to prevent accidental multi-clicks or glitches.</li>
+                                <li><strong>Global Locking:</strong> All arcade games strictly lock betting when the timer hits zero.</li>
+                            </ul>
                         </div>
                     </div>
 
                 </div>
-                <button class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 15px;" onclick="hideModal('how-to-play-modal')">CLOSE</button>
+                <button class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 15px;" onclick="hideSpecificModal('how-to-play-modal')">CLOSE</button>
             </div>
         </div>
 
@@ -290,7 +309,7 @@
                     - Using macros or alt-accounts to farm rewards is strictly prohibited and results in an IP Ban.<br>
                     - All accounts require manual Admin approval.
                 </div>
-                <div style="display: flex; justify-content: center; margin-top: 15px;"><button class="wood-btn" style="background: var(--success); width: 100%; color:#000;" onclick="hideModal('tos-modal')">I UNDERSTAND</button></div>
+                <div style="display: flex; justify-content: center; margin-top: 15px;"><button class="wood-btn" style="background: var(--success); width: 100%; color:#000;" onclick="hideSpecificModal('tos-modal')">I UNDERSTAND</button></div>
             </div>
         </div>
 
@@ -298,7 +317,7 @@
             <div class="modal-box custom-scroll">
                 <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 20px; font-size: 60px;">HALL OF FAME</h2>
                 <div class="pixel-text" style="font-size: 30px; margin: 40px 0; color: #94a3b8;">[ DATABASE SYNCING - COMING SOON ]</div>
-                <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('leaderboard-modal')">CLOSE</button>
+                <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideSpecificModal('leaderboard-modal')">CLOSE</button>
             </div>
         </div>
 
@@ -310,7 +329,7 @@
                     <button class="wood-btn" style="width: 150px; margin-bottom:0; background: var(--success); color:#000;" onclick="redeemCodeMain()">REDEEM</button>
                 </div>
                 <p id="redeem-msg" class="pixel-text" style="font-size: 28px; margin-bottom: 10px;"></p>
-                <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('redeem-modal')">CLOSE</button>
+                <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideSpecificModal('redeem-modal')">CLOSE</button>
             </div>
         </div>
 
@@ -320,7 +339,7 @@
                 <div class="profile-preview pixel-text" id="profile-username-preview" style="color: #fff;">USERNAME</div>
                 <div class="profile-credits pixel-text" style="margin-bottom: 15px; font-size: 36px;">TOTAL BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
                 <button class="wood-btn pixel-text" style="background: #475569;" onclick="openProfileLedger()">VIEW TRANSACTION LEDGER</button>
-                <div style="margin-top: 15px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('profile-modal')">CLOSE</button></div>
+                <div style="margin-top: 15px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideSpecificModal('profile-modal')">CLOSE</button></div>
             </div>
         </div>
 
@@ -328,7 +347,7 @@
             <div class="modal-box custom-scroll" style="width: 700px;">
                 <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 50px;">TRANSACTION LEDGER</h2>
                 <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 300px; margin-bottom: 15px;"></div>
-                <div style="display: flex; justify-content: center;"><button class="wood-btn pixel-text" style="background: var(--danger); width:100%;" onclick="hideModal('profile-ledger-modal'); showModal('profile-modal');">BACK TO PROFILE</button></div>
+                <div style="display: flex; justify-content: center;"><button class="wood-btn pixel-text" style="background: var(--danger); width:100%;" onclick="hideSpecificModal('profile-ledger-modal'); showSpecificModal('profile-modal');">BACK TO PROFILE</button></div>
             </div>
         </div>
         
@@ -345,7 +364,7 @@
                     <button class="wood-btn" style="flex: 1; background: var(--warning); color:#000;" onclick="showBankConfirm('withdrawal')">WITHDRAW</button>
                 </div>
                 <button class="wood-btn pixel-text" style="background: #475569;" onclick="openBankLedger()">VIEW BANK REQUESTS</button>
-                <div style="margin-top: 10px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('bank-modal')">CLOSE</button></div>
+                <div style="margin-top: 10px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideSpecificModal('bank-modal')">CLOSE</button></div>
             </div>
         </div>
 
@@ -353,7 +372,7 @@
             <div class="modal-box custom-scroll" style="width: 700px;">
                 <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 50px;">BANK REQUESTS</h2>
                 <div id="bank-ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 300px; margin-bottom: 15px;"></div>
-                <div style="display: flex; justify-content: center;"><button class="wood-btn pixel-text" style="background: var(--danger); width:100%;" onclick="hideModal('bank-ledger-modal'); showModal('bank-modal');">BACK TO BANK</button></div>
+                <div style="display: flex; justify-content: center;"><button class="wood-btn pixel-text" style="background: var(--danger); width:100%;" onclick="hideSpecificModal('bank-ledger-modal'); showSpecificModal('bank-modal');">BACK TO BANK</button></div>
             </div>
         </div>
 
@@ -366,15 +385,19 @@
                     <p style="margin-bottom: 10px; color: #fff; font-family: 'VT323'; font-size: 24px;">Please notify the admin for your request:</p>
                     <div style="display: flex; justify-content: center; align-items: center; gap: 20px; font-size: 18px; color: var(--accent-glow-2); font-weight: bold; font-family: 'Segoe UI', sans-serif;">
                         <span style="display: flex; align-items: center;">
-                            <svg class="discord-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36" style="width: 24px; height: 24px; fill: currentColor; margin-right: 8px;"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91,65.69,84.69,65.69Z"/></svg> @ashley.gg
+                            <svg class="discord-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36" style="width: 24px; height: 24px; fill: currentColor; margin-right: 8px;">
+                                <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91,65.69,84.69,65.69Z"/>
+                            </svg> @ashley.gg
                         </span>
                         <span>SNT: @AshleyChan</span>
                     </div>
                 </div>
+
                 <div id="bank-confirm-msg" class="pixel-text" style="font-size: 26px; margin-bottom: 10px;"></div>
+
                 <div id="bank-confirm-btn-row" style="display: flex; gap: 10px; margin-top: 15px;">
                     <button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button>
-                    <button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>
+                    <button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideSpecificModal('bank-confirm-modal'); showSpecificModal('bank-modal');">CANCEL</button>
                 </div>
             </div>
         </div>
@@ -396,7 +419,7 @@
                     <div class="pixel-text" id="reward-timer" style="font-size: 60px; color: var(--danger);">00:00:00</div>
                 </div>
                 <p id="reward-msg" class="pixel-text" style="font-size: 32px; margin-top: 15px;"></p>
-                <div style="margin-top: 15px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('reward-modal')">CLOSE</button></div>
+                <div style="margin-top: 15px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideSpecificModal('reward-modal')">CLOSE</button></div>
             </div>
         </div>
 
@@ -407,7 +430,7 @@
                     <span class="pixel-text" style="font-size: 32px;">SFX</span>
                     <input type="range" id="vol-sfx" min="0" max="1" step="0.05" value="1" oninput="updateVol('sfx', this.value)">
                 </div>
-                <button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('settings-modal')">CLOSE</button>
+                <button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideSpecificModal('settings-modal')">CLOSE</button>
             </div>
         </div>
 
@@ -416,7 +439,7 @@
                 <h2 class="pixel-text" style="color: var(--danger); font-size: 50px;">CONFIRM LOGOUT?</h2>
                 <div style="display: flex; gap: 10px; margin-top: 30px;">
                     <button class="wood-btn" style="flex: 1; background: var(--danger);" onclick="logout()">YES</button>
-                    <button class="wood-btn" style="flex: 1;" onclick="hideModal('logout-modal')">NO</button>
+                    <button class="wood-btn" style="flex: 1;" onclick="hideSpecificModal('logout-modal')">NO</button>
                 </div>
             </div>
         </div>
@@ -469,32 +492,35 @@
                     <div id="dice-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
                     <div id="dice-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
                 </div>
-                <div style="padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6);">
-                    <div style="display:flex; justify-content: center; margin-bottom: 10px;">
-                        <select id="dice-master-bet" class="retro-input pixel-text" style="max-width: 300px; font-size: 28px;">
+                <div class="arcade-bet-area">
+                    <div class="master-bet-row">
+                        <select id="dice-master-bet" class="retro-input pixel-text" style="max-width: 350px; font-size: 28px;">
                             <option value="1000" selected>1,000</option><option value="5000">5,000</option>
                             <option value="20000">20,000</option><option value="50000">50,000</option>
                         </select>
                     </div>
-                    <div style="display: flex; justify-content: center; gap: 20px;">
-                        <div id="dice-btn-under" class="dice-bet-box color-bet-btn" onclick="placeDiceBet('under')">
-                            <div class="bet-badge pixel-text hidden" id="badge-under">0</div><div class="color-payout-overlay hidden" id="payout-under"></div>
-                            <div class="dice-bet-title pixel-text">UNDER 7</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
+                    <div class="arcade-grid">
+                        <div id="dice-btn-under" class="arcade-bet-box" onclick="placeDiceBet('under')">
+                            <div class="bet-badge hidden" id="badge-under">0</div><div class="payout-overlay hidden" id="payout-under"></div>
+                            <div class="arcade-bet-title">UNDER 7</div><div class="arcade-bet-payout">PAYS 1:1</div>
                         </div>
-                        <div id="dice-btn-seven" class="dice-bet-box color-bet-btn" onclick="placeDiceBet('seven')">
-                            <div class="bet-badge pixel-text hidden" id="badge-seven">0</div><div class="color-payout-overlay hidden" id="payout-seven"></div>
-                            <div class="dice-bet-title pixel-text" style="color:#a855f7;">EXACTLY 7</div><div class="dice-bet-payout pixel-text">PAYS 4:1</div>
+                        <div id="dice-btn-seven" class="arcade-bet-box" onclick="placeDiceBet('seven')">
+                            <div class="bet-badge hidden" id="badge-seven">0</div><div class="payout-overlay hidden" id="payout-seven"></div>
+                            <div class="arcade-bet-title" style="color:#a855f7;">EXACTLY 7</div><div class="arcade-bet-payout">PAYS 4:1</div>
                         </div>
-                        <div id="dice-btn-over" class="dice-bet-box color-bet-btn" onclick="placeDiceBet('over')">
-                            <div class="bet-badge pixel-text hidden" id="badge-over">0</div><div class="color-payout-overlay hidden" id="payout-over"></div>
-                            <div class="dice-bet-title pixel-text" style="color:var(--success);">OVER 7</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
+                        <div id="dice-btn-over" class="arcade-bet-box" onclick="placeDiceBet('over')">
+                            <div class="bet-badge hidden" id="badge-over">0</div><div class="payout-overlay hidden" id="payout-over"></div>
+                            <div class="arcade-bet-title" style="color:var(--success);">OVER 7</div><div class="arcade-bet-payout">PAYS 1:1</div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="sidebar-col">
                 <div class="dropdown-container">
-                    <div class="dropdown-header pixel-text" onclick="togglePlayerList('dice-players-list')"><span>PLAYERS</span><span style="color:var(--accent-glow-2);"><span id="dice-player-count">0</span> ▼</span></div>
+                    <div class="sidebar-header pixel-text" style="cursor: pointer; border-bottom: none;" onclick="togglePlayerList('dice-players-list')">
+                        <span>PLAYERS</span>
+                        <span><span id="dice-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
+                    </div>
                     <div id="dice-players-list" class="dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
@@ -524,28 +550,31 @@
                     <div id="coin-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">FLIPPING...</div>
                     <div id="coin-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
                 </div>
-                <div style="padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6);">
-                    <div style="display:flex; justify-content: center; margin-bottom: 10px;">
-                        <select id="coin-master-bet" class="retro-input pixel-text" style="max-width: 300px; font-size: 28px;">
+                <div class="arcade-bet-area">
+                    <div class="master-bet-row">
+                        <select id="coin-master-bet" class="retro-input pixel-text" style="max-width: 350px; font-size: 28px;">
                             <option value="1000" selected>1,000</option><option value="5000">5,000</option>
                             <option value="20000">20,000</option><option value="50000">50,000</option>
                         </select>
                     </div>
-                    <div style="display: flex; justify-content: center; gap: 20px;">
-                        <div id="coin-btn-heads" class="dice-bet-box color-bet-btn" onclick="placeCoinBet('heads')" style="width:300px;">
-                            <div class="bet-badge pixel-text hidden" id="badge-heads">0</div><div class="color-payout-overlay hidden" id="payout-heads"></div>
-                            <div class="dice-bet-title pixel-text" style="color:var(--accent-glow-2);">HEADS</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
+                    <div class="arcade-grid">
+                        <div id="coin-btn-heads" class="arcade-bet-box" onclick="placeCoinBet('heads')" style="width:300px;">
+                            <div class="bet-badge hidden" id="badge-heads">0</div><div class="payout-overlay hidden" id="payout-heads"></div>
+                            <div class="arcade-bet-title" style="color:var(--accent-glow-2);">HEADS</div><div class="arcade-bet-payout">PAYS 1:1</div>
                         </div>
-                        <div id="coin-btn-tails" class="dice-bet-box color-bet-btn" onclick="placeCoinBet('tails')" style="width:300px;">
-                            <div class="bet-badge pixel-text hidden" id="badge-tails">0</div><div class="color-payout-overlay hidden" id="payout-tails"></div>
-                            <div class="dice-bet-title pixel-text" style="color:#ea580c;">TAILS</div><div class="dice-bet-payout pixel-text">PAYS 1:1</div>
+                        <div id="coin-btn-tails" class="arcade-bet-box" onclick="placeCoinBet('tails')" style="width:300px;">
+                            <div class="bet-badge hidden" id="badge-tails">0</div><div class="payout-overlay hidden" id="payout-tails"></div>
+                            <div class="arcade-bet-title" style="color:#ea580c;">TAILS</div><div class="arcade-bet-payout">PAYS 1:1</div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="sidebar-col">
                 <div class="dropdown-container">
-                    <div class="dropdown-header pixel-text" onclick="togglePlayerList('coin-players-list')"><span>PLAYERS</span><span style="color:var(--accent-glow-2);"><span id="coin-player-count">0</span> ▼</span></div>
+                    <div class="sidebar-header pixel-text" style="cursor: pointer; border-bottom: none;" onclick="togglePlayerList('coin-players-list')">
+                        <span>PLAYERS</span>
+                        <span><span id="coin-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
+                    </div>
                     <div id="coin-players-list" class="dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
@@ -580,31 +609,38 @@
                     <div id="color-result-text" class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
                     <div id="color-timer" class="pixel-text" style="font-size: 26px; color: var(--accent-glow-2);">15s REMAINING</div>
                 </div>
-                <div style="padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6);">
-                    <div style="display:flex; justify-content: center; margin-bottom: 10px;">
-                        <select id="color-master-bet" class="retro-input pixel-text" style="max-width: 300px; font-size: 28px;">
+                
+                <div class="arcade-bet-area">
+                    <div class="master-bet-row">
+                        <select id="color-master-bet" class="retro-input pixel-text" style="max-width: 350px; font-size: 28px;">
                             <option value="1000" selected>1,000</option><option value="5000">5,000</option>
                             <option value="20000">20,000</option><option value="50000">50,000</option>
                         </select>
                     </div>
-                    <div class="color-grid">
-                        <div id="color-btn-red" class="color-bet-box br-red color-bet-btn" onclick="placeColorBet('red')">
-                            <div class="bet-badge pixel-text hidden" id="badge-red">0</div><div class="color-payout-overlay hidden" id="payout-red"></div><div class="color-bet-title">RED</div>
+                    <div class="color-grid-wrapper">
+                        <div id="color-btn-red" class="color-bet-box br-red" onclick="placeColorBet('red')">
+                            <div class="bet-badge hidden" id="badge-red">0</div><div class="color-payout-overlay hidden" id="payout-red"></div>
+                            <div class="color-bet-title">RED</div>
                         </div>
-                        <div id="color-btn-blue" class="color-bet-box br-blue color-bet-btn" onclick="placeColorBet('blue')">
-                            <div class="bet-badge pixel-text hidden" id="badge-blue">0</div><div class="color-payout-overlay hidden" id="payout-blue"></div><div class="color-bet-title">BLUE</div>
+                        <div id="color-btn-blue" class="color-bet-box br-blue" onclick="placeColorBet('blue')">
+                            <div class="bet-badge hidden" id="badge-blue">0</div><div class="color-payout-overlay hidden" id="payout-blue"></div>
+                            <div class="color-bet-title">BLUE</div>
                         </div>
-                        <div id="color-btn-yellow" class="color-bet-box br-yellow color-bet-btn" onclick="placeColorBet('yellow')">
-                            <div class="bet-badge pixel-text hidden" id="badge-yellow">0</div><div class="color-payout-overlay hidden" id="payout-yellow"></div><div class="color-bet-title">YELLOW</div>
+                        <div id="color-btn-yellow" class="color-bet-box br-yellow" onclick="placeColorBet('yellow')">
+                            <div class="bet-badge hidden" id="badge-yellow">0</div><div class="color-payout-overlay hidden" id="payout-yellow"></div>
+                            <div class="color-bet-title">YELLOW</div>
                         </div>
-                        <div id="color-btn-green" class="color-bet-box br-green color-bet-btn" onclick="placeColorBet('green')">
-                            <div class="bet-badge pixel-text hidden" id="badge-green">0</div><div class="color-payout-overlay hidden" id="payout-green"></div><div class="color-bet-title">GREEN</div>
+                        <div id="color-btn-green" class="color-bet-box br-green" onclick="placeColorBet('green')">
+                            <div class="bet-badge hidden" id="badge-green">0</div><div class="color-payout-overlay hidden" id="payout-green"></div>
+                            <div class="color-bet-title">GREEN</div>
                         </div>
-                        <div id="color-btn-pink" class="color-bet-box br-pink color-bet-btn" onclick="placeColorBet('pink')">
-                            <div class="bet-badge pixel-text hidden" id="badge-pink">0</div><div class="color-payout-overlay hidden" id="payout-pink"></div><div class="color-bet-title">PINK</div>
+                        <div id="color-btn-pink" class="color-bet-box br-pink" onclick="placeColorBet('pink')">
+                            <div class="bet-badge hidden" id="badge-pink">0</div><div class="color-payout-overlay hidden" id="payout-pink"></div>
+                            <div class="color-bet-title">PINK</div>
                         </div>
-                        <div id="color-btn-white" class="color-bet-box br-white color-bet-btn" onclick="placeColorBet('white')">
-                            <div class="bet-badge pixel-text hidden" id="badge-white">0</div><div class="color-payout-overlay hidden" id="payout-white"></div><div class="color-bet-title" style="color:#f8fafc; text-shadow: 2px 2px 0 #555;">WHITE</div>
+                        <div id="color-btn-white" class="color-bet-box br-white" onclick="placeColorBet('white')">
+                            <div class="bet-badge hidden" id="badge-white">0</div><div class="color-payout-overlay hidden" id="payout-white"></div>
+                            <div class="color-bet-title" style="color:#f8fafc; text-shadow: 2px 2px 0 #555;">WHITE</div>
                         </div>
                     </div>
                 </div>
@@ -612,7 +648,10 @@
             
             <div class="sidebar-col">
                 <div class="dropdown-container">
-                    <div class="dropdown-header pixel-text" onclick="togglePlayerList('color-players-list')"><span>PLAYERS</span><span style="color:var(--accent-glow-2);"><span id="color-player-count">0</span> ▼</span></div>
+                    <div class="sidebar-header pixel-text" style="cursor: pointer; border-bottom: none;" onclick="togglePlayerList('color-players-list')">
+                        <span>PLAYERS</span>
+                        <span><span id="color-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
+                    </div>
                     <div id="color-players-list" class="dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
@@ -645,18 +684,31 @@
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
         let myCoinBets = { heads: 0, tails: 0 }; 
         let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
-        let isBetting = false;
+        let isBetting = false; let betThrottleTimeout = null;
 
         const audioNodes = { bgm: document.getElementById('sfx-bgm'), deal: document.getElementById('sfx-deal'), bet: document.getElementById('sfx-bet'), win: document.getElementById('sfx-win'), lose: document.getElementById('sfx-lose') };
         audioNodes.bgm.volume = 0; 
         function updateVol(type, val) { if (type === 'bgm') { audioNodes.bgm.volume = val; if(val > 0 && audioNodes.bgm.paused) audioNodes.bgm.play().catch(()=>{}); } else { ['deal', 'bet', 'win', 'lose'].forEach(id => { if(audioNodes[id]) audioNodes[id].volume = val; }); } }
         function playSfx(id) { if(audioNodes[id] && audioNodes[id].volume > 0) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } }
 
-        // --- GLOBAL MENU LOGIC ---
-        function showSpecificModal(id) { if(!currentUser && id !== 'how-to-play-modal' && id !== 'tos-modal') return; const el = document.getElementById(id); if(el) el.classList.remove('hidden'); }
-        function hideModal(id) { const el = document.getElementById(id); if(el) el.classList.add('hidden'); }
-        function togglePlayerList(id) { const list = document.getElementById(id); if(list) list.classList.toggle('hidden'); }
-        function toggleAuth(panel) { if(panel === 'login') { document.getElementById('panel-signup').classList.add('hidden'); document.getElementById('panel-login').classList.remove('hidden'); } else { document.getElementById('panel-login').classList.add('hidden'); document.getElementById('panel-signup').classList.remove('hidden'); } }
+        // --- GLOBAL MENU LOGIC (DEAD BUTTON FIX) ---
+        function showSpecificModal(id) { 
+            if(!currentUser && id !== 'how-to-play-modal' && id !== 'tos-modal') return; 
+            const el = document.getElementById(id); 
+            if(el) el.classList.remove('hidden'); 
+        }
+        function hideSpecificModal(id) { 
+            const el = document.getElementById(id); 
+            if(el) el.classList.add('hidden'); 
+        }
+        function togglePlayerList(id) { 
+            const list = document.getElementById(id); 
+            if(list) list.classList.toggle('hidden'); 
+        }
+        function toggleAuth(panel) { 
+            if(panel === 'login') { document.getElementById('panel-signup').classList.add('hidden'); document.getElementById('panel-login').classList.remove('hidden'); } 
+            else { document.getElementById('panel-login').classList.add('hidden'); document.getElementById('panel-signup').classList.remove('hidden'); } 
+        }
 
         async function signup() {
             const u = document.getElementById('signup-user').value; const p = document.getElementById('signup-pass').value; const msgBox = document.getElementById('signup-msg');
@@ -695,10 +747,10 @@
             if(['dice', 'coin', 'color'].includes(game)) { document.getElementById(game+'-interface').classList.add('hidden'); socket.emit('leave_arcade', { username: currentUser.username, game }); currentRoomId = null; }
         }
 
-        function joinRoom(roomId) { currentRoomId = roomId; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
-        function joinDice() { currentRoomId = 'dice'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
-        function joinCoinFlip() { currentRoomId = 'coin'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('coin-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'coin' }); socket.emit('get_coin_state'); playSfx('deal'); }
-        function joinColorGame() { currentRoomId = 'color'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
+        function joinRoom(roomId) { currentRoomId = roomId; hideSpecificModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
+        function joinDice() { currentRoomId = 'dice'; hideSpecificModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
+        function joinCoinFlip() { currentRoomId = 'coin'; hideSpecificModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('coin-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'coin' }); socket.emit('get_coin_state'); playSfx('deal'); }
+        function joinColorGame() { currentRoomId = 'color'; hideSpecificModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
 
         // --- BLACKJACK ENGINE ---
         window.actSitDown = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
@@ -840,12 +892,17 @@
         });
 
         // --- ARCADE UTILS ---
-        function lockBets(game) { document.querySelectorAll(`.${game}-bet-btn`).forEach(b => { b.classList.add('locked'); }); }
-        function unlockBets(game) { document.querySelectorAll(`.${game}-bet-btn`).forEach(b => { b.classList.remove('locked'); }); }
+        function lockBets(game) { document.querySelectorAll(`.${game}-bet-box`).forEach(b => { b.classList.add('locked'); }); }
+        function unlockBets(game) { document.querySelectorAll(`.${game}-bet-box`).forEach(b => { b.classList.remove('locked'); }); }
         function showPayoutAnim(choiceId, amount, isWin) {
             const c = document.getElementById(`payout-${choiceId}`); if(!c) return;
             c.innerHTML = `<span style="color:${isWin?'var(--success)':'var(--danger)'}">${isWin ? '+' : ''}${formatNumber(amount)}</span>`;
             c.classList.remove('hidden'); setTimeout(() => { c.classList.add('hidden'); }, 4500);
+        }
+        function applyThrottle() {
+            isBetting = true;
+            clearTimeout(betThrottleTimeout);
+            betThrottleTimeout = setTimeout(() => { isBetting = false; }, 750);
         }
 
         // --- DICE LOGIC ---
@@ -879,11 +936,13 @@
         });
         
         window.placeDiceBet = function(choice) {
-            if(isBetting) return; const btn = document.getElementById(`dice-btn-${choice}`); if(btn && btn.classList.contains('locked')) return;
+            if(isBetting) return; const box = document.getElementById(`dice-btn-${choice}`); if(box && box.classList.contains('locked')) return;
             const amt = parseInt(document.getElementById(`dice-master-bet`).value);
             if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
             if (myDiceBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            isBetting = true; myDiceBets[choice] += amt; socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt }); setTimeout(()=>{ isBetting = false; }, 750);
+            
+            applyThrottle(); myDiceBets[choice] += amt; 
+            socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt });
         };
 
         // --- GLOBAL COIN FLIP LOGIC ---
@@ -914,11 +973,13 @@
             }
         });
         window.placeCoinBet = function(choice) {
-            if(isBetting) return; const btn = document.getElementById(`coin-btn-${choice}`); if(btn && btn.classList.contains('locked')) return;
+            if(isBetting) return; const box = document.getElementById(`coin-btn-${choice}`); if(box && box.classList.contains('locked')) return;
             const amt = parseInt(document.getElementById(`coin-master-bet`).value);
             if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
             if (myCoinBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            isBetting = true; myCoinBets[choice] += amt; socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); setTimeout(()=>{ isBetting = false; }, 750);
+            
+            applyThrottle(); myCoinBets[choice] += amt; 
+            socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); 
         };
 
         // --- CLASSIC COLOR GAME LOGIC ---
@@ -961,17 +1022,24 @@
             }
         });
         window.placeColorBet = function(choice) {
-            if(isBetting) return; const btn = document.getElementById(`color-btn-${choice}`); if(btn && btn.classList.contains('locked')) return;
+            if(isBetting) return; const box = document.getElementById(`color-btn-${choice}`); if(box && box.classList.contains('locked')) return;
             const amt = parseInt(document.getElementById(`color-master-bet`).value);
             if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-            if (myColorBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            isBetting = true; myColorBets[choice] += amt; socket.emit('place_color_bet', { username: currentUser.username, choice, amount: amt }); setTimeout(()=>{ isBetting = false; }, 750);
+            if (myColorBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per color!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
+            
+            applyThrottle(); myColorBets[choice] += amt; 
+            socket.emit('place_color_bet', { username: currentUser.username, choice, amount: amt }); 
         };
 
         socket.on('arcade_bet_placed', (data) => { 
             const badge = document.getElementById(`badge-${data.choice}`); 
             if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); badge.classList.remove('hidden'); }
-            if(data.totalChoiceBet >= 50000) { let prefix = data.game === 'dice' ? 'dice-btn' : (data.game === 'coin' ? 'coin-btn' : 'color-btn'); const box = document.getElementById(`${prefix}-${data.choice}`); if(box) box.classList.add('locked'); }
+            
+            if(data.totalChoiceBet >= 50000) { 
+                let prefix = data.game === 'dice' ? 'dice-btn' : (data.game === 'coin' ? 'coin-btn' : 'color-btn'); 
+                const box = document.getElementById(`${prefix}-${data.choice}`); 
+                if(box) box.classList.add('locked'); 
+            }
             currentUser.credits = data.credits; updateAllCredits(); playSfx('bet'); 
         });
         socket.on('arcade_error', (msg) => { alert(msg); isBetting = false; });
@@ -999,10 +1067,15 @@
         });
 
         // --- UI MENUS ---
-        function showProfile() { if(!currentUser) return; document.getElementById('profile-username-preview').innerText = currentUser.username; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showModal('profile-modal'); }
-        function showBank() { if(!currentUser) return; document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showModal('bank-modal'); }
-        function openProfileLedger() { if(!currentUser) return; hideModal('profile-modal'); showModal('profile-ledger-modal'); loadLedger(false); }
-        function openBankLedger() { if(!currentUser) return; hideModal('bank-modal'); showModal('bank-ledger-modal'); loadLedger(true); }
+        function showProfile() { if(!currentUser) return; document.getElementById('profile-username-preview').innerText = currentUser.username; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showSpecificModal('profile-modal'); }
+        function showBank() { if(!currentUser) return; document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showSpecificModal('bank-modal'); }
+        function openProfileLedger() { if(!currentUser) return; hideModal('profile-modal'); showSpecificModal('profile-ledger-modal'); loadLedger(false); }
+        function openBankLedger() { if(!currentUser) return; hideModal('bank-modal'); showSpecificModal('bank-ledger-modal'); loadLedger(true); }
+        function showRewards() {
+            if(!currentUser) return; showSpecificModal('reward-modal'); document.getElementById('reward-msg').innerText = ''; document.querySelectorAll('.reward-box').forEach(b => b.classList.remove('open')); isPickingReward = false;
+            if (rewardCooldownSeconds <= 0) { document.getElementById('reward-active-view').classList.remove('hidden'); document.getElementById('reward-cooldown-view').classList.add('hidden'); } 
+            else { document.getElementById('reward-active-view').classList.add('hidden'); document.getElementById('reward-cooldown-view').classList.remove('hidden'); startRewardTimer(); }
+        }
         
         async function loadLedger(isBankOnly) {
             const res = await fetch(`/api/profile/ledger/${currentUser.username}`); const data = await res.json();
@@ -1029,8 +1102,8 @@
             if (type === 'withdrawal' && amt > currentUser.credits) return alert("Insufficient funds.");
             pendingBankAction = { type, amount: amt }; document.getElementById('confirm-bank-type').innerText = type.toUpperCase(); document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
             document.getElementById('bank-confirm-msg').innerText = '';
-            document.getElementById('bank-confirm-btn-row').innerHTML = `<button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button><button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>`;
-            hideModal('bank-modal'); showModal('bank-confirm-modal');
+            document.getElementById('bank-confirm-btn-row').innerHTML = `<button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button><button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideSpecificModal('bank-confirm-modal'); showSpecificModal('bank-modal');">CANCEL</button>`;
+            hideModal('bank-modal'); showSpecificModal('bank-confirm-modal');
         }
 
         async function executeBankRequest() {
@@ -1038,7 +1111,7 @@
             const btnRow = document.getElementById('bank-confirm-btn-row'); const statusMsg = document.getElementById('bank-confirm-msg');
             statusMsg.style.color = "#fff"; statusMsg.innerText = "SENDING REQUEST...";
             const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount}) });
-            if(res.ok) { statusMsg.style.color = "var(--success)"; statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; document.getElementById('bank-amount').value=''; playSfx('deal'); btnRow.innerHTML = `<button class="wood-btn pixel-text" style="width:100%; background: #475569;" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">BACK TO BANK</button>`; }
+            if(res.ok) { statusMsg.style.color = "var(--success)"; statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; document.getElementById('bank-amount').value=''; playSfx('deal'); btnRow.innerHTML = `<button class="wood-btn pixel-text" style="width:100%; background: #475569;" onclick="hideSpecificModal('bank-confirm-modal'); showSpecificModal('bank-modal');">BACK TO BANK</button>`; }
             else { const d = await res.json(); statusMsg.style.color = "var(--danger)"; statusMsg.innerText = d.error; }
             pendingBankAction = null;
         }
@@ -1057,11 +1130,6 @@
             const tEl = document.getElementById('reward-timer'); if(tEl) tEl.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
         }
         function startRewardTimer() { clearInterval(rewardTimerInt); updateRewardTimerUI(); rewardTimerInt = setInterval(() => { rewardCooldownSeconds--; updateRewardTimerUI(); }, 1000); }
-        function showRewards() {
-            if(!currentUser) return; showModal('reward-modal'); document.getElementById('reward-msg').innerText = ''; document.querySelectorAll('.reward-box').forEach(b => b.classList.remove('open')); isPickingReward = false;
-            if (rewardCooldownSeconds <= 0) { document.getElementById('reward-active-view').classList.remove('hidden'); document.getElementById('reward-cooldown-view').classList.add('hidden'); } 
-            else { document.getElementById('reward-active-view').classList.add('hidden'); document.getElementById('reward-cooldown-view').classList.remove('hidden'); startRewardTimer(); }
-        }
 
         let isPickingReward = false;
         function pickRewardBox(index) { if(isPickingReward) return; isPickingReward = true; socket.emit('claim_daily_reward_box', { username: currentUser.username, boxIndex: index }); }
