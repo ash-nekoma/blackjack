@@ -178,6 +178,8 @@ app.post('/api/login', async (req, res) => {
     });
 });
 
+app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
+
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
     let txType = type === 'deposit' ? 'BANK DEPOSIT' : 'BANK WITHDRAWAL';
