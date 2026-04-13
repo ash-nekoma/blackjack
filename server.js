@@ -396,34 +396,38 @@ io.on('connection', (socket) => {
         }
     });
 
+    // FOOLPROOF DAILY REWARDS
     socket.on('claim_daily_reward_box', async ({ username, boxIndex }) => {
-        const user = await User.findOne({ username }); if (!user) return;
-        
-        const now = new Date(); 
-        const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
-        const msIn24Hours = 24 * 60 * 60 * 1000;
-        
-        if (now.getTime() - lastClaim.getTime() >= msIn24Hours) {
-            let prizes = [1000, 0, 0, 0, 5000, 10000];
-            prizes = prizes.sort(() => Math.random() - 0.5);
-            const wonAmount = prizes[boxIndex];
+        try {
+            const user = await User.findOne({ username }); if (!user) return;
+            const now = new Date(); 
+            const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
             
-            user.lastRewardClaim = now;
-            if (wonAmount > 0) {
-                user.credits += wonAmount;
-                await new Transaction({ username, type: 'daily reward', amount: wonAmount, status: 'completed' }).save();
+            // Exact ms math to prevent timezone drift lockups
+            if (now.getTime() - lastClaim.getTime() >= 24 * 60 * 60 * 1000) {
+                let prizes = [1000, 0, 0, 0, 5000, 10000];
+                prizes = prizes.sort(() => Math.random() - 0.5);
+                const wonAmount = prizes[boxIndex];
+                
+                user.lastRewardClaim = now;
+                if (wonAmount > 0) {
+                    user.credits += wonAmount;
+                    await new Transaction({ username, type: 'daily reward', amount: wonAmount, status: 'completed' }).save();
+                }
+                await user.save();
+                
+                const nextClaim = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, nextClaim });
+                
+                Object.keys(rooms).forEach(rId => {
+                    const seat = rooms[rId].seats.find(s => s && s.username === username); 
+                    if(seat) { seat.credits = user.credits; emitGameState(rId); }
+                });
+            } else { 
+                socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); 
             }
-            await user.save();
-            
-            const nextClaim = new Date(now.getTime() + msIn24Hours);
-            socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, nextClaim });
-            
-            Object.keys(rooms).forEach(rId => {
-                const seat = rooms[rId].seats.find(s => s && s.username === username); 
-                if(seat) { seat.credits = user.credits; emitGameState(rId); }
-            });
-        } else { 
-            socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); 
+        } catch (e) {
+            socket.emit('reward_box_opened', { success: false, message: 'Server sync error' });
         }
     });
 
