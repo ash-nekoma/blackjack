@@ -37,23 +37,24 @@
 
         .full-menu, .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
         .full-menu { background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); }
-        .overlay-menu { background: rgba(0,0,0,0.9); z-index: 300; }
+        .overlay-menu { background: rgba(0,0,0,0.9); z-index: 300; padding: 20px;}
         
-        .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; max-width: 90%; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 85%; display: flex; flex-direction: column;}
+        /* RESPONSIVE MODAL FIX (Never cuts off) */
+        .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; max-width: 100%; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 85vh; display: flex; flex-direction: column; overflow-y: auto;}
         
         .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; flex-shrink: 0;}
         input.retro-input { flex: 1; padding: 12px; margin: 0; background: #000; color: #fff; border: 2px solid var(--border-std); font-size: 24px; text-align: center; outline: none; }
         
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px; flex-shrink: 0;}
-        .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; transition: 0.1s;}
+        .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; transition: 0.1s; letter-spacing: 1px;}
         .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.7; }
 
         .tab-buttons { display: flex; border-bottom: 2px solid var(--border-std); margin-bottom: 15px; flex-shrink: 0;}
-        .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-size: 22px; cursor: pointer; }
+        .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-size: 22px; cursor: pointer; font-family: 'VT323'; letter-spacing: 1px;}
         .tab-btn.active { background: var(--accent-glow); color: #fff; box-shadow: inset 0 3px 0 #fff; }
-        .tab-content { display: none; text-align: left; background: #000; padding: 15px; border: 2px solid var(--border-std); font-size: 20px; color: #e2e8f0; overflow-y: auto; line-height: 1.3; flex: 1;}
+        .tab-content { display: none; text-align: left; background: #000; padding: 15px; border: 2px solid var(--border-std); font-size: 24px; color: #e2e8f0; line-height: 1.3;}
         .tab-content.active { display: block; }
         .tab-content h3 { color: var(--warning); font-size: 32px; margin-bottom: 10px;}
         .tab-content ul { padding-left: 20px; margin-bottom: 15px;}
@@ -86,7 +87,7 @@
         .hud-center { justify-self: center; text-align: center; }
         .hud-right { justify-self: end; }
 
-        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
+        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; text-shadow: 2px 2px 0 #000; font-family: 'VT323'; letter-spacing: 1px;}
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
 
@@ -96,29 +97,29 @@
         
         .chat-messages { flex: 1; padding: 10px; font-size: 22px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word;}
         .chat-input-area { display: flex; border-top: 2px solid var(--border-std); background: #000; flex-shrink: 0;}
-        .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none; font-family: 'VT323';}
-        .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold; font-family: 'VT323';}
+        .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none; font-family: 'VT323'; letter-spacing: 1px;}
+        .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold; font-family: 'VT323'; letter-spacing: 1px;}
 
-        /* FLEXBOX GAME BOARD CONTENTS */
-        .table-surface { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; position: relative; padding: 30px 0 20px 0; box-sizing: border-box;}
+        /* STRICT ABSOLUTE ZONES FOR GAME BOARD */
+        .table-surface { flex: 1; width: 100%; height: 100%; position: relative; background: transparent; border: none; }
         
-        /* ELEVATED DEALER */
-        .banker-station { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; }
+        /* DEAD CENTER DEALER (ELEVATED) */
+        .banker-station { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; width: 100%;}
         
-        /* CENTERED TIMERS STACK */
-        #timers-container { position: absolute; top: 220px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 20; width: 100%; pointer-events: none;}
+        /* TIMERS PERFECTLY CENTERED DYNAMIC STACK */
+        #timers-container { position: absolute; top: 250px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; z-index: 20; width: 100%; pointer-events: none;}
         .global-timer { font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000; white-space: nowrap;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
         .global-timer.warning { background: #eab308; color: #000; font-size: 32px; font-weight: bold; text-shadow: none !important; border: 2px solid #000;}
 
-        /* FLEXBOX SEAT CONTAINER (DYNAMIC CENTERING - NO INVISIBLE LINES) */
-        #seats-area { display: flex; justify-content: center; align-items: flex-end; width: 100%; padding: 0 20px; box-sizing: border-box; z-index: 5; height: 350px; gap: 40px;}
+        /* ABSOLUTE BOTTOM FLEXBOX SEATS CONTAINER */
+        #seats-area { position: absolute; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center; align-items: flex-end; box-sizing: border-box; z-index: 5; height: auto; min-height: 250px; gap: 30px;}
 
-        .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0;}
+        .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0; position: relative;}
         
-        /* MINIMALIST SIT BUTTON & BOX */
-        .seat-empty-box { box-sizing: border-box; width: 100%; height: 160px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); padding: 10px; margin-bottom: 20px;}
-        .btn-sit-empty { background: #10b981; color: #000; font-size: 26px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 6px 24px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s; font-family: 'VT323'; text-shadow: none;}
+        /* MINIMALIST SIT BUTTON */
+        .seat-empty-box { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 160px; }
+        .btn-sit-empty { background: #10b981; color: #000; font-size: 26px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 6px 30px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s; font-family: 'VT323'; text-shadow: none;}
         .btn-sit-empty:active { transform: translate(4px, 4px); box-shadow: 0 0 0 transparent; }
 
         .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
@@ -129,15 +130,15 @@
         .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
         .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
 
-        /* BET TEXT (Dynamic updates on result) */
-        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box;}
+        /* BET TEXT (Dynamic updates under each individual hand) */
+        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
 
         /* REDESIGNED DROPDOWN BETTING UI */
         .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
-        .seat-bet-box select { flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;}
+        .seat-bet-box select { flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none; font-family: 'VT323', monospace; letter-spacing: 1px;}
         
-        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; letter-spacing: 1px; font-size: 20px;}
-        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 16px;}
+        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; font-family: 'VT323', monospace; letter-spacing: 1px; font-size: 20px;}
+        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 12px;}
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
         .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; box-sizing: border-box;}
@@ -147,10 +148,10 @@
         .btn-split { background: var(--accent-glow); color: #fff; font-size: 18px; padding: 6px;}
         
         /* STAND UP BUTTON */
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold;}
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323';}
         .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
-        /* NATIVE CSS CARDS (GUARANTEED TO RENDER & OVERLAP) */
+        /* NATIVE CSS CARDS (GUARANTEED TO RENDER) */
         .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 88px;}
         .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; min-height: 88px;}
         .hand-container { position: relative; display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px;}
@@ -195,7 +196,7 @@
         
         <div id="auth-view" class="full-menu">
             <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 10px;">NEON ROYALE</h1>
-            <div id="panel-login" class="modal-box">
+            <div id="panel-login" class="modal-box custom-scroll">
                 <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 15px; font-size: 40px;">MEMBER LOGIN</h2>
                 <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME">
                 <input type="password" id="login-pass" class="retro-input pixel-text" placeholder="PASSWORD">
@@ -206,13 +207,16 @@
                 <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('signup')">New Player? Request Access Here</div>
             </div>
 
-            <div id="panel-signup" class="modal-box hidden">
+            <div id="panel-signup" class="modal-box hidden custom-scroll">
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 15px; font-size: 40px;">REQUEST ACCESS</h2>
                 <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME">
                 <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD">
-                <div class="terms-box custom-scroll pixel-text" style="font-size: 20px; text-align: left;">
+                <div class="terms-box custom-scroll pixel-text" style="font-size: 20px; text-align: left; padding: 10px;">
                     <strong style="color:var(--warning); font-size: 24px;">SYSTEM TERMS OF SERVICE:</strong><br><br>
-                    By registering for Neon Royale, you agree to our strict Fair Play Policy. Maximum of ONE seat per room. Use of third-party macros, automation, or multiple alt-accounts to abuse daily rewards will result in an immediate, permanent IP ban. All transactions are subject to manual Admin review.
+                    By requesting access to Neon Royale, you agree to the Fair Play Policy:<br>
+                    - Maximum of ONE active seat per room.<br>
+                    - Using macros or alt-accounts to farm daily rewards is strictly prohibited and results in an IP Ban.<br>
+                    - All accounts require manual Admin approval.
                 </div>
                 <label class="pixel-text" style="font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
                     <input type="checkbox" id="tos-checkbox" style="width: 24px; height: 24px; margin:0;"> I ACCEPT THE TERMS
@@ -241,7 +245,7 @@
         </div>
 
         <div id="play-modal" class="overlay-menu hidden">
-            <div class="modal-box">
+            <div class="modal-box custom-scroll">
                 <h2 class="pixel-text" style="margin-bottom: 20px; font-size: 40px;">SELECT ROOM</h2>
                 <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
                     <button class="wood-btn" style="background: var(--accent-glow);" onclick="joinRoom('3seat')">3-SEAT VIP TABLE</button>
@@ -252,7 +256,7 @@
         </div>
 
         <div id="how-to-play-modal" class="overlay-menu hidden">
-            <div class="modal-box" style="width: 700px;">
+            <div class="modal-box custom-scroll" style="width: 700px;">
                 <h2 class="pixel-text" style="margin-bottom: 15px; font-size: 40px;">ARCADE RULES</h2>
                 <div class="tab-buttons">
                     <button class="tab-btn active" onclick="switchTab('tab-bj', this)">BLACKJACK</button>
@@ -282,7 +286,7 @@
         </div>
 
         <div id="leaderboard-modal" class="overlay-menu hidden">
-            <div class="modal-box">
+            <div class="modal-box custom-scroll">
                 <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 20px; font-size: 60px;">HALL OF FAME</h2>
                 <div class="pixel-text" style="font-size: 30px; margin: 40px 0; color: #94a3b8;">[ DATABASE SYNCING - COMING SOON ]</div>
                 <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('leaderboard-modal')">CLOSE</button>
@@ -290,7 +294,7 @@
         </div>
         
         <div id="store-modal" class="overlay-menu hidden">
-            <div class="modal-box">
+            <div class="modal-box custom-scroll">
                 <h2 class="pixel-text" style="color: #d946ef; margin-bottom: 20px; font-size: 60px;">V.I.P. STORE</h2>
                 <div class="pixel-text" style="font-size: 30px; margin: 40px 0; color: #94a3b8;">[ NEW INVENTORY ARRIVING SOON ]</div>
                 <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('store-modal')">CLOSE</button>
@@ -298,30 +302,19 @@
         </div>
 
         <div id="profile-modal" class="overlay-menu hidden">
-            <div class="modal-box" style="width: 750px; max-height: 90%; display: flex; flex-direction: column;">
+            <div class="modal-box custom-scroll" style="width: 500px;">
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 50px;">PLAYER DOSSIER</h2>
                 
                 <div style="background: #000; border: 2px solid var(--border-std); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                     <div class="profile-preview pixel-text" id="profile-username-preview" style="color: #fff;">USERNAME</div>
-                    
-                    <div style="display: flex; justify-content: space-around; margin: 15px 0; border-top: 1px dashed #333; border-bottom: 1px dashed #333; padding: 10px 0;">
-                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8;">STATUS: <br><span id="profile-status" style="color:var(--success); text-transform:uppercase; font-size: 28px;">ACTIVE</span></div>
-                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8;">JOIN DATE: <br><span id="profile-date" style="color:#fff; font-size: 28px;">MM/DD/YYYY</span></div>
-                    </div>
-
-                    <div class="profile-credits pixel-text" style="margin-bottom: 15px;">TOTAL BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #0f172a; padding: 15px; border-radius: 6px; border: 1px solid #334155;">
-                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">🏆 BIGGEST WIN: <span style="color:#fbbf24; float: right;">[ SYNCING ]</span></div>
-                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">🃏 HANDS PLAYED: <span style="color:#fbbf24; float: right;">[ SYNCING ]</span></div>
-                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">📈 WIN RATE: <span style="color:#fbbf24; float: right;">[ SYNCING ]</span></div>
-                        <div class="pixel-text" style="font-size: 24px; color: #94a3b8; text-align: left;">🌟 VIP TIER: <span style="color:#fbbf24; float: right;">BRONZE</span></div>
-                    </div>
+                    <div class="pixel-text" style="font-size: 24px; color: #94a3b8; margin-bottom: 15px;">JOIN DATE: <span id="profile-date" style="color:#fff;"></span></div>
+                    <div class="profile-credits pixel-text" style="margin-bottom: 0;">BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
                 </div>
 
-                <div id="ledger-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-                    <h3 class="pixel-text" style="text-align: left; margin-bottom: 5px; font-size: 30px;">TRANSACTION LEDGER</h3>
-                    <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 200px;"></div>
+                <button class="wood-btn pixel-text" style="background: #475569;" onclick="toggleLedger()">VIEW TRANSACTION LEDGER</button>
+
+                <div id="ledger-container" class="hidden" style="display: flex; flex-direction: column; overflow: hidden; margin-top: 15px;">
+                    <div id="ledger-list" class="pixel-text custom-scroll" style="max-height: 250px; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left;"></div>
                 </div>
                 
                 <div style="display: flex; justify-content: center; margin-top: 15px;">
@@ -331,7 +324,7 @@
         </div>
 
         <div id="reward-modal" class="overlay-menu hidden">
-            <div class="modal-box" style="width: 600px;">
+            <div class="modal-box custom-scroll" style="width: 600px;">
                 <h2 class="pixel-text" style="color: var(--accent-glow-2); font-size: 50px;">DAILY REWARD</h2>
                 
                 <div id="reward-active-view">
@@ -359,16 +352,16 @@
         </div>
 
         <div id="bank-modal" class="overlay-menu hidden">
-            <div class="modal-box" style="width: 700px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-box custom-scroll" style="width: 600px;">
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 5px; font-size: 50px;">SYSTEM BANKING</h2>
                 <div class="pixel-text" style="font-size: 28px; margin-bottom: 20px;">CURRENT BALANCE: <span class="coin-icon">🪙</span> <span id="bank-balance-display">0</span></div>
                 
-                <div class="terms-box custom-scroll pixel-text" style="height: 110px; font-size: 22px; line-height: 1.2; text-align: left;">
+                <div class="terms-box custom-scroll pixel-text" style="height: auto; max-height: 120px; font-size: 22px; line-height: 1.2; text-align: left; padding: 10px;">
                     <strong style="color: var(--warning); font-size: 24px;">BANK RULES:</strong><br>
-                    All transactions pend manual Admin review to ensure ecosystem integrity.<br>
-                    Minimum deposit is 10,000 credits. Minimum withdrawal is 50,000 credits.<br>
-                    Maximum transaction limit is 100,000 credits per request.<br>
-                    Gift Codes bypass review and are credited instantly.
+                    - Min deposit: 10,000. Min withdrawal: 50,000.<br>
+                    - Max transaction limit: 100,000 credits.<br>
+                    - All transfers pend manual Admin review.<br>
+                    - Gift Codes bypass review and are credited instantly.
                 </div>
 
                 <div class="input-group">
@@ -387,8 +380,11 @@
                     </div>
                 </div>
 
-                <h3 class="pixel-text" style="text-align: left; margin-bottom: 5px; font-size: 28px;">RECENT BANK TRANSFERS</h3>
-                <div id="bank-ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 150px;"></div>
+                <button class="wood-btn pixel-text" style="background: #475569;" onclick="toggleBankLedger()">VIEW BANK REQUESTS</button>
+                
+                <div id="bank-ledger-container" class="hidden" style="margin-top: 15px;">
+                    <div id="bank-ledger-list" class="pixel-text custom-scroll" style="max-height: 200px; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left;"></div>
+                </div>
                 
                 <p id="bank-msg" class="pixel-text" style="font-size: 28px; margin-top: 10px;"></p>
                 <div style="display: flex; justify-content: center; margin-top: 10px;">
@@ -398,7 +394,7 @@
         </div>
 
         <div id="settings-modal" class="overlay-menu hidden">
-            <div class="modal-box">
+            <div class="modal-box custom-scroll">
                 <h2 class="pixel-text" style="font-size: 50px; margin-bottom: 20px;">SYSTEM SETTINGS</h2>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; background: #000; padding: 15px; border: 2px solid var(--border-std);">
@@ -419,7 +415,7 @@
         </div>
 
         <div id="logout-modal" class="overlay-menu hidden">
-            <div class="modal-box">
+            <div class="modal-box custom-scroll">
                 <h2 class="pixel-text" style="color: var(--danger); font-size: 50px;">CONFIRM LOGOUT?</h2>
                 <div style="display: flex; gap: 10px; margin-top: 30px;">
                     <button class="wood-btn" style="flex: 1; background: var(--danger);" onclick="logout()">YES</button>
@@ -540,7 +536,6 @@
                 document.getElementById('profile-username-preview').innerText = currentUser.username;
                 let dateStr = new Date(data.createdAt).toLocaleDateString();
                 document.getElementById('profile-date').innerText = dateStr;
-                document.getElementById('profile-status').innerText = data.status;
 
                 playSfx('deal');
             } else document.getElementById('login-error').innerText = data.error;
@@ -560,6 +555,9 @@
 
         function showProfile() { document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); loadLedger(false); showModal('profile-modal'); }
         function showBank() { if(currentUser) document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); loadLedger(true); showModal('bank-modal'); }
+
+        function toggleLedger() { const container = document.getElementById('ledger-container'); if (container.classList.contains('hidden')) { container.classList.remove('hidden'); loadLedger(); } else { container.classList.add('hidden'); } }
+        function toggleBankLedger() { const container = document.getElementById('bank-ledger-container'); if (container.classList.contains('hidden')) { container.classList.remove('hidden'); loadLedger(true); } else { container.classList.add('hidden'); } }
 
         async function loadLedger(isBankOnly) {
             const res = await fetch(`/api/profile/ledger/${currentUser.username}`); const data = await res.json();
@@ -635,7 +633,7 @@
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
             actionLocked = true;
-            window.lastBetAmount = amt; 
+            window.lastBetAmount = amt; // SAVE FOR NEXT ROUND
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
             playSfx('bet');
         }
@@ -902,12 +900,14 @@
             }
         }
 
-        // PERFECT FLEXBOX SEAT CENTERING
+        // PERFECT PERCENTAGE LAYOUT ENGINE
         function layoutArc(elements, totalSeats) {
             const seatsArea = document.getElementById('seats-area');
             seatsArea.innerHTML = ''; 
 
             if (currentGameState.status === 'playing' || currentGameState.status === 'dealerTurn' || currentGameState.status === 'resolving') {
+                // ACTIVE PLAY: Native flexbox perfectly centers remaining players side-by-side
+                seatsArea.style.justifyContent = 'center';
                 elements.forEach(el => {
                     el.style.position = 'relative';
                     el.style.transform = 'none';
@@ -915,6 +915,8 @@
                     seatsArea.appendChild(el);
                 });
             } else {
+                // WAITING/BETTING: Absolute positioning shows all seats in Smile Curve
+                seatsArea.style.justifyContent = 'flex-start';
                 elements.forEach((el, i) => {
                     el.style.position = 'absolute';
                     el.style.transform = 'translate(-50%, 0)'; 
@@ -922,12 +924,12 @@
                     if (totalSeats === 3) {
                         const pos = [25, 50, 75];
                         el.style.left = `${pos[i]}%`;
-                        el.style.bottom = `5%`; 
+                        el.style.bottom = `0px`; 
                     } else if (totalSeats === 5) {
                         const posX = [12, 31, 50, 69, 88]; 
-                        const posY = [25, 12, 5, 12, 25]; 
+                        const posY = [40, 20, 10, 20, 40]; 
                         el.style.left = `${posX[i]}%`;
-                        el.style.bottom = `${posY[i]}%`;
+                        el.style.bottom = `${posY[i]}px`;
                     }
                     seatsArea.appendChild(el);
                 });
