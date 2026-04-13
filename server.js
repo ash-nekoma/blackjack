@@ -69,6 +69,7 @@ function createRoom(numSeats) {
 
 const socketUserMap = {}; 
 
+// 7-SECOND KICK TIMER LOOP
 setInterval(() => {
     const now = Date.now();
     Object.keys(rooms).forEach(roomId => {
@@ -395,12 +396,14 @@ io.on('connection', (socket) => {
         }
     });
 
-    // DAILY REWARDS (Fully Patched DB Sync)
     socket.on('claim_daily_reward_box', async ({ username, boxIndex }) => {
         const user = await User.findOne({ username }); if (!user) return;
-        const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
         
-        if (Math.abs(now - lastClaim) / 36e5 >= 24) {
+        const now = new Date(); 
+        const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
+        const msIn24Hours = 24 * 60 * 60 * 1000;
+        
+        if (now.getTime() - lastClaim.getTime() >= msIn24Hours) {
             let prizes = [1000, 0, 0, 0, 5000, 10000];
             prizes = prizes.sort(() => Math.random() - 0.5);
             const wonAmount = prizes[boxIndex];
@@ -412,7 +415,7 @@ io.on('connection', (socket) => {
             }
             await user.save();
             
-            const nextClaim = new Date(now.getTime() + 24*60*60*1000);
+            const nextClaim = new Date(now.getTime() + msIn24Hours);
             socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, nextClaim });
             
             Object.keys(rooms).forEach(rId => {
