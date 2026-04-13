@@ -164,29 +164,19 @@
         .coin-3d.flipping { animation: flipCoin 0.3s infinite linear; }
         @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
 
-       /* PERYA COLOR GAME & HISTORY LISTS */
-        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; }
+        /* PERYA COLOR GAME */
+        .color-grid-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 850px; margin: 0 auto; }
         .color-die-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1;}
-        .color-die { width: 90px; height: 90px; border: 5px solid var(--border-std); border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5); transition: background-color 0.1s;}
+        .color-die { width: 100px; height: 100px; border: 6px solid var(--border-std); border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5); transition: background-color 0.1s;}
         .color-die.shake { animation: subtleShake 0.2s infinite; }
         
         .bg-red { background-color: #ef4444; } .bg-blue { background-color: #3b82f6; } .bg-yellow { background-color: #eab308; } 
         .bg-green { background-color: #10b981; } .bg-pink { background-color: #ec4899; } .bg-white { background-color: #f8fafc; }
         
-        /* RESTORED COLOR TILES */
-        .color-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 8px; cursor: pointer; transition: 0.1s; position: relative; height: 100px;}
-        .color-bet-box:active:not(.locked) { transform: scale(0.95); }
-        .color-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
-        .color-bet-box.br-red { border-top-color: #ef4444; } .color-bet-box.br-blue { border-top-color: #3b82f6; } .color-bet-box.br-yellow { border-top-color: #eab308; }
-        .color-bet-box.br-green { border-top-color: #10b981; } .color-bet-box.br-pink { border-top-color: #ec4899; } .color-bet-box.br-white { border-top-color: #f8fafc; }
-        .color-bet-title { font-size: 32px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 0; text-transform: uppercase;}
+        .br-red { border-top-color: #ef4444; } .br-blue { border-top-color: #3b82f6; } .br-yellow { border-top-color: #eab308; }
+        .br-green { border-top-color: #10b981; } .br-pink { border-top-color: #ec4899; } .br-white { border-top-color: #f8fafc; }
         
-        /* BADGES & HISTORY SIZING */
-        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 20px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20; pointer-events:none;}
-        .history-list-item { font-size: 26px; border-bottom: 1px dashed #333; padding: 6px 0; text-align: center; }
-        
-        /* Forces scrollbar after 5 items */
-        #dice-history, #coin-history, #color-history { max-height: 250px; overflow-y: auto; }
+        .history-list-item { font-size: 32px; border-bottom: 1px dashed #333; padding: 6px 0; text-align: center; }
     </style>
 </head>
 <body>
@@ -262,60 +252,36 @@
             </div>
         </div>
 
-       <div id="how-to-play-modal" class="overlay-menu hidden">
-            <div class="modal-box custom-scroll" style="width: 900px; padding: 25px;">
-                <h2 class="pixel-text" style="margin-bottom: 15px; font-size: 40px; color: var(--accent-glow-2);">ARCADE RULES & MECHANICS</h2>
-                <div style="display: flex; gap: 20px; text-align: left;">
+        <div id="how-to-play-modal" class="overlay-menu hidden">
+            <div class="modal-box custom-scroll" style="width: 850px; padding: 20px;">
+                <h2 class="pixel-text" style="margin-bottom: 15px; font-size: 40px;">ARCADE RULES</h2>
+                <div style="display: flex; gap: 20px; height: 100%; align-items: stretch; text-align: left;">
                     
-                    <div style="flex: 1.2; border-right: 2px dashed #334155; padding-right: 20px;">
-                        <select class="retro-input pixel-text" style="width: 100%; max-width: 250px; margin-bottom: 15px; background: #1e293b; color: #fff; cursor: pointer; border-color: var(--accent-glow-2);" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');">
+                    <div style="flex: 1; border-right: 2px dashed #334155; padding-right: 20px; display: flex; flex-direction: column;">
+                        <select id="rules-select" class="retro-input pixel-text" style="width:100%; max-width: 250px; margin-bottom:15px; background:var(--accent-glow); cursor:pointer;" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');">
                             <option value="rule-bj">BLACKJACK</option>
                             <option value="rule-dice">HIGH-LOW DICE</option>
                             <option value="rule-coin">GLOBAL COIN FLIP</option>
                             <option value="rule-color">CLASSIC COLOR GAME</option>
                         </select>
                         
-                        <div id="rule-bj" class="rule-content info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent;">
-                            <strong style="color: var(--success);">BLACKJACK</strong>
-                            <p style="margin-bottom: 8px;">Beat the Dealer's hand without exceeding 21. Face cards are 10, Aces are 1 or 11.</p>
-                            <ul><li><strong>Limits:</strong> Max 1 seat. Max bet 50,000 credits (Splitting doubles this to 100k).</li><li><strong>Timer:</strong> Exactly 15s to Hit, Stand, Double, or Split.</li><li><strong>Payouts:</strong> Wins pay 1:1. Blackjack pays 3:2. Push refunds bet.</li><li><strong>Dealer:</strong> Must draw to 16 and stand on all 17s.</li></ul>
+                        <div id="rule-bj" class="rule-content info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
+                            <strong class="info-title">BLACKJACK</strong>
+                            <ul><li><strong>Objective:</strong> Beat the Dealer's hand without going over 21. Face cards are 10, Aces are 1 or 11.</li><li><strong>Limits:</strong> Max 1 seat per room. Max bet is 50,000 (Splitting allows up to 100,000 total).</li><li><strong>Action Timer:</strong> You have exactly 15 seconds to Hit, Stand, Double, or Split.</li><li><strong>Payouts:</strong> Standard wins pay 1:1. Blackjack pays 3:2. Pushes refund the bet.</li><li><strong>Dealer Rules:</strong> Dealer must draw to 16 and stand on all 17s.</li></ul>
                         </div>
-                        
-                        <div id="rule-dice" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent;">
-                            <strong style="color: #a855f7;">HIGH-LOW DICE</strong>
-                            <p style="margin-bottom: 8px;">Two 6-sided dice are rolled globally. Select your bet amount and click a tile.</p>
-                            <ul><li><strong>Limits:</strong> Max bet 50,000 credits per tile.</li><li><strong>Under 7:</strong> Pays 1:1 (Rolls 2, 3, 4, 5, 6).</li><li><strong>Over 7:</strong> Pays 1:1 (Rolls 8, 9, 10, 11, 12).</li><li><strong>Exactly 7:</strong> Jackpot! Pays massive 4:1 odds.</li></ul>
+                        <div id="rule-dice" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
+                            <strong class="info-title">HIGH-LOW DICE</strong>
+                            <ul><li><strong>Global Betting:</strong> Two 6-sided dice are rolled globally. Select your bet amount from the top dropdown, then click the tile to place your bet.</li><li><strong>Limits:</strong> Maximum bet is strictly 50,000 credits per tile.</li><li><strong>Under 7:</strong> Pays 1:1 if the total sum is 2, 3, 4, 5, or 6.</li><li><strong>Over 7:</strong> Pays 1:1 if the total sum is 8, 9, 10, 11, or 12.</li><li><strong>Exactly 7:</strong> The Jackpot. Pays massive 4:1 odds if the total is exactly 7.</li></ul>
                         </div>
-                        
-                        <div id="rule-coin" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent;">
-                            <strong style="color: var(--warning);">GLOBAL COIN FLIP</strong>
-                            <p style="margin-bottom: 8px;">A single global coin is flipped. Bet on Heads or Tails before the 15s timer runs out.</p>
-                            <ul><li><strong>Limits:</strong> Max bet 50,000 credits per tile.</li><li><strong>Payouts:</strong> Correct guesses double your money (Pays 1:1).</li></ul>
+                        <div id="rule-coin" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
+                            <strong class="info-title">GLOBAL COIN FLIP</strong>
+                            <ul><li><strong>Global Betting:</strong> A single global coin is flipped. Select your bet amount from the top dropdown, then click Heads or Tails.</li><li><strong>Limits:</strong> Maximum bet is strictly 50,000 credits per tile.</li><li><strong>Payouts:</strong> Correct guesses double your money (Pays 1:1).</li></ul>
                         </div>
-                        
-                        <div id="rule-color" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent;">
-                            <strong style="color: #ef4444;">CLASSIC COLOR GAME</strong>
-                            <p style="margin-bottom: 8px;">3 colored dice are rolled. Pick your bet amount at the top, then tap colors to place chips.</p>
-                            <ul><li><strong>Limits:</strong> Max bet 50,000 credits per color.</li><li><strong>1 Match:</strong> Pays 1:1</li><li><strong>2 Matches:</strong> Pays 2:1</li><li><strong>3 Matches:</strong> Pays 3:1</li></ul>
+                        <div id="rule-color" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
+                            <strong class="info-title">CLASSIC COLOR GAME</strong>
+                            <ul><li><strong>Global Betting:</strong> 3 colored dice are rolled. Pick your bet amount at the top, then tap the colored tiles to place your chips.</li><li><strong>Limits:</strong> Maximum bet is strictly 50,000 credits per color.</li><li><strong>Payouts:</strong> Depends on how many dice match your chosen color.<br>- 1 Match: Pays 1:1<br>- 2 Matches: Pays 2:1<br>- 3 Matches: Pays 3:1</li></ul>
                         </div>
                     </div>
-                    
-                    <div style="flex: 0.8;">
-                        <div class="info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent;">
-                            <strong style="color: #10b981;">SYSTEM RULES</strong>
-                            <ul>
-                                <li><strong>Deposits:</strong> 10k - 100k limits.</li>
-                                <li><strong>Withdrawals:</strong> 50k - 100k limits.</li>
-                                <li><strong>Daily Rewards:</strong> Mystery boxes respawn exactly every 24 hours.</li>
-                                <li><strong>Spam Protection:</strong> Arcade buttons lock for 750ms after clicking.</li>
-                                <li><strong>Global Locks:</strong> All bets freeze precisely at 0s.</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <button class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 20px;" onclick="hideModal('how-to-play-modal')">CLOSE</button>
-            </div>
-        </div>
                     
                     <div style="flex: 1; display: flex; flex-direction: column;">
                         <div class="info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent; flex: 1;">
@@ -1016,30 +982,17 @@
             socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); 
         };
 
- // --- 1. THE FIX FOR ALL DEAD BUTTONS ---
-        function showModal(id) { 
-            if(!currentUser && id !== 'how-to-play-modal' && id !== 'tos-modal') return alert("Please login first!"); 
-            document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden')); // Force hide everything else
-            const el = document.getElementById(id); 
-            if(el) el.classList.remove('hidden'); 
-        }
-        function hideModal(id) { 
-            const el = document.getElementById(id); 
-            if(el) el.classList.add('hidden'); 
-        }
-        // (IMPORTANT: Search your HTML file using Ctrl+F. Change any "showSpecificModal" to "showModal", and "hideSpecificModal" to "hideModal")
-
-
-        // --- 2. THE FIX FOR COLOR GAME MULTIPLIER BADGES ---
+        // --- CLASSIC COLOR GAME LOGIC ---
+        let colorInterval = null; let colorAnimInterval = null; const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
         socket.on('color_state_update', (data) => {
             const statusText = document.getElementById('color-result-text'); const timerText = document.getElementById('color-timer');
             const d1 = document.getElementById('col-die1'); const d2 = document.getElementById('col-die2'); const d3 = document.getElementById('col-die3');
             
-            if(data.history) { document.getElementById('color-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${getColorHex(r[0])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[1])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[2])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span></div>`).join(''); }
+            if(data.history) { document.getElementById('color-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${getColorHex(r[0])}; font-size: 40px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[1])}; font-size: 40px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[2])}; font-size: 40px; text-shadow: 2px 2px 0 #000;">■</span></div>`).join(''); }
 
             if (data.status === 'betting') {
                 statusText.innerText = "PLACE YOUR BETS"; unlockBets('color'); myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 }; d1.classList.remove('shake'); d2.classList.remove('shake'); d3.classList.remove('shake'); clearInterval(colorInterval);
-                document.querySelectorAll('.bet-badge').forEach(b => { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; });
+                document.querySelectorAll('.bet-badge').forEach(b => b.classList.add('hidden'));
                 colorInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(colorInterval); }, 1000);
             }
             else if (data.status === 'rolling') { 
@@ -1061,21 +1014,11 @@
                         if (myWins.length > 0) { 
                             let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
                             timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
+                            myWins.forEach(w => showPayoutAnim(w.choice, w.amount, true));
                         } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
-                        
-                        // Updates the badge to show X2, X3, or 0
-                        ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { 
-                            if(myColorBets[c] > 0) {
-                                const badge = document.getElementById(`badge-${c}`);
-                                let winData = myWins.find(w=>w.choice===c);
-                                if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
-                                else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
-                            }
-                        });
+                        ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { if(myColorBets[c] > 0 && !myWins.find(w=>w.choice===c)) showPayoutAnim(c, 0, false); });
                     }
                 }, 600);
-            }
-        });
             }
         });
         window.placeColorBet = function(choice) {
