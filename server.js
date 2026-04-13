@@ -178,6 +178,8 @@ app.post('/api/login', async (req, res) => {
     });
 });
 
+app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
+
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
     let txType = type === 'deposit' ? 'BANK DEPOSIT' : 'BANK WITHDRAWAL';
@@ -222,7 +224,7 @@ io.on('connection', (socket) => {
         socketUserMap[socket.id] = { username, roomId };
         const user = await User.findOne({ username });
         if (user && !rooms[roomId].lobby.find(p => p.username === username)) {
-            rooms[roomId].lobby.push({ username: user.username });
+            rooms[roomId].lobby.push({ username: user.username, color: user.nameColor });
         }
         emitGameState(roomId);
     });
@@ -249,7 +251,7 @@ io.on('connection', (socket) => {
         if (!user) return;
         
         room.seats[seatIndex] = { 
-            username: user.username, socketId: socket.id, 
+            username: user.username, color: user.nameColor, socketId: socket.id, 
             credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], 
             currentHand: 0, kickAt: Date.now() + 7000 
         };
@@ -430,7 +432,7 @@ io.on('connection', (socket) => {
                 }
                 await user.save();
                 
-                const nextClaim = new Date(now.getTime() + msIn24Hours);
+                const nextClaim = new Date(now.getTime() + (24 * 60 * 60 * 1000));
                 const msLeft = nextClaim.getTime() - now.getTime();
                 const cooldownSeconds = Math.floor(msLeft / 1000);
                 
