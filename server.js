@@ -73,7 +73,7 @@ setInterval(() => {
         diceGame.status = 'rolling'; io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, timeLeft: 0, history: diceGame.history });
         setTimeout(async () => {
             diceGame.dice = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1]; const total = diceGame.dice[0] + diceGame.dice[1];
-            diceGame.status = 'resolving'; diceGame.history.unshift(total); if(diceGame.history.length > 10) diceGame.history.pop();
+            diceGame.status = 'resolving'; diceGame.history.unshift(diceGame.dice); if(diceGame.history.length > 20) diceGame.history.pop();
             let winners = [];
             for (let b of diceGame.bets) {
                 let won = false; let payout = 0;
@@ -95,7 +95,7 @@ setInterval(() => {
         coinGame.status = 'flipping'; io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, timeLeft: 0, history: coinGame.history });
         setTimeout(async () => {
             coinGame.result = Math.random() < 0.5 ? 'heads' : 'tails';
-            coinGame.status = 'resolving'; coinGame.history.unshift(coinGame.result); if(coinGame.history.length > 10) coinGame.history.pop();
+            coinGame.status = 'resolving'; coinGame.history.unshift(coinGame.result); if(coinGame.history.length > 20) coinGame.history.pop();
             let winners = [];
             for (let b of coinGame.bets) {
                 if (b.choice === coinGame.result) {
@@ -114,7 +114,7 @@ setInterval(() => {
         colorGame.status = 'rolling'; io.to('arcade_color').emit('color_state_update', { status: colorGame.status, timeLeft: 0, history: colorGame.history });
         setTimeout(async () => {
             colorGame.dice = [ PERYA_COLORS[Math.floor(Math.random() * 6)], PERYA_COLORS[Math.floor(Math.random() * 6)], PERYA_COLORS[Math.floor(Math.random() * 6)] ];
-            colorGame.status = 'resolving'; colorGame.history.unshift(colorGame.dice); if(colorGame.history.length > 8) colorGame.history.pop();
+            colorGame.status = 'resolving'; colorGame.history.unshift(colorGame.dice); if(colorGame.history.length > 20) colorGame.history.pop();
             let winners = [];
             for (let b of colorGame.bets) {
                 let matches = colorGame.dice.filter(c => c === b.choice).length;
