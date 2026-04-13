@@ -34,7 +34,6 @@ const User = mongoose.model('User', new mongoose.Schema({
     password: { type: String, required: true },
     credits: { type: Number, default: 0 },
     status: { type: String, default: 'pending' }, 
-    nameColor: { type: String, default: '#f8fafc' },
     ipAddress: String, tosAccepted: Boolean,
     lastRewardClaim: { type: Date, default: null },
     createdAt: { type: Date, default: Date.now }
@@ -70,7 +69,6 @@ function createRoom(numSeats) {
 
 const socketUserMap = {}; 
 
-// 7-SECOND KICK TIMER LOOP
 setInterval(() => {
     const now = Date.now();
     Object.keys(rooms).forEach(roomId => {
@@ -178,8 +176,6 @@ app.post('/api/login', async (req, res) => {
     });
 });
 
-app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
-
 app.post('/api/bank/request', async (req, res) => {
     const { username, type, amount } = req.body;
     let txType = type === 'deposit' ? 'BANK DEPOSIT' : 'BANK WITHDRAWAL';
@@ -224,7 +220,7 @@ io.on('connection', (socket) => {
         socketUserMap[socket.id] = { username, roomId };
         const user = await User.findOne({ username });
         if (user && !rooms[roomId].lobby.find(p => p.username === username)) {
-            rooms[roomId].lobby.push({ username: user.username, color: user.nameColor });
+            rooms[roomId].lobby.push({ username: user.username });
         }
         emitGameState(roomId);
     });
@@ -251,7 +247,7 @@ io.on('connection', (socket) => {
         if (!user) return;
         
         room.seats[seatIndex] = { 
-            username: user.username, color: user.nameColor, socketId: socket.id, 
+            username: user.username, socketId: socket.id, 
             credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], 
             currentHand: 0, kickAt: Date.now() + 7000 
         };
@@ -432,10 +428,8 @@ io.on('connection', (socket) => {
                 }
                 await user.save();
                 
-                const msLeft = msIn24Hours;
-                const cooldownSeconds = Math.floor(msLeft / 1000);
-                
-                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, cooldownSeconds });
+                const nextClaim = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, cooldownSeconds: 86400 });
                 
                 Object.keys(rooms).forEach(rId => {
                     const seat = rooms[rId].seats.find(s => s && s.username === username); 
