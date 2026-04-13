@@ -23,23 +23,35 @@ mongoose.connect(process.env.MONGODB_URI).then(async () => {
 }).catch(err => console.error('MongoDB connection error:', err));
 
 // --- DATABASE SCHEMAS ---
-const SystemConfig = mongoose.model('SystemConfig', new mongoose.Schema({ configName: { type: String, unique: true }, configValue: { type: String } }));
+const SystemConfig = mongoose.model('SystemConfig', new mongoose.Schema({ 
+    configName: { type: String, unique: true }, 
+    configValue: { type: String } 
+}));
+
 const User = mongoose.model('User', new mongoose.Schema({
     username: { type: String, required: true, unique: true }, 
     password: { type: String, required: true },
     credits: { type: Number, default: 0 }, 
     status: { type: String, default: 'pending' }, 
     nameColor: { type: String, default: '#f8fafc' }, 
-    ipAddress: String, tosAccepted: Boolean,
+    ipAddress: String, 
+    tosAccepted: Boolean,
     lastRewardClaim: { type: Date, default: null }, 
     createdAt: { type: Date, default: Date.now }
 }));
+
 const Transaction = mongoose.model('Transaction', new mongoose.Schema({
-    username: String, type: String, amount: Number, 
-    status: { type: String, default: 'completed' }, date: { type: Date, default: Date.now }
+    username: String, 
+    type: String, 
+    amount: Number, 
+    status: { type: String, default: 'completed' }, 
+    date: { type: Date, default: Date.now }
 }));
+
 const GiftCode = mongoose.model('GiftCode', new mongoose.Schema({ 
-    code: { type: String, unique: true }, amount: Number, usesLeft: Number 
+    code: { type: String, unique: true }, 
+    amount: Number, 
+    usesLeft: Number 
 }));
 
 // --- GAME LOGIC GLOBALS ---
@@ -49,9 +61,19 @@ const rooms = { '3seat': createRoom(3), '5seat': createRoom(5) };
 
 function createRoom(numSeats) {
     return {
-        seats: Array(numSeats).fill(null), dealerCards: [], deck: [], 
-        status: 'waiting', activeSeatIndex: -1, betEndTime: 0, nextRoundTime: 0, turnEndTime: 0,
-        lobby: [], betTimerInterval: null, nextRoundInterval: null, turnTimerInterval: null, dealerInterval: null
+        seats: Array(numSeats).fill(null), 
+        dealerCards: [], 
+        deck: [], 
+        status: 'waiting', 
+        activeSeatIndex: -1, 
+        betEndTime: 0, 
+        nextRoundTime: 0, 
+        turnEndTime: 0,
+        lobby: [], 
+        betTimerInterval: null, 
+        nextRoundInterval: null, 
+        turnTimerInterval: null, 
+        dealerInterval: null
     };
 }
 
@@ -69,12 +91,21 @@ let colorLobby = [];
 setInterval(() => {
     const now = Date.now();
     Object.keys(rooms).forEach(roomId => {
-        let room = rooms[roomId]; let changed = false;
+        let room = rooms[roomId]; 
+        let changed = false;
+        
         room.seats.forEach((seat, i) => { 
-            if (seat && seat.kickAt && now >= seat.kickAt) { room.seats[i] = null; changed = true; } 
+            if (seat && seat.kickAt && now >= seat.kickAt) { 
+                room.seats[i] = null; 
+                changed = true; 
+            } 
         });
+        
         if (changed) { 
-            if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } 
+            if (room.seats.every(s => s === null)) { 
+                room.status = 'waiting'; 
+                clearInterval(room.betTimerInterval); 
+            } 
             emitGameState(roomId); 
         }
     });
@@ -83,7 +114,9 @@ setInterval(() => {
 setInterval(() => {
     const now = Date.now();
     
+    // ---------------------------------
     // DICE LOOP
+    // ---------------------------------
     if (diceGame.status === 'betting' && now >= diceGame.betEndTime) {
         diceGame.status = 'rolling'; 
         io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, timeLeft: 0, history: diceGame.history });
@@ -97,10 +130,12 @@ setInterval(() => {
             
             let winners = [];
             for (let b of diceGame.bets) {
-                let won = false; let payout = 0;
+                let won = false; 
+                let payout = 0;
                 if (b.choice === 'under' && total < 7) { won = true; payout = b.amount * 2; }
                 if (b.choice === 'over' && total > 7) { won = true; payout = b.amount * 2; }
                 if (b.choice === 'seven' && total === 7) { won = true; payout = b.amount * 5; }
+                
                 if (won) {
                     const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
                     await new Transaction({ username: b.username, type: 'HIGH-LOW DICE', amount: payout }).save();
@@ -119,7 +154,9 @@ setInterval(() => {
         }, 3000); 
     }
 
+    // ---------------------------------
     // COIN LOOP
+    // ---------------------------------
     if (coinGame.status === 'betting' && now >= coinGame.betEndTime) {
         coinGame.status = 'flipping'; 
         io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, timeLeft: 0, history: coinGame.history });
@@ -151,7 +188,9 @@ setInterval(() => {
         }, 3000); 
     }
 
+    // ---------------------------------
     // COLOR GAME LOOP
+    // ---------------------------------
     if (colorGame.status === 'betting' && now >= colorGame.betEndTime) {
         colorGame.status = 'rolling'; 
         io.to('arcade_color').emit('color_state_update', { status: colorGame.status, timeLeft: 0, history: colorGame.history });
@@ -162,6 +201,7 @@ setInterval(() => {
                 PERYA_COLORS[Math.floor(Math.random() * 6)], 
                 PERYA_COLORS[Math.floor(Math.random() * 6)] 
             ];
+            
             colorGame.status = 'resolving'; 
             colorGame.history.unshift(colorGame.dice); 
             if(colorGame.history.length > 20) colorGame.history.pop();
@@ -405,6 +445,8 @@ io.on('connection', (socket) => {
         
         await new Transaction({ username, type: 'HIGH-LOW DICE', amount: -amount }).save();
         diceGame.bets.push({ username, choice, amount }); 
+        
+        io.emit('credit_update', { username: user.username, credits: user.credits }); // Live Sync
         socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
     });
 
@@ -424,6 +466,8 @@ io.on('connection', (socket) => {
         
         await new Transaction({ username, type: 'COIN FLIP', amount: -amount }).save();
         coinGame.bets.push({ username, choice, amount }); 
+        
+        io.emit('credit_update', { username: user.username, credits: user.credits }); // Live Sync
         socket.emit('arcade_bet_placed', { game: 'coin', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
     });
 
@@ -443,6 +487,8 @@ io.on('connection', (socket) => {
         
         await new Transaction({ username, type: 'COLOR GAME', amount: -amount }).save();
         colorGame.bets.push({ username, choice, amount }); 
+        
+        io.emit('credit_update', { username: user.username, credits: user.credits }); // Live Sync
         socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
     });
 
@@ -512,6 +558,8 @@ io.on('connection', (socket) => {
             seat.kickAt = null; 
             await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -betAmount }).save();
             
+            io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); // Live Sync
+            
             room.betEndTime = Date.now() + 15000; 
             clearInterval(room.betTimerInterval);
             
@@ -570,6 +618,9 @@ io.on('connection', (socket) => {
         
         seat.credits = updatedUser.credits; 
         await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); 
+        
+        io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); // Live Sync
+        
         hand.bet *= 2; 
         hand.cards.push(room.deck.pop()); 
         hand.value = calculateValue(hand.cards); 
@@ -593,6 +644,8 @@ io.on('connection', (socket) => {
             
             seat.credits = updatedUser.credits; 
             await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); 
+            
+            io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); // Live Sync
             
             const splitCard = hand.cards.pop(); 
             const newHand = { cards: [splitCard], bet: hand.bet, status: 'waiting', value: 0 }; 
@@ -634,6 +687,7 @@ io.on('connection', (socket) => {
                 const cooldownSeconds = Math.floor(msLeft / 1000);
                 
                 socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, cooldownSeconds });
+                io.emit('credit_update', { username: user.username, credits: user.credits }); // Live Sync
                 
                 Object.keys(rooms).forEach(rId => { 
                     const seat = rooms[rId].seats.find(s => s && s.username === username); 
