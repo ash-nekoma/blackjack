@@ -17,33 +17,35 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         
-        body, input, button, table { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
-        body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        /* GLOBAL PIXEL FONT */
+        body, input, button, table, th, td, select { font-family: 'VT323', monospace; letter-spacing: 1px; }
+        body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; color: #fff; }
         
         .hidden { display: none !important; }
-        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
         #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100vh; background: var(--bg-dark); border-radius: 12px; border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
         .custom-scroll::-webkit-scrollbar { width: 12px; background: #000; border-left: 2px solid var(--border-std);}
         .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border: 2px solid var(--border-std); box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
 
-        .full-menu, .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
-        .full-menu { background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); }
-        .overlay-menu { background: rgba(0,0,0,0.9); z-index: 300; }
+        .full-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
+        .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 300; }
         .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 90vh; overflow-y: auto;}
         
         .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; }
-        input.retro-input { flex: 1; padding: 12px; margin: 0; background: #000; border: 2px solid var(--border-std); font-size: 24px; text-align: center; outline: none; color: #fff;}
+        input.retro-input { flex: 1; padding: 12px; margin: 0; background: #000; color: #fff; border: 2px solid var(--border-std); font-size: 24px; text-align: center; outline: none; }
         
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px;}
-        .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; transition: 0.1s;}
+        .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; display: flex; justify-content: center; align-items: center; transition: 0.1s;}
         .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.7; }
 
         .tab-buttons { display: flex; border-bottom: 2px solid var(--border-std); margin-bottom: 15px; }
-        .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-size: 22px; cursor: pointer; font-family: 'VT323';}
+        .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-size: 22px; cursor: pointer; }
         .tab-btn.active { background: var(--accent-glow); color: #fff; box-shadow: inset 0 3px 0 #fff; }
         .tab-content { display: none; text-align: left; background: #000; padding: 15px; border: 2px solid var(--border-std); font-size: 20px; color: #e2e8f0; height: 300px; overflow-y: auto; line-height: 1.3;}
         .tab-content.active { display: block; }
@@ -65,14 +67,14 @@
         .reward-box .front { background: #1e293b; font-size: 40px; }
         .reward-box .back { background: #000; transform: rotateY(180deg); font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
 
-        /* --- 2-COLUMN PERFECT GRID LAYOUT --- */
-        #game-interface { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; width: 100%; height: 100%; background: #000; box-sizing: border-box; }
+        /* --- 2-COLUMN SEPARATED LAYOUT --- */
+        #game-interface { display: flex; gap: 20px; padding: 20px; width: 100%; height: 100%; background: #000; box-sizing: border-box; }
         
         /* LEFT: GAME BOARD */
-        #game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        #game-area { flex: 1; position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px;}
         
-        /* RIGHT: LOBBY & CHAT */
-        #right-panel-col { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+        /* RIGHT: PLAYERS & CHAT */
+        #right-panel-col { width: 360px; display: flex; flex-direction: column; gap: 20px; height: 100%; flex-shrink: 0;}
         #lobby-panel-col, #chat-panel-col { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
 
         /* PERFECT HUD ALIGNMENT */
@@ -81,7 +83,7 @@
         .hud-center { justify-self: center; text-align: center; }
         .hud-right { justify-self: end; }
 
-        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; text-shadow: 2px 2px 0 #000; font-family: 'VT323';}
+        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; text-shadow: 2px 2px 0 #000;}
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
 
@@ -91,8 +93,8 @@
         
         .chat-messages { flex: 1; padding: 10px; font-size: 22px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word;}
         .chat-input-area { display: flex; border-top: 2px solid var(--border-std); background: #000; }
-        .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none; font-family: 'VT323';}
-        .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold; font-family: 'VT323';}
+        .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none;}
+        .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold;}
 
         /* FLEXBOX GAME BOARD CONTENTS */
         .table-surface { flex: 1; display: flex; flex-direction: column; width: 100%; position: relative; }
@@ -104,14 +106,14 @@
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
         .global-timer.warning { background: #eab308; color: #000; font-size: 32px; font-weight: bold; text-shadow: none !important; }
 
-        /* FLEXBOX SEAT CONTAINER (Fixes all cutoffs) */
-        #seats-area { display: flex; justify-content: space-evenly; align-items: flex-end; width: 100%; padding: 20px; box-sizing: border-box; z-index: 5; height: 350px;}
+        /* DYNAMIC FLEXBOX SEATS CONTAINER (Auto Centers Players, Prevents Cutoffs) */
+        #seats-area { display: flex; justify-content: center; align-items: flex-end; width: 100%; padding: 20px; box-sizing: border-box; z-index: 5; height: 350px; gap: 40px;}
 
-        .seat { width: 150px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: 0.3s; flex-shrink: 0;}
+        .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0;}
         
-        /* MINIMALIST SIT BUTTON */
-        .seat-empty-box { display: flex; justify-content: center; align-items: center; width: 100%; height: 100px; }
-        .btn-sit-empty { background: #10b981; color: #000; font-size: 26px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 6px 30px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s; font-family: 'VT323'; text-shadow: none;}
+        /* RESTORED EMPTY SEAT BOX WITH TEXT & BUTTON */
+        .seat-empty-box { box-sizing: border-box; width: 100%; height: 160px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); padding: 10px;}
+        .btn-sit-empty { background: #10b981; color: #000; font-size: 26px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 6px 24px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s;}
         .btn-sit-empty:active { transform: translate(4px, 4px); box-shadow: 0 0 0 transparent; }
 
         .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
@@ -119,30 +121,30 @@
         .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
 
         /* PLAYER PLATE */
-        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #000; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
-        .player-bet-text { color: var(--warning); font-size: 28px; font-weight: bold; text-shadow: 2px 2px 0 #000; margin-bottom: 0;}
-        .player-name-text { font-size: 22px; font-weight: bold; text-transform: uppercase; color: var(--warning); text-shadow: 2px 2px 0 #000;}
+        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 150px; z-index: 5; text-align: center; box-sizing: border-box;}
+        .player-bet-text { color: var(--warning); font-size: 28px; font-weight: bold; text-shadow: 2px 2px 0 #000; margin-bottom: 2px;}
+        .player-name-text { font-size: 22px; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 0 #000; color: #fff;}
 
-        /* BETTING UI */
-        .seat-bet-box { display: flex; flex-direction: column; width: 100%; margin-top: 10px; box-sizing: border-box;}
-        .seat-bet-box input { width: 100%; padding: 6px; text-align: center; font-size: 26px; margin: 0; outline: none; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; box-sizing: border-box; font-weight: bold; text-shadow: 1px 1px 0 #000; font-family: 'VT323';}
+        /* REDESIGNED DROPDOWN BETTING UI */
+        .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
+        .seat-bet-box select { flex: 1; padding: 6px; font-size: 22px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer;}
         
-        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; font-family: 'VT323', monospace; letter-spacing: 1px; font-size: 20px;}
-        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 22px; padding: 6px;}
+        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; letter-spacing: 1px; font-size: 20px;}
+        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 22px; padding: 6px 16px;}
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
         .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; box-sizing: border-box;}
-        .btn-hit { background: var(--success); color: #000; }
-        .btn-stand { background: #b45309; color: #fff; }
-        .btn-double { background: var(--accent-glow-2); color: #fff; }
-        .btn-split { background: var(--accent-glow); color: #fff; }
+        .btn-hit { background: var(--success); color: #000; font-size: 18px; padding: 6px;}
+        .btn-stand { background: #b45309; color: #fff; font-size: 18px; padding: 6px;}
+        .btn-double { background: var(--accent-glow-2); color: #fff; font-size: 18px; padding: 6px;}
+        .btn-split { background: var(--accent-glow); color: #fff; font-size: 18px; padding: 6px;}
         
         /* STAND UP BUTTON */
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323';}
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold;}
         .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
-        .locked-bet-badge { background: #334155; color: #fff; padding: 6px; text-align: center; border: 2px solid var(--border-std); border-radius: 4px; font-size: 22px; margin-top: 10px; width: 100%; box-sizing: border-box; font-weight: bold;}
+        .locked-bet-badge { background: #334155; color: #fff; padding: 6px; text-align: center; border: 2px solid var(--border-std); border-radius: 4px; font-size: 22px; margin-top: 10px; width: 100%; box-sizing: border-box; font-weight: bold; box-shadow: 2px 2px 0 #000;}
 
-        /* NATIVE CSS CARDS (GUARANTEED RENDER) */
+        /* NATIVE CSS CARDS (GUARANTEED TO RENDER & OVERLAP) */
         .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 88px;}
         .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; min-height: 88px;}
         .hand-container { position: relative; display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px;}
@@ -150,6 +152,7 @@
         .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; margin-left: -35px; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; flex-shrink: 0; z-index: 2;}
         .card:first-child { margin-left: 0; z-index: 1;}
         
+        .card.card-animate { animation: flyOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .card.red { color: #d00; }
         .card.black { color: #000; }
         .card-corner { position: absolute; font-size: 15px; font-weight: bold; line-height: 1; text-align: center; letter-spacing: -1px; font-family: Arial;}
@@ -158,6 +161,7 @@
         .card-center-suit { font-size: 34px; font-family: Arial;}
         
         .card.dealer-hidden { background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); color: transparent; }
+        .card.flip-reveal { animation: flipCard 0.6s ease-out forwards; }
 
         /* CENTERED BADGE */
         .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10; font-family: Arial, sans-serif; line-height: 1; padding: 0; padding-top: 1px;}
@@ -178,6 +182,7 @@
     <audio id="sfx-bgm" loop><source src="bgm.mp3" type="audio/mp3"></audio>
 
     <div id="arcade-cabinet">
+        
         <div id="auth-view" class="full-menu">
             <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 10px;">NEON ROYALE</h1>
             <div id="panel-login" class="modal-box">
@@ -188,24 +193,24 @@
                     <button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="login()">LOGIN</button>
                 </div>
                 <p id="login-error" class="pixel-text" style="color: var(--danger); font-size: 24px;"></p>
-                <div class="clear-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-family: 'VT323';" onclick="toggleAuth('signup')">New Player? Request Access Here</div>
+                <div class="clear-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px;" onclick="toggleAuth('signup')">New Player? Request Access Here</div>
             </div>
 
             <div id="panel-signup" class="modal-box hidden">
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 15px; font-size: 40px;">REQUEST ACCESS</h2>
                 <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME">
                 <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD">
-                <div class="terms-box custom-scroll" style="font-family: 'VT323'; font-size: 20px;">
+                <div class="terms-box custom-scroll">
                     <strong style="color:var(--warning);">SYSTEM TERMS:</strong> Strict 1-Seat limit per room. Play fair. Admin approval required.
                 </div>
-                <label style="font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; margin-bottom: 15px; font-family: 'VT323';">
+                <label style="font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; margin-bottom: 15px;">
                     <input type="checkbox" id="tos-checkbox" style="width: 20px; height: 20px; margin:0;"> I ACCEPT THE TERMS
                 </label>
                 <div style="display: flex; justify-content: center;">
                     <button class="wood-btn pixel-text" style="background: var(--success);" onclick="signup()">SUBMIT REQUEST</button>
                 </div>
                 <p id="signup-msg" class="pixel-text" style="font-size: 24px;"></p>
-                <div class="clear-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-family: 'VT323';" onclick="toggleAuth('login')">Back to Login</div>
+                <div class="clear-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px;" onclick="toggleAuth('login')">Back to Login</div>
             </div>
         </div>
 
@@ -242,7 +247,7 @@
                     <button class="tab-btn active" onclick="switchTab('tab-bj', this)">BLACKJACK</button>
                     <button class="tab-btn" onclick="switchTab('tab-sys', this)">SYSTEM</button>
                 </div>
-                <div id="tab-bj" class="tab-content custom-scroll active" style="font-family: 'VT323'; font-size: 24px;">
+                <div id="tab-bj" class="tab-content custom-scroll active" style="font-size: 24px;">
                     <ul>
                         <li><strong>1-Seat Limit:</strong> Occupy one seat per room.</li>
                         <li><strong>Minimum Bet:</strong> 1,000 credits.</li>
@@ -250,9 +255,10 @@
                         <li><strong>15s Action Timer:</strong> 15 seconds to Hit/Stand/Double.</li>
                         <li><strong>Payouts:</strong> Standard 1:1. Blackjack pays 3:2.</li>
                         <li><strong>Dealer:</strong> Must stand on all 17s.</li>
+                        <li><strong>Splits & Doubles:</strong> You can Double Down on your first two cards. You can Split any pairs (ONCE per hand).</li>
                     </ul>
                 </div>
-                <div id="tab-sys" class="tab-content custom-scroll" style="font-family: 'VT323'; font-size: 24px;">
+                <div id="tab-sys" class="tab-content custom-scroll" style="font-size: 24px;">
                     <ul>
                         <li><strong>Banking Limits:</strong> Deposit: 10k-100k. Withdraw: 50k-100k.</li>
                         <li><strong>Daily Rewards:</strong> Available every 24 hours.</li>
@@ -341,7 +347,7 @@
             <div class="modal-box" style="width: 600px;">
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 20px; font-size: 50px;">SYSTEM BANKING</h2>
                 
-                <div class="terms-box custom-scroll" style="height: 90px; font-family: 'VT323'; font-size: 20px;">
+                <div class="terms-box custom-scroll" style="height: 90px; font-size: 20px;">
                     <strong style="color: var(--warning);">BANK RULES:</strong> Min deposit: 10K. Min withdrawal: 50K. Max: 100K.
                 </div>
 
@@ -394,7 +400,7 @@
 
                 <div class="table-surface">
                     <div class="banker-station">
-                        <div class="pixel-text" style="font-size: 50px; color: #f8fafc; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; letter-spacing: 2px;">DEALER</div>
+                        <div class="pixel-text" style="font-size: 40px; color: #f8fafc; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; letter-spacing: 2px;">DEALER</div>
                         <div class="hand-container">
                             <div id="dealer-cards" class="hands-wrapper" style="margin: 0;"></div>
                             <div id="dealer-val" class="hd-badge hidden"></div>
@@ -534,20 +540,6 @@
             if(actionLocked) return; actionLocked = true; 
             socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
         }
-        
-        window.updateBetInput = function(idx, amt) {
-            const input = document.getElementById(`inseat-bet-${idx}`);
-            if(!input) return;
-            let current = parseInt(input.value) || 0;
-            let newVal = current + amt;
-            if (newVal > 100000) newVal = 100000;
-            input.value = newVal;
-        }
-        
-        window.clearBetInput = function(idx) {
-            const input = document.getElementById(`inseat-bet-${idx}`);
-            if(input) input.value = 0;
-        }
 
         window.actPlaceBet = function(idx) { 
             if(actionLocked) return;
@@ -558,7 +550,7 @@
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
             actionLocked = true;
-            window.lastBetAmount = amt; 
+            window.lastBetAmount = amt; // SAVE FOR NEXT ROUND
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
         }
         
@@ -596,6 +588,7 @@
             if (isHidden) return `<div class="card dealer-hidden"></div>`;
             const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : 'black';
             const suitSym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit];
+            
             return `
                 <div class="card ${colorClass}">
                     <div class="card-corner top-left">${c.value}<br>${suitSym}</div>
@@ -616,17 +609,26 @@
             state.lobby.forEach(p => { lobby.innerHTML += `<div class="lobby-player" style="color:${p.color}">▶ ${p.username}</div>`; });
         }
 
+        let turnTimerVisualInt = null;
+
         function renderTable(state) {
             if (!state) return;
             document.getElementById('phase-display').innerText = state.status === 'resolving' ? 'RESULTS' : state.status.toUpperCase();
             
             const dCards = document.getElementById('dealer-cards'); dCards.innerHTML = ''; const dBadge = document.getElementById('dealer-val');
             
-            state.dealerCards.forEach(c => { dCards.innerHTML += formatCardHTML(c, c.hidden); });
+            state.dealerCards.forEach(c => { 
+                dCards.innerHTML += formatCardHTML(c, c.hidden); 
+            });
             
             const visibleDealerCards = state.dealerCards.filter(c => !c.hidden);
             if (visibleDealerCards.length > 0) {
-                dBadge.innerText = calculateValue(visibleDealerCards);
+                // Use value calculated by server to prevent reference errors!
+                let dealerValue = 0; let aces = 0;
+                visibleDealerCards.forEach(c => { dealerValue += c.weight; if(c.value==='A') aces++; });
+                while(dealerValue > 21 && aces > 0) { dealerValue -= 10; aces--; }
+                
+                dBadge.innerText = dealerValue;
                 dBadge.classList.remove('hidden');
             } else { dBadge.classList.add('hidden'); }
 
@@ -642,22 +644,29 @@
 
             for(let index=0; index<totalSeats; index++) {
                 let seatData = state.seats[index];
-                const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
                 let isMySeat = currentUser && seatData && seatData.username === currentUser.username;
                 let hasSeatAnywhere = state.seats.some(s => s && s.username === currentUser.username);
 
+                // DYNAMIC SEAT RENDERING: Only show empty seats if we are in betting/waiting phase
                 if (!seatData) {
                     if (state.status === 'waiting' || state.status === 'betting') {
+                        const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
                         let sitBtn = !hasSeatAnywhere ? `<button class="btn-sit-empty pixel-text" onclick="actSitDown(${index})">SIT</button>` : '';
-                        seatDiv.innerHTML = `<div class="seat-empty-box">${sitBtn}</div>`;
-                    } else {
-                        seatDiv.innerHTML = `<div class="seat-empty-box"></div>`; // Invisible spacer during play
+                        seatDiv.innerHTML = `
+                            <div class="seat-empty-box">
+                                <div class="pixel-text" style="font-size:28px; color:#94a3b8; margin-bottom:10px;">EMPTY</div>
+                                ${sitBtn}
+                            </div>
+                        `;
+                        seatsArea.appendChild(seatDiv);
                     }
                 } else {
-                    seatDiv.classList.add('occupied'); if (isMySeat) seatDiv.classList.add('my-seat'); 
+                    const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text occupied'; seatDiv.id = `seat-${index}`;
+                    if (isMySeat) seatDiv.classList.add('my-seat'); 
                     if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
 
                     let html = ``;
+                    
                     let wrapperScale = seatData.hands.length > 1 ? "transform: scale(0.85); width: 125%;" : "";
                     html += `<div class="hands-wrapper" style="${wrapperScale}">`;
                     
@@ -666,18 +675,27 @@
                         html += `<div class="hand-box ${activeHandClass}">`;
                         html += `<div class="hand-container">`;
                         
-                        hand.cards.forEach(c => { html += formatCardHTML(c, false); });
-                        if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
+                        hand.cards.forEach(c => {
+                            html += formatCardHTML(c, false);
+                        });
+
+                        if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value}</div>`;
                         
-                        if (hand.status === 'bust' || hand.result === 'bust') html += `<div class="hand-status-label hand-status-bust">BUST</div>`;
-                        else if (hand.result) {
+                        if (hand.status === 'bust' || hand.result === 'bust') {
+                            html += `<div class="hand-status-label hand-status-bust">BUST</div>`;
+                        } else if (hand.result) {
                             if(hand.result === 'win' || hand.result === 'win-bj') html += `<div class="hand-status-label hand-status-win">${hand.result==='win-bj'?'BLACKJACK':'WIN'}</div>`;
                             else if(hand.result === 'lose') html += `<div class="hand-status-label hand-status-lose">LOSE</div>`;
                             else if(hand.result === 'push') html += `<div class="hand-status-label hand-status-push">PUSH</div>`;
-                        } else if (hand.status === 'blackjack' && state.status !== 'resolving') html += `<div class="hand-status-label hand-status-blackjack">21!</div>`;
+                        } else if (hand.status === 'blackjack' && state.status !== 'resolving') {
+                            html += `<div class="hand-status-label hand-status-blackjack">21!</div>`;
+                        }
 
                         html += `</div>`; 
-                        if (activeHandClass) html += `<div class="turn-bar-container"><div class="turn-bar-fill" id="turn-bar-${index}"></div></div>`;
+                        
+                        if (activeHandClass) {
+                            html += `<div class="turn-bar-container"><div class="turn-bar-fill" id="turn-bar-${index}"></div></div>`;
+                        }
                         html += `</div>`; 
                     });
                     html += `</div>`;
@@ -695,31 +713,32 @@
                         html += `<div class="player-info-plate"><div class="player-name-text" style="color:${seatData.color}">${seatData.username}</div></div>`;
                     }
 
-                    // BETTING UI
+                    // BETTING UI (DROPDOWN + BET BUTTON + REMOVED CLEAR BUTTON)
                     if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
                         if (seatData.hands[0].bet === 0) {
-                            let startBet = window.lastBetAmount || 0;
+                            let startBet = window.lastBetAmount || 1000;
+                            // Ensure the dropdown has the exact match, otherwise default to 1000
+                            let opts = [1000, 5000, 10000, 25000, 50000, 100000];
+                            if(!opts.includes(startBet)) startBet = 1000;
+                            
+                            let optHTML = opts.map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
+
                             html += `
-                                <div class="seat-bet-box">
-                                    <input type="number" id="inseat-bet-${index}" value="${startBet}" min="1000" max="100000" class="pixel-text">
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; margin-top: 4px;">
-                                        <button class="s-btn pixel-text" style="background:#3b82f6; color:#fff;" onclick="updateBetInput(${index}, 5000)">+5K</button>
-                                        <button class="s-btn pixel-text" style="background:#10b981; color:#000;" onclick="updateBetInput(${index}, 20000)">+20K</button>
-                                        <button class="s-btn pixel-text" style="background:#f97316; color:#fff;" onclick="updateBetInput(${index}, 50000)">+50K</button>
-                                        <button class="s-btn pixel-text" style="background:#fbbf24; color:#000;" onclick="updateBetInput(${index}, 100000)">+100K</button>
-                                    </div>
-                                    <div style="display: flex; gap: 4px; margin-top: 4px;">
-                                        <button class="s-btn btn-clear pixel-text" style="flex:1; font-size:20px;" onclick="clearBetInput(${index})">CLR</button>
-                                        <button class="s-btn btn-bet pixel-text" style="flex:2; font-size:24px;" onclick="actPlaceBet(${index})">BET</button>
-                                    </div>
+                                <div class="seat-bet-box" style="flex-direction: row; gap: 8px;">
+                                    <select id="inseat-bet-${index}" class="pixel-text" style="flex: 1; padding: 6px; font-size: 20px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; cursor: pointer;">
+                                        ${optHTML}
+                                    </select>
+                                    <button class="s-btn btn-bet pixel-text" style="font-size: 20px; padding: 6px 12px;" onclick="actPlaceBet(${index})">BET</button>
                                 </div>
-                                <div style="width: 100%; margin-top: 6px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>
                             `;
+                            // Show Stand Up when betting hasn't locked
+                            html += `<div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
                         } else {
                             html += `<div class="locked-bet-badge pixel-text">BET LOCKED</div>`;
                         }
                     } else if (isMySeat && state.status === 'waiting') {
-                        html += `<div style="width: 100%; margin-top: 6px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
+                        // Show Stand Up when just waiting
+                        html += `<div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
                     }
 
                     // ACTIVE TURN CONTROLS
@@ -727,13 +746,13 @@
                         const cHand = seatData.hands[seatData.currentHand];
                         if (cHand && cHand.status === 'waiting') {
                             html += `<div class="seat-controls">`;
-                            html += `<button class="s-btn btn-hit pixel-text" style="font-size:20px;" onclick="actHit(${index})">HIT</button>`;
-                            html += `<button class="s-btn btn-stand pixel-text" style="font-size:20px;" onclick="actStand(${index})">STAND</button>`;
+                            html += `<button class="s-btn btn-hit pixel-text" style="font-size:18px;" onclick="actHit(${index})">HIT</button>`;
+                            html += `<button class="s-btn btn-stand pixel-text" style="font-size:18px;" onclick="actStand(${index})">STAND</button>`;
                             
                             if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) {
-                                html += `<button class="s-btn btn-double pixel-text" style="font-size:20px;" onclick="actDouble(${index})">2X</button>`;
+                                html += `<button class="s-btn btn-double pixel-text" style="font-size:18px;" onclick="actDouble(${index})">2X</button>`;
                                 if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) {
-                                    html += `<button class="s-btn btn-split pixel-text" style="font-size:20px;" onclick="actSplit(${index})">SPLIT</button>`;
+                                    html += `<button class="s-btn btn-split pixel-text" style="font-size:18px;" onclick="actSplit(${index})">SPLIT</button>`;
                                 }
                             }
                             html += `</div>`;
@@ -741,12 +760,10 @@
                     }
                     
                     seatDiv.innerHTML = html;
+                    seatsArea.appendChild(seatDiv);
                 }
-                seatsArea.appendChild(seatDiv);
             }
         }
-
-        let turnTimerVisualInt = null;
 
         function manageTimers(state) {
             const gTimerUI = document.getElementById('global-timer'); const nTimerUI = document.getElementById('next-round-timer'); const iTimerUI = document.getElementById('idle-timer');
@@ -803,6 +820,7 @@
             }
         }
     </script>
+    
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', function(e) {
