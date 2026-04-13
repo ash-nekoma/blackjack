@@ -26,7 +26,7 @@
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
-        /* SLIDERS */
+        /* RETRO SLIDERS */
         input[type="range"] { -webkit-appearance: none; background: transparent; height: 10px; border-radius: 5px; border: 2px solid var(--border-std); outline: none; margin: 0 10px; cursor: pointer; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 14px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 2px; cursor: pointer; }
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; }
@@ -38,24 +38,26 @@
         .full-menu, .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
         .full-menu { background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); }
         .overlay-menu { background: rgba(0,0,0,0.9); z-index: 300; }
-        .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 90vh; overflow-y: auto;}
         
-        .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; }
+        /* RESPONSIVE MODAL FIX */
+        .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; max-width: 90%; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 85%; display: flex; flex-direction: column;}
+        
+        .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; flex-shrink: 0;}
         input.retro-input { flex: 1; padding: 12px; margin: 0; background: #000; color: #fff; border: 2px solid var(--border-std); font-size: 24px; text-align: center; outline: none; }
         
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px;}
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px; flex-shrink: 0;}
         .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; transition: 0.1s;}
         .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.7; }
 
-        .tab-buttons { display: flex; border-bottom: 2px solid var(--border-std); margin-bottom: 15px; }
+        .tab-buttons { display: flex; border-bottom: 2px solid var(--border-std); margin-bottom: 15px; flex-shrink: 0;}
         .tab-btn { flex: 1; background: #000; color: #94a3b8; border: none; padding: 10px; font-size: 22px; cursor: pointer; }
         .tab-btn.active { background: var(--accent-glow); color: #fff; box-shadow: inset 0 3px 0 #fff; }
-        .tab-content { display: none; text-align: left; background: #000; padding: 15px; border: 2px solid var(--border-std); font-size: 20px; color: #e2e8f0; height: 300px; overflow-y: auto; line-height: 1.3;}
+        .tab-content { display: none; text-align: left; background: #000; padding: 15px; border: 2px solid var(--border-std); font-size: 20px; color: #e2e8f0; overflow-y: auto; line-height: 1.3; flex: 1;}
         .tab-content.active { display: block; }
         .tab-content h3 { color: var(--warning); font-size: 32px; margin-bottom: 10px;}
-        .tab-content ul { padding-left: 20px; }
+        .tab-content ul { padding-left: 20px; margin-bottom: 15px;}
 
         .profile-preview { font-size: 50px; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; text-transform: uppercase;}
         .profile-credits { font-size: 36px; color: #fff; margin-bottom: 20px; text-shadow: 2px 2px 0 #000; color: var(--warning);}
@@ -69,89 +71,95 @@
         .reward-box .front { background: #1e293b; font-size: 40px; }
         .reward-box .back { background: #000; transform: rotateY(180deg); font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
 
-        /* --- 2-COLUMN SEPARATED LAYOUT --- */
-        #game-interface { display: flex; gap: 20px; padding: 20px; width: 100%; height: 100%; background: #000; box-sizing: border-box; }
+        /* --- 2-COLUMN PERFECT GRID LAYOUT --- */
+        #game-interface { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; width: 100%; height: 100%; background: #000; box-sizing: border-box; }
         
         /* LEFT: GAME BOARD */
-        #game-area { flex: 1; position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px;}
+        #game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
         
-        /* RIGHT: PLAYERS & CHAT */
-        #right-panel-col { width: 360px; display: flex; flex-direction: column; gap: 20px; height: 100%; flex-shrink: 0;}
+        /* RIGHT: LOBBY & CHAT */
+        #right-panel-col { display: flex; flex-direction: column; gap: 20px; height: 100%; }
         #lobby-panel-col, #chat-panel-col { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
 
         /* PERFECT HUD ALIGNMENT */
-        .top-hud { width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); box-sizing: border-box; }
+        .top-hud { width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); box-sizing: border-box; flex-shrink: 0;}
         .hud-left { justify-self: start; }
         .hud-center { justify-self: center; text-align: center; }
         .hud-right { justify-self: end; }
 
-        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; text-shadow: 2px 2px 0 #000;}
+        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; text-shadow: 2px 2px 0 #000; font-family: 'VT323';}
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
 
-        .sidebar-header { background: #1e293b; color: #fff; padding: 10px; text-align: center; font-size: 28px; border-bottom: 2px solid var(--border-std); display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000; font-weight: bold;}
+        .sidebar-header { background: #1e293b; color: #fff; padding: 10px; text-align: center; font-size: 28px; border-bottom: 2px solid var(--border-std); display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000; font-weight: bold; flex-shrink: 0;}
         .lobby-panel { flex: 1; padding: 10px; overflow-y: auto; background: var(--bg-darker); }
         .lobby-player { font-size: 26px; margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 5px; text-shadow: 1px 1px 0 #000;}
         
         .chat-messages { flex: 1; padding: 10px; font-size: 22px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word;}
-        .chat-input-area { display: flex; border-top: 2px solid var(--border-std); background: #000; }
-        .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none;}
-        .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold;}
+        .chat-input-area { display: flex; border-top: 2px solid var(--border-std); background: #000; flex-shrink: 0;}
+        .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none; font-family: 'VT323';}
+        .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold; font-family: 'VT323';}
 
-        .table-surface { flex: 1; display: flex; flex-direction: column; width: 100%; position: relative; }
+        /* FLEXBOX GAME BOARD CONTENTS */
+        .table-surface { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; position: relative; padding: 30px 0 20px 0; box-sizing: border-box;}
         
         /* DEAD CENTER DEALER (ELEVATED) */
-        .banker-station { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; }
+        .banker-station { display: flex; flex-direction: column; align-items: center; z-index: 10; }
         
         /* CENTERED TIMERS DYNAMIC STACK */
-        #timers-container { position: absolute; top: 220px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 15px; align-items: center; z-index: 20; width: 100%;}
-        .global-timer { font-size: 36px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000;}
+        #timers-container { display: flex; flex-direction: column; gap: 15px; align-items: center; z-index: 20; width: 100%; margin: auto 0;}
+        .global-timer { font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000; white-space: nowrap;}
         .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
-        .global-timer.warning { background: #eab308; color: #000; font-size: 30px; font-weight: bold; text-shadow: none; border: 2px solid #000;}
+        .global-timer.warning { background: #eab308; color: #000; font-size: 32px; font-weight: bold; text-shadow: none !important; border: 2px solid #000;}
 
-        /* DYNAMIC FLEXBOX SEATS CONTAINER (Centers automatically during active play!) */
-        #seats-area { display: flex; justify-content: center; align-items: flex-end; width: 100%; padding: 20px; box-sizing: border-box; z-index: 5; height: 350px; gap: 40px;}
+        /* FLEXBOX SEAT CONTAINER (Fixes all cutoffs & naturally straightens) */
+        #seats-area { display: flex; justify-content: center; align-items: flex-end; width: 100%; padding: 0 20px; box-sizing: border-box; z-index: 5; gap: 15px; flex-wrap: nowrap;}
 
-        .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0;}
+        /* CASINO STATION SEAT DESIGN */
+        .seat { width: 175px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.3s ease; flex-shrink: 0;}
         
-        /* EMPTY SEAT BUTTON ONLY */
-        .seat-empty-box { display: flex; justify-content: center; align-items: center; width: 100%; height: 160px; }
-        .btn-sit-empty { background: #10b981; color: #000; font-size: 30px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 10px 30px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s;}
+        .seat.occupied { background: rgba(15, 23, 42, 0.8); border: 2px solid #334155; border-radius: 12px; padding: 15px 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); border-bottom: 4px solid #1e293b; margin: 0 5px;}
+        .seat.my-seat { border-color: var(--accent-glow-2); border-bottom-color: var(--accent-glow-2); background: rgba(30, 58, 138, 0.4); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
+        .seat.active-turn { box-shadow: 0 0 25px var(--warning); border-color: var(--warning); border-bottom-color: var(--warning);}
+
+        /* MINIMALIST SIT BUTTON */
+        .seat-empty-box { display: flex; justify-content: center; align-items: center; width: 100%; padding: 10px; }
+        .btn-sit-empty { background: #10b981; color: #000; font-size: 28px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 8px 30px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s; font-family: 'VT323'; text-shadow: none;}
         .btn-sit-empty:active { transform: translate(4px, 4px); box-shadow: 0 0 0 transparent; }
 
         .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
         .turn-bar-container { width: 100%; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
         .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
 
-        /* PLAYER PLATE */
-        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
+        /* PLAYER PLATE (CLEAN NAME) */
+        .player-info-plate { display: flex; flex-direction: column; align-items: center; text-align: center; box-sizing: border-box; width: 100%; border-bottom: 2px solid #334155; padding-bottom: 5px; margin-bottom: 10px;}
         .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
 
-        /* BET TEXT (Dynamic updates on result) */
-        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box;}
+        /* INDIVIDUAL HAND BET TEXT (Dynamic updates on result) */
+        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
 
         /* REDESIGNED DROPDOWN BETTING UI */
-        .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
-        .seat-bet-box select { flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;}
+        .seat-bet-box { display: flex; flex-direction: row; width: 100%; gap: 6px; justify-content: center; align-items: stretch; margin-bottom: 10px;}
+        .seat-bet-box select { flex: 2; padding: 6px; font-size: 22px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; font-family: 'VT323';}
         
-        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; letter-spacing: 1px; font-size: 20px;}
-        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 16px;}
+        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; font-family: 'VT323'; letter-spacing: 1px; font-size: 20px;}
+        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 22px; padding: 6px 12px; flex: 1;}
         .s-btn:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
         .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; box-sizing: border-box;}
-        .btn-hit { background: var(--success); color: #000; font-size: 18px; padding: 6px;}
-        .btn-stand { background: #b45309; color: #fff; font-size: 18px; padding: 6px;}
-        .btn-double { background: var(--accent-glow-2); color: #fff; font-size: 18px; padding: 6px;}
-        .btn-split { background: var(--accent-glow); color: #fff; font-size: 18px; padding: 6px;}
+        .btn-hit { background: var(--success); color: #000; font-size: 20px; padding: 6px;}
+        .btn-stand { background: #b45309; color: #fff; font-size: 20px; padding: 6px;}
+        .btn-double { background: var(--accent-glow-2); color: #fff; font-size: 20px; padding: 6px;}
+        .btn-split { background: var(--accent-glow); color: #fff; font-size: 20px; padding: 6px;}
         
         /* STAND UP BUTTON */
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold;}
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323'; margin-top: 5px;}
         .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
 
         /* NATIVE CSS CARDS (GUARANTEED TO RENDER & OVERLAP) */
-        .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 88px;}
-        .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; min-height: 88px;}
-        .hand-container { position: relative; display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px;}
+        .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 88px; width: 100%;}
+        .hand-box { display: flex; flex-direction: column; align-items: center; position: relative; min-height: 88px; width: 100%;}
+        .hand-container { display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px; position: relative;}
         
         .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; margin-left: -35px; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; flex-shrink: 0; z-index: 2;}
         .card:first-child { margin-left: 0; z-index: 1;}
@@ -195,10 +203,10 @@
             <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 10px;">NEON ROYALE</h1>
             <div id="panel-login" class="modal-box">
                 <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 15px; font-size: 40px;">MEMBER LOGIN</h2>
-                <input type="text" id="login-user" class="retro-input" placeholder="USERNAME">
-                <input type="password" id="login-pass" class="retro-input" placeholder="PASSWORD">
+                <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME">
+                <input type="password" id="login-pass" class="retro-input pixel-text" placeholder="PASSWORD">
                 <div style="display: flex; justify-content: center; margin-top: 15px;">
-                    <button class="wood-btn" style="background: var(--accent-glow-2);" onclick="login()">LOGIN</button>
+                    <button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="login()">LOGIN</button>
                 </div>
                 <p id="login-error" class="pixel-text" style="color: var(--danger); font-size: 24px;"></p>
                 <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('signup')">New Player? Request Access Here</div>
@@ -206,20 +214,20 @@
 
             <div id="panel-signup" class="modal-box hidden">
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 15px; font-size: 40px;">REQUEST ACCESS</h2>
-                <input type="text" id="signup-user" class="retro-input" placeholder="CHOOSE USERNAME">
-                <input type="password" id="signup-pass" class="retro-input" placeholder="CREATE PASSWORD">
-                <div class="terms-box custom-scroll" style="font-size: 22px; line-height: 1.2;">
-                    <strong style="color:var(--warning);">SYSTEM TERMS OF SERVICE:</strong><br>
-                    By registering, you agree to the Neon Royale Fair Play Policy.<br><br>
+                <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME">
+                <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD">
+                <div class="terms-box custom-scroll pixel-text" style="font-size: 20px; text-align: left;">
+                    <strong style="color:var(--warning); font-size: 24px;">SYSTEM TERMS OF SERVICE:</strong><br><br>
+                    By requesting access to Neon Royale, you agree to the Fair Play Policy:<br>
                     - Maximum of ONE active seat per room.<br>
-                    - Use of automation, macros, or multiple accounts to farm rewards is strictly prohibited and will result in immediate IP bans.<br>
-                    - Management reserves the right to withhold payouts pending review.
+                    - Using macros or alt-accounts to farm daily rewards is strictly prohibited and results in an IP Ban.<br>
+                    - All accounts require manual Admin approval.
                 </div>
-                <label style="font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
-                    <input type="checkbox" id="tos-checkbox" style="width: 20px; height: 20px; margin:0;"> I ACCEPT THE TERMS
+                <label class="pixel-text" style="font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                    <input type="checkbox" id="tos-checkbox" style="width: 24px; height: 24px; margin:0;"> I ACCEPT THE TERMS
                 </label>
                 <div style="display: flex; justify-content: center;">
-                    <button class="wood-btn" style="background: var(--success);" onclick="signup()">SUBMIT REQUEST</button>
+                    <button class="wood-btn pixel-text" style="background: var(--success);" onclick="signup()">SUBMIT REQUEST</button>
                 </div>
                 <p id="signup-msg" class="pixel-text" style="font-size: 24px;"></p>
                 <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('login')">Back to Login</div>
@@ -259,7 +267,7 @@
                     <button class="tab-btn active" onclick="switchTab('tab-bj', this)">BLACKJACK</button>
                     <button class="tab-btn" onclick="switchTab('tab-sys', this)">SYSTEM</button>
                 </div>
-                <div id="tab-bj" class="tab-content custom-scroll active" style="font-size: 24px;">
+                <div id="tab-bj" class="tab-content custom-scroll active pixel-text" style="font-size: 24px;">
                     <ul>
                         <li><strong>1-Seat Limit:</strong> Occupy one seat per room.</li>
                         <li><strong>Minimum Bet:</strong> 1,000 credits.</li>
@@ -270,7 +278,7 @@
                         <li><strong>Splits & Doubles:</strong> You can Double Down on your first two cards. You can Split any pairs (ONCE per hand).</li>
                     </ul>
                 </div>
-                <div id="tab-sys" class="tab-content custom-scroll" style="font-size: 24px;">
+                <div id="tab-sys" class="tab-content custom-scroll pixel-text" style="font-size: 24px;">
                     <ul>
                         <li><strong>Banking Limits:</strong> Deposit: 10k-100k. Withdraw: 50k-100k.</li>
                         <li><strong>Daily Rewards:</strong> Available every 24 hours.</li>
@@ -303,10 +311,10 @@
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 50px;">PLAYER DOSSIER</h2>
                 
                 <div style="background: #000; border: 2px solid var(--border-std); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <div class="profile-preview" id="profile-username-preview" style="color: #fff;">USERNAME</div>
-                    <div style="font-size: 24px; color: #94a3b8; margin-bottom: 5px;">ACCOUNT STATUS: <span id="profile-status" style="color:var(--success); text-transform:uppercase;">ACTIVE</span></div>
-                    <div style="font-size: 24px; color: #94a3b8; margin-bottom: 15px;">JOIN DATE: <span id="profile-date">MM/DD/YYYY</span></div>
-                    <div class="profile-credits">TOTAL BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
+                    <div class="profile-preview pixel-text" id="profile-username-preview" style="color: #fff;">USERNAME</div>
+                    <div class="pixel-text" style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">ACCOUNT STATUS: <span id="profile-status" style="color:var(--success); text-transform:uppercase;">ACTIVE</span></div>
+                    <div class="pixel-text" style="font-size: 28px; color: #94a3b8; margin-bottom: 15px;">JOIN DATE: <span id="profile-date">MM/DD/YYYY</span></div>
+                    <div class="profile-credits pixel-text">TOTAL BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
                 </div>
 
                 <div id="ledger-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
@@ -353,16 +361,16 @@
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 5px; font-size: 50px;">SYSTEM BANKING</h2>
                 <div class="pixel-text" style="font-size: 28px; margin-bottom: 20px;">CURRENT BALANCE: <span class="coin-icon">🪙</span> <span id="bank-balance-display">0</span></div>
                 
-                <div class="terms-box custom-scroll pixel-text" style="height: 110px; font-size: 22px; line-height: 1.2;">
-                    <strong style="color: var(--warning);">BANK RULES:</strong><br>
-                    All requests pend Admin review.<br>
-                    Minimum deposit is 10,000. Minimum withdrawal is 50,000.<br>
-                    Maximum limit per transaction is 100,000 credits.<br>
-                    Gift Codes are credited instantly.
+                <div class="terms-box custom-scroll pixel-text" style="height: 110px; font-size: 22px; line-height: 1.2; text-align: left;">
+                    <strong style="color: var(--warning); font-size: 24px;">BANK RULES:</strong><br>
+                    - All deposit and withdrawal requests pend Admin review.<br>
+                    - Minimum transaction is 10,000 for Deposits, 50,000 for Withdrawals.<br>
+                    - Maximum limit per transaction is 100,000 credits.<br>
+                    - Gift Codes are validated and credited instantly.
                 </div>
 
                 <div class="input-group">
-                    <input type="number" id="bank-amount" class="retro-input" placeholder="ENTER AMOUNT">
+                    <input type="number" id="bank-amount" class="retro-input pixel-text" placeholder="ENTER AMOUNT">
                 </div>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <button class="wood-btn" style="flex: 1; background: var(--accent-glow-2);" onclick="submitBank('deposit')">DEPOSIT</button>
@@ -370,14 +378,14 @@
                 </div>
 
                 <div style="background: #000; padding: 15px; border: 2px solid var(--success); border-radius: 8px; margin-bottom: 15px;">
-                    <h3 class="pixel-text" style="color: #fff; margin-bottom: 10px; text-align: left; font-size:24px;">REDEEM GIFT CODE</h3>
+                    <h3 class="pixel-text" style="color: #fff; margin-bottom: 10px; text-align: left; font-size:28px;">REDEEM GIFT CODE</h3>
                     <div class="input-group" style="margin:0;">
-                        <input type="text" id="gift-code" class="retro-input" placeholder="ENTER CODE" style="text-transform:uppercase;">
+                        <input type="text" id="gift-code" class="retro-input pixel-text" placeholder="ENTER CODE" style="text-transform:uppercase;">
                         <button class="wood-btn" style="width: 150px; margin-bottom:0; background: var(--success); color:#000;" onclick="redeemCode()">REDEEM</button>
                     </div>
                 </div>
 
-                <h3 class="pixel-text" style="text-align: left; margin-bottom: 5px; font-size: 24px;">RECENT BANK TRANSFERS</h3>
+                <h3 class="pixel-text" style="text-align: left; margin-bottom: 5px; font-size: 28px;">RECENT BANK TRANSFERS</h3>
                 <div id="bank-ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 150px;"></div>
                 
                 <p id="bank-msg" class="pixel-text" style="font-size: 28px; margin-top: 10px;"></p>
@@ -394,12 +402,12 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; background: #000; padding: 15px; border: 2px solid var(--border-std);">
                     <span class="pixel-text" style="font-size: 32px;">SOUND EFFECTS</span>
                     <input type="range" id="vol-sfx" min="0" max="1" step="0.05" value="1" oninput="updateVol('sfx', this.value)" style="flex:1; max-width: 200px;">
-                    <span id="vol-sfx-text" class="pixel-text" style="width: 50px; text-align:right; font-size: 24px;">100%</span>
+                    <span id="vol-sfx-text" class="pixel-text" style="width: 60px; text-align:right; font-size: 28px;">100%</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; background: #000; padding: 15px; border: 2px solid var(--border-std);">
                     <span class="pixel-text" style="font-size: 32px;">BACKGROUND MUSIC</span>
                     <input type="range" id="vol-bgm" min="0" max="1" step="0.05" value="0" oninput="updateVol('bgm', this.value)" style="flex:1; max-width: 200px;">
-                    <span id="vol-bgm-text" class="pixel-text" style="width: 50px; text-align:right; font-size: 24px;">0%</span>
+                    <span id="vol-bgm-text" class="pixel-text" style="width: 60px; text-align:right; font-size: 28px;">0%</span>
                 </div>
 
                 <div style="display: flex; justify-content: center; margin-top: 25px;">
@@ -422,7 +430,7 @@
             
             <div id="game-area">
                 <div class="top-hud">
-                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu()">◄ DASHBOARD</button></div>
+                    <div class="hud-left"><button class="btn-menu pixel-text" onclick="exitToMenu()">◄ DASHBOARD</button></div>
                     <div class="hud-center"><div style="font-size: 36px; color: var(--accent-glow-2); text-shadow: 2px 2px 0 #000;" id="phase-display" class="pixel-text">WAITING</div></div>
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="hud-credits"></span></div></div>
                 </div>
@@ -455,8 +463,8 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="chat-input" placeholder="Type message..." maxlength="100">
-                        <button onclick="actSendChat()">SEND</button>
+                        <input type="text" id="chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <button class="pixel-text" onclick="actSendChat()">SEND</button>
                     </div>
                 </div>
             </div>
@@ -488,7 +496,7 @@
             } else {
                 ['deal', 'bet', 'win', 'lose'].forEach(id => { if(audioNodes[id]) audioNodes[id].volume = val; });
                 document.getElementById('vol-sfx-text').innerText = pct;
-                if(val > 0) audioNodes.deal.play().catch(()=>{}); // Test sound
+                if(val > 0) audioNodes.deal.play().catch(()=>{}); 
             }
         }
         function playSfx(id) { if(audioNodes[id] && audioNodes[id].volume > 0) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } }
@@ -563,11 +571,10 @@
                 let color = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff');
                 let statusBadge = '';
                 
-                // Only show status badges for bank requests
                 if (tx.type.includes('BANK')) {
                     let stColor = tx.status === 'pending' ? '#fbbf24' : (tx.status === 'completed' ? '#10b981' : '#ef4444');
                     let displayStatus = tx.status === 'completed' ? 'APPROVED' : tx.status;
-                    statusBadge = ` <span style="color:${stColor}; font-size:18px;">[${displayStatus.toUpperCase()}]</span>`;
+                    statusBadge = ` <span style="color:${stColor}; font-size:20px;">[${displayStatus.toUpperCase()}]</span>`;
                 }
 
                 list.innerHTML += `<div class="ledger-item">
@@ -626,7 +633,7 @@
             if (amt > currentUser.credits) return alert("Insufficient credits!");
             
             actionLocked = true;
-            window.lastBetAmount = amt; 
+            window.lastBetAmount = amt; // SAVE FOR NEXT ROUND
             socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
             playSfx('bet');
         }
@@ -652,12 +659,14 @@
             if(actionLocked) return; actionLocked = true; 
             document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
             socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+            playSfx('bet');
         }
         
         window.actSplit = function(idx) { 
             if(actionLocked) return; actionLocked = true; 
             document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); 
             socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
+            playSfx('bet');
         }
 
         // CARDS RENDER ENGINE
@@ -710,7 +719,6 @@
             else { dBadge.classList.add('hidden'); }
 
             const seatsArea = document.getElementById('seats-area'); seatsArea.innerHTML = '';
-            let activeElements = [];
             
             if(currentUser) {
                  const mySeatData = state.seats.find(s => s && s.username === currentUser.username);
@@ -718,28 +726,27 @@
                  else { mySeatIndex = -1; }
             }
 
-            const totalSeats = state.seats.length;
-
-            for(let index=0; index<totalSeats; index++) {
+            for(let index=0; index<state.seats.length; index++) {
                 let seatData = state.seats[index];
                 let isMySeat = currentUser && seatData && seatData.username === currentUser.username;
                 let hasSeatAnywhere = state.seats.some(s => s && s.username === currentUser.username);
 
-                const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
-
+                // DYNAMIC SEAT RENDERING
                 if (!seatData) {
                     if (state.status === 'waiting' || state.status === 'betting') {
-                        let sitBtn = !hasSeatAnywhere ? `<button class="btn-sit-empty" onclick="actSitDown(${index})">SIT</button>` : '';
+                        const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
+                        let sitBtn = !hasSeatAnywhere ? `<button class="btn-sit-empty pixel-text" onclick="actSitDown(${index})">SIT</button>` : '';
                         seatDiv.innerHTML = `
                             <div class="seat-empty-box">
-                                <div style="font-size:24px; color:#94a3b8; margin-bottom:10px; font-weight:bold;">EMPTY</div>
+                                <div class="pixel-text" style="font-size:28px; color:#94a3b8; margin-bottom:10px;">EMPTY</div>
                                 ${sitBtn}
                             </div>
                         `;
-                        activeElements.push(seatDiv);
+                        seatsArea.appendChild(seatDiv);
                     }
                 } else {
-                    seatDiv.classList.add('occupied'); if (isMySeat) seatDiv.classList.add('my-seat'); 
+                    const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text occupied'; seatDiv.id = `seat-${index}`;
+                    if (isMySeat) seatDiv.classList.add('my-seat'); 
                     if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
 
                     let html = ``;
@@ -771,8 +778,8 @@
                             else if (hand.result === 'push') handBet = hand.bet;
                             else handBet = 0;
                         }
-                        if ((handBet > 0 || state.status === 'resolving') && (state.status === 'playing' || state.status === 'dealerTurn' || state.status === 'resolving' || state.status === 'betting')) {
-                            html += `<div class="player-bet-text">${formatNumber(handBet)}</div>`;
+                        if (handBet > 0 || state.status === 'resolving') {
+                            html += `<div class="player-bet-text pixel-text">${formatNumber(handBet)}</div>`;
                         }
 
                         if (activeHandClass) html += `<div class="turn-bar-container"><div class="turn-bar-fill" id="turn-bar-${index}"></div></div>`;
@@ -786,7 +793,7 @@
                     // BETTING UI
                     if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
                         if (seatData.hands[0].bet === 0) {
-                            let startBet = window.lastBetAmount || 0;
+                            let startBet = window.lastBetAmount || 1000;
                             let opts = [1000, 10000, 25000, 50000, 100000];
                             if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
                             
@@ -795,16 +802,18 @@
 
                             html += `
                                 <div class="seat-bet-box">
-                                    <select id="inseat-bet-${index}">
-                                        ${optHTML}
-                                    </select>
-                                    <button class="s-btn btn-bet" onclick="actPlaceBet(${index})">BET</button>
+                                    <div style="display: flex; gap: 8px;">
+                                        <select id="inseat-bet-${index}" class="pixel-text" style="flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer;">
+                                            ${optHTML}
+                                        </select>
+                                        <button class="s-btn btn-bet pixel-text" style="font-size: 24px; padding: 6px 12px;" onclick="actPlaceBet(${index})">BET</button>
+                                    </div>
                                 </div>
-                                <div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup" onclick="actEjectSeat(${index})">STAND UP</button></div>
+                                <div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>
                             `;
                         }
                     } else if (isMySeat && state.status === 'waiting') {
-                        html += `<div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
+                        html += `<div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
                     }
 
                     // ACTIVE TURN CONTROLS
@@ -812,13 +821,13 @@
                         const cHand = seatData.hands[seatData.currentHand];
                         if (cHand && cHand.status === 'waiting') {
                             html += `<div class="seat-controls">`;
-                            html += `<button class="s-btn btn-hit" onclick="actHit(${index})">HIT</button>`;
-                            html += `<button class="s-btn btn-stand" onclick="actStand(${index})">STAND</button>`;
+                            html += `<button class="s-btn btn-hit pixel-text" style="font-size:20px;" onclick="actHit(${index})">HIT</button>`;
+                            html += `<button class="s-btn btn-stand pixel-text" style="font-size:20px;" onclick="actStand(${index})">STAND</button>`;
                             
                             if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) {
-                                html += `<button class="s-btn btn-double" onclick="actDouble(${index})">2X</button>`;
+                                html += `<button class="s-btn btn-double pixel-text" style="font-size:20px;" onclick="actDouble(${index})">2X</button>`;
                                 if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) {
-                                    html += `<button class="s-btn btn-split" onclick="actSplit(${index})">SPLIT</button>`;
+                                    html += `<button class="s-btn btn-split pixel-text" style="font-size:20px;" onclick="actSplit(${index})">SPLIT</button>`;
                                 }
                             }
                             html += `</div>`;
@@ -826,10 +835,9 @@
                     }
                     
                     seatDiv.innerHTML += html; 
-                    activeElements.push(seatDiv);
+                    seatsArea.appendChild(seatDiv);
                 }
             }
-            layoutArc(activeElements, totalSeats);
         }
 
         let turnTimerVisualInt = null;
@@ -886,38 +894,6 @@
                         if (remaining <= 0) clearInterval(turnTimerVisualInt);
                     }, 200);
                 }
-            }
-        }
-
-        // PERFECT PERCENTAGE LAYOUT ENGINE (SMILE ALIGNMENT & DYNAMIC CENTER)
-        function layoutArc(elements, totalSeats) {
-            const seatsArea = document.getElementById('seats-area');
-            seatsArea.innerHTML = ''; 
-
-            if (currentGameState.status === 'playing' || currentGameState.status === 'dealerTurn' || currentGameState.status === 'resolving') {
-                elements.forEach(el => {
-                    el.style.position = 'relative';
-                    el.style.transform = 'none';
-                    el.style.left = 'auto'; el.style.bottom = 'auto';
-                    seatsArea.appendChild(el);
-                });
-            } else {
-                elements.forEach((el, i) => {
-                    el.style.position = 'absolute';
-                    el.style.transform = 'translate(-50%, 0)'; 
-                    
-                    if (totalSeats === 3) {
-                        const pos = [25, 50, 75];
-                        el.style.left = `${pos[i]}%`;
-                        el.style.bottom = `5%`; 
-                    } else if (totalSeats === 5) {
-                        const posX = [12, 31, 50, 69, 88]; 
-                        const posY = [25, 12, 5, 12, 25]; 
-                        el.style.left = `${posX[i]}%`;
-                        el.style.bottom = `${posY[i]}%`;
-                    }
-                    seatsArea.appendChild(el);
-                });
             }
         }
         
