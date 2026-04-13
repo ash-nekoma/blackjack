@@ -70,17 +70,18 @@
         .reward-box .front { background: #1e293b; font-size: 40px; }
         .reward-box .back { background: #000; transform: rotateY(180deg); font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
 
-        .game-interface { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; width: 100%; height: 100%; background: #000; box-sizing: border-box; overflow: hidden;}
-        .game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px;}
+        /* THE BULLETPROOF LAYOUT FIX */
+        /* min-height: 0 added to prevent infinite flex stretching */
+        .game-interface { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; width: 100%; height: 100%; min-height: 0; background: #000; box-sizing: border-box; }
+        .game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px; min-height: 0;}
         .game-area.dice-bg { background: radial-gradient(circle at center, #7e22ce 0%, #4c1d95 100%); }
         .game-area.coin-bg { background: radial-gradient(circle at center, #9a3412 0%, #7c2d12 100%); }
         
-        .sidebar-col { display: flex; flex-direction: column; gap: 20px; height: 100%; flex-shrink: 0; min-height: 0; overflow: hidden;}
-        .sidebar-box { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); min-height: 0;}
+        .sidebar-col { display: flex; flex-direction: column; gap: 20px; height: 100%; flex-shrink: 0; min-height: 0; position: relative;}
+        .sidebar-box { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); min-height: 0; position: relative;}
         
-        /* BULLETPROOF POPOVER FIX */
-        .popover-container { background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.8); flex-shrink: 0;}
-        .popover-list { padding: 10px; border-top: 2px dashed #333; background: transparent; max-height: 200px; overflow-y: auto;}
+        /* THE FLOATING DROPDOWN FIX */
+        .dropdown-list { position: absolute; top: calc(100% + 5px); left: 0; width: 100%; background: var(--bg-darker); border: 2px solid var(--border-std); border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.9); padding: 10px;}
 
         .top-hud { width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); box-sizing: border-box; flex-shrink: 0;}
         .hud-left { justify-self: start; } .hud-center { justify-self: center; text-align: center; } .hud-right { justify-self: end; }
@@ -88,7 +89,7 @@
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
 
-        .sidebar-header { background: #1e293b; color: #fff; padding: 10px; text-align: center; font-size: 28px; border-bottom: 2px solid var(--border-std); display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000; font-weight: bold; flex-shrink: 0;}
+        .sidebar-header { background: #1e293b; color: #fff; padding: 10px; text-align: center; font-size: 28px; border-bottom: 2px solid var(--border-std); display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000; font-weight: bold; flex-shrink: 0; align-items: center;}
         .lobby-player { font-size: 26px; margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 5px; text-shadow: 1px 1px 0 #000;}
         .chat-messages { flex: 1; padding: 10px; font-size: 22px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word; min-height: 0;}
         .chat-input-area { display: flex; border-top: 2px solid var(--border-std); background: #000; flex-shrink: 0;}
@@ -471,12 +472,14 @@
             </div>
             
             <div class="sidebar-col">
-                <div class="popover-container">
-                    <div class="sidebar-header pixel-text" style="cursor: pointer;" onclick="togglePopover('dice-players-popover')">
-                        <span>PLAYERS</span> <span id="dice-player-count" style="color:var(--accent-glow-2);">0</span> ▼
-                    </div>
-                    <div id="dice-players-popover" class="hidden popover-list custom-scroll pixel-text"></div>
+                <div style="position: relative; z-index: 50;">
+                    <button class="wood-btn pixel-text" style="width: 100%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.8);" onclick="togglePlayerList('dice-players-list')">
+                        <span>PLAYERS</span>
+                        <span style="color:var(--accent-glow-2);"><span id="dice-player-count">0</span> ▼</span>
+                    </button>
+                    <div id="dice-players-list" class="dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
+
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">ROLL HISTORY</div>
                     <div id="dice-history" style="flex: 1; padding: 10px; overflow-y: auto; font-size:30px; text-align:center;" class="pixel-text custom-scroll"></div>
@@ -519,12 +522,14 @@
             </div>
             
             <div class="sidebar-col">
-                <div class="popover-container">
-                    <div class="sidebar-header pixel-text" style="cursor: pointer;" onclick="togglePopover('coin-players-popover')">
-                        <span>PLAYERS</span> <span id="coin-player-count" style="color:var(--accent-glow-2);">0</span> ▼
-                    </div>
-                    <div id="coin-players-popover" class="hidden popover-list custom-scroll pixel-text"></div>
+                <div style="position: relative; z-index: 50;">
+                    <button class="wood-btn pixel-text" style="width: 100%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.8);" onclick="togglePlayerList('coin-players-list')">
+                        <span>PLAYERS</span>
+                        <span style="color:var(--accent-glow-2);"><span id="coin-player-count">0</span> ▼</span>
+                    </button>
+                    <div id="coin-players-list" class="dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
+
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text">FLIP HISTORY</div>
                     <div id="coin-history" style="flex: 1; padding: 10px; overflow-y: auto; font-size:30px; text-align:center;" class="pixel-text custom-scroll"></div>
@@ -574,12 +579,10 @@
             document.getElementById(tabId).classList.add('active'); btnEl.classList.add('active');
         }
 
-        // FIX: Dead Simple Toggle
-        function togglePopover(id) {
-            const pop = document.getElementById(id);
-            if (pop) {
-                pop.classList.toggle('hidden');
-            }
+        // FIX: The True Overlay Dropdown Toggle
+        function togglePlayerList(id) {
+            const list = document.getElementById(id);
+            if(list) list.classList.toggle('hidden');
         }
 
         function toggleAuth(panel) {
@@ -764,7 +767,7 @@
         // --- ARCADE LOBBIES ---
         socket.on('arcade_lobby_update', (data) => {
             const countId = data.game === 'dice' ? 'dice-player-count' : 'coin-player-count';
-            const popId = data.game === 'dice' ? 'dice-players-popover' : 'coin-players-popover';
+            const popId = data.game === 'dice' ? 'dice-players-list' : 'coin-players-list';
             const countEl = document.getElementById(countId); const popEl = document.getElementById(popId);
             if(countEl) countEl.innerText = data.lobby.length;
             if(popEl) popEl.innerHTML = data.lobby.map(p => `<div style="color:${p.color}; margin-bottom:5px; font-size:24px;">▶ ${p.username}</div>`).join('');
