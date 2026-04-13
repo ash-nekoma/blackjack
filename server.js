@@ -160,7 +160,7 @@ app.post('/api/login', async (req, res) => {
     
     const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
     const nextClaim = new Date(lastClaim.getTime() + 24*60*60*1000);
-    res.json({ username: user.username, credits: user.credits, nameColor: user.nameColor, nextClaim });
+    res.json({ username: user.username, credits: user.credits, nameColor: user.nameColor, nextClaim: nextClaim.toISOString() });
 });
 
 app.post('/api/profile/color', async (req, res) => { await User.updateOne({ username: req.body.username }, { nameColor: req.body.color }); res.json({ success: true }); });
@@ -396,14 +396,12 @@ io.on('connection', (socket) => {
         }
     });
 
-    // FOOLPROOF DAILY REWARDS
     socket.on('claim_daily_reward_box', async ({ username, boxIndex }) => {
         try {
             const user = await User.findOne({ username }); if (!user) return;
             const now = new Date(); 
             const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0);
             
-            // Exact ms math to prevent timezone drift lockups
             if (now.getTime() - lastClaim.getTime() >= 24 * 60 * 60 * 1000) {
                 let prizes = [1000, 0, 0, 0, 5000, 10000];
                 prizes = prizes.sort(() => Math.random() - 0.5);
@@ -417,7 +415,7 @@ io.on('connection', (socket) => {
                 await user.save();
                 
                 const nextClaim = new Date(now.getTime() + (24 * 60 * 60 * 1000));
-                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, nextClaim });
+                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, nextClaim: nextClaim.toISOString() });
                 
                 Object.keys(rooms).forEach(rId => {
                     const seat = rooms[rId].seats.find(s => s && s.username === username); 
