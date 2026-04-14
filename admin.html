@@ -20,12 +20,16 @@
         
         .hidden { display: none !important; }
 
-        /* --- STRICT 8-BIT SCROLLBARS --- */
-        ::-webkit-scrollbar { width: 18px; height: 18px; background: #020617; border-left: 3px solid #334155; }
-        ::-webkit-scrollbar-thumb { background: #475569; border: 3px solid #000; border-top: 3px solid #94a3b8; border-left: 3px solid #94a3b8; border-radius: 0px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        ::-webkit-scrollbar-corner { background: #000; }
-        ::-webkit-scrollbar-button:single-button { display: block; background-color: #1e293b; border: 3px solid #000; border-top: 3px solid #94a3b8; border-left: 3px solid #94a3b8; height: 18px; width: 18px; }
+        /* --- HOVER-ONLY RETRO SCROLLBARS --- */
+        ::-webkit-scrollbar { width: 14px; height: 14px; background: transparent; }
+        ::-webkit-scrollbar-thumb { background: transparent; border: none; border-radius: 0px; }
+        ::-webkit-scrollbar-corner { background: transparent; }
+        ::-webkit-scrollbar-button:single-button { display: none; }
+
+        .custom-scroll:hover::-webkit-scrollbar { background: #020617; border-left: 2px solid #334155; }
+        .custom-scroll:hover::-webkit-scrollbar-thumb { background: #475569; border: 2px solid #000; border-top: 2px solid #94a3b8; border-left: 2px solid #94a3b8; }
+        .custom-scroll:hover::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .custom-scroll:hover::-webkit-scrollbar-button:single-button { display: block; background-color: #1e293b; border: 2px solid #000; border-top: 2px solid #94a3b8; border-left: 2px solid #94a3b8; height: 14px; width: 14px; }
 
         /* Remove Number Arrows */
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -276,7 +280,7 @@
             <div id="view-cashier" class="view-panel custom-scroll">
                 <h2 class="panel-title">PENDING BANK REQUESTS & RISK ANALYSIS</h2>
                 <table class="admin-table">
-                    <thead><tr><th>DATE (PHT)</th><th>USER</th><th>TYPE</th><th>AMOUNT</th><th>LIFETIME DEP/PROMO</th><th>ACTION</th></tr></thead>
+                    <thead><tr><th>DATE (PHT)</th><th>USER</th><th>TYPE</th><th>AMOUNT</th><th>ACTION</th></tr></thead>
                     <tbody id="cashier-list"></tbody>
                 </table>
             </div>
@@ -284,7 +288,7 @@
             <div id="view-players" class="view-panel custom-scroll">
                 <h2 class="panel-title">GOD-MODE PLAYER DATABASE</h2>
                 <table class="admin-table">
-                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>IP ADDRESS</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
                     <tbody id="player-list"></tbody>
                 </table>
             </div>
@@ -321,7 +325,7 @@
             <div id="view-notify" class="view-panel custom-scroll">
                 <h2 class="panel-title">GLOBAL NOTIFICATIONS & SUPPORT INBOX</h2>
                 
-               <div style="display: flex; gap: 20px;">
+                <div style="display: flex; gap: 20px;">
                     <div style="flex: 1; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; display:flex; flex-direction:column;">
                         <div class="control-title">SEND NEW MESSAGE</div>
                         <div style="margin-bottom: 15px;">
@@ -566,10 +570,6 @@
 
         socket.on('admin_inbox_update', () => {
             fetchAdminInbox();
-            if(activeTicketId && !document.getElementById('ticket-modal').classList.contains('hidden')) {
-                // To keep it live, we should ideally fetch the specific ticket, but closing/reopening is handled by the overall refresh. 
-                // A quick UX fix is forcing a re-click or just relying on them seeing the list update.
-            }
         });
 
         // --- MATH & ECONOMY MODALS ---
@@ -650,7 +650,6 @@
                             <td>${t.username}</td>
                             <td style="color:${t.type.includes('DEPOSIT')?'var(--success)':'var(--danger)'}; font-weight:bold;">${t.type}</td>
                             <td>${formatNumber(t.amount)}</td>
-                            <td style="color:#94a3b8;">REVIEW IN DB</td>
                             <td>
                                 <button class="wood-btn small" style="background:var(--success);" onclick="resolveBank('${t._id}', 'approve')">APPROVE</button>
                                 <button class="wood-btn small" style="background:var(--danger);" onclick="resolveBank('${t._id}', 'deny')">DENY</button>
