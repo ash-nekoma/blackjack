@@ -22,12 +22,21 @@
         .custom-scroll::-webkit-scrollbar { width: 12px; background: #000; border-left: 2px solid var(--border-std);}
         .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border: 2px solid var(--border-std); box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
 
-        #admin-console { width: 1600px; height: 900px; max-width: 100vw; max-height: 100vh; background: var(--bg-darker); border-radius: 12px; border: 6px solid #475569; box-shadow: 0 0 50px rgba(0,0,0,1); display: flex; overflow: hidden; }
+        /* Remove Number Arrows */
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+
+        #admin-console { width: 1600px; height: 900px; max-width: 100vw; max-height: 100vh; background: var(--bg-darker); border-radius: 12px; border: 6px solid #475569; box-shadow: 0 0 50px rgba(0,0,0,1); display: flex; overflow: hidden; position: relative; }
         
         /* LOGIN OVERLAY */
         #admin-login-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(2,6,23,0.95); z-index: 1000;}
         .login-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 40px; text-align: center; border-top: 10px solid var(--danger); box-shadow: 0 10px 30px #000;}
         
+        /* MODALS */
+        .overlay-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 500; }
+        .modal-content { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 800px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px #000; }
+        .modal-header { font-size: 36px; color: var(--accent-glow-2); border-bottom: 2px solid #334155; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;}
+
         /* SIDEBAR */
         .admin-sidebar { width: 320px; background: #0f172a; border-right: 2px solid var(--border-std); display: flex; flex-direction: column; z-index: 10;}
         .sidebar-title { padding: 20px; font-size: 38px; text-align: center; border-bottom: 2px solid var(--border-std); color: var(--danger); text-shadow: 2px 2px 0 #000; font-weight: bold;}
@@ -57,8 +66,8 @@
 
         /* TABLES */
         .admin-table { width: 100%; border-collapse: collapse; background: #0f172a; border: 2px solid var(--border-std); }
-        .admin-table th { background: #1e293b; color: var(--accent-glow-2); padding: 12px; font-size: 24px; text-align: left; border-bottom: 2px solid var(--border-std); }
-        .admin-table td { padding: 12px; font-size: 24px; border-bottom: 1px dashed #334155; vertical-align: middle;}
+        .admin-table th { background: #1e293b; color: var(--accent-glow-2); padding: 12px; font-size: 24px; text-align: center; border-bottom: 2px solid var(--border-std); }
+        .admin-table td { padding: 12px; font-size: 24px; border-bottom: 1px dashed #334155; vertical-align: middle; text-align: center;}
         .admin-table tr:hover { background: #1e293b; }
         
         .ip-duplicate { color: #fff; background: var(--danger); padding: 2px 8px; border-radius: 4px; font-weight: bold; text-shadow: 1px 1px 0 #000; border: 1px solid #fff;}
@@ -76,7 +85,7 @@
         .retro-input { padding: 12px; background: #000; color: #fff; border: 2px solid #64748b; font-size: 24px; outline: none; text-align: center; border-radius: 4px;}
 
         /* EYE IN THE SKY LOG */
-        #matrix-log { flex: 1; background: #000; border: 2px solid #334155; padding: 15px; font-size: 24px; color: #10b981; overflow-y: auto; font-family: monospace; text-shadow: 0 0 5px #10b981; line-height: 1.4;}
+        #matrix-log, #watch-matrix-log { flex: 1; background: #000; border: 2px solid #334155; padding: 15px; font-size: 24px; color: #10b981; overflow-y: auto; font-family: monospace; text-shadow: 0 0 5px #10b981; line-height: 1.4;}
         
         .toggle-switch { display: flex; align-items: center; justify-content: space-between; background: #1e293b; padding: 10px 20px; border: 2px solid var(--border-std); margin-bottom: 10px; border-radius: 6px;}
         .switch-label { font-size: 26px; }
@@ -88,6 +97,7 @@
 <body>
 
     <div id="admin-console">
+        
         <div id="admin-login-view">
             <div class="login-box">
                 <h1 class="pixel-text" style="font-size: 55px; color: var(--danger); margin-bottom: 10px;">DIRECTOR ACCESS</h1>
@@ -97,13 +107,71 @@
             </div>
         </div>
 
+        <div id="player-modal" class="overlay-modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span id="pm-name" style="color:#fff;">PLAYER</span>
+                    <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('player-modal')">CLOSE</button>
+                </div>
+                <div style="display:flex; gap:20px; margin-bottom:20px;">
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std);">
+                        <div style="color:#94a3b8; font-size:22px;">IP ADDRESS</div>
+                        <div id="pm-ip" style="font-size:28px;">-</div>
+                    </div>
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std);">
+                        <div style="color:#94a3b8; font-size:22px;">LIFETIME DEPOSITS</div>
+                        <div id="pm-dep" style="font-size:28px; color:var(--success);">0</div>
+                    </div>
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std);">
+                        <div style="color:#94a3b8; font-size:22px;">LIFETIME PROMO</div>
+                        <div id="pm-promo" style="font-size:28px; color:var(--accent-glow-2);">0</div>
+                    </div>
+                </div>
+                <div style="color:var(--warning); font-size:28px; margin-bottom:10px;">TRANSACTION LEDGER</div>
+                <div class="custom-scroll" style="flex:1; background:#000; border:2px solid #334155; padding:10px; overflow-y:auto; min-height:300px;">
+                    <table class="admin-table">
+                        <thead><tr><th>DATE</th><th>TYPE</th><th>AMOUNT</th><th>STATUS</th></tr></thead>
+                        <tbody id="pm-ledger"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="batch-modal" class="overlay-modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>BATCH: <span id="bm-name" style="color:#fff;">-</span></span>
+                    <div>
+                        <button class="wood-btn small" style="background:var(--accent-glow-2);" onclick="copyAllUnused()">COPY ALL UNUSED</button>
+                        <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('batch-modal')">CLOSE</button>
+                    </div>
+                </div>
+                <div class="custom-scroll" style="flex:1; background:#000; border:2px solid #334155; padding:10px; overflow-y:auto; min-height:400px;">
+                    <table class="admin-table">
+                        <thead><tr><th>CODE</th><th>VALUE</th><th>STATUS</th><th>ACTION</th></tr></thead>
+                        <tbody id="bm-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="watch-modal" class="overlay-modal hidden">
+            <div class="modal-content" style="height: 700px;">
+                <div class="modal-header">
+                    <span>SURVEILLANCE: <span id="watch-target-name" style="color:#fff;">-</span></span>
+                    <button class="wood-btn small" style="background:var(--danger);" onclick="closeWatchModal()">CLOSE MONITOR</button>
+                </div>
+                <div id="watch-matrix-log" class="custom-scroll"></div>
+            </div>
+        </div>
+
         <div class="admin-sidebar">
-            <div class="sidebar-title">CASINO ROYALE<br><span style="font-size: 24px; color:#fff;">DIRECTOR'S PANEL</span></div>
-            <button class="nav-btn active" onclick="switchView('dashboard', this)">❖ FLOOR CONTROL</button>
-            <button class="nav-btn" onclick="switchView('cashier', this)">$ CASHIER & RISK</button>
-            <button class="nav-btn" onclick="switchView('players', this)">👥 PLAYER DB</button>
-            <button class="nav-btn" onclick="switchView('promo', this)">🎁 PROMO ENGINE</button>
-            <button class="nav-btn" onclick="switchView('eye', this)">👁 EYE IN THE SKY</button>
+            <div class="sidebar-title">CASINO ROYALE<br><span style="font-size: 24px; color:#fff;">DIRECTOR PANEL</span></div>
+            <button class="nav-btn active" onclick="switchView('dashboard', this)">FLOOR CONTROL</button>
+            <button class="nav-btn" onclick="switchView('cashier', this)">CASHIER</button>
+            <button class="nav-btn" onclick="switchView('players', this)">PLAYER DB</button>
+            <button class="nav-btn" onclick="switchView('promo', this)">PROMO ENGINE</button>
+            <button class="nav-btn" onclick="switchView('eye', this)">EYE IN THE SKY</button>
         </div>
 
         <div class="admin-content">
@@ -151,7 +219,7 @@
                             <div style="font-size:26px; color:var(--accent-glow-2); margin-bottom:5px;">LIVE SERVER ROLLS (LAST 100)</div>
                             <div style="display: flex; justify-content: space-between; font-size: 22px; color: #cbd5e1; margin-top: 10px;">
                                 <span>COIN: <span style="color:var(--success);">52% H</span> | 48% T</span>
-                                <span>DICE: <span style="color:var(--danger);">60% <7</span> | 40% >7</span>
+                                <span>DICE: <span style="color:var(--danger);">60% UND</span> | 40% OVR</span>
                             </div>
                         </div>
                     </div>
@@ -169,7 +237,7 @@
             <div id="view-players" class="view-panel custom-scroll">
                 <h2 class="panel-title">GOD-MODE PLAYER DATABASE</h2>
                 <table class="admin-table">
-                    <thead><tr><th>PLAYER</th><th>BALANCE</th><th>IP ADDRESS</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
                     <tbody id="player-list"></tbody>
                 </table>
             </div>
@@ -177,18 +245,18 @@
             <div id="view-promo" class="view-panel custom-scroll">
                 <h2 class="panel-title">BULK PROMO CODE ENGINE</h2>
                 <div style="display: flex; gap: 15px; margin-bottom: 20px; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px;">
-                    <input type="text" id="gc-batch" class="retro-input" placeholder="BATCH NAME (e.g. EVENT)">
+                    <input type="text" id="gc-batch" class="retro-input" placeholder="BATCH NAME">
                     <input type="number" id="gc-amount" class="retro-input" placeholder="CREDIT VALUE">
                     <input type="number" id="gc-qty" class="retro-input" placeholder="QUANTITY">
                     <button class="wood-btn" style="background: var(--success); color:#000; padding: 0 30px;" onclick="generateCodes()">GENERATE BATCH</button>
                 </div>
                 <table class="admin-table">
-                    <thead><tr><th>BATCH</th><th>GIFT CODE</th><th>VALUE</th><th>CLAIM STATUS</th></tr></thead>
-                    <tbody id="promo-list"></tbody>
+                    <thead><tr><th>BATCH NAME</th><th>TOTAL CODES</th><th>CLAIMED</th><th>ACTION</th></tr></thead>
+                    <tbody id="promo-batch-list"></tbody>
                 </table>
             </div>
 
-            <div id="view-eye" class="view-panel" style="overflow: hidden; display: flex; flex-direction: column;">
+            <div id="view-eye" class="view-panel" style="overflow: hidden; flex-direction: column;">
                 <h2 class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
                     <span>LIVE MATRIX FEED</span>
                     <div style="display: flex; gap: 10px;">
@@ -211,8 +279,13 @@
         let adminPass = '';
         let strictRTP = false;
         let localTxs = [];
+        let currentBatches = {};
+        let currentViewBatch = null;
+        let watchingUser = null;
 
         function formatNumber(num) { return num.toLocaleString(); }
+        function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
 
         async function adminLogin() {
             const p = document.getElementById('admin-pass').value;
@@ -222,7 +295,7 @@
                 document.getElementById('admin-login-view').classList.add('hidden');
                 socket.emit('admin_join');
                 fetchData();
-                setInterval(fetchData, 5000); // Auto-refresh floor data
+                setInterval(fetchData, 5000); 
             } else {
                 document.getElementById('login-error').innerText = "INVALID MASTER PASSWORD";
             }
@@ -243,13 +316,14 @@
         function toggleGame(btn) {
             if(btn.classList.contains('on')) { btn.classList.remove('on'); btn.classList.add('off'); btn.innerText = 'OFF'; }
             else { btn.classList.remove('off'); btn.classList.add('on'); btn.innerText = 'ON'; }
-            socket.emit('admin_action', { action: 'system_msg', message: 'Admin toggled game state.' }); // Mock visual emit
+            const logBox = document.getElementById('matrix-log');
+            logBox.innerHTML += `<div style="color:var(--danger); margin-bottom:4px;">▶ ADMIN OVERRIDE: Modified Game State.</div>`;
+            logBox.scrollTop = logBox.scrollHeight;
         }
 
         function wipeChat(room) {
-            socket.emit('admin_action', { action: 'wipe_chat', room });
             const logBox = document.getElementById('matrix-log');
-            logBox.innerHTML += `<div style="color:var(--danger);">▶ ADMIN OVERRIDE: Wiped chat history for [${room.toUpperCase()}]</div>`;
+            logBox.innerHTML += `<div style="color:var(--danger); margin-bottom:4px;">▶ ADMIN OVERRIDE: Wiped chat history for [${room.toUpperCase()}]</div>`;
             logBox.scrollTop = logBox.scrollHeight;
         }
 
@@ -258,9 +332,8 @@
             const res = await fetch('/api/admin/economy', { headers: { 'x-admin-pass': adminPass }});
             if(res.ok) {
                 const data = await res.json();
-                localTxs = data.txs || []; // Assuming backend passes all txs, or we approximate
                 
-                // Dashboard
+                // Dashboard Updates
                 document.getElementById('stat-vault').innerText = formatNumber(data.economy.vault);
                 document.getElementById('stat-ggr').innerText = formatNumber(data.economy.ggr);
                 document.getElementById('stat-promo').innerText = formatNumber(data.economy.promoIssued);
@@ -271,30 +344,16 @@
                 if(strictRTP) { rtpBtn.style.background = 'var(--success)'; rtpBtn.style.color = '#000'; rtpBtn.innerText = 'RTP MODIFIER: ON'; }
                 else { rtpBtn.style.background = 'var(--danger)'; rtpBtn.style.color = '#fff'; rtpBtn.innerText = 'RTP MODIFIER: OFF'; }
 
-                // Cashier & Risk Detection
+                // Cashier Table
                 const cashierList = document.getElementById('cashier-list');
                 cashierList.innerHTML = data.bankRequests.map(t => {
-                    // Risk Math (Mocked based on simple assumption, ideally backend sends this)
-                    let lifeDep = 0; let lifePromo = 0;
-                    localTxs.forEach(tx => {
-                        if(tx.username === t.username && tx.status === 'completed') {
-                            if(tx.type === 'BANK DEPOSIT') lifeDep += tx.amount;
-                            if(['DAILY REWARD', 'GIFT CODE'].includes(tx.type)) lifePromo += tx.amount;
-                        }
-                    });
-                    
-                    let riskBadge = '';
-                    if(t.type.includes('WITHDRAWAL') && lifePromo >= lifeDep && lifeDep === 0) {
-                        riskBadge = `<span class="bonus-abuser">⚠️ 100% BONUS FUNDS</span>`;
-                    }
-
                     return `
                     <tr>
                         <td>${new Date(t.date).toLocaleDateString()}</td>
                         <td>${t.username}</td>
                         <td style="color:${t.type.includes('DEPOSIT')?'var(--success)':'var(--danger)'}; font-weight:bold;">${t.type}</td>
                         <td>${formatNumber(t.amount)}</td>
-                        <td style="color:#94a3b8;">D: ${formatNumber(lifeDep)} | P: ${formatNumber(lifePromo)} ${riskBadge}</td>
+                        <td style="color:#94a3b8;">REVIEW IN DB</td>
                         <td>
                             <button class="wood-btn small" style="background:var(--success);" onclick="resolveBank('${t._id}', 'approve')">APPROVE</button>
                             <button class="wood-btn small" style="background:var(--danger);" onclick="resolveBank('${t._id}', 'deny')">DENY</button>
@@ -302,49 +361,142 @@
                     </tr>
                 `}).join('');
 
-                // Player DB (IP Sniffer & Online Sorting)
-                const ipCounts = {};
-                data.users.forEach(u => { if(u.ipAddress) ipCounts[u.ipAddress] = (ipCounts[u.ipAddress] || 0) + 1; });
-                
-                // Sort: Active/Online first (Mocking online status for UI demonstration)
+                // Player DB Table
+                const onlineUsers = data.onlineUsers || [];
                 let sortedUsers = data.users.sort((a,b) => {
-                    if(a.status === 'active' && b.status !== 'active') return -1;
-                    if(b.status === 'active' && a.status !== 'active') return 1;
+                    const aOnline = onlineUsers.includes(a.username);
+                    const bOnline = onlineUsers.includes(b.username);
+                    if(aOnline && !bOnline) return -1;
+                    if(!aOnline && bOnline) return 1;
                     return b.credits - a.credits;
                 });
                 
                 const playerList = document.getElementById('player-list');
                 playerList.innerHTML = sortedUsers.map(u => {
-                    const isDup = u.ipAddress && ipCounts[u.ipAddress] > 1;
-                    const statusColor = u.status === 'active' ? 'var(--success)' : (u.status==='banned' ? 'var(--danger)' : 'var(--warning)');
-                    const onlineBadge = u.status === 'active' ? `<span class="status-dot dot-online"></span>` : `<span class="status-dot dot-offline"></span>`;
+                    let isOnline = onlineUsers.includes(u.username);
+                    let statusColor = '#94a3b8'; let displayStatus = 'OFFLINE';
+                    if (u.status === 'banned') { statusColor = 'var(--danger)'; displayStatus = 'BANNED'; isOnline = false; }
+                    else if (u.status === 'pending') { statusColor = 'var(--warning)'; displayStatus = 'PENDING'; }
+                    else if (isOnline) { statusColor = 'var(--success)'; displayStatus = 'ONLINE'; }
+
+                    const onlineBadge = isOnline ? `<span class="status-dot dot-online"></span>` : `<span class="status-dot dot-offline"></span>`;
                     
                     return `
                     <tr>
-                        <td style="color:${u.nameColor}; font-weight:bold; font-size:26px;">${onlineBadge} ${u.username}</td>
+                        <td style="color:${u.nameColor}; font-weight:bold; font-size:28px;">${onlineBadge} ${u.username}</td>
                         <td style="color:var(--warning);">${formatNumber(u.credits)}</td>
-                        <td class="${isDup ? 'ip-duplicate' : ''}">${u.ipAddress || 'UNKNOWN IP'}</td>
-                        <td style="color:${statusColor}; font-weight:bold;">${u.status.toUpperCase()}</td>
+                        <td style="color:${statusColor}; font-weight:bold;">${displayStatus}</td>
                         <td>
+                            <button class="wood-btn small" style="background:var(--accent-glow-2);" onclick="openPlayerModal('${u.username}')">VIEW</button>
+                            <button class="wood-btn small" style="background:#0f766e;" onclick="watchPlayer('${u.username}')">WATCH</button>
                             ${u.status !== 'active' ? `<button class="wood-btn small" style="background:var(--success); color:#000;" onclick="changeStatus('${u.username}', 'active')">ACTIVATE</button>` : ''}
-                            ${u.status === 'active' ? `<button class="wood-btn small" style="background:#b45309;" onclick="kickPlayer('${u.username}')">KICK</button>` : ''}
-                            <button class="wood-btn small" style="background:#64748b;" onclick="mutePlayer('${u.username}')">MUTE</button>
                             ${u.status !== 'banned' ? `<button class="wood-btn small" style="background:var(--danger);" onclick="changeStatus('${u.username}', 'banned')">BAN</button>` : ''}
                         </td>
                     </tr>
                 `}).join('');
 
-                // Promo Engine
-                const promoList = document.getElementById('promo-list');
-                promoList.innerHTML = data.codes.map(c => `
+                // Promo Batch Engine
+                currentBatches = {};
+                data.codes.forEach(c => {
+                    const bName = c.batchName || 'MANUAL';
+                    if(!currentBatches[bName]) currentBatches[bName] = [];
+                    currentBatches[bName].push(c);
+                });
+
+                const promoList = document.getElementById('promo-batch-list');
+                promoList.innerHTML = Object.keys(currentBatches).map(bName => {
+                    const batch = currentBatches[bName];
+                    const total = batch.length;
+                    const claimed = batch.filter(c => c.usesLeft === 0).length;
+                    return `
                     <tr>
-                        <td style="color:#94a3b8;">${c.batchName || 'MANUAL'}</td>
-                        <td style="color:var(--accent-glow-2); font-weight:bold; font-size:28px;">${c.code}</td>
-                        <td style="color:var(--warning);">${formatNumber(c.amount)}</td>
-                        <td style="color:${c.claimedBy ? 'var(--danger)' : 'var(--success)'}; font-weight:bold;">${c.claimedBy ? `CLAIMED BY: ${c.claimedBy}` : 'AVAILABLE'}</td>
+                        <td style="color:#fff; font-weight:bold;">${bName}</td>
+                        <td style="color:var(--accent-glow-2); font-weight:bold;">${total}</td>
+                        <td style="color:${claimed === total ? 'var(--danger)' : 'var(--warning)'};">${claimed} / ${total}</td>
+                        <td><button class="wood-btn small" style="background:#475569;" onclick="openBatchModal('${bName}')">VIEW CODES</button></td>
                     </tr>
-                `).reverse().join('');
+                    `;
+                }).join('');
             }
+        }
+
+        async function openPlayerModal(username) {
+            const res = await fetch(`/api/admin/player_full/${username}`, { headers: { 'x-admin-pass': adminPass }});
+            if(res.ok) {
+                const data = await res.json();
+                document.getElementById('pm-name').innerText = username.toUpperCase();
+                document.getElementById('pm-ip').innerText = data.user.ipAddress || 'UNKNOWN';
+                
+                let lifeDep = 0; let lifePromo = 0;
+                let ledgerHTML = '';
+                data.txs.forEach(tx => {
+                    if(tx.status === 'completed') {
+                        if(tx.type === 'BANK DEPOSIT') lifeDep += tx.amount;
+                        if(['DAILY REWARD', 'GIFT CODE'].includes(tx.type)) lifePromo += tx.amount;
+                    }
+                    
+                    let amtColor = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff');
+                    let statusColor = tx.status === 'pending' ? 'var(--warning)' : (tx.status === 'completed' ? 'var(--success)' : 'var(--danger)');
+                    
+                    ledgerHTML += `
+                    <tr>
+                        <td style="font-size:22px;">${new Date(tx.date).toLocaleString()}</td>
+                        <td style="color:#94a3b8;">${tx.type}</td>
+                        <td style="color:${amtColor}; font-weight:bold;">${tx.amount > 0 ? '+' : ''}${formatNumber(tx.amount)}</td>
+                        <td style="color:${statusColor}; font-size:20px;">${tx.status.toUpperCase()}</td>
+                    </tr>`;
+                });
+
+                document.getElementById('pm-dep').innerText = formatNumber(lifeDep);
+                document.getElementById('pm-promo').innerText = formatNumber(lifePromo);
+                document.getElementById('pm-ledger').innerHTML = ledgerHTML || '<tr><td colspan="4" style="color:#475569;">NO TRANSACTIONS FOUND</td></tr>';
+                
+                showModal('player-modal');
+            }
+        }
+
+        function openBatchModal(batchName) {
+            currentViewBatch = currentBatches[batchName];
+            if(!currentViewBatch) return;
+            
+            document.getElementById('bm-name').innerText = batchName;
+            const list = document.getElementById('bm-list');
+            list.innerHTML = currentViewBatch.map(c => {
+                const isClaimed = c.usesLeft === 0;
+                return `
+                <tr>
+                    <td style="color:var(--accent-glow-2); font-weight:bold; letter-spacing:2px;">${c.code}</td>
+                    <td style="color:var(--warning);">${formatNumber(c.amount)}</td>
+                    <td style="color:${isClaimed ? 'var(--danger)' : 'var(--success)'};">${isClaimed ? `CLAIMED BY ${c.claimedBy}` : 'AVAILABLE'}</td>
+                    <td><button class="wood-btn small" onclick="copyText('${c.code}')">COPY</button></td>
+                </tr>
+                `;
+            }).join('');
+            showModal('batch-modal');
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {}).catch(err => prompt('Copy manually:', text));
+        }
+
+        function copyAllUnused() {
+            if(!currentViewBatch) return;
+            const unused = currentViewBatch.filter(c => c.usesLeft > 0).map(c => c.code).join('\n');
+            if(!unused) return alert("No unused codes left in this batch.");
+            copyText(unused);
+            alert("Unused codes copied to clipboard!");
+        }
+
+        function watchPlayer(username) {
+            watchingUser = username;
+            document.getElementById('watch-target-name').innerText = username.toUpperCase();
+            document.getElementById('watch-matrix-log').innerHTML = `<div style="color:#64748b;">▶ SYSTEM: Uplink established. Isolating activity for [${username}]...</div>`;
+            showModal('watch-modal');
+        }
+
+        function closeWatchModal() {
+            watchingUser = null;
+            hideModal('watch-modal');
         }
 
         async function resolveBank(id, action) {
@@ -355,20 +507,6 @@
         async function changeStatus(username, status) {
             await fetch('/api/admin/user/status', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, body: JSON.stringify({ username, status }) });
             fetchData();
-        }
-
-        function kickPlayer(username) {
-            socket.emit('admin_action', { action: 'kick_user', username });
-            const logBox = document.getElementById('matrix-log');
-            logBox.innerHTML += `<div style="color:var(--warning);">▶ ADMIN: Severed WebSocket connection for ${username}.</div>`;
-            logBox.scrollTop = logBox.scrollHeight;
-        }
-
-        function mutePlayer(username) {
-            socket.emit('admin_action', { action: 'mute_user', username });
-            const logBox = document.getElementById('matrix-log');
-            logBox.innerHTML += `<div style="color:var(--warning);">▶ ADMIN: Global Mute applied to ${username}.</div>`;
-            logBox.scrollTop = logBox.scrollHeight;
         }
 
         async function generateCodes() {
@@ -390,22 +528,30 @@
             fetchData();
         }
 
-        // Live Eye in the Sky Socket (No timezones, just instant clean actions)
+        // Live Eye in the Sky Socket
         socket.on('admin_log', (msg) => {
-            const logBox = document.getElementById('matrix-log');
+            const globalLog = document.getElementById('matrix-log');
             
-            // Color coding the matrix log for readability
-            let logColor = '#10b981'; // Default green
+            let logColor = '#10b981'; 
             if(msg.includes('[CHAT]')) logColor = 'var(--accent-glow-2)';
             if(msg.includes('[BET]')) logColor = 'var(--warning)';
             if(msg.includes('[SPECTATOR]')) logColor = '#94a3b8';
             if(msg.includes('disconnected') || msg.includes('left')) logColor = 'var(--danger)';
 
-            logBox.innerHTML += `<div style="color:${logColor}; margin-bottom: 4px;">${msg}</div>`;
-            logBox.scrollTop = logBox.scrollHeight;
-            
-            // Keep matrix clean, remove old logs if over 100
-            if(logBox.children.length > 100) logBox.removeChild(logBox.firstChild);
+            const logLine = `<div style="color:${logColor}; margin-bottom: 4px;">${msg}</div>`;
+
+            // Update Global Matrix
+            globalLog.innerHTML += logLine;
+            globalLog.scrollTop = globalLog.scrollHeight;
+            if(globalLog.children.length > 100) globalLog.removeChild(globalLog.firstChild);
+
+            // Update Targeted Player Matrix if watching
+            if (watchingUser && msg.includes(watchingUser)) {
+                const watchLog = document.getElementById('watch-matrix-log');
+                watchLog.innerHTML += logLine;
+                watchLog.scrollTop = watchLog.scrollHeight;
+                if(watchLog.children.length > 50) watchLog.removeChild(watchLog.firstChild);
+            }
         });
 
     </script>
