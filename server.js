@@ -1,626 +1,739 @@
-require('dotenv').config();
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const mongoose = require('mongoose');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Royale: Director's Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --bg-darker: #020617;
+            --accent-glow: #8b5cf6; --accent-glow-2: #3b82f6;
+            --danger: #ef4444; --success: #10b981; --warning: #fbbf24;
+            --border-std: #222;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, input, button, table, th, td, textarea, select { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
+        body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        
+        .hidden { display: none !important; }
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+        /* --- STRICT 8-BIT SCROLLBARS --- */
+        ::-webkit-scrollbar { width: 18px; height: 18px; background: #020617; border-left: 3px solid #334155; }
+        ::-webkit-scrollbar-thumb { background: #475569; border: 3px solid #000; border-top: 3px solid #94a3b8; border-left: 3px solid #94a3b8; border-radius: 0px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        ::-webkit-scrollbar-corner { background: #000; }
+        ::-webkit-scrollbar-button:single-button { display: block; background-color: #1e293b; border: 3px solid #000; border-top: 3px solid #94a3b8; border-left: 3px solid #94a3b8; height: 18px; width: 18px; }
 
-app.use(express.json());
-app.use(express.static(__dirname));
+        /* Remove Number Arrows */
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
 
-// --- MONGODB CONNECTION ---
-mongoose.connect(process.env.MONGODB_URI).then(async () => {
-    console.log('MongoDB Connected Successfully');
-    
-    // FIRST-TIME SETUP: Only creates these if the database is 100% empty.
-    const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
-    if (!adminConfig) await new SystemConfig({ configName: 'admin_password', configValue: 'admin123' }).save();
-    
-    const modConfig = await SystemConfig.findOne({ configName: 'mod_password' });
-    if (!modConfig) await new SystemConfig({ configName: 'mod_password', configValue: 'mod123' }).save();
-    
-    console.log('SYSTEM LOG: Security Credentials Initialized in Database.');
-}).catch(err => console.error('MongoDB connection error:', err));
+        #admin-console { width: 1600px; height: 900px; max-width: 100vw; max-height: 100vh; background: var(--bg-darker); border-radius: 12px; border: 6px solid #475569; box-shadow: 0 0 50px rgba(0,0,0,1); display: none; overflow: hidden; position: relative; }
+        
+        /* LOGIN OVERLAY */
+        #admin-login-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(2,6,23,0.95); z-index: 1000;}
+        .login-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 40px; text-align: center; border-top: 10px solid var(--danger); box-shadow: 0 10px 30px #000;}
+        
+        /* MODALS */
+        .overlay-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 500; }
+        .modal-content { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 800px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px #000; }
+        .modal-header { font-size: 36px; color: var(--accent-glow-2); border-bottom: 2px solid #334155; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;}
 
-// --- DATABASE SCHEMAS ---
-const SystemConfig = mongoose.model('SystemConfig', new mongoose.Schema({ configName: { type: String, unique: true }, configValue: { type: String } }));
-const User = mongoose.model('User', new mongoose.Schema({
-    username: { type: String, required: true, unique: true }, 
-    password: { type: String, required: true },
-    credits: { type: Number, default: 0 }, 
-    status: { type: String, default: 'active' }, 
-    nameColor: { type: String, default: '#f8fafc' }, 
-    ipAddress: String, 
-    tosAccepted: Boolean,
-    lastRewardClaim: { type: Date, default: null }, 
-    createdAt: { type: Date, default: Date.now }
-}));
+        /* SIDEBAR */
+        .admin-sidebar { width: 320px; background: #0f172a; border-right: 2px solid var(--border-std); display: flex; flex-direction: column; z-index: 10;}
+        .sidebar-title { padding: 20px; font-size: 38px; text-align: center; border-bottom: 2px solid var(--border-std); color: var(--danger); text-shadow: 2px 2px 0 #000; font-weight: bold;}
+        .nav-btn { background: transparent; color: #94a3b8; border: none; padding: 20px; font-size: 28px; text-align: left; cursor: pointer; transition: 0.2s; border-bottom: 1px dashed #334155; }
+        .nav-btn:hover { background: #1e293b; color: #fff; padding-left: 30px;}
+        .nav-btn.active { background: var(--accent-glow-2); color: #fff; border-left: 8px solid #fff; padding-left: 22px;}
 
-const Transaction = mongoose.model('Transaction', new mongoose.Schema({
-    username: String, type: String, amount: Number, 
-    status: { type: String, default: 'completed' }, date: { type: Date, default: Date.now }
-}));
+        /* MAIN CONTENT */
+        .admin-content { flex: 1; display: flex; flex-direction: column; background: #020617; position: relative;}
+        .view-panel { flex: 1; padding: 25px; display: none; overflow-y: auto; }
+        .view-panel.active { display: flex; flex-direction: column; }
+        
+        h2.panel-title { font-size: 45px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 10px;}
 
-const GiftCode = mongoose.model('GiftCode', new mongoose.Schema({ 
-    code: { type: String, unique: true }, amount: Number, usesLeft: Number,
-    batchName: String, claimedBy: { type: String, default: null }, claimDate: { type: Date, default: null }
-}));
+        /* ECONOMY WIDGETS */
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+        .stat-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-top: 8px solid var(--success); text-align: center; cursor: pointer; transition: transform 0.1s;}
+        .stat-box:hover { filter: brightness(1.2); }
+        .stat-box:active { transform: scale(0.95); }
+        .stat-box.ggr { border-top-color: var(--warning); }
+        .stat-box.promo { border-top-color: var(--accent-glow); }
+        .stat-box.liab { border-top-color: var(--danger); }
+        .stat-label { font-size: 22px; color: #cbd5e1; text-transform: uppercase; margin-bottom: 10px; }
+        .stat-value { font-size: 42px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000;}
 
-// --- GAME LOGIC GLOBALS ---
-const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']; 
-const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-const rooms = { '3seat': createRoom(3), '5seat': createRoom(5) };
+        /* MODULAR PANELS */
+        .control-panel { background: #0f172a; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .control-title { font-size: 30px; color: var(--warning); margin-bottom: 15px; border-bottom: 1px dashed #334155; padding-bottom: 5px; }
 
-function createRoom(numSeats) {
-    return {
-        seats: Array(numSeats).fill(null), dealerCards: [], deck: [], 
-        status: 'waiting', activeSeatIndex: -1, betEndTime: 0, nextRoundTime: 0, turnEndTime: 0,
-        lobby: [], betTimerInterval: null, nextRoundInterval: null, turnTimerInterval: null, dealerInterval: null
-    };
-}
+        /* TABLES */
+        .admin-table { width: 100%; border-collapse: collapse; background: #0f172a; border: 2px solid var(--border-std); }
+        .admin-table th { background: #1e293b; color: var(--accent-glow-2); padding: 12px; font-size: 24px; text-align: center; border-bottom: 2px solid var(--border-std); }
+        .admin-table td { padding: 12px; font-size: 24px; border-bottom: 1px dashed #334155; vertical-align: middle; text-align: center;}
+        .admin-table tr:hover { background: #1e293b; }
+        
+        .bonus-abuser { color: #000; background: var(--warning); padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 20px; margin-left: 10px; animation: pulse 1.5s infinite;}
 
-const diceGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: [1, 1], bets: [], history: [] };
-const coinGame = { status: 'betting', betEndTime: Date.now() + 15000, result: 'heads', bets: [], history: [] };
-const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
-const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
-const socketUserMap = {}; let diceLobby = []; let coinLobby = []; let colorLobby = [];
-let strictHouseEdge = false; 
-let gameLocks = { blackjack: false, dice: false, coin: false, color: false };
+        /* BUTTONS & INPUTS */
+        .wood-btn { background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 8px 15px; font-size: 22px; cursor: pointer; box-shadow: 2px 2px 0 #000; transition: 0.1s; font-family: 'VT323';}
+        .wood-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 transparent; }
+        .wood-btn.small { padding: 4px 8px; font-size: 20px; }
+        .retro-input { padding: 12px; background: #000; color: #fff; border: 2px solid #64748b; font-size: 24px; outline: none; text-align: center; border-radius: 4px;}
 
-// --- ADMIN LOGGER ---
-function getPHTTime() { return new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' }); }
-function adminLog(action) { io.to('admin_room').emit('admin_log', `▶ [${getPHTTime()}] ${action}`); }
+        /* EYE IN THE SKY LOG */
+        #matrix-log, #watch-matrix-log { flex: 1; background: #000; border: 2px solid #334155; padding: 15px; font-size: 24px; color: #10b981; overflow-y: auto; font-family: monospace; text-shadow: 0 0 5px #10b981; line-height: 1.4;}
+        
+        .toggle-switch { display: flex; align-items: center; justify-content: space-between; background: #1e293b; padding: 10px 20px; border: 2px solid var(--border-std); margin-bottom: 10px; border-radius: 6px;}
+        .switch-label { font-size: 26px; }
+        .btn-toggle { font-size: 22px; padding: 6px 20px; width: 100px; text-align: center; font-weight: bold;}
+        .btn-toggle.on { background: var(--success); color: #000; }
+        .btn-toggle.off { background: var(--danger); color: #fff; }
+    </style>
+</head>
+<body>
 
-// --- GAME LOOPS ---
-setInterval(() => {
-    const now = Date.now();
-    Object.keys(rooms).forEach(roomId => {
-        let room = rooms[roomId]; let changed = false;
-        room.seats.forEach((seat, i) => { 
-            if (seat && seat.kickAt && now >= seat.kickAt) { room.seats[i] = null; changed = true; } 
+    <div id="admin-login-view">
+        <div class="login-box">
+            <h1 class="pixel-text" style="font-size: 55px; color: var(--danger); margin-bottom: 10px;">DIRECTOR ACCESS</h1>
+            <input type="password" id="admin-pass" class="retro-input pixel-text" placeholder="MASTER PASSWORD" style="width: 350px; margin-bottom: 15px; display: block;">
+            <button class="wood-btn pixel-text" style="width: 100%; background: var(--danger); font-size: 28px;" onclick="adminLogin()">AUTHENTICATE</button>
+            <p id="login-error" style="color: var(--danger); margin-top: 15px; font-size: 24px;"></p>
+        </div>
+    </div>
+
+    <div id="admin-console">
+        
+        <div id="math-modal" class="overlay-modal hidden">
+            <div class="modal-content" style="width: 600px;">
+                <div class="modal-header">
+                    <span id="math-title" style="color:#fff;">CALCULATION</span>
+                </div>
+                <div id="math-body" style="font-size: 30px; line-height: 1.6; text-align: left; padding: 20px; background: #000; border: 2px dashed #334155; margin-bottom: 20px;"></div>
+                <button class="wood-btn" style="background:var(--danger); width:100%;" onclick="hideModal('math-modal')">CLOSE</button>
+            </div>
+        </div>
+
+        <div id="player-modal" class="overlay-modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span id="pm-name" style="color:#fff;">PLAYER</span>
+                    <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('player-modal')">CLOSE</button>
+                </div>
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">TOTAL WAGERED</div>
+                        <div id="pm-wager" style="font-size:28px; color:var(--danger);">0</div>
+                    </div>
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">TOTAL WON</div>
+                        <div id="pm-won" style="font-size:28px; color:var(--success);">0</div>
+                    </div>
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">NET GAME PROFIT</div>
+                        <div id="pm-net" style="font-size:28px; color:#fff;">0</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">IP ADDRESS</div>
+                        <div id="pm-ip" style="font-size:28px;">-</div>
+                    </div>
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">PROMO RECEIVED</div>
+                        <div id="pm-promo" style="font-size:28px; color:var(--accent-glow-2);">0</div>
+                    </div>
+                </div>
+                <div style="color:var(--warning); font-size:28px; margin-bottom:10px;">TRANSACTION LEDGER (LATEST 50)</div>
+                <div class="custom-scroll" style="border:2px solid #334155; padding:0; overflow-y:auto; max-height:250px; display:block;">
+                    <table class="admin-table" style="margin:0; border:none;">
+                        <thead style="position: sticky; top: 0; z-index: 10;"><tr><th>DATE (PHT)</th><th>TYPE</th><th>AMOUNT</th><th>STATUS</th></tr></thead>
+                        <tbody id="pm-ledger"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="batch-modal" class="overlay-modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>BATCH: <span id="bm-name" style="color:#fff;">-</span></span>
+                    <div>
+                        <button class="wood-btn small" style="background:var(--accent-glow-2);" onclick="copyAllUnused()">COPY ALL UNUSED</button>
+                        <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('batch-modal')">CLOSE</button>
+                    </div>
+                </div>
+                <div class="custom-scroll" style="border:2px solid #334155; padding:0; overflow-y:auto; max-height:400px; display:block;">
+                    <table class="admin-table" style="margin:0; border:none;">
+                        <thead style="position: sticky; top: 0; z-index: 10;"><tr><th>CODE</th><th>VALUE</th><th>STATUS</th><th>ACTION</th></tr></thead>
+                        <tbody id="bm-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="watch-modal" class="overlay-modal hidden">
+            <div class="modal-content" style="height: 700px;">
+                <div class="modal-header">
+                    <span>SURVEILLANCE: <span id="watch-target-name" style="color:#fff;">-</span></span>
+                    <button class="wood-btn small" style="background:var(--danger);" onclick="closeWatchModal()">CLOSE MONITOR</button>
+                </div>
+                <div id="watch-matrix-log" class="custom-scroll"></div>
+            </div>
+        </div>
+
+        <div class="admin-sidebar">
+            <div class="sidebar-title">CASINO ROYALE<br><span style="font-size: 24px; color:#fff;">DIRECTOR PANEL</span></div>
+            <button class="nav-btn active" onclick="switchView('dashboard', this)">FLOOR CONTROL</button>
+            <button class="nav-btn admin-only" onclick="switchView('cashier', this)">CASHIER</button>
+            <button class="nav-btn" onclick="switchView('players', this)">PLAYER DB</button>
+            <button class="nav-btn admin-only" onclick="switchView('promo', this)">PROMO ENGINE</button>
+            <button class="nav-btn" onclick="switchView('eye', this)">EYE IN THE SKY</button>
+            <button class="nav-btn" onclick="switchView('notify', this)">NOTIFICATIONS</button>
+            <button class="nav-btn admin-only" onclick="switchView('settings', this)">SETTINGS</button>
+        </div>
+
+        <div class="admin-content">
+            
+            <div id="view-dashboard" class="view-panel active custom-scroll">
+                <h2 class="panel-title">LIVE ECONOMY & FLOOR CONTROL</h2>
+                
+                <div class="stat-grid">
+                    <div class="stat-box" onclick="showMath('vault')">
+                        <div class="stat-label">LIQUID VAULT</div>
+                        <div class="stat-value" id="stat-vault" style="color:var(--success);">0</div>
+                    </div>
+                    <div class="stat-box ggr" onclick="showMath('ggr')">
+                        <div class="stat-label">HOUSE GGR</div>
+                        <div class="stat-value" id="stat-ggr" style="color:var(--warning);">0</div>
+                    </div>
+                    <div class="stat-box promo" onclick="showMath('promo')">
+                        <div class="stat-label">PROMO LIABILITY</div>
+                        <div class="stat-value" id="stat-promo" style="color:var(--accent-glow-2);">0</div>
+                    </div>
+                    <div class="stat-box liab" onclick="showMath('liab')">
+                        <div class="stat-label">CIRCULATING CHIPS</div>
+                        <div class="stat-value" id="stat-liab" style="color:var(--danger);">0</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 20px;">
+                    <div class="control-panel admin-only" style="flex: 1;">
+                        <div class="control-title">GAME SERVER KILL SWITCHES</div>
+                        <div class="toggle-switch"><span class="switch-label">3-Seat Blackjack</span><button id="ks-3seat" class="wood-btn btn-toggle on" onclick="toggleGame('3seat', this)">ON</button></div>
+                        <div class="toggle-switch"><span class="switch-label">5-Seat Blackjack</span><button id="ks-5seat" class="wood-btn btn-toggle on" onclick="toggleGame('5seat', this)">ON</button></div>
+                        <div class="toggle-switch"><span class="switch-label">High-Low Dice</span><button id="ks-dice" class="wood-btn btn-toggle on" onclick="toggleGame('dice', this)">ON</button></div>
+                        <div class="toggle-switch"><span class="switch-label">Global Coin Flip</span><button id="ks-coin" class="wood-btn btn-toggle on" onclick="toggleGame('coin', this)">ON</button></div>
+                        <div class="toggle-switch"><span class="switch-label">Classic Color Game</span><button id="ks-color" class="wood-btn btn-toggle on" onclick="toggleGame('color', this)">ON</button></div>
+                    </div>
+
+                    <div class="control-panel admin-only" style="flex: 1;">
+                        <div class="control-title">RNG ANALYTICS & SECURITY</div>
+                        <div style="background:#000; padding:15px; border:2px solid #334155; margin-bottom:15px; border-radius: 6px;">
+                            <div style="font-size:26px; color:var(--warning); margin-bottom:5px;">RNG PANIC SWITCH</div>
+                            <p style="font-size:20px; color:#94a3b8; margin-bottom:10px;">Forces server math to roll against the heaviest side to rapidly recover GGR.</p>
+                            <button id="rtp-btn" class="wood-btn" style="width:100%; background: var(--danger);" onclick="toggleRTP()">RTP MODIFIER: OFF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-cashier" class="view-panel custom-scroll">
+                <h2 class="panel-title">PENDING BANK REQUESTS & RISK ANALYSIS</h2>
+                <table class="admin-table">
+                    <thead><tr><th>DATE (PHT)</th><th>USER</th><th>TYPE</th><th>AMOUNT</th><th>LIFETIME DEP/PROMO</th><th>ACTION</th></tr></thead>
+                    <tbody id="cashier-list"></tbody>
+                </table>
+            </div>
+
+            <div id="view-players" class="view-panel custom-scroll">
+                <h2 class="panel-title">GOD-MODE PLAYER DATABASE</h2>
+                <table class="admin-table">
+                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                    <tbody id="player-list"></tbody>
+                </table>
+            </div>
+
+            <div id="view-promo" class="view-panel custom-scroll">
+                <h2 class="panel-title">BULK PROMO CODE ENGINE</h2>
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px;">
+                    <input type="text" id="gc-batch" class="retro-input" placeholder="BATCH NAME">
+                    <input type="number" id="gc-amount" class="retro-input" placeholder="CREDIT VALUE">
+                    <input type="number" id="gc-qty" class="retro-input" placeholder="QUANTITY">
+                    <button class="wood-btn" style="background: var(--success); color:#000; padding: 0 30px;" onclick="generateCodes()">GENERATE BATCH</button>
+                </div>
+                <table class="admin-table">
+                    <thead><tr><th>BATCH NAME</th><th>TOTAL CODES</th><th>CLAIMED</th><th>ACTION</th></tr></thead>
+                    <tbody id="promo-batch-list"></tbody>
+                </table>
+            </div>
+
+            <div id="view-eye" class="view-panel" style="overflow: hidden; flex-direction: column;">
+                <h2 class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>LIVE MATRIX FEED</span>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="wood-btn small" onclick="wipeChat('blackjack')">WIPE BJ CHAT</button>
+                        <button class="wood-btn small" onclick="wipeChat('dice')">WIPE DICE CHAT</button>
+                        <button class="wood-btn small" onclick="wipeChat('coin')">WIPE COIN CHAT</button>
+                        <button class="wood-btn small" onclick="wipeChat('color')">WIPE COLOR CHAT</button>
+                    </div>
+                </h2>
+                <div id="matrix-log" class="custom-scroll">
+                    <div style="color: #64748b;">▶ SYSTEM: Awaiting secure websocket connection...</div>
+                </div>
+            </div>
+
+            <div id="view-notify" class="view-panel custom-scroll">
+                <h2 class="panel-title">GLOBAL NOTIFICATION SYSTEM</h2>
+                <div style="background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; width: 800px; max-width: 100%;">
+                    <div style="margin-bottom: 15px;">
+                        <span style="font-size: 24px; color: #cbd5e1; margin-right: 15px;">TARGET:</span>
+                        <select id="notify-target" class="retro-input" style="width: 300px; display: inline-block;" onchange="document.getElementById('notify-specific').style.display = this.value==='specific' ? 'inline-block' : 'none';">
+                            <option value="all">ALL PLAYERS</option>
+                            <option value="active">ONLINE PLAYERS ONLY</option>
+                            <option value="specific">SPECIFIC PLAYER</option>
+                        </select>
+                        <input type="text" id="notify-specific" class="retro-input" placeholder="USERNAME" style="width: 250px; display: none; margin-left: 10px;">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <textarea id="notify-msg" class="retro-input custom-scroll" style="width: 100%; height: 150px; text-align: left; resize: none;" placeholder="ENTER NOTIFICATION MESSAGE..."></textarea>
+                    </div>
+                    <button class="wood-btn" style="width: 100%; background: var(--accent-glow-2);" onclick="sendNotification()">BROADCAST MESSAGE</button>
+                </div>
+            </div>
+
+            <div id="view-settings" class="view-panel custom-scroll admin-only">
+                <h2 class="panel-title">SYSTEM SETTINGS & CREDENTIALS</h2>
+                
+                <div class="control-panel admin-only" style="margin-top: 20px;">
+                    <div class="control-title">SECURITY CREDENTIALS</div>
+                    <div style="background:#000; padding:15px; border:2px solid #334155; border-radius: 6px;">
+                        <p style="font-size:20px; color:#94a3b8; margin-bottom:10px;">Update the database passwords for dashboard access.</p>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="pw-role" class="retro-input" style="width: 200px;">
+                                <option value="admin">MASTER ADMIN</option>
+                                <option value="mod">MODERATOR</option>
+                            </select>
+                            <input type="text" id="pw-new" class="retro-input" placeholder="NEW PASSWORD">
+                            <button class="wood-btn" style="background:var(--warning); color:#000;" onclick="changePassword()">UPDATE IN DB</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let adminPass = '';
+        let adminRole = ''; // 'admin' or 'mod'
+        let strictRTP = false;
+        let localTxs = [];
+        let currentBatches = {};
+        let currentViewBatch = null;
+        let watchingUser = null;
+        let currentEconomy = null;
+
+        function formatNumber(num) { return num.toLocaleString(); }
+        function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function getPHTTime(dateString) { return new Date(dateString).toLocaleString('en-US', { timeZone: 'Asia/Manila' }); }
+
+        async function adminLogin() {
+            const p = document.getElementById('admin-pass').value;
+            const res = await fetch('/api/admin/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({password: p}) });
+            if(res.ok) {
+                const data = await res.json();
+                adminPass = p;
+                adminRole = data.role;
+                
+                document.getElementById('admin-login-view').style.display = 'none';
+                document.getElementById('admin-console').style.display = 'flex';
+                
+                // Hide Admin-Only tabs if Mod
+                if(adminRole === 'mod') {
+                    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+                }
+
+                socket.emit('admin_join');
+                fetchData();
+                setInterval(fetchData, 5000); 
+            } else {
+                document.getElementById('login-error').innerText = "INVALID PASSWORD";
+            }
+        }
+
+        async function changePassword() {
+            const targetRole = document.getElementById('pw-role').value;
+            const newPassword = document.getElementById('pw-new').value;
+            
+            if(!newPassword) return alert("Enter a new password.");
+            
+            const res = await fetch('/api/admin/change_password', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, 
+                body: JSON.stringify({ targetRole, newPassword }) 
+            });
+            
+            if(res.ok) {
+                alert(`${targetRole.toUpperCase()} password successfully updated in the database!`);
+                document.getElementById('pw-new').value = '';
+                if(targetRole === 'admin') adminPass = newPassword; // Update local session
+            } else {
+                const d = await res.json();
+                alert("Error: " + d.error);
+            }
+        }
+
+        function switchView(view, btnEl) {
+            document.querySelectorAll('.view-panel').forEach(v => { v.style.display = 'none'; v.classList.remove('active'); });
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            const target = document.getElementById(`view-${view}`);
+            target.style.display = view === 'eye' ? 'flex' : 'block';
+            target.classList.add('active');
+            btnEl.classList.add('active');
+            
+            if(view !== 'eye') fetchData();
+        }
+
+        function toggleGame(game, btn) {
+            const isLocked = btn.classList.contains('on'); // If currently ON, we are turning it OFF (locked = true)
+            socket.emit('admin_action', { action: 'toggle_game', game, locked: isLocked });
+        }
+
+        function wipeChat(room) {
+            socket.emit('admin_action', { action: 'wipe_chat', room });
+            const logBox = document.getElementById('matrix-log');
+            logBox.innerHTML += `<div style="color:var(--danger); margin-bottom:4px;">▶ ADMIN OVERRIDE: Wiped chat history for [${room.toUpperCase()}]</div>`;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function sendNotification() {
+            const target = document.getElementById('notify-target').value;
+            const username = document.getElementById('notify-specific').value;
+            const message = document.getElementById('notify-msg').value;
+            
+            if(!message.trim()) return alert("Message cannot be empty.");
+            if(target === 'specific' && !username.trim()) return alert("Please enter a specific username.");
+
+            socket.emit('admin_notify', { target, username, message });
+            document.getElementById('notify-msg').value = '';
+            alert("Notification broadcast sent.");
+        }
+
+        function showMath(type) {
+            if(!currentEconomy) return;
+            const b = document.getElementById('math-body');
+            const t = document.getElementById('math-title');
+            const e = currentEconomy;
+            
+            if(type === 'vault') {
+                t.innerText = "LIQUID VAULT COMPUTATION";
+                b.innerHTML = `
+                    <div style="color:var(--success);">+ ${formatNumber(e.baseVault)} (BASE HOUSE MONEY)</div>
+                    <div style="color:var(--success);">+ ${formatNumber(e.deposits)} (TOTAL APPROVED DEPOSITS)</div>
+                    <div style="color:var(--danger);">- ${formatNumber(e.withdrawals)} (TOTAL APPROVED WITHDRAWALS)</div>
+                    <hr style="border: 1px dashed #555; margin: 10px 0;">
+                    <div style="color:#fff;">= ${formatNumber(e.vault)} TOTAL LIQUIDITY</div>
+                `;
+            } else if (type === 'ggr') {
+                t.innerText = "GROSS GAMING REVENUE COMPUTATION";
+                b.innerHTML = `
+                    <div style="color:var(--success);">+ ${formatNumber(e.totalBets)} (TOTAL CHIPS WAGERED)</div>
+                    <div style="color:var(--danger);">- ${formatNumber(e.totalWins)} (TOTAL CHIPS WON BY PLAYERS)</div>
+                    <hr style="border: 1px dashed #555; margin: 10px 0;">
+                    <div style="color:${e.ggr >= 0 ? 'var(--success)' : 'var(--danger)'};">= ${formatNumber(e.ggr)} NET PROFIT</div>
+                `;
+            } else if (type === 'promo') {
+                t.innerText = "PROMOTIONAL LIABILITY COMPUTATION";
+                b.innerHTML = `
+                    <div style="color:#94a3b8;">Sum of all Daily Rewards & Gift Codes injected into player accounts.</div>
+                    <div style="color:var(--accent-glow-2); margin-top:10px;">= ${formatNumber(e.promoIssued)} TOTAL FREE CHIPS</div>
+                `;
+            } else if (type === 'liab') {
+                t.innerText = "CIRCULATING LIABILITY COMPUTATION";
+                b.innerHTML = `
+                    <div style="color:#94a3b8;">Exact sum of all chips currently sitting in every player's wallet.</div>
+                    <div style="color:var(--danger); margin-top:10px;">= ${formatNumber(e.circulating)} TOTAL POTENTIAL PAYOUT</div>
+                `;
+            }
+            showModal('math-modal');
+        }
+
+        async function fetchData() {
+            if(!adminPass) return;
+            const res = await fetch('/api/admin/economy', { headers: { 'x-admin-pass': adminPass }});
+            if(res.ok) {
+                const data = await res.json();
+                localTxs = data.bankRequests || []; 
+                currentEconomy = data.economy;
+                
+                // Dashboard Updates
+                document.getElementById('stat-vault').innerText = formatNumber(data.economy.vault);
+                document.getElementById('stat-ggr').innerText = formatNumber(data.economy.ggr);
+                document.getElementById('stat-promo').innerText = formatNumber(data.economy.promoIssued);
+                document.getElementById('stat-liab').innerText = formatNumber(data.economy.circulating);
+
+                strictRTP = data.strictHouseEdge;
+                const rtpBtn = document.getElementById('rtp-btn');
+                if(strictRTP) { rtpBtn.style.background = 'var(--success)'; rtpBtn.style.color = '#000'; rtpBtn.innerText = 'RTP MODIFIER: ON'; }
+                else { rtpBtn.style.background = 'var(--danger)'; rtpBtn.style.color = '#fff'; rtpBtn.innerText = 'RTP MODIFIER: OFF'; }
+
+                // Sync Game Kill Switches
+                ['3seat', '5seat', 'dice', 'coin', 'color'].forEach(g => {
+                    const btn = document.getElementById(`ks-${g}`);
+                    if(btn) {
+                        if(data.gameLocks[g]) { btn.className = 'wood-btn btn-toggle off'; btn.innerText = 'OFF'; }
+                        else { btn.className = 'wood-btn btn-toggle on'; btn.innerText = 'ON'; }
+                    }
+                });
+
+                // Cashier Table (Only render if admin)
+                if(adminRole === 'admin') {
+                    const cashierList = document.getElementById('cashier-list');
+                    cashierList.innerHTML = data.bankRequests.map(t => {
+                        return `
+                        <tr>
+                            <td>${getPHTTime(t.date)}</td>
+                            <td>${t.username}</td>
+                            <td style="color:${t.type.includes('DEPOSIT')?'var(--success)':'var(--danger)'}; font-weight:bold;">${t.type}</td>
+                            <td>${formatNumber(t.amount)}</td>
+                            <td style="color:#94a3b8;">REVIEW IN DB</td>
+                            <td>
+                                <button class="wood-btn small" style="background:var(--success);" onclick="resolveBank('${t._id}', 'approve')">APPROVE</button>
+                                <button class="wood-btn small" style="background:var(--danger);" onclick="resolveBank('${t._id}', 'deny')">DENY</button>
+                            </td>
+                        </tr>
+                    `}).join('');
+                }
+
+                // Player DB Table
+                const onlineUsers = data.onlineUsers || [];
+                let sortedUsers = data.users.sort((a,b) => {
+                    const aOnline = onlineUsers.includes(a.username);
+                    const bOnline = onlineUsers.includes(b.username);
+                    if(aOnline && !bOnline) return -1;
+                    if(!aOnline && bOnline) return 1;
+                    return b.credits - a.credits;
+                });
+                
+                const playerList = document.getElementById('player-list');
+                playerList.innerHTML = sortedUsers.map(u => {
+                    let isOnline = onlineUsers.includes(u.username);
+                    let statusColor = '#94a3b8'; let displayStatus = 'OFFLINE';
+                    
+                    if (u.status === 'banned') { statusColor = 'var(--danger)'; displayStatus = 'BANNED'; isOnline = false; }
+                    else if (u.status === 'pending') { statusColor = 'var(--warning)'; displayStatus = 'PENDING'; }
+                    else if (isOnline) { statusColor = 'var(--success)'; displayStatus = 'ONLINE'; }
+
+                    return `
+                    <tr>
+                        <td style="color:${u.nameColor}; font-weight:bold; font-size:28px;">${u.username}</td>
+                        <td style="color:var(--warning);">${formatNumber(u.credits)}</td>
+                        <td style="color:${statusColor}; font-weight:bold;">${displayStatus}</td>
+                        <td>
+                            <button class="wood-btn small" style="background:var(--accent-glow-2);" onclick="openPlayerModal('${u.username}')">VIEW</button>
+                            <button class="wood-btn small" style="background:#0f766e;" onclick="watchPlayer('${u.username}')">WATCH</button>
+                            ${u.status !== 'active' ? `<button class="wood-btn small" style="background:var(--success); color:#000;" onclick="changeStatus('${u.username}', 'active')">ACTIVATE</button>` : ''}
+                            ${u.status !== 'banned' && adminRole === 'admin' ? `<button class="wood-btn small" style="background:var(--danger);" onclick="changeStatus('${u.username}', 'banned')">BAN</button>` : ''}
+                        </td>
+                    </tr>
+                `}).join('');
+
+                // Promo Engine
+                if(adminRole === 'admin') {
+                    currentBatches = {};
+                    data.codes.forEach(c => {
+                        const bName = c.batchName || 'MANUAL';
+                        if(!currentBatches[bName]) currentBatches[bName] = [];
+                        currentBatches[bName].push(c);
+                    });
+
+                    const promoList = document.getElementById('promo-batch-list');
+                    promoList.innerHTML = Object.keys(currentBatches).map(bName => {
+                        const batch = currentBatches[bName];
+                        const total = batch.length;
+                        const claimed = batch.filter(c => c.usesLeft === 0).length;
+                        return `
+                        <tr>
+                            <td style="color:#fff; font-weight:bold;">${bName}</td>
+                            <td style="color:var(--accent-glow-2); font-weight:bold;">${total}</td>
+                            <td style="color:${claimed === total ? 'var(--danger)' : 'var(--warning)'};">${claimed} / ${total}</td>
+                            <td><button class="wood-btn small" style="background:#475569;" onclick="openBatchModal('${bName}')">VIEW CODES</button></td>
+                        </tr>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+
+        async function openPlayerModal(username) {
+            const res = await fetch(`/api/admin/player_full/${username}`, { headers: { 'x-admin-pass': adminPass }});
+            if(res.ok) {
+                const data = await res.json();
+                document.getElementById('pm-name').innerText = username.toUpperCase();
+                
+                // Show [CLICK TO REVEAL] for IP if admin, else hide
+                if(adminRole === 'admin') {
+                    document.getElementById('pm-ip').innerHTML = `<button class="wood-btn small" style="background:#475569;" onclick="this.innerText='${data.user.ipAddress || 'UNKNOWN'}'">[CLICK TO REVEAL]</button>`;
+                } else {
+                    document.getElementById('pm-ip').innerText = "HIDDEN";
+                }
+                
+                let totalWager = 0; let totalWon = 0; let totalPromo = 0;
+                let ledgerHTML = '';
+                
+                data.txs.forEach(tx => {
+                    if(tx.status === 'completed') {
+                        if(['DAILY REWARD', 'GIFT CODE'].includes(tx.type)) totalPromo += tx.amount;
+                        else if(tx.amount < 0 && !tx.type.includes('BANK')) totalWager += Math.abs(tx.amount);
+                        else if(tx.amount > 0 && !tx.type.includes('BANK')) totalWon += tx.amount;
+                    }
+                    
+                    let amtColor = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff');
+                    let statusColor = tx.status === 'pending' ? 'var(--warning)' : (tx.status === 'completed' ? 'var(--success)' : 'var(--danger)');
+                    
+                    ledgerHTML += `
+                    <tr>
+                        <td style="font-size:22px;">${getPHTTime(tx.date)}</td>
+                        <td style="color:#94a3b8;">${tx.type}</td>
+                        <td style="color:${amtColor}; font-weight:bold;">${tx.amount > 0 ? '+' : ''}${formatNumber(tx.amount)}</td>
+                        <td style="color:${statusColor}; font-size:20px;">${tx.status.toUpperCase()}</td>
+                    </tr>`;
+                });
+
+                document.getElementById('pm-wager').innerText = formatNumber(totalWager);
+                document.getElementById('pm-won').innerText = formatNumber(totalWon);
+                
+                const net = totalWon - totalWager;
+                const netEl = document.getElementById('pm-net');
+                netEl.innerText = formatNumber(net);
+                netEl.style.color = net > 0 ? 'var(--success)' : (net < 0 ? 'var(--danger)' : '#fff');
+
+                document.getElementById('pm-promo').innerText = formatNumber(totalPromo);
+                document.getElementById('pm-ledger').innerHTML = ledgerHTML || '<tr><td colspan="4" style="color:#475569;">NO TRANSACTIONS FOUND</td></tr>';
+                
+                showModal('player-modal');
+            }
+        }
+
+        function openBatchModal(batchName) {
+            currentViewBatch = currentBatches[batchName];
+            if(!currentViewBatch) return;
+            
+            document.getElementById('bm-name').innerText = batchName;
+            const list = document.getElementById('bm-list');
+            list.innerHTML = currentViewBatch.map(c => {
+                const isClaimed = c.usesLeft === 0;
+                return `
+                <tr>
+                    <td style="color:var(--accent-glow-2); font-weight:bold; letter-spacing:2px;">${c.code}</td>
+                    <td style="color:var(--warning);">${formatNumber(c.amount)}</td>
+                    <td style="color:${isClaimed ? 'var(--danger)' : 'var(--success)'};">${isClaimed ? `CLAIMED BY ${c.claimedBy}` : 'AVAILABLE'}</td>
+                    <td><button class="wood-btn small" onclick="copyText('${c.code}')">COPY</button></td>
+                </tr>
+                `;
+            }).join('');
+            showModal('batch-modal');
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {}).catch(err => prompt('Copy manually:', text));
+        }
+
+        function copyAllUnused() {
+            if(!currentViewBatch) return;
+            const unused = currentViewBatch.filter(c => c.usesLeft > 0).map(c => c.code).join('\n');
+            if(!unused) return alert("No unused codes left in this batch.");
+            copyText(unused);
+            alert("Unused codes copied to clipboard!");
+        }
+
+        function watchPlayer(username) {
+            watchingUser = username;
+            document.getElementById('watch-target-name').innerText = username.toUpperCase();
+            document.getElementById('watch-matrix-log').innerHTML = `<div style="color:#64748b;">▶ SYSTEM: Uplink established. Isolating activity for [${username}]...</div>`;
+            showModal('watch-modal');
+        }
+
+        function closeWatchModal() {
+            watchingUser = null;
+            hideModal('watch-modal');
+        }
+
+        async function resolveBank(id, action) {
+            await fetch('/api/admin/tx/resolve', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, body: JSON.stringify({ id, action }) });
+            fetchData();
+        }
+
+        async function changeStatus(username, status) {
+            await fetch('/api/admin/user/status', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, body: JSON.stringify({ username, status }) });
+            fetchData();
+        }
+
+        async function generateCodes() {
+            const batchName = document.getElementById('gc-batch').value || 'ADMIN';
+            const amount = parseInt(document.getElementById('gc-amount').value);
+            const quantity = parseInt(document.getElementById('gc-qty').value);
+            if(isNaN(amount) || isNaN(quantity)) return alert("Enter valid numbers for Amount and Quantity.");
+            
+            await fetch('/api/admin/giftcode', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, body: JSON.stringify({ batchName, amount, quantity }) });
+            document.getElementById('gc-batch').value = '';
+            document.getElementById('gc-amount').value = ''; 
+            document.getElementById('gc-qty').value = '';
+            fetchData();
+        }
+
+        async function toggleRTP() {
+            strictRTP = !strictRTP;
+            await fetch('/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, body: JSON.stringify({ strictHouseEdge: strictRTP }) });
+            fetchData();
+        }
+
+        socket.on('game_lock_state', (locks) => {
+            ['3seat', '5seat', 'dice', 'coin', 'color'].forEach(g => {
+                const btn = document.getElementById(`ks-${g}`);
+                if(btn) {
+                    if(locks[g]) { btn.className = 'wood-btn btn-toggle off'; btn.innerText = 'OFF'; }
+                    else { btn.className = 'wood-btn btn-toggle on'; btn.innerText = 'ON'; }
+                }
+            });
         });
-        if (changed) { 
-            if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } 
-            emitGameState(roomId); 
-        }
-    });
-}, 1000);
 
-setInterval(() => {
-    const now = Date.now();
-    
-    // DICE LOOP
-    if (diceGame.status === 'betting' && now >= diceGame.betEndTime) {
-        diceGame.status = 'rolling'; 
-        io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, timeLeft: 0, history: diceGame.history });
-        
-        setTimeout(async () => {
-            let totalUnder = 0; let totalOver = 0;
-            diceGame.bets.forEach(b => { if(b.choice==='under') totalUnder+=b.amount; if(b.choice==='over') totalOver+=b.amount; });
+        // Live Eye in the Sky Socket
+        socket.on('admin_log', (msg) => {
+            const globalLog = document.getElementById('matrix-log');
             
-            let d1 = Math.floor(Math.random() * 6) + 1; let d2 = Math.floor(Math.random() * 6) + 1;
-            if (strictHouseEdge && (totalUnder > 0 || totalOver > 0)) {
-                if (totalUnder > totalOver && (d1+d2) < 7) { d1=4; d2=4; } 
-                else if (totalOver > totalUnder && (d1+d2) > 7) { d1=2; d2=2; } 
+            let logColor = '#10b981'; 
+            if(msg.includes('[CHAT]')) logColor = 'var(--accent-glow-2)';
+            if(msg.includes('[BET]')) logColor = 'var(--warning)';
+            if(msg.includes('[SPECTATOR]')) logColor = '#94a3b8';
+            if(msg.includes('disconnected') || msg.includes('left')) logColor = 'var(--danger)';
+
+            const logLine = `<div style="color:${logColor}; margin-bottom: 4px;">${msg}</div>`;
+
+            // Update Global Matrix
+            globalLog.innerHTML += logLine;
+            globalLog.scrollTop = globalLog.scrollHeight;
+            if(globalLog.children.length > 100) globalLog.removeChild(globalLog.firstChild);
+
+            // Update Targeted Player Matrix if watching
+            if (watchingUser && msg.includes(watchingUser)) {
+                const watchLog = document.getElementById('watch-matrix-log');
+                watchLog.innerHTML += logLine;
+                watchLog.scrollTop = watchLog.scrollHeight;
+                if(watchLog.children.length > 50) watchLog.removeChild(watchLog.firstChild);
             }
-            
-            diceGame.dice = [d1, d2]; const total = d1 + d2;
-            diceGame.status = 'resolving'; diceGame.history.unshift(diceGame.dice); if(diceGame.history.length > 20) diceGame.history.pop();
-            
-            let winners = [];
-            for (let b of diceGame.bets) {
-                let won = false; let payout = 0;
-                if (b.choice === 'under' && total < 7) { won = true; payout = b.amount * 2; }
-                if (b.choice === 'over' && total > 7) { won = true; payout = b.amount * 2; }
-                if (b.choice === 'seven' && total === 7) { won = true; payout = b.amount * 5; }
-                if (won) {
-                    const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
-                    await new Transaction({ username: b.username, type: 'HIGH-LOW DICE WIN', amount: payout }).save();
-                    winners.push({ username: b.username, choice: b.choice, amount: payout });
-                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
-                }
-            }
-            io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, dice: diceGame.dice, total, winners, bets: diceGame.bets, history: diceGame.history });
-            setTimeout(() => { diceGame.bets = []; diceGame.status = 'betting'; diceGame.betEndTime = Date.now() + 15000; io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); }, 5000);
-        }, 3000); 
-    }
+        });
 
-    // COIN LOOP
-    if (coinGame.status === 'betting' && now >= coinGame.betEndTime) {
-        coinGame.status = 'flipping'; 
-        io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, timeLeft: 0, history: coinGame.history });
-        
-        setTimeout(async () => {
-            let totalHeads = 0; let totalTails = 0;
-            coinGame.bets.forEach(b => { if(b.choice==='heads') totalHeads+=b.amount; if(b.choice==='tails') totalTails+=b.amount; });
-            
-            let res = Math.random() < 0.5 ? 'heads' : 'tails';
-            if (strictHouseEdge && (totalHeads > 0 || totalTails > 0)) { res = totalHeads > totalTails ? 'tails' : 'heads'; }
-
-            coinGame.result = res; coinGame.status = 'resolving'; coinGame.history.unshift(coinGame.result); if(coinGame.history.length > 20) coinGame.history.pop();
-            
-            let winners = [];
-            for (let b of coinGame.bets) {
-                if (b.choice === coinGame.result) {
-                    const payout = b.amount * 2;
-                    const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
-                    await new Transaction({ username: b.username, type: 'COIN FLIP WIN', amount: payout }).save();
-                    winners.push({ username: b.username, choice: b.choice, amount: payout });
-                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
-                }
-            }
-            io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, result: coinGame.result, winners, bets: coinGame.bets, history: coinGame.history });
-            setTimeout(() => { coinGame.bets = []; coinGame.status = 'betting'; coinGame.betEndTime = Date.now() + 15000; io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, betEndTime: coinGame.betEndTime, history: coinGame.history }); }, 5000);
-        }, 3000); 
-    }
-
-    // COLOR GAME LOOP
-    if (colorGame.status === 'betting' && now >= colorGame.betEndTime) {
-        colorGame.status = 'rolling'; 
-        io.to('arcade_color').emit('color_state_update', { status: colorGame.status, timeLeft: 0, history: colorGame.history });
-        
-        setTimeout(async () => {
-            colorGame.dice = [PERYA_COLORS[Math.floor(Math.random() * 6)], PERYA_COLORS[Math.floor(Math.random() * 6)], PERYA_COLORS[Math.floor(Math.random() * 6)]];
-            colorGame.status = 'resolving'; colorGame.history.unshift(colorGame.dice); if(colorGame.history.length > 20) colorGame.history.pop();
-            
-            let winners = [];
-            for (let b of colorGame.bets) {
-                let matches = colorGame.dice.filter(c => c === b.choice).length;
-                if (matches > 0) {
-                    const payout = b.amount + (b.amount * matches);
-                    const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
-                    await new Transaction({ username: b.username, type: 'COLOR GAME WIN', amount: payout }).save();
-                    winners.push({ username: b.username, choice: b.choice, amount: payout });
-                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
-                }
-            }
-            io.to('arcade_color').emit('color_state_update', { status: colorGame.status, dice: colorGame.dice, winners, bets: colorGame.bets, history: colorGame.history });
-            setTimeout(() => { colorGame.bets = []; colorGame.status = 'betting'; colorGame.betEndTime = Date.now() + 15000; io.to('arcade_color').emit('color_state_update', { status: colorGame.status, betEndTime: colorGame.betEndTime, history: colorGame.history }); }, 5000);
-        }, 3000); 
-    }
-}, 1000);
-
-function getNewDeck() { let deck = []; for (let i = 0; i < 6; i++) { for (let s of suits) { for (let v of values) { deck.push({ suit: s, value: v, weight: ['J','Q','K'].includes(v) ? 10 : (v==='A'?11:parseInt(v)) }); } } } return deck.sort(() => Math.random() - 0.5); }
-function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
-
-function emitGameState(roomId) {
-    let room = rooms[roomId]; if (!room) return;
-    const { betTimerInterval, nextRoundInterval, turnTimerInterval, dealerInterval, ...serializableRoom } = room;
-    let safeState = JSON.parse(JSON.stringify(serializableRoom)); const now = Date.now();
-    safeState.seats.forEach(s => { if (s && s.kickAt) s.kickTimeLeft = Math.max(0, s.kickAt - now); });
-    if (safeState.betEndTime) safeState.betTimeLeft = Math.max(0, safeState.betEndTime - now);
-    if (safeState.nextRoundTime) safeState.nextRoundTimeLeft = Math.max(0, safeState.nextRoundTime - now);
-    if (safeState.turnEndTime) safeState.turnTimeLeft = Math.max(0, safeState.turnEndTime - now);
-    if (safeState.status === 'playing' && safeState.dealerCards.length > 1) safeState.dealerCards[1] = { hidden: true };
-    io.to(roomId).emit('game_state_update', safeState);
-}
-
-function startTurnTimer(roomId) {
-    let room = rooms[roomId]; clearInterval(room.turnTimerInterval);
-    room.turnTimerInterval = setInterval(() => { if (Date.now() >= room.turnEndTime) { clearInterval(room.turnTimerInterval); let seat = room.seats[room.activeSeatIndex]; if (seat && seat.hands[seat.currentHand]) seat.hands[seat.currentHand].status = 'stand'; moveToNextTurn(roomId); } }, 500);
-}
-function getGameTitle(roomId) { return roomId === '3seat' ? '3-SEAT BLACKJACK' : '5-SEAT BLACKJACK'; }
-
-// --- ADMIN SECURITY & ECONOMY APIs ---
-const checkAdminRole = async (req, res, next) => {
-    try {
-        const pass = req.headers['x-admin-pass'];
-        const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
-        const mConf = await SystemConfig.findOne({ configName: 'mod_password' });
-        
-        if (pass === aConf.configValue) { req.role = 'admin'; next(); }
-        else if (pass === mConf.configValue) { req.role = 'mod'; next(); }
-        else { return res.status(403).json({ error: 'Unauthorized' }); }
-    } catch (error) { res.status(500).json({ error: 'Database Error' }); }
-};
-
-app.post('/api/admin/login', async (req, res) => {
-    const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
-    const mConf = await SystemConfig.findOne({ configName: 'mod_password' });
-    
-    if (req.body.password === aConf.configValue) {
-        adminLog("MASTER ADMIN successfully logged in.");
-        res.json({ success: true, role: 'admin' });
-    } else if (req.body.password === mConf.configValue) {
-        adminLog("MODERATOR successfully logged in.");
-        res.json({ success: true, role: 'mod' });
-    } else { res.status(401).json({ error: 'Invalid password.' }); }
-});
-
-app.post('/api/admin/change_password', checkAdminRole, async (req, res) => {
-    if (req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
-    const { targetRole, newPassword } = req.body;
-    if (!newPassword || newPassword.length < 4) return res.status(400).json({error: 'Password too short.'});
-    
-    const configName = targetRole === 'admin' ? 'admin_password' : 'mod_password';
-    await SystemConfig.updateOne({ configName }, { configValue: newPassword });
-    adminLog(`MASTER ADMIN changed the ${targetRole.toUpperCase()} password in the database.`);
-    res.json({ success: true });
-});
-
-app.get('/api/admin/economy', checkAdminRole, async (req, res) => {
-    const users = await User.find({}, '-password');
-    const txs = await Transaction.find();
-    const codes = await GiftCode.find();
-
-    let deposits = 0; let withdrawals = 0; let promoIssued = 0; let totalBets = 0; let totalWins = 0; let circulating = 0;
-
-    users.forEach(u => circulating += u.credits);
-    txs.forEach(t => {
-        if(t.status === 'completed') {
-            if(t.type === 'BANK DEPOSIT') deposits += t.amount;
-            if(t.type === 'BANK WITHDRAWAL') withdrawals += t.amount;
-            if(['DAILY REWARD', 'GIFT CODE'].includes(t.type)) promoIssued += t.amount;
-            if(t.type.includes('WIN') || (t.amount > 0 && !t.type.includes('BANK') && !['DAILY REWARD', 'GIFT CODE'].includes(t.type))) totalWins += t.amount;
-        }
-        if(t.amount < 0 && !t.type.includes('BANK')) totalBets += Math.abs(t.amount);
-    });
-
-    const vault = 1500000 + deposits - withdrawals;
-    const ggr = totalBets - totalWins;
-    const onlineUsers = [...new Set(Object.values(socketUserMap).map(u => u.username))];
-
-    res.json({ 
-        users, codes, 
-        bankRequests: txs.filter(t=>t.status==='pending'), 
-        economy: { baseVault: 1500000, deposits, withdrawals, vault, ggr, totalBets, totalWins, promoIssued, circulating }, 
-        strictHouseEdge, onlineUsers, gameLocks
-    });
-});
-
-app.post('/api/admin/user/status', checkAdminRole, async (req, res) => { 
-    await User.updateOne({ username: req.body.username }, { status: req.body.status }); 
-    adminLog(`Changed status of player ${req.body.username} to ${req.body.status.toUpperCase()}`);
-    res.json({ success: true }); 
-});
-
-app.post('/api/admin/settings', checkAdminRole, async (req, res) => {
-    if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
-    strictHouseEdge = req.body.strictHouseEdge;
-    adminLog(`House Edge RTP modifier set to: ${strictHouseEdge ? 'ON' : 'OFF'}`);
-    res.json({ success: true });
-});
-
-app.post('/api/admin/tx/resolve', checkAdminRole, async (req, res) => {
-    if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
-    const { id, action } = req.body; 
-    const tx = await Transaction.findById(id); 
-    if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
-    
-    let updatedUser;
-    if (action === 'approve') { 
-        tx.status = 'completed'; 
-        if (tx.type === 'BANK DEPOSIT') { updatedUser = await User.findOneAndUpdate({ username: tx.username }, { $inc: { credits: tx.amount } }, { new: true }); } 
-    } else { 
-        tx.status = 'denied'; 
-        if (tx.type === 'BANK WITHDRAWAL') { updatedUser = await User.findOneAndUpdate({ username: tx.username }, { $inc: { credits: tx.amount } }, { new: true }); } 
-    }
-    await tx.save(); 
-    adminLog(`Admin ${action.toUpperCase()}ED bank request for ${tx.username} (${tx.amount} credits)`);
-    if(updatedUser) io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
-    res.json({ success: true });
-});
-
-app.post('/api/admin/giftcode', checkAdminRole, async (req, res) => { 
-    if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
-    const { batchName, amount, quantity } = req.body;
-    for(let i=0; i<quantity; i++) {
-        let code = Math.random().toString(36).substring(2, 8).toUpperCase();
-        await new GiftCode({ code, amount, usesLeft: 1, batchName }).save();
-    }
-    adminLog(`Generated ${quantity} gift codes for batch: ${batchName}`);
-    res.json({ success: true }); 
-});
-
-app.get('/api/admin/player_full/:username', checkAdminRole, async (req, res) => {
-    const user = await User.findOne({ username: req.params.username }, '-password');
-    const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 });
-    res.json({ user, txs });
-});
-
-// --- PLAYER APIs ---
-app.post('/api/signup', async (req, res) => { 
-    try { 
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        await new User({ username: req.body.username, password: req.body.password, ipAddress: ip, tosAccepted: true, status: 'active' }).save(); 
-        adminLog(`New account created: ${req.body.username} (IP: ${ip})`);
-        res.status(201).json({ message: 'Account requested successfully.' }); 
-    } catch (err) { res.status(400).json({ error: 'Username taken.' }); } 
-});
-
-app.post('/api/login', async (req, res) => {
-    const user = await User.findOne({ username: req.body.username, password: req.body.password });
-    if (!user) return res.status(401).json({ error: 'Invalid credentials.' }); 
-    if (user.status === 'banned') return res.status(401).json({ error: 'Account banned by administration.' });
-    
-    // Auto-active on login if not banned
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    user.ipAddress = ip; 
-    if(user.status !== 'active') user.status = 'active';
-    await user.save();
-    
-    adminLog(`${user.username} logged in.`);
-    
-    const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); 
-    const msLeft = new Date(lastClaim.getTime() + 24 * 60 * 60 * 1000).getTime() - now.getTime();
-    res.json({ username: user.username, credits: user.credits, status: user.status, createdAt: user.createdAt, cooldownSeconds: msLeft > 0 ? Math.floor(msLeft / 1000) : 0 });
-});
-
-app.post('/api/bank/request', async (req, res) => {
-    const { username, type, amount } = req.body; let txType = type === 'deposit' ? 'BANK DEPOSIT' : 'BANK WITHDRAWAL'; let currentCredits = undefined;
-    if (type === 'deposit') { if (amount < 10000 || amount > 100000) return res.status(400).json({ error: 'Limits: 10k - 100k.' }); } 
-    else if (type === 'withdrawal') {
-        if (amount < 50000 || amount > 100000) return res.status(400).json({ error: 'Limits: 50k - 100k.' });
-        const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
-        if (!user) return res.status(400).json({ error: 'Insufficient funds.' }); currentCredits = user.credits;
-    }
-    adminLog(`Bank request submitted: ${username} requested ${txType} of ${amount}.`);
-    await new Transaction({ username, type: txType, amount, status: 'pending' }).save(); res.json({ success: true, newCredits: currentCredits });
-});
-
-app.post('/api/bank/giftcode', async (req, res) => {
-    const { username, code } = req.body; 
-    const gc = await GiftCode.findOneAndUpdate({ code, usesLeft: { $gt: 0 } }, { $set: { usesLeft: 0, claimedBy: username, claimDate: new Date() } });
-    if (!gc) return res.status(400).json({ error: 'Invalid or expired code.' });
-    
-    adminLog(`Gift code ${code} redeemed by ${username} for ${gc.amount} credits.`);
-    await User.updateOne({ username }, { $inc: { credits: gc.amount } }); 
-    await new Transaction({ username, type: 'GIFT CODE', amount: gc.amount, status: 'completed' }).save();
-    res.json({ success: true, amount: gc.amount });
-});
-
-app.get('/api/profile/ledger/:username', async (req, res) => { const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50); res.json(txs); });
-
-// --- SOCKET SYSTEM ---
-io.on('connection', (socket) => {
-    
-    // ADMIN EYE IN THE SKY & CONTROLS
-    socket.on('admin_join', () => { socket.join('admin_room'); socket.emit('game_lock_state', gameLocks); });
-    
-    socket.on('admin_action', ({ action, room, username, game, locked }) => {
-        if(action === 'wipe_chat') {
-            io.emit('chat_wiped', { room });
-        } else if (action === 'kick_user') {
-            const targetSocket = Object.keys(socketUserMap).find(id => socketUserMap[id].username === username);
-            if(targetSocket) { io.to(targetSocket).emit('force_disconnect'); io.sockets.sockets.get(targetSocket)?.disconnect(); }
-        } else if (action === 'toggle_game') {
-            gameLocks[game] = locked;
-            io.emit('game_lock_state', gameLocks);
-            adminLog(`System Override: ${game.toUpperCase()} is now ${locked ? 'LOCKED' : 'UNLOCKED'}`);
-        }
-    });
-
-    socket.on('admin_notify', ({ target, username, message }) => {
-        adminLog(`Notification Sent to [${target.toUpperCase()}]: ${message}`);
-        io.emit('system_notification', { target, username, message });
-    });
-
-    // ARCADE LOBBIES
-    socket.on('enter_arcade', async ({ username, game }) => {
-        const user = await User.findOne({ username }); if (!user) return;
-        socket.join('arcade_' + game); socketUserMap[socket.id] = { username, arcadeGame: game, roomId: game };
-        let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : coinLobby);
-        if (!lobby.find(p => p.username === username)) lobby.push({ username, color: user.nameColor });
-        io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
-        adminLog(`[SPECTATOR] ${username} entered the ${game.toUpperCase()} room.`);
-    });
-
-    socket.on('leave_arcade', ({ username, game }) => {
-        socket.leave('arcade_' + game);
-        let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : coinLobby);
-        lobby = lobby.filter(p => p.username !== username);
-        if(game === 'dice') diceLobby = lobby; else if (game === 'color') colorLobby = lobby; else coinLobby = lobby;
-        if(socketUserMap[socket.id]) { delete socketUserMap[socket.id].arcadeGame; delete socketUserMap[socket.id].roomId; }
-        io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
-        adminLog(`[SPECTATOR] ${username} left the ${game.toUpperCase()} room.`);
-    });
-
-    socket.on('send_chat', ({ roomId, username, message }) => { 
-        if(roomId && username && message) {
-            adminLog(`[CHAT] (${roomId}) ${username}: ${message}`); 
-            if (['dice', 'coin', 'color'].includes(roomId)) io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
-            else io.to(roomId).emit('receive_chat', { roomId, username, message }); 
-        }
-    });
-
-    // --- ARCADE BETS ---
-    socket.on('get_dice_state', () => { socket.emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); });
-    socket.on('place_dice_bet', async ({ username, choice, amount }) => {
-        if(gameLocks.dice) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
-        if (diceGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
-        if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
-        let existingBet = diceGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
-        if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
-
-        const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
-        if (!user) return socket.emit('arcade_error', 'Insufficient credits');
-        
-        await new Transaction({ username, type: 'HIGH-LOW DICE', amount: -amount }).save();
-        diceGame.bets.push({ username, choice, amount }); 
-        adminLog(`[BET] ${username} bet ${amount} on DICE (${choice})`);
-        io.emit('credit_update', { username: user.username, credits: user.credits }); 
-        socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
-    });
-
-    socket.on('get_coin_state', () => { socket.emit('coin_state_update', { status: coinGame.status, betEndTime: coinGame.betEndTime, history: coinGame.history }); });
-    socket.on('place_coin_bet', async ({ username, choice, amount }) => {
-        if(gameLocks.coin) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
-        if (coinGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
-        if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
-        let existingBet = coinGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
-        if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
-
-        const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
-        if (!user) return socket.emit('arcade_error', 'Insufficient credits');
-        
-        await new Transaction({ username, type: 'COIN FLIP', amount: -amount }).save();
-        coinGame.bets.push({ username, choice, amount }); 
-        adminLog(`[BET] ${username} bet ${amount} on COIN (${choice})`);
-        io.emit('credit_update', { username: user.username, credits: user.credits });
-        socket.emit('arcade_bet_placed', { game: 'coin', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
-    });
-
-    socket.on('get_color_state', () => { socket.emit('color_state_update', { status: colorGame.status, betEndTime: colorGame.betEndTime, history: colorGame.history }); });
-    socket.on('place_color_bet', async ({ username, choice, amount }) => {
-        if(gameLocks.color) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
-        if (colorGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
-        if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
-        let existingBet = colorGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
-        if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
-
-        const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
-        if (!user) return socket.emit('arcade_error', 'Insufficient credits');
-        
-        await new Transaction({ username, type: 'COLOR GAME', amount: -amount }).save();
-        colorGame.bets.push({ username, choice, amount }); 
-        adminLog(`[BET] ${username} bet ${amount} on COLOR (${choice})`);
-        io.emit('credit_update', { username: user.username, credits: user.credits }); 
-        socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
-    });
-
-    // --- BLACKJACK SOCKETS ---
-    socket.on('enter_room', async ({ username, roomId }) => {
-        if (!rooms[roomId]) return; socket.join(roomId); socketUserMap[socket.id] = { username, roomId };
-        const user = await User.findOne({ username }); 
-        if (user && !rooms[roomId].lobby.find(p => p.username === username)) { rooms[roomId].lobby.push({ username: user.username, color: user.nameColor }); }
-        adminLog(`[SPECTATOR] ${username} entered ${getGameTitle(roomId)}.`);
-        emitGameState(roomId);
-    });
-
-    socket.on('leave_room', ({ username, roomId }) => {
-        let room = rooms[roomId]; if (!room) return; socket.leave(roomId); room.lobby = room.lobby.filter(p => p.username !== username);
-        const seatIndex = room.seats.findIndex(s => s && s.username === username);
-        if (seatIndex !== -1) { room.seats[seatIndex] = null; if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } }
-        if(socketUserMap[socket.id]) delete socketUserMap[socket.id]; 
-        adminLog(`[SPECTATOR] ${username} left ${getGameTitle(roomId)}.`);
-        emitGameState(roomId);
-    });
-
-    socket.on('join_seat', async ({ roomId, username, seatIndex }) => {
-        let room = rooms[roomId]; if (!room || room.seats.some(s => s && s.username === username) || seatIndex < 0 || seatIndex >= room.seats.length || room.seats[seatIndex]) return;
-        const user = await User.findOne({ username }); if (!user) return;
-        room.seats[seatIndex] = { username: user.username, color: user.nameColor, socketId: socket.id, credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0, kickAt: Date.now() + 7000 };
-        if (room.status === 'waiting') room.status = 'betting'; 
-        adminLog(`[TABLE] ${username} sat down at ${getGameTitle(roomId)}.`);
-        emitGameState(roomId);
-    });
-
-    socket.on('leave_seat', ({ roomId, username, seatIndex }) => {
-        let room = rooms[roomId]; if (!room) return;
-        if (room.seats[seatIndex] && room.seats[seatIndex].username === username) { room.seats[seatIndex] = null; if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } emitGameState(roomId); }
-    });
-
-    socket.on('place_bet', async ({ roomId, username, seatIndex, betAmount }) => {
-        if(gameLocks[roomId]) return socket.emit('arcade_error', 'Table is currently offline for maintenance.');
-        let room = rooms[roomId]; if (!room) return; const seat = room.seats[seatIndex]; if (!seat || seat.username !== username || room.status !== 'betting') return;
-        if (betAmount >= 1000 && betAmount <= 50000) {
-            const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
-            if (!updatedUser) return; 
-            
-            seat.credits = updatedUser.credits; seat.hands[0].bet = betAmount; seat.kickAt = null; 
-            await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -betAmount }).save();
-            adminLog(`[BET] ${username} bet ${betAmount} at ${getGameTitle(roomId)}.`);
-            
-            io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
-            room.betEndTime = Date.now() + 15000; clearInterval(room.betTimerInterval);
-            
-            if (room.seats.every(s => s !== null && s.hands[0].bet > 0)) { clearInterval(room.betTimerInterval); startGame(roomId); } 
-            else { room.betTimerInterval = setInterval(() => { if (Date.now() >= room.betEndTime) { clearInterval(room.betTimerInterval); startGame(roomId); } }, 1000); emitGameState(roomId); }
-        }
-    });
-
-    socket.on('player_action_hit', ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username !== username || hand.status !== 'waiting') return; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; moveToNextTurn(roomId); } else if (hand.value === 21) { hand.status = 'stand'; moveToNextTurn(roomId); } else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } });
-    socket.on('player_action_stand', ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username !== username || hand.status !== 'waiting') return; hand.status = 'stand'; moveToNextTurn(roomId); });
-    socket.on('player_action_double', async ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username !== username || hand.status !== 'waiting' || hand.cards.length !== 2) return; const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); hand.bet *= 2; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; } else { hand.status = 'stand'; } moveToNextTurn(roomId); });
-    socket.on('player_action_split', async ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; if (seat.username !== username || seat.hands.length >= 2) return; const hand = seat.hands[seat.currentHand]; if (hand.status !== 'waiting' || hand.cards.length !== 2) return; if (hand.cards[0].weight === hand.cards[1].weight) { const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); const splitCard = hand.cards.pop(); const newHand = { cards: [splitCard], bet: hand.bet, status: 'waiting', value: 0 }; hand.cards.push(room.deck.pop()); newHand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); newHand.value = calculateValue(newHand.cards); if(hand.value === 21) hand.status = 'stand'; if(newHand.value === 21) newHand.status = 'stand'; seat.hands.push(newHand); if(hand.status === 'stand') moveToNextTurn(roomId); else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } } });
-
-    socket.on('claim_daily_reward_box', async ({ username, boxIndex }) => {
-        try {
-            const user = await User.findOne({ username }); if (!user) return; const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); const msIn24Hours = 24 * 60 * 60 * 1000;
-            if (now.getTime() - lastClaim.getTime() >= msIn24Hours) {
-                let prizes = [1000, 0, 0, 0, 5000, 10000]; prizes = prizes.sort(() => Math.random() - 0.5); const wonAmount = prizes[boxIndex]; user.lastRewardClaim = now;
-                if (wonAmount > 0) { user.credits += wonAmount; await new Transaction({ username, type: 'DAILY REWARD', amount: wonAmount, status: 'completed' }).save(); adminLog(`${username} claimed ${wonAmount} Daily Reward.`); } await user.save();
-                const msLeft = new Date(now.getTime() + msIn24Hours).getTime() - now.getTime(); const cooldownSeconds = Math.floor(msLeft / 1000);
-                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, cooldownSeconds });
-                io.emit('credit_update', { username: user.username, credits: user.credits }); 
-                Object.keys(rooms).forEach(rId => { const seat = rooms[rId].seats.find(s => s && s.username === username); if(seat) { seat.credits = user.credits; emitGameState(rId); } });
-            } else { socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); }
-        } catch (e) { socket.emit('reward_box_opened', { success: false, message: 'Server sync error' }); }
-    });
-
-    socket.on('disconnect', () => {
-        const data = socketUserMap[socket.id];
-        if (data) {
-            if (data.arcadeGame) {
-                let g = data.arcadeGame; let lobby = g === 'dice' ? diceLobby : (g === 'color' ? colorLobby : coinLobby);
-                lobby = lobby.filter(p => p.username !== data.username);
-                if(g === 'dice') diceLobby = lobby; else if(g === 'color') colorLobby = lobby; else coinLobby = lobby;
-                io.to('arcade_' + g).emit('arcade_lobby_update', { game: g, lobby });
-            }
-            if (data.roomId && rooms[data.roomId]) {
-                let room = rooms[data.roomId]; room.lobby = room.lobby.filter(p => p.username !== data.username);
-                const seatIndex = room.seats.findIndex(s => s && s.username === data.username);
-                if (seatIndex !== -1) { room.seats[seatIndex] = null; if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } }
-                emitGameState(data.roomId);
-            }
-            delete socketUserMap[socket.id];
-        }
-    });
-});
-
-// --- BLACKJACK RESOLUTION LOGIC ---
-function startGame(roomId) {
-    let room = rooms[roomId]; if (!room) return; room.status = 'playing'; room.deck = getNewDeck(); room.dealerCards = []; room.seats = room.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
-    for (let i = 0; i < 2; i++) { room.seats.forEach(seat => { if (seat) seat.hands[0].cards.push(room.deck.pop()); }); room.dealerCards.push(room.deck.pop()); }
-    room.seats.forEach(seat => { if (seat) { seat.hands[0].value = calculateValue(seat.hands[0].cards); if(seat.hands[0].value === 21) { seat.hands[0].status = 'blackjack'; } }});
-    let dealerInitialValue = calculateValue(room.dealerCards); if (dealerInitialValue === 21) { room.dealerCards[1].hidden = false; resolveBets(roomId, 21); return; }
-    room.activeSeatIndex = room.seats.findIndex(s => s && s.hands[0].status === 'waiting');
-    if (room.activeSeatIndex === -1) { processDealerTurn(roomId); } else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); }
-}
-function moveToNextTurn(roomId) {
-    let room = rooms[roomId]; if (!room) return; clearInterval(room.turnTimerInterval);  const seat = room.seats[room.activeSeatIndex];
-    if (seat && seat.currentHand < seat.hands.length - 1) { seat.currentHand++; if (seat.hands[seat.currentHand].status !== 'waiting') return moveToNextTurn(roomId); room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); return; }
-    let nextIndex = room.activeSeatIndex + 1; while (nextIndex < room.seats.length) { if (room.seats[nextIndex] && room.seats[nextIndex].hands[0].status === 'waiting') break; nextIndex++; }
-    if (nextIndex >= room.seats.length) { processDealerTurn(roomId); } else { room.activeSeatIndex = nextIndex; room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); }
-}
-async function processDealerTurn(roomId) {
-    let room = rooms[roomId]; if (!room) return; room.status = 'dealerTurn'; room.activeSeatIndex = -1; clearInterval(room.turnTimerInterval);
-    if(room.dealerCards.length > 1) room.dealerCards[1].hidden = false; emitGameState(roomId);
-    setTimeout(() => {
-        let dealerValue = calculateValue(room.dealerCards); if (dealerValue >= 17) { resolveBets(roomId, dealerValue); return; }
-        room.dealerInterval = setInterval(() => { if (dealerValue < 17) { room.dealerCards.push(room.deck.pop()); dealerValue = calculateValue(room.dealerCards); emitGameState(roomId); } else { clearInterval(room.dealerInterval); resolveBets(roomId, dealerValue); } }, 1000);
-    }, 1500); 
-}
-async function resolveBets(roomId, dealerValue) {
-    let room = rooms[roomId]; if (!room) return; room.status = 'resolving'; room.nextRoundTime = Date.now() + 5000; 
-    for (const seat of room.seats) {
-        if (seat) {
-            for (const hand of seat.hands) {
-                if (hand.bet > 0) {
-                    let payout = 0;
-                    if (hand.status === 'blackjack' && dealerValue !== 21) { payout = hand.bet * 2.5; hand.result = 'win-bj'; } 
-                    else if (hand.status !== 'bust' && (dealerValue > 21 || hand.value > dealerValue)) { payout = hand.bet * 2; hand.result = 'win'; } 
-                    else if (hand.status !== 'bust' && hand.value === dealerValue) { payout = hand.bet; hand.result = 'push'; } 
-                    else if (hand.status === 'bust') { hand.result = 'bust'; } 
-                    else { hand.result = 'lose'; }
-                    if (payout > 0) { seat.credits += payout; const updatedUser = await User.findOneAndUpdate({ username: seat.username }, { $inc: { credits: payout } }, {new: true}); await new Transaction({ username: seat.username, type: getGameTitle(roomId)+" WIN", amount: payout }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); }
-                }
-            }
-        }
-    }
-    emitGameState(roomId); clearInterval(room.nextRoundInterval);
-    room.nextRoundInterval = setInterval(() => {
-        if (Date.now() >= room.nextRoundTime) {
-            clearInterval(room.nextRoundInterval); room.dealerCards = [];
-            room.seats.forEach(seat => { if(seat) { seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; seat.currentHand = 0; seat.kickAt = Date.now() + 7000; } });
-            const anyoneSeated = room.seats.some(s => s !== null); room.status = anyoneSeated ? 'betting' : 'waiting'; emitGameState(roomId);
-        }
-    }, 1000);
-}
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Casino Server Live on ${PORT}`));
+    </script>
+</body>
+</html>
