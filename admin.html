@@ -87,8 +87,11 @@
         .wood-btn { background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 8px 15px; font-size: 22px; cursor: pointer; box-shadow: 2px 2px 0 #000; transition: 0.1s; font-family: 'VT323';}
         .wood-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn.small { padding: 4px 8px; font-size: 20px; }
-        .retro-input { padding: 12px; background: #000; color: #fff; border: 2px solid #64748b; font-size: 24px; outline: none; text-align: center; border-radius: 4px;}
-
+        .wood-btn.small.active { background: var(--accent-glow-2); border-color: #fff; }
+        
+        .retro-input, select.retro-input, textarea.retro-input { padding: 12px; background: #000; color: #fff; border: 2px solid #64748b; font-size: 24px; outline: none; text-align: left; border-radius: 4px; font-family: 'VT323', monospace;}
+        select.retro-input { cursor: pointer; }
+        
         /* EYE IN THE SKY LOG */
         #matrix-log, #watch-matrix-log { flex: 1; background: #000; border: 2px solid #334155; padding: 15px; font-size: 24px; color: #10b981; overflow-y: auto; font-family: monospace; text-shadow: 0 0 5px #10b981; line-height: 1.4;}
         
@@ -113,7 +116,7 @@
     <div id="admin-login-view">
         <div class="login-box">
             <h1 class="pixel-text" style="font-size: 55px; color: var(--danger); margin-bottom: 10px;">DIRECTOR ACCESS</h1>
-            <input type="password" id="admin-pass" class="retro-input pixel-text" placeholder="MASTER PASSWORD" style="width: 350px; margin-bottom: 15px; display: block;">
+            <input type="password" id="admin-pass" class="retro-input pixel-text" placeholder="MASTER PASSWORD" style="width: 350px; margin-bottom: 15px; display: block; text-align: center;">
             <button class="wood-btn pixel-text" style="width: 100%; background: var(--danger); font-size: 28px;" onclick="adminLogin()">AUTHENTICATE</button>
             <p id="login-error" style="color: var(--danger); margin-top: 15px; font-size: 24px;"></p>
         </div>
@@ -205,6 +208,9 @@
                     <span>TICKET: <span id="tm-name" style="color:var(--accent-glow-2);"></span></span>
                     <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('ticket-modal')">CLOSE WINDOW</button>
                 </div>
+                <div style="font-size: 24px; color: var(--warning); margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px;">
+                    SUBJECT: <span id="tm-subject" style="color: #fff;"></span>
+                </div>
                 <div id="tm-messages" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left; margin-bottom: 10px;"></div>
                 
                 <div id="tm-reply-box" style="display: flex; gap: 10px;">
@@ -225,7 +231,7 @@
             <button class="nav-btn" onclick="switchView('eye', this)">EYE IN THE SKY</button>
             
             <button class="nav-btn" onclick="switchView('notify', this)">
-                NOTIFICATIONS 
+                SUPPORT INBOX 
                 <span id="admin-notif-badge" class="hidden" style="background:var(--danger); border:2px solid #fff; border-radius:50%; width:30px; height:30px; display:inline-flex; justify-content:center; align-items:center; font-size:22px; font-weight:bold; float:right;">0</span>
             </button>
             
@@ -288,7 +294,7 @@
             <div id="view-players" class="view-panel custom-scroll">
                 <h2 class="panel-title">GOD-MODE PLAYER DATABASE</h2>
                 <table class="admin-table">
-                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>IP ADDRESS</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
                     <tbody id="player-list"></tbody>
                 </table>
             </div>
@@ -296,9 +302,9 @@
             <div id="view-promo" class="view-panel custom-scroll">
                 <h2 class="panel-title">BULK PROMO CODE ENGINE</h2>
                 <div style="display: flex; gap: 15px; margin-bottom: 20px; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px;">
-                    <input type="text" id="gc-batch" class="retro-input" placeholder="BATCH NAME">
-                    <input type="number" id="gc-amount" class="retro-input" placeholder="CREDIT VALUE">
-                    <input type="number" id="gc-qty" class="retro-input" placeholder="QUANTITY">
+                    <input type="text" id="gc-batch" class="retro-input" placeholder="BATCH NAME" style="text-align: center;">
+                    <input type="number" id="gc-amount" class="retro-input" placeholder="CREDIT VALUE" style="text-align: center;">
+                    <input type="number" id="gc-qty" class="retro-input" placeholder="QUANTITY" style="text-align: center;">
                     <button class="wood-btn" style="background: var(--success); color:#000; padding: 0 30px;" onclick="generateCodes()">GENERATE BATCH</button>
                 </div>
                 <table class="admin-table">
@@ -323,29 +329,49 @@
             </div>
 
             <div id="view-notify" class="view-panel custom-scroll">
-                <h2 class="panel-title">GLOBAL NOTIFICATIONS & SUPPORT INBOX</h2>
+                <h2 class="panel-title">SUPPORT INBOX & BROADCASTS</h2>
                 
                 <div style="display: flex; gap: 20px;">
                     <div style="flex: 1; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; display:flex; flex-direction:column;">
-                        <div class="control-title">SEND NEW MESSAGE</div>
+                        <div class="control-title">SEND NEW COMMUNICATION</div>
+                        <div style="margin-bottom: 15px;">
+                            <span style="font-size: 24px; color: #cbd5e1; margin-right: 15px;">TYPE:</span>
+                            <select id="notify-type" class="retro-input" style="width: calc(100% - 90px); display: inline-block;" onchange="updateTargetOptions(this.value)">
+                                <option value="announcement">GLOBAL ANNOUNCEMENT (Read-Only)</option>
+                                <option value="message">DIRECT MESSAGE (Allows Reply)</option>
+                            </select>
+                        </div>
                         <div style="margin-bottom: 15px;">
                             <span style="font-size: 24px; color: #cbd5e1; margin-right: 15px;">TARGET:</span>
-                            <select id="notify-target" class="retro-input" style="width: 100%; margin-top: 10px;" onchange="document.getElementById('notify-specific').style.display = this.value==='specific' ? 'block' : 'none';">
+                            <select id="notify-target" class="retro-input" style="width: calc(100% - 110px); display: inline-block;" onchange="toggleSpecificDropdowns(this.value)">
                                 <option value="all">ALL PLAYERS</option>
-                                <option value="active">ONLINE PLAYERS ONLY</option>
-                                <option value="specific">SPECIFIC PLAYER</option>
+                                <option value="active">ALL ONLINE PLAYERS</option>
+                                <option value="specific_online">SPECIFIC ONLINE PLAYER</option>
+                                <option value="specific_all">SPECIFIC PLAYER (ALL)</option>
                             </select>
-                            <input type="text" id="notify-specific" class="retro-input" placeholder="USERNAME" style="width: 100%; display: none; margin-top: 10px;">
+                            
+                            <select id="notify-specific-online" class="retro-input" style="width: 100%; display: none; margin-top: 10px;"></select>
+                            <select id="notify-specific-all" class="retro-input" style="width: 100%; display: none; margin-top: 10px;"></select>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <input type="text" id="notify-subject" class="retro-input" placeholder="SUBJECT LINE" style="width: 100%;">
                         </div>
                         <div style="flex: 1; display: flex; flex-direction: column; margin-bottom: 15px;">
-                            <textarea id="notify-msg" class="retro-input custom-scroll" style="flex: 1; width: 100%; min-height: 150px; text-align: left; resize: none;" placeholder="ENTER NOTIFICATION MESSAGE..."></textarea>
+                            <textarea id="notify-msg" class="retro-input custom-scroll" style="flex: 1; width: 100%; min-height: 150px; text-align: left; resize: none;" placeholder="ENTER MESSAGE CONTENT..."></textarea>
                         </div>
-                        <button class="wood-btn" style="width: 100%; background: var(--accent-glow-2);" onclick="sendNotification()">BROADCAST MESSAGE</button>
+                        <button class="wood-btn" style="width: 100%; background: var(--accent-glow-2);" onclick="sendNotification()">SEND COMMUNICATION</button>
                     </div>
 
                     <div style="flex: 1; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; display:flex; flex-direction:column;">
                         <div class="control-title">SUPPORT INBOX TRACKER</div>
-                        <div id="admin-inbox-list" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 10px; overflow-y: auto; max-height: 320px;">
+                        
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <button id="admin-tab-announcement" class="wood-btn small active" onclick="setAdminInboxTab('announcement')">ANNOUNCEMENTS</button>
+                            <button id="admin-tab-message" class="wood-btn small" onclick="setAdminInboxTab('message')">MESSAGES</button>
+                            <button id="admin-tab-support" class="wood-btn small" onclick="setAdminInboxTab('support')">SUPPORT TICKETS</button>
+                        </div>
+
+                        <div id="admin-inbox-list" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 10px; overflow-y: auto; max-height: 400px; display: flex; flex-direction: column;">
                             <div style="color: #64748b; font-size: 24px; text-align: center; margin-top: 20px;">LOADING INBOX...</div>
                         </div>
                         <button class="wood-btn small" style="width: 100%; margin-top: 15px; background: #475569;" onclick="fetchAdminInbox()">REFRESH INBOX</button>
@@ -386,6 +412,9 @@
         let watchingUser = null;
         let currentEconomy = null;
         let activeTicketId = null;
+        
+        let allAdminTickets = [];
+        let currentAdminInboxTab = 'announcement';
 
         function formatNumber(num) { return num.toLocaleString(); }
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -463,17 +492,50 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
+        // --- SMART DROPDOWNS & BROADCASTING ---
+        function updateTargetOptions(type) {
+            const targetSelect = document.getElementById('notify-target');
+            if(type === 'message') {
+                targetSelect.value = 'specific_all';
+                targetSelect.innerHTML = `
+                    <option value="specific_online">SPECIFIC ONLINE PLAYER</option>
+                    <option value="specific_all">SPECIFIC PLAYER (ALL)</option>
+                `;
+            } else {
+                targetSelect.innerHTML = `
+                    <option value="all">ALL PLAYERS</option>
+                    <option value="active">ALL ONLINE PLAYERS</option>
+                    <option value="specific_online">SPECIFIC ONLINE PLAYER</option>
+                    <option value="specific_all">SPECIFIC PLAYER (ALL)</option>
+                `;
+            }
+            toggleSpecificDropdowns(targetSelect.value);
+        }
+
+        function toggleSpecificDropdowns(targetVal) {
+            document.getElementById('notify-specific-online').style.display = targetVal === 'specific_online' ? 'block' : 'none';
+            document.getElementById('notify-specific-all').style.display = targetVal === 'specific_all' ? 'block' : 'none';
+        }
+
         function sendNotification() {
+            const type = document.getElementById('notify-type').value;
             const target = document.getElementById('notify-target').value;
-            const username = document.getElementById('notify-specific').value;
+            const subject = document.getElementById('notify-subject').value;
             const message = document.getElementById('notify-msg').value;
             
-            if(!message.trim()) return alert("Message cannot be empty.");
-            if(target === 'specific' && !username.trim()) return alert("Please enter a specific username.");
+            let username = '';
+            if(target === 'specific_online') username = document.getElementById('notify-specific-online').value;
+            if(target === 'specific_all') username = document.getElementById('notify-specific-all').value;
 
-            socket.emit('admin_notify', { target, username, message });
+            if(!subject.trim()) return alert("Subject line cannot be empty.");
+            if(!message.trim()) return alert("Message body cannot be empty.");
+            if((target === 'specific_online' || target === 'specific_all') && !username) return alert("Please select a specific player from the dropdown.");
+
+            socket.emit('admin_notify', { target, username, type, subject, message });
+            
+            document.getElementById('notify-subject').value = '';
             document.getElementById('notify-msg').value = '';
-            alert("Message broadcast successful.");
+            alert("Communication sent successfully.");
             fetchAdminInbox();
         }
 
@@ -482,10 +544,25 @@
             socket.emit('req_admin_inbox');
         }
 
+        function setAdminInboxTab(tab) {
+            currentAdminInboxTab = tab;
+            document.getElementById('admin-tab-announcement').classList.remove('active');
+            document.getElementById('admin-tab-message').classList.remove('active');
+            document.getElementById('admin-tab-support').classList.remove('active');
+            document.getElementById(`admin-tab-${tab}`).classList.add('active');
+            renderAdminInbox();
+        }
+
         socket.on('admin_inbox_data', (tickets) => {
+            allAdminTickets = tickets;
+            renderAdminInbox();
+        });
+
+        function renderAdminInbox() {
             const list = document.getElementById('admin-inbox-list');
-            const unreadCount = tickets.filter(t => t.unreadAdmin).length;
             
+            // Global Unread Badge Logic
+            const unreadCount = allAdminTickets.filter(t => t.unreadAdmin).length;
             const badge = document.getElementById('admin-notif-badge');
             if (unreadCount > 0) {
                 badge.innerText = unreadCount;
@@ -494,48 +571,60 @@
                 badge.classList.add('hidden');
             }
 
-            if(tickets.length === 0) {
-                list.innerHTML = '<div style="color: #64748b; font-size: 24px; text-align: center; margin-top: 20px;">NO ACTIVE TICKETS</div>';
+            // Filter for current tab
+            let filtered = allAdminTickets.filter(t => t.type === currentAdminInboxTab);
+
+            if(filtered.length === 0) {
+                list.innerHTML = '<div style="color: #64748b; font-size: 24px; text-align: center; margin-top: 20px;">NO RECORDS IN THIS CATEGORY</div>';
                 return;
             }
 
-            list.innerHTML = tickets.map(t => {
+            list.innerHTML = filtered.map(t => {
+                const date = new Date(t.updatedAt).toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
                 const time = new Date(t.updatedAt).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
                 const borderClass = t.unreadAdmin ? 'ticket-unread' : 'ticket-read';
                 const tag = t.unreadAdmin ? `<span style="color:var(--danger); font-weight:bold;">[ NEW REPLY ]</span>` : '';
                 const statTag = t.status === 'closed' ? `<span style="color:#64748b;">[ CLOSED ]</span>` : '';
                 
+                let typeVisual = '';
+                if(t.type === 'announcement') typeVisual = `<span style="color:var(--warning);">[ANNOUNCEMENT]</span>`;
+                else if(t.type === 'message') typeVisual = `<span style="color:var(--accent-glow-2);">[MESSAGE]</span>`;
+                else if(t.type === 'support') typeVisual = `<span style="color:var(--success);">[SUPPORT]</span>`;
+
                 const encodedMsg = encodeURIComponent(JSON.stringify(t.messages));
+                const encodedSub = encodeURIComponent(t.subject || 'NO SUBJECT');
                 
                 return `
-                <div class="ticket-item ${borderClass}" onclick="openAdminTicket('${t._id}', '${t.username}', '${encodedMsg}', '${t.status}')">
+                <div class="ticket-item ${borderClass}" onclick="openAdminTicket('${t._id}', '${t.username}', '${t.type}', '${encodedMsg}', '${encodedSub}', '${t.status}')">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <span style="font-size:24px; color:#fff; font-weight:bold;">${t.username} ${tag} ${statTag}</span>
-                        <span style="font-size:20px; color:#94a3b8;">${time}</span>
+                        <span style="font-size:24px; color:#fff; font-weight:bold;">${typeVisual} TO/FROM: ${t.username} ${tag} ${statTag}</span>
+                        <span style="font-size:20px; color:#94a3b8;">${date} ${time}</span>
                     </div>
+                    <div style="font-size:22px; color:#94a3b8;">SUBJ: ${t.subject || 'N/A'}</div>
                 </div>`;
             }).join('');
-        });
+        }
 
-        function openAdminTicket(id, username, encodedMsg, status) {
+        function openAdminTicket(id, username, type, encodedMsg, subjectStr, status) {
             activeTicketId = id;
             document.getElementById('tm-name').innerText = username.toUpperCase();
+            document.getElementById('tm-subject').innerText = decodeURIComponent(subjectStr);
             socket.emit('admin_read_ticket', { id });
             
             const messages = JSON.parse(decodeURIComponent(encodedMsg));
-            renderAdminThread(messages, status);
+            renderAdminThread(messages, status, type);
             showModal('ticket-modal');
         }
 
-        function renderAdminThread(messages, status) {
+        function renderAdminThread(messages, status, type) {
             const list = document.getElementById('tm-messages');
             list.innerHTML = messages.map(m => {
                 const isAdmin = m.sender === 'ADMIN';
                 const time = new Date(m.date).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
                 return `
                 <div class="msg-bubble ${isAdmin ? 'admin' : 'player'}">
-                    <div style="font-size:18px; color:#64748b; margin-bottom:5px;">${isAdmin ? 'ADMIN' : m.sender} - ${time}</div>
-                    <div style="font-size:24px; color:#fff;">${m.text}</div>
+                    <div style="font-size:18px; color:#64748b; margin-bottom:5px;">${isAdmin ? 'ADMIN' : m.sender.toUpperCase()} - ${time}</div>
+                    <div style="font-size:24px; color:#fff; white-space:pre-wrap;">${m.text}</div>
                 </div>`;
             }).join('');
             list.scrollTop = list.scrollHeight;
@@ -543,7 +632,10 @@
             const replyBox = document.getElementById('tm-reply-box');
             const closeBtn = document.getElementById('tm-close-btn');
             
-            if(status === 'closed') {
+            if(type === 'announcement') {
+                replyBox.style.display = 'none';
+                closeBtn.style.display = 'none';
+            } else if(status === 'closed') {
                 replyBox.style.display = 'none';
                 closeBtn.style.display = 'none';
             } else {
@@ -630,6 +722,18 @@
                 const rtpBtn = document.getElementById('rtp-btn');
                 if(strictRTP) { rtpBtn.style.background = 'var(--success)'; rtpBtn.style.color = '#000'; rtpBtn.innerText = 'RTP MODIFIER: ON'; }
                 else { rtpBtn.style.background = 'var(--danger)'; rtpBtn.style.color = '#fff'; rtpBtn.innerText = 'RTP MODIFIER: OFF'; }
+
+                // Populate Target Dropdowns (Alphabetically)
+                let onlineUsersAlpha = [...data.onlineUsers].sort((a,b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
+                let allUsersAlpha = [...data.users].map(u => u.username).sort((a,b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
+                
+                document.getElementById('notify-specific-online').innerHTML = onlineUsersAlpha.length > 0 
+                    ? onlineUsersAlpha.map(u => `<option value="${u}">${u}</option>`).join('') 
+                    : '<option value="">NO PLAYERS ONLINE</option>';
+                    
+                document.getElementById('notify-specific-all').innerHTML = allUsersAlpha.length > 0 
+                    ? allUsersAlpha.map(u => `<option value="${u}">${u}</option>`).join('') 
+                    : '<option value="">NO PLAYERS FOUND</option>';
 
                 // Sync Game Kill Switches
                 ['3seat', '5seat', 'dice', 'coin', 'color'].forEach(g => {
