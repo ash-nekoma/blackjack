@@ -39,7 +39,8 @@
         .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; max-width: 100%; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 85vh; display: flex; flex-direction: column; overflow-y: auto;}
         
         .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; flex-shrink: 0;}
-        input.retro-input, select.retro-input { flex: 1; padding: 12px; margin: 0; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); font-size: 24px; font-weight:bold; text-align: center; outline: none; cursor:pointer;}
+        input.retro-input, select.retro-input { flex: 1; padding: 12px; margin: 0; background: #0f172a; color: var(--warning); border: 3px solid #64748b; border-radius: 6px; font-size: 24px; font-weight:bold; text-align: center; outline: none; cursor:pointer; transition: 0.2s; box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);}
+        input.retro-input:focus, select.retro-input:focus { border-color: var(--accent-glow-2); box-shadow: 0 0 12px rgba(59,130,246,0.6), inset 0 2px 8px rgba(0,0,0,0.8); }
         input.retro-input::placeholder { color: #64748b; }
         
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px; flex-shrink: 0;}
@@ -210,25 +211,25 @@
             <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 10px;">CASINO ROYALE</h1>
             
             <div id="panel-login" class="modal-box custom-scroll">
-                <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 15px; font-size: 40px;">MEMBER LOGIN</h2>
-                <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME" style="color:#fff;">
-                <input type="password" id="login-pass" class="retro-input pixel-text" placeholder="PASSWORD" style="color:#fff;">
-                <div style="display: flex; justify-content: center; margin-top: 15px;"><button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="login()">LOGIN</button></div>
+                <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 40px;">MEMBER LOGIN</h2>
+                <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME" style="color:#fff; width:100%; margin-bottom:15px; display:block; box-sizing:border-box;">
+                <input type="password" id="login-pass" class="retro-input pixel-text" placeholder="PASSWORD" style="color:#fff; width:100%; margin-bottom:15px; display:block; box-sizing:border-box;">
+                <div style="display: flex; justify-content: center; margin-top: 10px;"><button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="login()">LOGIN</button></div>
                 <p id="login-error" class="pixel-text" style="color: var(--danger); font-size: 24px;"></p>
                 <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('signup')">New Player? Request Access Here</div>
             </div>
 
             <div id="panel-signup" class="modal-box hidden custom-scroll">
-                <h2 class="pixel-text" style="color: #10b981; margin-bottom: 15px; font-size: 40px;">REQUEST ACCESS</h2>
-                <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME" style="color:#fff;">
-                <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD" style="color:#fff;">
+                <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 40px;">REQUEST ACCESS</h2>
+                <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME" style="color:#fff; width:100%; margin-bottom:15px; display:block; box-sizing:border-box;">
+                <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD" style="color:#fff; width:100%; margin-bottom:15px; display:block; box-sizing:border-box;">
                 
                 <div class="clear-text pixel-text" style="color: var(--warning); cursor: pointer; text-decoration: underline; margin: 15px 0; font-size: 22px;" onclick="showModal('tos-modal')">READ SYSTEM TERMS</div>
                 <label class="pixel-text" style="font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
                     <input type="checkbox" id="tos-checkbox" style="width: 24px; height: 24px; margin:0;"> I ACCEPT THE TERMS
                 </label>
 
-                <div style="display: flex; justify-content: center; margin-top: 15px;"><button class="wood-btn pixel-text" style="background: var(--success);" onclick="signup()">SUBMIT REQUEST</button></div>
+                <div style="display: flex; justify-content: center; margin-top: 10px;"><button class="wood-btn pixel-text" style="background: var(--success);" onclick="signup()">SUBMIT REQUEST</button></div>
                 <p id="signup-msg" class="pixel-text" style="font-size: 24px;"></p>
                 <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('login')">Back to Login</div>
             </div>
@@ -269,58 +270,58 @@
             </div>
         </div>
 
-        <div id="how-to-play-modal" class="overlay-menu hidden">
-            <div class="modal-box custom-scroll" style="width: 900px; padding: 25px;">
+       <div id="how-to-play-modal" class="overlay-menu hidden">
+            <div class="modal-box custom-scroll" style="width: 750px; padding: 25px;">
                 <h2 class="pixel-text" style="margin-bottom: 15px; font-size: 40px; color: var(--accent-glow-2);">ARCADE RULES & MECHANICS</h2>
-                <div style="display: flex; gap: 20px; text-align: left;">
-                    
-                    <div style="flex: 1.2; border-right: 2px dashed #334155; padding-right: 20px;">
-                        <select class="retro-input pixel-text" style="width: 100%; max-width: 250px; margin-bottom: 15px; background: #1e293b; color: #fff; cursor: pointer; border-color: var(--accent-glow-2);" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');">
-                            <option value="rule-bj">BLACKJACK</option>
-                            <option value="rule-dice">HIGH-LOW DICE</option>
-                            <option value="rule-coin">GLOBAL COIN FLIP</option>
-                            <option value="rule-color">CLASSIC COLOR GAME</option>
-                        </select>
-                        
-                        <div id="rule-bj" class="rule-content info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent;">
-                            <strong style="color: var(--success);">BLACKJACK</strong>
-                            <p style="margin-bottom: 8px;">Beat the Dealer's hand without exceeding 21. Face cards are 10, Aces are 1 or 11.</p>
-                            <ul><li><strong>Limits:</strong> Max 1 seat. Max bet 50,000 credits (Splitting doubles this to 100k).</li><li><strong>Timer:</strong> Exactly 15s to Hit, Stand, Double, or Split.</li><li><strong>Payouts:</strong> Wins pay 1:1. Blackjack pays 3:2. Push refunds bet.</li><li><strong>Dealer:</strong> Must draw to 16 and stand on all 17s.</li></ul>
-                        </div>
-                        
-                        <div id="rule-dice" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent;">
-                            <strong style="color: #a855f7;">HIGH-LOW DICE</strong>
-                            <p style="margin-bottom: 8px;">Two 6-sided dice are rolled globally. Select your bet amount and click a tile.</p>
-                            <ul><li><strong>Limits:</strong> Max bet 50,000 credits per tile.</li><li><strong>Under 7:</strong> Pays 1:1 (Rolls 2, 3, 4, 5, 6).</li><li><strong>Over 7:</strong> Pays 1:1 (Rolls 8, 9, 10, 11, 12).</li><li><strong>Exactly 7:</strong> Jackpot! Pays massive 4:1 odds.</li></ul>
-                        </div>
-                        
-                        <div id="rule-coin" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent;">
-                            <strong style="color: var(--warning);">GLOBAL COIN FLIP</strong>
-                            <p style="margin-bottom: 8px;">A single global coin is flipped. Bet on Heads or Tails before the 15s timer runs out.</p>
-                            <ul><li><strong>Limits:</strong> Max bet 50,000 credits per tile.</li><li><strong>Payouts:</strong> Correct guesses double your money (Pays 1:1).</li></ul>
-                        </div>
-                        
-                        <div id="rule-color" class="rule-content hidden info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent;">
-                            <strong style="color: #ef4444;">CLASSIC COLOR GAME</strong>
-                            <p style="margin-bottom: 8px;">3 colored dice are rolled. Pick your bet amount at the top, then tap colors to place chips.</p>
-                            <ul><li><strong>Limits:</strong> Max bet 50,000 credits per color.</li><li><strong>1 Match:</strong> Pays 1:1</li><li><strong>2 Matches:</strong> Pays 2:1</li><li><strong>3 Matches:</strong> Pays 3:1</li></ul>
-                        </div>
+                
+                <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                    <select class="retro-input pixel-text" style="width: 100%; max-width: 350px; background: #1e293b; color: #fff; cursor: pointer; border-color: var(--accent-glow-2);" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');">
+                        <option value="rule-bj">BLACKJACK</option>
+                        <option value="rule-dice">HIGH-LOW DICE</option>
+                        <option value="rule-coin">GLOBAL COIN FLIP</option>
+                        <option value="rule-color">CLASSIC COLOR GAME</option>
+                        <option value="rule-sys">SYSTEM RULES</option>
+                    </select>
+                </div>
+                
+                <div style="text-align: left; min-height: 220px;">
+                    <div id="rule-bj" class="rule-content info-box" style="border:none; box-shadow:none; padding:0; background:transparent; margin:0;">
+                        <strong style="color: var(--success);">BLACKJACK</strong>
+                        <p style="margin-bottom: 8px;">Beat the Dealer's hand without exceeding 21. Face cards are 10, Aces are 1 or 11.</p>
+                        <ul><li><strong>Limits:</strong> Max 1 seat. Max bet 50,000 credits (Splitting doubles this to 100k).</li><li><strong>Timer:</strong> Exactly 15s to Hit, Stand, Double, or Split.</li><li><strong>Payouts:</strong> Wins pay 1:1. Blackjack pays 3:2. Push refunds bet.</li><li><strong>Dealer:</strong> Must draw to 16 and stand on all 17s.</li></ul>
                     </div>
                     
-                    <div style="flex: 0.8;">
-                        <div class="info-box custom-scroll" style="border:none; box-shadow:none; padding:0; background:transparent;">
-                            <strong class="info-title" style="color: #10b981;">SYSTEM RULES</strong>
-                            <ul>
-                                <li><strong>Deposits:</strong> 10k - 100k limits.</li>
-                                <li><strong>Withdrawals:</strong> 50k - 100k limits.</li>
-                                <li><strong>Daily Rewards:</strong> Mystery boxes respawn exactly every 24 hours.</li>
-                                <li><strong>Spam Protection:</strong> Arcade buttons lock for 250ms after clicking.</li>
-                                <li><strong>Global Locks:</strong> All bets freeze precisely at 0s.</li>
-                            </ul>
-                        </div>
+                    <div id="rule-dice" class="rule-content hidden info-box" style="border:none; box-shadow:none; padding:0; background:transparent; margin:0;">
+                        <strong style="color: #a855f7;">HIGH-LOW DICE</strong>
+                        <p style="margin-bottom: 8px;">Two 6-sided dice are rolled globally. Select your bet amount and click a tile.</p>
+                        <ul><li><strong>Limits:</strong> Max bet 50,000 credits per tile.</li><li><strong>Under 7:</strong> Pays 1:1 (Rolls 2, 3, 4, 5, 6).</li><li><strong>Over 7:</strong> Pays 1:1 (Rolls 8, 9, 10, 11, 12).</li><li><strong>Exactly 7:</strong> Jackpot! Pays massive 4:1 odds.</li></ul>
+                    </div>
+                    
+                    <div id="rule-coin" class="rule-content hidden info-box" style="border:none; box-shadow:none; padding:0; background:transparent; margin:0;">
+                        <strong style="color: var(--warning);">GLOBAL COIN FLIP</strong>
+                        <p style="margin-bottom: 8px;">A single global coin is flipped. Bet on Heads or Tails before the 15s timer runs out.</p>
+                        <ul><li><strong>Limits:</strong> Max bet 50,000 credits per tile.</li><li><strong>Payouts:</strong> Correct guesses double your money (Pays 1:1).</li></ul>
+                    </div>
+                    
+                    <div id="rule-color" class="rule-content hidden info-box" style="border:none; box-shadow:none; padding:0; background:transparent; margin:0;">
+                        <strong style="color: #ef4444;">CLASSIC COLOR GAME</strong>
+                        <p style="margin-bottom: 8px;">3 colored dice are rolled. Pick your bet amount at the top, then tap colors to place chips.</p>
+                        <ul><li><strong>Limits:</strong> Max bet 50,000 credits per color.</li><li><strong>1 Match:</strong> Pays 1:1</li><li><strong>2 Matches:</strong> Pays 2:1</li><li><strong>3 Matches:</strong> Pays 3:1</li></ul>
+                    </div>
+
+                    <div id="rule-sys" class="rule-content hidden info-box" style="border:none; box-shadow:none; padding:0; background:transparent; margin:0;">
+                        <strong style="color: #10b981;">SYSTEM RULES</strong>
+                        <ul>
+                            <li><strong>Deposits:</strong> 10k - 100k limits.</li>
+                            <li><strong>Withdrawals:</strong> 50k - 100k limits.</li>
+                            <li><strong>Daily Rewards:</strong> Mystery boxes respawn exactly every 24 hours.</li>
+                            <li><strong>Spam Protection:</strong> Arcade buttons lock for 250ms after clicking.</li>
+                            <li><strong>Global Locks:</strong> All bets freeze precisely at 0s.</li>
+                        </ul>
                     </div>
                 </div>
-                <button class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 20px;" onclick="hideModal('how-to-play-modal')">CLOSE</button>
+
+                <button class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 15px;" onclick="hideModal('how-to-play-modal')">CLOSE</button>
             </div>
         </div>
 
