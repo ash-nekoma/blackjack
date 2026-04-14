@@ -14,17 +14,18 @@
             --border-std: #222;
         }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; scrollbar-width: thin; scrollbar-color: #475569 #0f172a; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body, input, button, table, th, td, textarea, select { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
         body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
         .hidden { display: none !important; }
 
-        /* --- GLOBAL RETRO SCROLLBARS --- */
-        ::-webkit-scrollbar { width: 16px; height: 16px; background: #0f172a; border-left: 2px solid var(--border-std); border-top: 2px solid var(--border-std); }
-        ::-webkit-scrollbar-thumb { background: #475569; border: 2px solid var(--border-std); box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
+        /* --- STRICT 8-BIT SCROLLBARS --- */
+        ::-webkit-scrollbar { width: 18px; height: 18px; background: #020617; border-left: 3px solid #334155; }
+        ::-webkit-scrollbar-thumb { background: #475569; border: 3px solid #000; border-top: 3px solid #94a3b8; border-left: 3px solid #94a3b8; border-radius: 0px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         ::-webkit-scrollbar-corner { background: #000; }
+        ::-webkit-scrollbar-button:single-button { display: block; background-color: #1e293b; border: 3px solid #000; border-top: 3px solid #94a3b8; border-left: 3px solid #94a3b8; height: 18px; width: 18px; }
 
         /* Remove Number Arrows */
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -76,7 +77,6 @@
         .admin-table td { padding: 12px; font-size: 24px; border-bottom: 1px dashed #334155; vertical-align: middle; text-align: center;}
         .admin-table tr:hover { background: #1e293b; }
         
-        .ip-duplicate { color: #fff; background: var(--danger); padding: 2px 8px; border-radius: 4px; font-weight: bold; text-shadow: 1px 1px 0 #000; border: 1px solid #fff; cursor: pointer;}
         .bonus-abuser { color: #000; background: var(--warning); padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 20px; margin-left: 10px; animation: pulse 1.5s infinite;}
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
@@ -151,7 +151,7 @@
                     </div>
                 </div>
                 <div style="color:var(--warning); font-size:28px; margin-bottom:10px;">TRANSACTION LEDGER (LATEST 50)</div>
-                <div style="border:2px solid #334155; padding:0; overflow-y:auto; max-height:250px; display:block;">
+                <div class="custom-scroll" style="border:2px solid #334155; padding:0; overflow-y:auto; max-height:250px; display:block;">
                     <table class="admin-table" style="margin:0; border:none;">
                         <thead style="position: sticky; top: 0; z-index: 10;"><tr><th>DATE (PHT)</th><th>TYPE</th><th>AMOUNT</th><th>STATUS</th></tr></thead>
                         <tbody id="pm-ledger"></tbody>
@@ -169,7 +169,7 @@
                         <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('batch-modal')">CLOSE</button>
                     </div>
                 </div>
-                <div style="border:2px solid #334155; padding:0; overflow-y:auto; max-height:400px; display:block;">
+                <div class="custom-scroll" style="border:2px solid #334155; padding:0; overflow-y:auto; max-height:400px; display:block;">
                     <table class="admin-table" style="margin:0; border:none;">
                         <thead style="position: sticky; top: 0; z-index: 10;"><tr><th>CODE</th><th>VALUE</th><th>STATUS</th><th>ACTION</th></tr></thead>
                         <tbody id="bm-list"></tbody>
@@ -184,7 +184,7 @@
                     <span>SURVEILLANCE: <span id="watch-target-name" style="color:#fff;">-</span></span>
                     <button class="wood-btn small" style="background:var(--danger);" onclick="closeWatchModal()">CLOSE MONITOR</button>
                 </div>
-                <div id="watch-matrix-log"></div>
+                <div id="watch-matrix-log" class="custom-scroll"></div>
             </div>
         </div>
 
@@ -201,7 +201,7 @@
 
         <div class="admin-content">
             
-            <div id="view-dashboard" class="view-panel active">
+            <div id="view-dashboard" class="view-panel active custom-scroll">
                 <h2 class="panel-title">LIVE ECONOMY & FLOOR CONTROL</h2>
                 
                 <div class="stat-grid">
@@ -244,7 +244,7 @@
                 </div>
             </div>
 
-            <div id="view-cashier" class="view-panel">
+            <div id="view-cashier" class="view-panel custom-scroll">
                 <h2 class="panel-title">PENDING BANK REQUESTS & RISK ANALYSIS</h2>
                 <table class="admin-table">
                     <thead><tr><th>DATE (PHT)</th><th>USER</th><th>TYPE</th><th>AMOUNT</th><th>LIFETIME DEP/PROMO</th><th>ACTION</th></tr></thead>
@@ -252,15 +252,15 @@
                 </table>
             </div>
 
-            <div id="view-players" class="view-panel">
+            <div id="view-players" class="view-panel custom-scroll">
                 <h2 class="panel-title">GOD-MODE PLAYER DATABASE</h2>
                 <table class="admin-table">
-                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>IP ADDRESS</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
                     <tbody id="player-list"></tbody>
                 </table>
             </div>
 
-            <div id="view-promo" class="view-panel">
+            <div id="view-promo" class="view-panel custom-scroll">
                 <h2 class="panel-title">BULK PROMO CODE ENGINE</h2>
                 <div style="display: flex; gap: 15px; margin-bottom: 20px; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px;">
                     <input type="text" id="gc-batch" class="retro-input" placeholder="BATCH NAME">
@@ -284,12 +284,12 @@
                         <button class="wood-btn small" onclick="wipeChat('color')">WIPE COLOR CHAT</button>
                     </div>
                 </h2>
-                <div id="matrix-log">
+                <div id="matrix-log" class="custom-scroll">
                     <div style="color: #64748b;">▶ SYSTEM: Awaiting secure websocket connection...</div>
                 </div>
             </div>
 
-            <div id="view-notify" class="view-panel">
+            <div id="view-notify" class="view-panel custom-scroll">
                 <h2 class="panel-title">GLOBAL NOTIFICATION SYSTEM</h2>
                 <div style="background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; width: 800px; max-width: 100%;">
                     <div style="margin-bottom: 15px;">
@@ -302,13 +302,13 @@
                         <input type="text" id="notify-specific" class="retro-input" placeholder="USERNAME" style="width: 250px; display: none; margin-left: 10px;">
                     </div>
                     <div style="margin-bottom: 15px;">
-                        <textarea id="notify-msg" class="retro-input" style="width: 100%; height: 150px; text-align: left; resize: none;" placeholder="ENTER NOTIFICATION MESSAGE..."></textarea>
+                        <textarea id="notify-msg" class="retro-input custom-scroll" style="width: 100%; height: 150px; text-align: left; resize: none;" placeholder="ENTER NOTIFICATION MESSAGE..."></textarea>
                     </div>
                     <button class="wood-btn" style="width: 100%; background: var(--accent-glow-2);" onclick="sendNotification()">BROADCAST MESSAGE</button>
                 </div>
             </div>
 
-            <div id="view-settings" class="view-panel admin-only">
+            <div id="view-settings" class="view-panel custom-scroll admin-only">
                 <h2 class="panel-title">SYSTEM SETTINGS & CREDENTIALS</h2>
                 
                 <div class="control-panel admin-only" style="margin-top: 20px;">
@@ -538,7 +538,6 @@
                     <tr>
                         <td style="color:${u.nameColor}; font-weight:bold; font-size:28px;">${u.username}</td>
                         <td style="color:var(--warning);">${formatNumber(u.credits)}</td>
-                        <td><button class="wood-btn small" style="background:#475569;" onclick="this.innerText='${u.ipAddress || 'UNKNOWN'}'">[CLICK TO REVEAL]</button></td>
                         <td style="color:${statusColor}; font-weight:bold;">${displayStatus}</td>
                         <td>
                             <button class="wood-btn small" style="background:var(--accent-glow-2);" onclick="openPlayerModal('${u.username}')">VIEW</button>
