@@ -65,12 +65,11 @@ const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
 const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
 
 const socketUserMap = {}; let diceLobby = []; let coinLobby = []; let colorLobby = [];
-let strictHouseEdge = false; // Admin Toggle
+let strictHouseEdge = false; 
 
 // --- ADMIN LOGGER ---
 function adminLog(action) {
-    const timestamp = new Date().toLocaleTimeString();
-    io.to('admin_room').emit('admin_log', `[${timestamp}] ${action}`);
+    io.to('admin_room').emit('admin_log', `▶ ${action}`);
 }
 
 // --- GAME LOOPS ---
@@ -97,14 +96,13 @@ setInterval(() => {
         io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, timeLeft: 0, history: diceGame.history });
         
         setTimeout(async () => {
-            // RTP Panic Switch Logic
             let totalUnder = 0; let totalOver = 0;
             diceGame.bets.forEach(b => { if(b.choice==='under') totalUnder+=b.amount; if(b.choice==='over') totalOver+=b.amount; });
             
             let d1 = Math.floor(Math.random() * 6) + 1; let d2 = Math.floor(Math.random() * 6) + 1;
             if (strictHouseEdge && (totalUnder > 0 || totalOver > 0)) {
-                if (totalUnder > totalOver && (d1+d2) < 7) { d1=4; d2=4; } // Force over
-                else if (totalOver > totalUnder && (d1+d2) > 7) { d1=2; d2=2; } // Force under
+                if (totalUnder > totalOver && (d1+d2) < 7) { d1=4; d2=4; } 
+                else if (totalOver > totalUnder && (d1+d2) > 7) { d1=2; d2=2; } 
             }
             
             diceGame.dice = [d1, d2]; const total = d1 + d2;
@@ -138,9 +136,7 @@ setInterval(() => {
             coinGame.bets.forEach(b => { if(b.choice==='heads') totalHeads+=b.amount; if(b.choice==='tails') totalTails+=b.amount; });
             
             let res = Math.random() < 0.5 ? 'heads' : 'tails';
-            if (strictHouseEdge && (totalHeads > 0 || totalTails > 0)) {
-                res = totalHeads > totalTails ? 'tails' : 'heads';
-            }
+            if (strictHouseEdge && (totalHeads > 0 || totalTails > 0)) { res = totalHeads > totalTails ? 'tails' : 'heads'; }
 
             coinGame.result = res; coinGame.status = 'resolving'; coinGame.history.unshift(coinGame.result); if(coinGame.history.length > 20) coinGame.history.pop();
             
@@ -244,8 +240,9 @@ app.get('/api/admin/economy', checkAdmin, async (req, res) => {
 
     const vault = 1500000 + deposits - withdrawals;
     const ggr = totalBets - totalWins;
+    const onlineUsers = [...new Set(Object.values(socketUserMap).map(u => u.username))];
 
-    res.json({ users, codes, bankRequests: txs.filter(t=>t.status==='pending'), economy: { vault, ggr, promoIssued, circulating }, strictHouseEdge });
+    res.json({ users, codes, bankRequests: txs.filter(t=>t.status==='pending'), economy: { vault, ggr, promoIssued, circulating }, strictHouseEdge, onlineUsers });
 });
 
 app.post('/api/admin/user/status', checkAdmin, async (req, res) => { 
@@ -287,6 +284,12 @@ app.post('/api/admin/giftcode', checkAdmin, async (req, res) => {
     }
     adminLog(`Generated ${quantity} gift codes for batch: ${batchName}`);
     res.json({ success: true }); 
+});
+
+app.get('/api/admin/player_full/:username', checkAdmin, async (req, res) => {
+    const user = await User.findOne({ username: req.params.username }, '-password');
+    const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 });
+    res.json({ user, txs });
 });
 
 // --- PLAYER APIs ---
@@ -368,7 +371,7 @@ io.on('connection', (socket) => {
 
     socket.on('send_chat', ({ roomId, username, message }) => { 
         if(roomId && username && message) {
-            adminLog(`[CHAT] (${roomId}) ${username}: ${message}`); // Eye in the sky chat log
+            adminLog(`[CHAT] (${roomId}) ${username}: ${message}`); 
             if (['dice', 'coin', 'color'].includes(roomId)) io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
             else io.to(roomId).emit('receive_chat', { roomId, username, message }); 
         }
