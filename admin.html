@@ -3,243 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Royale Admin Terminal</title>
+    <title>Casino Royale: Director's Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; padding: 20px; }
-        .pixel-text { font-family: 'VT323', monospace; letter-spacing: 1px; }
+        :root {
+            --bg-dark: #0f172a; --bg-darker: #020617;
+            --accent-glow: #8b5cf6; --accent-glow-2: #3b82f6;
+            --danger: #ef4444; --success: #10b981; --warning: #fbbf24;
+            --border-std: #222;
+        }
         
-        /* LOGIN SCREEN */
-        .admin-login { max-width: 450px; margin: 100px auto; background: #1e293b; padding: 40px; border: 4px solid #ef4444; border-radius: 8px; text-align: center; box-shadow: 10px 10px 0 #000; }
-        .admin-login input { width: 100%; padding: 12px; margin-bottom: 20px; background: #000; color: #fff; border: 2px solid #475569; outline: none; text-align: center; font-size: 24px; }
-        .admin-login button { width: 100%; padding: 12px; background: #ef4444; color: #fff; border: 2px solid #222; font-weight: bold; cursor: pointer; box-shadow: 4px 4px 0 #000; transition: 0.1s; }
-        .admin-login button:active { transform: translate(2px, 2px); box-shadow: 0 0 0 #000; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, input, button, table, th, td { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
+        body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
-        /* DASHBOARD SCREEN */
-        .dashboard { display: none; max-width: 1400px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #ef4444; padding-bottom: 20px; margin-bottom: 20px; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .panel { background: #1e293b; border: 2px solid #334155; border-radius: 8px; padding: 20px; box-shadow: 6px 6px 0 #000; }
-        
-        /* TABLES */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 16px;}
-        th { color: #94a3b8; font-weight: bold; text-transform: uppercase; }
-        td { background: #0b1120; }
-        tr:hover td { background: #111827; }
-        
-        /* BUTTONS */
-        .btn { padding: 6px 12px; border: 2px solid #222; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; font-family: 'VT323', monospace; letter-spacing: 1px; text-transform: uppercase; box-shadow: 2px 2px 0 #000; transition: 0.1s;}
-        .btn:active { transform: translate(1px, 1px); box-shadow: 0 0 0 #000; }
-        .btn-green { background: #10b981; color: #000; }
-        .btn-red { background: #ef4444; color: #fff; }
-        .btn-blue { background: #3b82f6; color: #fff; }
+        .hidden { display: none !important; }
+        .custom-scroll::-webkit-scrollbar { width: 12px; background: #000; border-left: 2px solid var(--border-std);}
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border: 2px solid var(--border-std); box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
 
-        /* GIFT CODE INPUTS */
-        .gc-inputs { display: flex; gap: 10px; margin-bottom: 20px; align-items: stretch; }
-        .gc-inputs input { background: #000; color: #fff; border: 2px solid #475569; padding: 10px; outline: none; font-family: 'VT323', monospace; font-size: 20px;}
+        #admin-console { width: 1500px; height: 850px; max-width: 100vw; max-height: 100vh; background: var(--bg-darker); border-radius: 12px; border: 6px solid #475569; box-shadow: 0 0 50px rgba(0,0,0,1); display: flex; overflow: hidden; }
         
-        .coin-icon { color:#fbbf24; text-shadow: 1px 1px 0 #000; font-family: 'Segoe UI Emoji', sans-serif;}
+        /* LOGIN OVERLAY */
+        #admin-login-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(2,6,23,0.95); z-index: 1000;}
+        .login-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 40px; text-align: center; border-top: 10px solid var(--danger); box-shadow: 0 10px 30px #000;}
+        
+        /* SIDEBAR */
+        .admin-sidebar { width: 300px; background: #0f172a; border-right: 2px solid var(--border-std); display: flex; flex-direction: column; }
+        .sidebar-title { padding: 20px; font-size: 36px; text-align: center; border-bottom: 2px solid var(--border-std); color: var(--danger); text-shadow: 2px 2px 0 #000; font-weight: bold;}
+        .nav-btn { background: transparent; color: #94a3b8; border: none; padding: 20px; font-size: 28px; text-align: left; cursor: pointer; transition: 0.2s; border-bottom: 1px dashed #334155; }
+        .nav-btn:hover { background: #1e293b; color: #fff; padding-left: 30px;}
+        .nav-btn.active { background: var(--accent-glow-2); color: #fff; border-left: 8px solid #fff; padding-left: 22px;}
+
+        /* MAIN CONTENT */
+        .admin-content { flex: 1; display: flex; flex-direction: column; background: #020617; position: relative;}
+        .view-panel { flex: 1; padding: 20px; display: none; overflow-y: auto; }
+        .view-panel.active { display: flex; flex-direction: column; }
+        
+        h2.panel-title { font-size: 45px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 10px;}
+
+        /* ECONOMY WIDGETS */
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 20px; }
+        .stat-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-left: 8px solid var(--success);}
+        .stat-box.ggr { border-left-color: var(--warning); }
+        .stat-box.promo { border-left-color: var(--accent-glow); }
+        .stat-box.liab { border-left-color: var(--danger); }
+        .stat-label { font-size: 24px; color: #cbd5e1; text-transform: uppercase; margin-bottom: 10px; }
+        .stat-value { font-size: 48px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000;}
+
+        /* TABLES */
+        .admin-table { width: 100%; border-collapse: collapse; background: #0f172a; border: 2px solid var(--border-std); }
+        .admin-table th { background: #1e293b; color: var(--accent-glow-2); padding: 12px; font-size: 24px; text-align: left; border-bottom: 2px solid var(--border-std); }
+        .admin-table td { padding: 12px; font-size: 22px; border-bottom: 1px dashed #334155; }
+        .admin-table tr:hover { background: #1e293b; }
+        .ip-duplicate { color: var(--danger); font-weight: bold; text-shadow: 1px 1px 0 #000; }
+
+        /* BUTTONS & INPUTS */
+        .wood-btn { background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 8px 15px; font-size: 22px; cursor: pointer; box-shadow: 2px 2px 0 #000; transition: 0.1s; }
+        .wood-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 transparent; }
+        .retro-input { padding: 12px; background: #000; color: #fff; border: 2px solid #64748b; font-size: 24px; outline: none; text-align: center; }
+
+        /* EYE IN THE SKY LOG */
+        #matrix-log { flex: 1; background: #000; border: 2px solid #334155; padding: 10px; font-size: 22px; color: #10b981; overflow-y: auto; font-family: monospace; text-shadow: 0 0 5px #10b981;}
     </style>
 </head>
 <body>
 
-    <div id="login-view" class="admin-login">
-        <h2 class="pixel-text" style="font-size: 50px; color: #ef4444; margin-bottom: 10px; text-shadow: 3px 3px 0 #000;">OVERSEER TERMINAL</h2>
-        <p style="margin-bottom: 20px; color: #94a3b8; font-family: 'Segoe UI', sans-serif; font-size: 14px;">Enter the Master Database Password to continue.</p>
-        
-        <input type="password" id="admin-pass" class="pixel-text" placeholder="PASSWORD">
-        <button class="pixel-text" style="font-size: 28px;" onclick="loginAdmin()">AUTHENTICATE</button>
-        
-        <p id="error-msg" class="pixel-text" style="color: #ef4444; margin-top: 15px; font-size: 24px;"></p>
-    </div>
-
-    <div id="dashboard-view" class="dashboard">
-        <div class="header">
-            <h1 class="pixel-text" style="font-size: 60px; color: #ef4444; text-shadow: 4px 4px 0 #000;">NEON ROYALE : SYSTEM ADMIN</h1>
-            <button class="btn btn-red pixel-text" style="font-size: 24px; padding: 10px 20px;" onclick="location.reload()">LOCK TERMINAL</button>
+    <div id="admin-console">
+        <div id="admin-login-view">
+            <div class="login-box">
+                <h1 class="pixel-text" style="font-size: 50px; color: var(--danger); margin-bottom: 10px;">DIRECTOR ACCESS</h1>
+                <input type="password" id="admin-pass" class="retro-input pixel-text" placeholder="ENTER MASTER PASSWORD" style="width: 300px; margin-bottom: 15px; display: block;">
+                <button class="wood-btn pixel-text" style="width: 100%; background: var(--danger);" onclick="adminLogin()">AUTHENTICATE</button>
+                <p id="login-error" style="color: var(--danger); margin-top: 10px; font-size: 20px;"></p>
+            </div>
         </div>
 
-        <div class="grid">
+        <div class="admin-sidebar">
+            <div class="sidebar-title">CASINO ROYALE<br><span style="font-size: 24px; color:#fff;">DIRECTOR PANEL</span></div>
+            <button class="nav-btn active" onclick="switchView('dashboard', this)">❖ DASHBOARD</button>
+            <button class="nav-btn" onclick="switchView('cashier', this)">$ CASHIER</button>
+            <button class="nav-btn" onclick="switchView('players', this)">👥 PLAYER DB</button>
+            <button class="nav-btn" onclick="switchView('promo', this)">🎁 PROMO CODES</button>
+            <button class="nav-btn" onclick="switchView('eye', this)">👁 EYE IN THE SKY</button>
+            <button class="nav-btn" onclick="switchView('settings', this)">⚙ SETTINGS</button>
+        </div>
+
+        <div class="admin-content">
             
-            <div class="panel">
-                <h2 class="pixel-text" style="font-size: 36px; color: #3b82f6; margin-bottom: 10px;">BANK QUEUE (PENDING)</h2>
-                <table id="tx-table">
-                    <tr><th>User</th><th>Type</th><th>Amount</th><th>Actions</th></tr>
-                </table>
-            </div>
-
-            <div class="panel">
-                <h2 class="pixel-text" style="font-size: 36px; color: #10b981; margin-bottom: 10px;">USER DIRECTORY</h2>
-                <table id="user-table">
-                    <tr><th>User</th><th>Credits</th><th>Status</th><th>Actions</th></tr>
-                </table>
-            </div>
-
-            <div class="panel" style="grid-column: span 2;">
-                <h2 class="pixel-text" style="font-size: 36px; color: #fbbf24; margin-bottom: 10px;">GIFT CODE GENERATOR</h2>
-                
-                <div class="gc-inputs">
-                    <input type="text" id="gc-code" placeholder="CODE (e.g. BETA2026)" style="flex: 2; text-transform: uppercase;">
-                    <input type="number" id="gc-amt" placeholder="CREDIT AMOUNT" style="flex: 1;">
-                    <input type="number" id="gc-uses" placeholder="MAX USES" style="flex: 1;">
-                    <button class="btn btn-blue pixel-text" style="font-size: 24px; padding: 0 30px;" onclick="createCode()">CREATE</button>
+            <div id="view-dashboard" class="view-panel active custom-scroll">
+                <h2 class="panel-title">ECONOMY OVERVIEW</h2>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">LIQUID VAULT (CASH FLOW)</div>
+                        <div class="stat-value" id="stat-vault" style="color:var(--success);">0</div>
+                    </div>
+                    <div class="stat-box ggr">
+                        <div class="stat-label">GROSS GAMING REV (GGR)</div>
+                        <div class="stat-value" id="stat-ggr" style="color:var(--warning);">0</div>
+                    </div>
+                    <div class="stat-box promo">
+                        <div class="stat-label">TOTAL PROMO ISSUED</div>
+                        <div class="stat-value" id="stat-promo" style="color:var(--accent-glow-2);">0</div>
+                    </div>
+                    <div class="stat-box liab">
+                        <div class="stat-label">CIRCULATING LIABILITY</div>
+                        <div class="stat-value" id="stat-liab" style="color:var(--danger);">0</div>
+                    </div>
                 </div>
-                
-                <table id="gc-table">
-                    <tr><th>Active Code</th><th>Credit Value</th><th>Redemptions Left</th></tr>
+            </div>
+
+            <div id="view-cashier" class="view-panel custom-scroll">
+                <h2 class="panel-title">PENDING BANK REQUESTS</h2>
+                <table class="admin-table">
+                    <thead><tr><th>DATE</th><th>USER</th><th>TYPE</th><th>AMOUNT</th><th>ACTION</th></tr></thead>
+                    <tbody id="cashier-list"></tbody>
                 </table>
+            </div>
+
+            <div id="view-players" class="view-panel custom-scroll">
+                <h2 class="panel-title">PLAYER DATABASE (IP SNIFFER ACTIVE)</h2>
+                <table class="admin-table">
+                    <thead><tr><th>USERNAME</th><th>CREDITS</th><th>IP ADDRESS</th><th>STATUS</th><th>ACTION</th></tr></thead>
+                    <tbody id="player-list"></tbody>
+                </table>
+            </div>
+
+            <div id="view-promo" class="view-panel custom-scroll">
+                <h2 class="panel-title">GIFT CODE GENERATOR</h2>
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px;">
+                    <input type="text" id="gc-batch" class="retro-input" placeholder="BATCH NAME (e.g. EVENT)">
+                    <input type="number" id="gc-amount" class="retro-input" placeholder="CREDIT VALUE">
+                    <input type="number" id="gc-qty" class="retro-input" placeholder="QTY (e.g. 50)">
+                    <button class="wood-btn" style="background: var(--success); color:#000;" onclick="generateCodes()">GENERATE</button>
+                </div>
+                <table class="admin-table">
+                    <thead><tr><th>BATCH</th><th>CODE</th><th>VALUE</th><th>CLAIMED BY</th></tr></thead>
+                    <tbody id="promo-list"></tbody>
+                </table>
+            </div>
+
+            <div id="view-eye" class="view-panel" style="overflow: hidden;">
+                <h2 class="panel-title">EYE IN THE SKY - LIVE MATRIX</h2>
+                <div id="matrix-log" class="custom-scroll"></div>
+            </div>
+
+            <div id="view-settings" class="view-panel custom-scroll">
+                <h2 class="panel-title">GLOBAL SETTINGS</h2>
+                <div style="background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px;">
+                    <div style="font-size:28px; margin-bottom:10px; color:var(--warning);">HOUSE EDGE RTP PANIC SWITCH</div>
+                    <p style="font-size:22px; color:#cbd5e1; margin-bottom:15px;">When active, the server forces Dice and Coin Flip to roll against the heaviest side of the table to rapidly recover GGR.</p>
+                    <button id="rtp-btn" class="wood-btn" style="background: var(--danger);" onclick="toggleRTP()">RTP MODIFIER: OFF</button>
+                </div>
             </div>
 
         </div>
     </div>
 
     <script>
+        const socket = io();
         let adminPass = '';
+        let strictRTP = false;
 
-        // Formatter to match the main game's comma style
-        function formatNumber(num) {
-            return num.toLocaleString();
-        }
+        function formatNumber(num) { return num.toLocaleString(); }
 
-        async function loginAdmin() {
-            adminPass = document.getElementById('admin-pass').value;
-            const res = await fetch('/api/admin/data', { headers: { 'x-admin-pass': adminPass } });
-            
-            if (res.ok) {
-                document.getElementById('login-view').style.display = 'none';
-                document.getElementById('dashboard-view').style.display = 'block';
-                loadData();
-                // Auto-refresh data every 10 seconds while on the dashboard
-                setInterval(loadData, 10000); 
+        async function adminLogin() {
+            const p = document.getElementById('admin-pass').value;
+            const res = await fetch('/api/admin/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({password: p}) });
+            if(res.ok) {
+                adminPass = p;
+                document.getElementById('admin-login-view').classList.add('hidden');
+                socket.emit('admin_join');
+                fetchData();
             } else {
-                document.getElementById('error-msg').innerText = "ACCESS DENIED. INVALID CREDENTIALS.";
+                document.getElementById('login-error').innerText = "INVALID MASTER PASSWORD";
             }
         }
 
-        async function loadData() {
-            // Prevent attempting to fetch if we aren't logged in
+        function switchView(view, btnEl) {
+            document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`view-${view}`).classList.add('active');
+            btnEl.classList.add('active');
+            if(view !== 'eye') fetchData(); // Refresh data when switching tabs
+        }
+
+        async function fetchData() {
             if(!adminPass) return;
+            const res = await fetch('/api/admin/economy', { headers: { 'x-admin-pass': adminPass }});
+            if(res.ok) {
+                const data = await res.json();
+                
+                // Dashboard
+                document.getElementById('stat-vault').innerText = formatNumber(data.economy.vault);
+                document.getElementById('stat-ggr').innerText = formatNumber(data.economy.ggr);
+                document.getElementById('stat-promo').innerText = formatNumber(data.economy.promoIssued);
+                document.getElementById('stat-liab').innerText = formatNumber(data.economy.circulating);
 
-            const res = await fetch('/api/admin/data', { headers: { 'x-admin-pass': adminPass } });
-            if (!res.ok) return; // Silent fail if session breaks
-            
-            const data = await res.json();
-            
-            // 1. POPULATE TRANSACTIONS
-            const txTbody = document.getElementById('tx-table');
-            txTbody.innerHTML = '<tr><th>User</th><th>Type</th><th>Amount</th><th>Actions</th></tr>';
-            if (data.txs.length === 0) {
-                txTbody.innerHTML += '<tr><td colspan="4" style="text-align:center; color:#475569;">No pending transactions.</td></tr>';
-            } else {
-                data.txs.forEach(tx => {
-                    let typeColor = tx.type.includes('deposit') ? '#10b981' : '#ef4444';
-                    txTbody.innerHTML += `<tr>
-                        <td style="font-weight:bold;">${tx.username}</td>
-                        <td style="text-transform:uppercase; color:${typeColor}; font-weight:bold;">${tx.type}</td>
-                        <td class="pixel-text" style="font-size:20px;">${formatNumber(tx.amount)} <span class="coin-icon">🪙</span></td>
+                // Settings Sync
+                strictRTP = data.strictHouseEdge;
+                const rtpBtn = document.getElementById('rtp-btn');
+                if(strictRTP) { rtpBtn.style.background = 'var(--success)'; rtpBtn.innerText = 'RTP MODIFIER: ON'; }
+                else { rtpBtn.style.background = 'var(--danger)'; rtpBtn.innerText = 'RTP MODIFIER: OFF'; }
+
+                // Cashier
+                const cashierList = document.getElementById('cashier-list');
+                cashierList.innerHTML = data.bankRequests.map(t => `
+                    <tr>
+                        <td>${new Date(t.date).toLocaleDateString()}</td>
+                        <td>${t.username}</td>
+                        <td style="color:${t.type.includes('DEPOSIT')?'var(--success)':'var(--danger)'}">${t.type}</td>
+                        <td>${formatNumber(t.amount)}</td>
                         <td>
-                            <button class="btn btn-green" onclick="resolveTx('${tx._id}', 'approve')">APPROVE</button>
-                            <button class="btn btn-red" onclick="resolveTx('${tx._id}', 'deny')">DENY</button>
+                            <button class="wood-btn" style="background:var(--success); padding:4px 10px; font-size:18px;" onclick="resolveBank('${t._id}', 'approve')">APPROVE</button>
+                            <button class="wood-btn" style="background:var(--danger); padding:4px 10px; font-size:18px;" onclick="resolveBank('${t._id}', 'deny')">DENY</button>
                         </td>
-                    </tr>`;
-                });
-            }
+                    </tr>
+                `).join('');
 
-            // 2. POPULATE USERS
-            const usrTbody = document.getElementById('user-table');
-            usrTbody.innerHTML = '<tr><th>User</th><th>Credits</th><th>Status</th><th>Actions</th></tr>';
-            data.users.forEach(u => {
-                let actionBtn = '';
-                let statusColor = '#94a3b8';
+                // Player DB (IP Sniffer)
+                const ipCounts = {};
+                data.users.forEach(u => { if(u.ipAddress) ipCounts[u.ipAddress] = (ipCounts[u.ipAddress] || 0) + 1; });
                 
-                if (u.status === 'pending') {
-                    actionBtn = `<button class="btn btn-green" onclick="updateUser('${u.username}', 'active')">APPROVE</button>
-                                 <button class="btn btn-red" onclick="updateUser('${u.username}', 'banned')">REJECT</button>`;
-                    statusColor = '#fbbf24';
-                } else if (u.status === 'banned') {
-                    actionBtn = `<button class="btn btn-blue" onclick="updateUser('${u.username}', 'active')">UNBAN</button>`;
-                    statusColor = '#ef4444';
-                } else {
-                    actionBtn = `<button class="btn btn-red" onclick="updateUser('${u.username}', 'banned')">BAN</button>`;
-                    statusColor = '#10b981';
-                }
-                
-                usrTbody.innerHTML += `<tr>
-                    <td style="font-weight:bold;">${u.username}</td>
-                    <td class="pixel-text" style="font-size:20px;">${formatNumber(u.credits)} <span class="coin-icon">🪙</span></td>
-                    <td style="text-transform:uppercase; font-weight:bold; color: ${statusColor}">${u.status}</td>
-                    <td>${actionBtn}</td>
-                </tr>`;
-            });
+                const playerList = document.getElementById('player-list');
+                playerList.innerHTML = data.users.map(u => {
+                    const isDup = u.ipAddress && ipCounts[u.ipAddress] > 1;
+                    const statusColor = u.status === 'active' ? 'var(--success)' : (u.status==='banned' ? 'var(--danger)' : 'var(--warning)');
+                    return `
+                    <tr>
+                        <td style="color:${u.nameColor}">${u.username}</td>
+                        <td>${formatNumber(u.credits)}</td>
+                        <td class="${isDup ? 'ip-duplicate' : ''}">${u.ipAddress || 'UNKNOWN'} ${isDup ? '⚠️' : ''}</td>
+                        <td style="color:${statusColor}">${u.status.toUpperCase()}</td>
+                        <td>
+                            ${u.status !== 'active' ? `<button class="wood-btn" style="background:var(--success); padding:4px 10px; font-size:18px;" onclick="changeStatus('${u.username}', 'active')">ACTIVATE</button>` : ''}
+                            ${u.status !== 'banned' ? `<button class="wood-btn" style="background:var(--danger); padding:4px 10px; font-size:18px;" onclick="changeStatus('${u.username}', 'banned')">BAN</button>` : ''}
+                        </td>
+                    </tr>
+                `}).join('');
 
-            // 3. POPULATE GIFT CODES
-            const gcTbody = document.getElementById('gc-table');
-            gcTbody.innerHTML = '<tr><th>Active Code</th><th>Credit Value</th><th>Redemptions Left</th></tr>';
-            if (data.codes.length === 0) {
-                gcTbody.innerHTML += '<tr><td colspan="3" style="text-align:center; color:#475569;">No active gift codes.</td></tr>';
-            } else {
-                data.codes.forEach(c => {
-                    let usesColor = c.usesLeft > 0 ? '#10b981' : '#ef4444';
-                    gcTbody.innerHTML += `<tr>
-                        <td class="pixel-text" style="font-size:24px; color:#fbbf24;">${c.code}</td>
-                        <td class="pixel-text" style="font-size:20px;">${formatNumber(c.amount)} <span class="coin-icon">🪙</span></td>
-                        <td style="color:${usesColor}; font-weight:bold;">${c.usesLeft} remaining</td>
-                    </tr>`;
-                });
+                // Promo Codes
+                const promoList = document.getElementById('promo-list');
+                promoList.innerHTML = data.codes.map(c => `
+                    <tr>
+                        <td>${c.batchName || 'MANUAL'}</td>
+                        <td style="color:var(--warning); font-weight:bold;">${c.code}</td>
+                        <td>${formatNumber(c.amount)}</td>
+                        <td style="color:${c.claimedBy ? 'var(--danger)' : 'var(--success)'}">${c.claimedBy || 'AVAILABLE'}</td>
+                    </tr>
+                `).reverse().join('');
             }
         }
 
-        async function resolveTx(id, action) {
-            await fetch('/api/admin/tx/resolve', {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass },
-                body: JSON.stringify({ id, action })
-            });
-            loadData(); // Instantly refresh UI
+        async function resolveBank(id, action) {
+            await fetch('/api/admin/tx/resolve', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, body: JSON.stringify({ id, action }) });
+            fetchData();
         }
 
-        async function updateUser(username, status) {
-            await fetch('/api/admin/user/status', {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass },
-                body: JSON.stringify({ username, status })
-            });
-            loadData();
+        async function changeStatus(username, status) {
+            await fetch('/api/admin/user/status', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, body: JSON.stringify({ username, status }) });
+            fetchData();
         }
 
-        async function createCode() {
-            const codeInput = document.getElementById('gc-code');
-            const amtInput = document.getElementById('gc-amt');
-            const usesInput = document.getElementById('gc-uses');
-
-            const code = codeInput.value.trim().toUpperCase();
-            const amt = parseInt(amtInput.value);
-            const uses = parseInt(usesInput.value);
-
-            if (!code || isNaN(amt) || isNaN(uses) || amt <= 0 || uses <= 0) {
-                alert("Please fill out all fields with valid numbers before creating a code.");
-                return;
-            }
-
-            const res = await fetch('/api/admin/giftcode', {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass },
-                body: JSON.stringify({ code: code, amount: amt, usesLeft: uses })
-            });
-
-            if (res.ok) {
-                // Clear inputs on success
-                codeInput.value = '';
-                amtInput.value = '';
-                usesInput.value = '';
-                loadData();
-            } else {
-                alert("Failed to create code. It might already exist.");
-            }
+        async function generateCodes() {
+            const batchName = document.getElementById('gc-batch').value || 'ADMIN';
+            const amount = parseInt(document.getElementById('gc-amount').value);
+            const quantity = parseInt(document.getElementById('gc-qty').value);
+            if(isNaN(amount) || isNaN(quantity)) return alert("Enter valid numbers");
+            
+            await fetch('/api/admin/giftcode', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, body: JSON.stringify({ batchName, amount, quantity }) });
+            document.getElementById('gc-amount').value = ''; document.getElementById('gc-qty').value = '';
+            fetchData();
         }
+
+        async function toggleRTP() {
+            strictRTP = !strictRTP;
+            await fetch('/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass }, body: JSON.stringify({ strictHouseEdge: strictRTP }) });
+            fetchData();
+        }
+
+        // Live Eye in the Sky Socket
+        socket.on('admin_log', (msg) => {
+            const logBox = document.getElementById('matrix-log');
+            logBox.innerHTML += `<div>${msg}</div>`;
+            logBox.scrollTop = logBox.scrollHeight;
+        });
+
     </script>
 </body>
 </html>
