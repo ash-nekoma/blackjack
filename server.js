@@ -14,12 +14,15 @@ app.use(express.static(__dirname));
 // --- MONGODB CONNECTION ---
 mongoose.connect(process.env.MONGODB_URI).then(async () => {
     console.log('MongoDB Connected Successfully');
+    
+    // FIRST-TIME SETUP: Only creates these if the database is 100% empty.
     const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
-    if (!adminConfig) {
-        const initialPassword = process.env.ADMIN_PASSWORD || 'admin123';
-        await new SystemConfig({ configName: 'admin_password', configValue: initialPassword }).save();
-        console.log('SYSTEM LOG: Admin Password securely generated.');
-    }
+    if (!adminConfig) await new SystemConfig({ configName: 'admin_password', configValue: 'admin123' }).save();
+    
+    const modConfig = await SystemConfig.findOne({ configName: 'mod_password' });
+    if (!modConfig) await new SystemConfig({ configName: 'mod_password', configValue: 'mod123' }).save();
+    
+    console.log('SYSTEM LOG: Security Credentials Initialized in Database.');
 }).catch(err => console.error('MongoDB connection error:', err));
 
 // --- DATABASE SCHEMAS ---
@@ -28,7 +31,7 @@ const User = mongoose.model('User', new mongoose.Schema({
     username: { type: String, required: true, unique: true }, 
     password: { type: String, required: true },
     credits: { type: Number, default: 0 }, 
-    status: { type: String, default: 'pending' }, 
+    status: { type: String, default: 'active' }, 
     nameColor: { type: String, default: '#f8fafc' }, 
     ipAddress: String, 
     tosAccepted: Boolean,
@@ -66,11 +69,11 @@ const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['r
 
 const socketUserMap = {}; let diceLobby = []; let coinLobby = []; let colorLobby = [];
 let strictHouseEdge = false; 
+let gameLocks = { blackjack: false, dice: false, coin: false, color: false };
 
 // --- ADMIN LOGGER ---
-function adminLog(action) {
-    io.to('admin_room').emit('admin_log', `▶ ${action}`);
-}
+function getPHTTime() { return new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' }); }
+function adminLog(action) { io.to('admin_room').emit('admin_log', `▶ [${getPHTTime()}] ${action}`); }
 
 // --- GAME LOOPS ---
 setInterval(() => {
@@ -203,24 +206,43 @@ function startTurnTimer(roomId) {
 function getGameTitle(roomId) { return roomId === '3seat' ? '3-SEAT BLACKJACK' : '5-SEAT BLACKJACK'; }
 
 // --- ADMIN SECURITY & ECONOMY APIs ---
-const checkAdmin = async (req, res, next) => {
+const checkAdminRole = async (req, res, next) => {
     try {
-        const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
-        if (!adminConfig || !adminConfig.configValue) return res.status(500).json({ error: 'System Error: Admin credentials not found.' });
-        if (req.headers['x-admin-pass'] !== adminConfig.configValue) return res.status(403).json({ error: 'Unauthorized' });
-        next();
+        const pass = req.headers['x-admin-pass'];
+        const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
+        const mConf = await SystemConfig.findOne({ configName: 'mod_password' });
+        
+        if (pass === aConf.configValue) { req.role = 'admin'; next(); }
+        else if (pass === mConf.configValue) { req.role = 'mod'; next(); }
+        else { return res.status(403).json({ error: 'Unauthorized' }); }
     } catch (error) { res.status(500).json({ error: 'Database Error' }); }
 };
 
 app.post('/api/admin/login', async (req, res) => {
-    const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
-    if (req.body.password === adminConfig.configValue) {
-        adminLog("Admin successfully logged into the dashboard.");
-        res.json({ success: true });
-    } else { res.status(401).json({ error: 'Invalid admin password.' }); }
+    const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
+    const mConf = await SystemConfig.findOne({ configName: 'mod_password' });
+    
+    if (req.body.password === aConf.configValue) {
+        adminLog("MASTER ADMIN successfully logged in.");
+        res.json({ success: true, role: 'admin' });
+    } else if (req.body.password === mConf.configValue) {
+        adminLog("MODERATOR successfully logged in.");
+        res.json({ success: true, role: 'mod' });
+    } else { res.status(401).json({ error: 'Invalid password.' }); }
 });
 
-app.get('/api/admin/economy', checkAdmin, async (req, res) => {
+app.post('/api/admin/change_password', checkAdminRole, async (req, res) => {
+    if (req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
+    const { targetRole, newPassword } = req.body;
+    if (!newPassword || newPassword.length < 4) return res.status(400).json({error: 'Password too short.'});
+    
+    const configName = targetRole === 'admin' ? 'admin_password' : 'mod_password';
+    await SystemConfig.updateOne({ configName }, { configValue: newPassword });
+    adminLog(`MASTER ADMIN changed the ${targetRole.toUpperCase()} password in the database.`);
+    res.json({ success: true });
+});
+
+app.get('/api/admin/economy', checkAdminRole, async (req, res) => {
     const users = await User.find({}, '-password');
     const txs = await Transaction.find();
     const codes = await GiftCode.find();
@@ -233,7 +255,7 @@ app.get('/api/admin/economy', checkAdmin, async (req, res) => {
             if(t.type === 'BANK DEPOSIT') deposits += t.amount;
             if(t.type === 'BANK WITHDRAWAL') withdrawals += t.amount;
             if(['DAILY REWARD', 'GIFT CODE'].includes(t.type)) promoIssued += t.amount;
-            if(t.type.includes('WIN') || t.amount > 0 && !t.type.includes('BANK') && !['DAILY REWARD', 'GIFT CODE'].includes(t.type)) totalWins += t.amount;
+            if(t.type.includes('WIN') || (t.amount > 0 && !t.type.includes('BANK') && !['DAILY REWARD', 'GIFT CODE'].includes(t.type))) totalWins += t.amount;
         }
         if(t.amount < 0 && !t.type.includes('BANK')) totalBets += Math.abs(t.amount);
     });
@@ -242,22 +264,29 @@ app.get('/api/admin/economy', checkAdmin, async (req, res) => {
     const ggr = totalBets - totalWins;
     const onlineUsers = [...new Set(Object.values(socketUserMap).map(u => u.username))];
 
-    res.json({ users, codes, bankRequests: txs.filter(t=>t.status==='pending'), economy: { vault, ggr, promoIssued, circulating }, strictHouseEdge, onlineUsers });
+    res.json({ 
+        users, codes, 
+        bankRequests: txs.filter(t=>t.status==='pending'), 
+        economy: { baseVault: 1500000, deposits, withdrawals, vault, ggr, totalBets, totalWins, promoIssued, circulating }, 
+        strictHouseEdge, onlineUsers, gameLocks
+    });
 });
 
-app.post('/api/admin/user/status', checkAdmin, async (req, res) => { 
+app.post('/api/admin/user/status', checkAdminRole, async (req, res) => { 
     await User.updateOne({ username: req.body.username }, { status: req.body.status }); 
-    adminLog(`Changed status of player ${req.body.username} to ${req.body.status}`);
+    adminLog(`Changed status of player ${req.body.username} to ${req.body.status.toUpperCase()}`);
     res.json({ success: true }); 
 });
 
-app.post('/api/admin/settings', checkAdmin, async (req, res) => {
+app.post('/api/admin/settings', checkAdminRole, async (req, res) => {
+    if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
     strictHouseEdge = req.body.strictHouseEdge;
     adminLog(`House Edge RTP modifier set to: ${strictHouseEdge ? 'ON' : 'OFF'}`);
     res.json({ success: true });
 });
 
-app.post('/api/admin/tx/resolve', checkAdmin, async (req, res) => {
+app.post('/api/admin/tx/resolve', checkAdminRole, async (req, res) => {
+    if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
     const { id, action } = req.body; 
     const tx = await Transaction.findById(id); 
     if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
@@ -271,12 +300,13 @@ app.post('/api/admin/tx/resolve', checkAdmin, async (req, res) => {
         if (tx.type === 'BANK WITHDRAWAL') { updatedUser = await User.findOneAndUpdate({ username: tx.username }, { $inc: { credits: tx.amount } }, { new: true }); } 
     }
     await tx.save(); 
-    adminLog(`Admin ${action}D bank request for ${tx.username} (${tx.amount} credits)`);
+    adminLog(`Admin ${action.toUpperCase()}ED bank request for ${tx.username} (${tx.amount} credits)`);
     if(updatedUser) io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
     res.json({ success: true });
 });
 
-app.post('/api/admin/giftcode', checkAdmin, async (req, res) => { 
+app.post('/api/admin/giftcode', checkAdminRole, async (req, res) => { 
+    if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
     const { batchName, amount, quantity } = req.body;
     for(let i=0; i<quantity; i++) {
         let code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -286,7 +316,7 @@ app.post('/api/admin/giftcode', checkAdmin, async (req, res) => {
     res.json({ success: true }); 
 });
 
-app.get('/api/admin/player_full/:username', checkAdmin, async (req, res) => {
+app.get('/api/admin/player_full/:username', checkAdminRole, async (req, res) => {
     const user = await User.findOne({ username: req.params.username }, '-password');
     const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 });
     res.json({ user, txs });
@@ -296,22 +326,24 @@ app.get('/api/admin/player_full/:username', checkAdmin, async (req, res) => {
 app.post('/api/signup', async (req, res) => { 
     try { 
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        await new User({ username: req.body.username, password: req.body.password, ipAddress: ip, tosAccepted: true }).save(); 
+        await new User({ username: req.body.username, password: req.body.password, ipAddress: ip, tosAccepted: true, status: 'active' }).save(); 
         adminLog(`New account created: ${req.body.username} (IP: ${ip})`);
-        res.status(201).json({ message: 'Account requested. Pending Admin Approval.' }); 
+        res.status(201).json({ message: 'Account requested successfully.' }); 
     } catch (err) { res.status(400).json({ error: 'Username taken.' }); } 
 });
 
 app.post('/api/login', async (req, res) => {
     const user = await User.findOne({ username: req.body.username, password: req.body.password });
     if (!user) return res.status(401).json({ error: 'Invalid credentials.' }); 
-    if (user.status === 'pending') return res.status(401).json({ error: 'Account pending admin approval.' }); 
-    if (user.status === 'banned') return res.status(401).json({ error: 'Account banned.' });
+    if (user.status === 'banned') return res.status(401).json({ error: 'Account banned by administration.' });
     
+    // Auto-active on login if not banned
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    user.ipAddress = ip; await user.save();
+    user.ipAddress = ip; 
+    if(user.status !== 'active') user.status = 'active';
+    await user.save();
     
-    adminLog(`${user.username} logged in. (IP: ${ip})`);
+    adminLog(`${user.username} logged in.`);
     
     const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); 
     const msLeft = new Date(lastClaim.getTime() + 24 * 60 * 60 * 1000).getTime() - now.getTime();
@@ -346,8 +378,26 @@ app.get('/api/profile/ledger/:username', async (req, res) => { const txs = await
 // --- SOCKET SYSTEM ---
 io.on('connection', (socket) => {
     
-    // ADMIN EYE IN THE SKY
-    socket.on('admin_join', () => { socket.join('admin_room'); });
+    // ADMIN EYE IN THE SKY & CONTROLS
+    socket.on('admin_join', () => { socket.join('admin_room'); socket.emit('game_lock_state', gameLocks); });
+    
+    socket.on('admin_action', ({ action, room, username, game, locked }) => {
+        if(action === 'wipe_chat') {
+            io.emit('chat_wiped', { room });
+        } else if (action === 'kick_user') {
+            const targetSocket = Object.keys(socketUserMap).find(id => socketUserMap[id].username === username);
+            if(targetSocket) { io.to(targetSocket).emit('force_disconnect'); io.sockets.sockets.get(targetSocket)?.disconnect(); }
+        } else if (action === 'toggle_game') {
+            gameLocks[game] = locked;
+            io.emit('game_lock_state', gameLocks);
+            adminLog(`System Override: ${game.toUpperCase()} is now ${locked ? 'LOCKED' : 'UNLOCKED'}`);
+        }
+    });
+
+    socket.on('admin_notify', ({ target, username, message }) => {
+        adminLog(`Notification Sent to [${target.toUpperCase()}]: ${message}`);
+        io.emit('system_notification', { target, username, message });
+    });
 
     // ARCADE LOBBIES
     socket.on('enter_arcade', async ({ username, game }) => {
@@ -380,6 +430,7 @@ io.on('connection', (socket) => {
     // --- ARCADE BETS ---
     socket.on('get_dice_state', () => { socket.emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); });
     socket.on('place_dice_bet', async ({ username, choice, amount }) => {
+        if(gameLocks.dice) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
         if (diceGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
         if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
         let existingBet = diceGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
@@ -397,6 +448,7 @@ io.on('connection', (socket) => {
 
     socket.on('get_coin_state', () => { socket.emit('coin_state_update', { status: coinGame.status, betEndTime: coinGame.betEndTime, history: coinGame.history }); });
     socket.on('place_coin_bet', async ({ username, choice, amount }) => {
+        if(gameLocks.coin) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
         if (coinGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
         if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
         let existingBet = coinGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
@@ -414,6 +466,7 @@ io.on('connection', (socket) => {
 
     socket.on('get_color_state', () => { socket.emit('color_state_update', { status: colorGame.status, betEndTime: colorGame.betEndTime, history: colorGame.history }); });
     socket.on('place_color_bet', async ({ username, choice, amount }) => {
+        if(gameLocks.color) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
         if (colorGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
         if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
         let existingBet = colorGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
@@ -462,6 +515,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('place_bet', async ({ roomId, username, seatIndex, betAmount }) => {
+        if(gameLocks[roomId]) return socket.emit('arcade_error', 'Table is currently offline for maintenance.');
         let room = rooms[roomId]; if (!room) return; const seat = room.seats[seatIndex]; if (!seat || seat.username !== username || room.status !== 'betting') return;
         if (betAmount >= 1000 && betAmount <= 50000) {
             const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
