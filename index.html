@@ -270,11 +270,11 @@
             </div>
         </div>
 
-       <div id="how-to-play-modal" class="overlay-menu hidden">
+       <div id="how-to-play-modal" class="overlay-menu hidden" style="z-index: 400;">
             <div class="modal-box custom-scroll" style="width: 750px; padding: 25px;">
                 <h2 class="pixel-text" style="margin-bottom: 15px; font-size: 40px; color: var(--accent-glow-2);">ARCADE RULES & MECHANICS</h2>
                 
-                <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: center; margin-bottom: 15px;">
                     <select class="retro-input pixel-text" style="width: 100%; max-width: 350px; background: #1e293b; color: #fff; cursor: pointer; border-color: var(--accent-glow-2);" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');">
                         <option value="rule-bj">BLACKJACK</option>
                         <option value="rule-dice">HIGH-LOW DICE</option>
@@ -284,44 +284,62 @@
                     </select>
                 </div>
                 
-                <div style="text-align: left; min-height: 200px;">
-                    <div id="rule-bj" class="rule-content info-box" style="border:none; box-shadow:none; padding:0; background:transparent; margin:0;">
-                        <strong style="color: var(--success);">BLACKJACK</strong>
-                        <p style="margin-bottom: 8px;">Beat the Dealer's hand without exceeding 21. Face cards are 10, Aces are 1 or 11.</p>
-                        <ul><li><strong>Limits:</strong> Max 1 seat. Max bet 50,000 credits (Splitting doubles this to 100k).</li><li><strong>Timer:</strong> Exactly 15s to Hit, Stand, Double, or Split.</li><li><strong>Payouts:</strong> Wins pay 1:1. Blackjack pays 3:2. Push refunds bet.</li><li><strong>Dealer:</strong> Must draw to 16 and stand on all 17s.</li></ul>
+                <div class="info-box custom-scroll" style="text-align: left; height: 320px; overflow-y: auto; margin-bottom: 15px; background: rgba(0,0,0,0.6); border: 3px solid #334155;">
+                    <div id="rule-bj" class="rule-content">
+                        <strong style="color: var(--success); font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">BLACKJACK</strong>
+                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">Beat the Dealer's hand without exceeding 21. Face cards are 10, Aces are 1 or 11.</p>
+                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
+                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max 1 seat. Max bet 50,000 credits (Splitting doubles this to 100k).</li>
+                            <li style="margin-bottom: 10px;"><strong>Timer:</strong> Exactly 15s to Hit, Stand, Double, or Split.</li>
+                            <li style="margin-bottom: 10px;"><strong>Payouts:</strong> Wins pay 1:1. Blackjack pays 3:2. Push refunds bet.</li>
+                            <li style="margin-bottom: 10px;"><strong>Dealer:</strong> Must draw to 16 and stand on all 17s.</li>
+                        </ul>
                     </div>
                     
-                    <div id="rule-dice" class="rule-content hidden info-box" style="border:none; box-shadow:none; padding:0; background:transparent; margin:0;">
-                        <strong style="color: #a855f7;">HIGH-LOW DICE</strong>
-                        <p style="margin-bottom: 8px;">Two 6-sided dice are rolled globally. Select your bet amount and click a tile.</p>
-                        <ul><li><strong>Limits:</strong> Max bet 50,000 credits per tile.</li><li><strong>Under 7:</strong> Pays 1:1 (Rolls 2, 3, 4, 5, 6).</li><li><strong>Over 7:</strong> Pays 1:1 (Rolls 8, 9, 10, 11, 12).</li><li><strong>Exactly 7:</strong> Jackpot! Pays massive 4:1 odds.</li></ul>
+                    <div id="rule-dice" class="rule-content hidden">
+                        <strong style="color: #a855f7; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">HIGH-LOW DICE</strong>
+                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">Two 6-sided dice are rolled globally. Select your bet amount and click a tile.</p>
+                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
+                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per tile.</li>
+                            <li style="margin-bottom: 10px;"><strong>Under 7:</strong> Pays 1:1 (Rolls 2, 3, 4, 5, 6).</li>
+                            <li style="margin-bottom: 10px;"><strong>Over 7:</strong> Pays 1:1 (Rolls 8, 9, 10, 11, 12).</li>
+                            <li style="margin-bottom: 10px;"><strong>Exactly 7:</strong> Jackpot! Pays massive 4:1 odds.</li>
+                        </ul>
                     </div>
                     
-                    <div id="rule-coin" class="rule-content hidden info-box" style="border:none; box-shadow:none; padding:0; background:transparent; margin:0;">
-                        <strong style="color: var(--warning);">GLOBAL COIN FLIP</strong>
-                        <p style="margin-bottom: 8px;">A single global coin is flipped. Bet on Heads or Tails before the 15s timer runs out.</p>
-                        <ul><li><strong>Limits:</strong> Max bet 50,000 credits per tile.</li><li><strong>Payouts:</strong> Correct guesses double your money (Pays 1:1).</li></ul>
+                    <div id="rule-coin" class="rule-content hidden">
+                        <strong style="color: var(--warning); font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">GLOBAL COIN FLIP</strong>
+                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">A single global coin is flipped. Bet on Heads or Tails before the 15s timer runs out.</p>
+                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
+                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per tile.</li>
+                            <li style="margin-bottom: 10px;"><strong>Payouts:</strong> Correct guesses double your money (Pays 1:1).</li>
+                        </ul>
                     </div>
                     
-                    <div id="rule-color" class="rule-content hidden info-box" style="border:none; box-shadow:none; padding:0; background:transparent; margin:0;">
-                        <strong style="color: #ef4444;">CLASSIC COLOR GAME</strong>
-                        <p style="margin-bottom: 8px;">3 colored dice are rolled. Pick your bet amount at the top, then tap colors to place chips.</p>
-                        <ul><li><strong>Limits:</strong> Max bet 50,000 credits per color.</li><li><strong>1 Match:</strong> Pays 1:1</li><li><strong>2 Matches:</strong> Pays 2:1</li><li><strong>3 Matches:</strong> Pays 3:1</li></ul>
+                    <div id="rule-color" class="rule-content hidden">
+                        <strong style="color: #ef4444; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">CLASSIC COLOR GAME</strong>
+                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">3 colored dice are rolled. Pick your bet amount at the top, then tap colors to place chips.</p>
+                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
+                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per color.</li>
+                            <li style="margin-bottom: 10px;"><strong>1 Match:</strong> Pays 1:1</li>
+                            <li style="margin-bottom: 10px;"><strong>2 Matches:</strong> Pays 2:1</li>
+                            <li style="margin-bottom: 10px;"><strong>3 Matches:</strong> Pays 3:1</li>
+                        </ul>
                     </div>
 
-                    <div id="rule-sys" class="rule-content hidden info-box" style="border:none; box-shadow:none; padding:0; background:transparent; margin:0;">
-                        <strong style="color: #10b981;">SYSTEM RULES</strong>
-                        <ul>
-                            <li><strong>Deposits:</strong> 10k - 100k limits.</li>
-                            <li><strong>Withdrawals:</strong> 50k - 100k limits.</li>
-                            <li><strong>Daily Rewards:</strong> Mystery boxes respawn exactly every 24 hours.</li>
-                            <li><strong>Spam Protection:</strong> Arcade buttons lock for 250ms after clicking.</li>
-                            <li><strong>Global Locks:</strong> All bets freeze precisely at 0s.</li>
+                    <div id="rule-sys" class="rule-content hidden">
+                        <strong style="color: #10b981; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">SYSTEM RULES</strong>
+                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
+                            <li style="margin-bottom: 10px;"><strong>Deposits:</strong> 10k - 100k limits.</li>
+                            <li style="margin-bottom: 10px;"><strong>Withdrawals:</strong> 50k - 100k limits.</li>
+                            <li style="margin-bottom: 10px;"><strong>Daily Rewards:</strong> Mystery boxes respawn exactly every 24 hours.</li>
+                            <li style="margin-bottom: 10px;"><strong>Spam Protection:</strong> Arcade buttons lock for 250ms after clicking.</li>
+                            <li style="margin-bottom: 10px;"><strong>Global Locks:</strong> All bets freeze precisely at 0s.</li>
                         </ul>
                     </div>
                 </div>
 
-                <button class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 15px;" onclick="hideModal('how-to-play-modal')">CLOSE</button>
+                <button class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 0;" onclick="hideModal('how-to-play-modal')">CLOSE</button>
             </div>
         </div>
 
