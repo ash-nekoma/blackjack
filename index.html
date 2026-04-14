@@ -45,9 +45,9 @@
         
         .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; flex-shrink: 0;}
         
-        input.retro-input, select.retro-input { flex: 1; padding: 12px; margin: 0; background: #0f172a; color: var(--warning); border: 3px solid #64748b; border-radius: 6px; font-size: 24px; font-weight:bold; text-align: center; outline: none; cursor:pointer; transition: 0.2s; box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);}
-        input.retro-input:focus, select.retro-input:focus { border-color: var(--accent-glow-2); box-shadow: 0 0 12px rgba(59,130,246,0.6), inset 0 2px 8px rgba(0,0,0,0.8); }
-        input.retro-input::placeholder { color: #64748b; }
+        input.retro-input, select.retro-input, textarea.retro-input { flex: 1; padding: 12px; margin: 0; background: #0f172a; color: var(--warning); border: 3px solid #64748b; border-radius: 6px; font-size: 24px; font-weight:bold; text-align: center; outline: none; cursor:pointer; transition: 0.2s; box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);}
+        input.retro-input:focus, select.retro-input:focus, textarea.retro-input:focus { border-color: var(--accent-glow-2); box-shadow: 0 0 12px rgba(59,130,246,0.6), inset 0 2px 8px rgba(0,0,0,0.8); }
+        input.retro-input::placeholder, textarea.retro-input::placeholder { color: #64748b; }
         
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px; flex-shrink: 0;}
         .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; transition: 0.1s; font-family: 'VT323', monospace; letter-spacing: 1px; display: flex; justify-content: center; align-items: center;}
@@ -55,6 +55,7 @@
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.8; }
         .wood-btn.locked { border-color: #555; background: #333; color: #aaa; box-shadow: none; transform: translate(2px, 2px); }
+        .wood-btn.small { padding: 4px 8px; font-size: 20px; box-shadow: 2px 2px 0 #000; width: auto;}
 
         .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; overflow-x: hidden; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
 
@@ -201,6 +202,15 @@
         .history-list-item { font-size: 26px; border-bottom: 1px dashed #333; padding: 6px 0; text-align: center; }
         
         #dice-history, #coin-history, #color-history { max-height: 250px; overflow-y: auto; }
+        
+        /* INBOX TICKET STYLING */
+        .ticket-item { background: #1e293b; border: 2px solid var(--border-std); padding: 15px; margin-bottom: 10px; border-radius: 6px; cursor: pointer; transition: filter 0.1s;}
+        .ticket-item:hover { filter: brightness(1.2); }
+        .ticket-unread { border-left: 6px solid var(--accent-glow-2); }
+        .ticket-read { border-left: 6px solid #475569; }
+        .msg-bubble { background: #0f172a; border: 2px solid var(--border-std); padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: left; }
+        .msg-bubble.admin { border-left: 6px solid var(--danger); background: #1a0f14;}
+        .msg-bubble.player { border-right: 6px solid var(--success); background: #0f1a14; text-align: right;}
     </style>
 </head>
 <body>
@@ -247,9 +257,9 @@
                 <button class="wood-btn" style="background: var(--success);" onclick="showModal('play-modal')">PLAY GAMES</button>
                 <button class="wood-btn" style="background: #3b82f6;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
                 
-                <button class="wood-btn" style="background: #8b5cf6;" onclick="showModal('notify-modal')">
+                <button class="wood-btn" style="background: #8b5cf6; position:relative;" onclick="openInbox()">
                     NOTIFICATIONS 
-                    <span id="notif-badge" class="hidden" style="background:var(--danger); border-radius:5px; padding:2px 8px; font-size:20px; box-shadow: 2px 2px 0 #000; margin-left: 10px;">0</span>
+                    <span id="notif-badge" class="hidden" style="position:absolute; top:-10px; right:-10px; background:var(--danger); border:2px solid #fff; border-radius:50%; width:30px; height:30px; display:flex; justify-content:center; align-items:center; font-size:22px; font-weight:bold; box-shadow: 2px 2px 0 #000;">0</span>
                 </button>
 
                 <button class="wood-btn" style="background: var(--warning); color:#000;" onclick="showBank()">BANKING</button>
@@ -282,12 +292,30 @@
         </div>
 
         <div id="notify-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 750px;">
-                <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 20px; font-size: 60px;">SYSTEM MESSAGES</h2>
-                <div id="notify-list" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; max-height: 400px; text-align: left;">
-                    <div id="empty-notif" style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">NO NEW NOTIFICATIONS</div>
+            <div class="modal-box custom-scroll" style="width: 750px; height: 750px; max-height: 90vh; display: flex; flex-direction: column;">
+                <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 15px; font-size: 50px;">SUPPORT INBOX</h2>
+                
+                <div id="inbox-list-view" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left;">
+                    <div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">LOADING INBOX...</div>
                 </div>
-                <button class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 15px;" onclick="hideModal('notify-modal')">CLOSE</button>
+
+                <div id="inbox-thread-view" class="hidden" style="flex: 1; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <button class="wood-btn small" style="background: #475569;" onclick="backToInbox()">◄ BACK TO INBOX</button>
+                        <span id="thread-status" style="font-size: 24px; font-weight: bold;"></span>
+                    </div>
+                    <div id="thread-messages" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left; margin-bottom: 10px;"></div>
+                    
+                    <div id="thread-reply-box" style="display: flex; gap: 10px;">
+                        <input type="text" id="reply-input" class="retro-input" placeholder="Type reply..." style="flex: 1;">
+                        <button class="wood-btn" style="background: var(--success); color: #000; width: 120px;" onclick="sendReply()">REPLY</button>
+                    </div>
+                    <div id="thread-closed-box" class="hidden" style="background: var(--danger); padding: 10px; border: 2px solid #fff; font-size: 24px; font-weight: bold; text-shadow: 1px 1px 0 #000;">
+                        [ THIS CONVERSATION HAS BEEN CLOSED BY THE ADMINISTRATOR ]
+                    </div>
+                </div>
+
+                <button id="inbox-close-btn" class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 15px;" onclick="hideModal('notify-modal')">CLOSE INBOX</button>
             </div>
         </div>
 
@@ -742,6 +770,7 @@
         
         let unreadNotifs = 0;
         let gameLocks = {};
+        let currentOpenTicketId = null;
 
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
         let myCoinBets = { heads: 0, tails: 0 }; 
@@ -759,18 +788,149 @@
             document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden')); 
             const el = document.getElementById(id); 
             if(el) el.classList.remove('hidden'); 
-            
-            if(id === 'notify-modal') {
-                unreadNotifs = 0;
-                const badge = document.getElementById('notif-badge');
-                if(badge) badge.classList.add('hidden');
-            }
         }
         
         function hideModal(id) { 
             const el = document.getElementById(id); 
             if(el) el.classList.add('hidden'); 
         }
+
+        // --- INBOX SYSTEM LOGIC ---
+        function openInbox() {
+            if(!currentUser) return;
+            showModal('notify-modal');
+            document.getElementById('inbox-list-view').classList.remove('hidden');
+            document.getElementById('inbox-thread-view').classList.add('hidden');
+            socket.emit('req_inbox', { username: currentUser.username });
+            document.getElementById('inbox-close-btn').classList.remove('hidden');
+        }
+
+        function backToInbox() {
+            currentOpenTicketId = null;
+            document.getElementById('inbox-list-view').classList.remove('hidden');
+            document.getElementById('inbox-thread-view').classList.add('hidden');
+            document.getElementById('inbox-close-btn').classList.remove('hidden');
+            socket.emit('req_inbox', { username: currentUser.username });
+        }
+
+        function openTicket(id, status, messagesStr) {
+            currentOpenTicketId = id;
+            document.getElementById('inbox-list-view').classList.add('hidden');
+            document.getElementById('inbox-thread-view').classList.remove('hidden');
+            document.getElementById('inbox-close-btn').classList.add('hidden');
+            
+            socket.emit('read_ticket', { id });
+            
+            const messages = JSON.parse(decodeURIComponent(messagesStr));
+            renderThread(messages, status);
+        }
+
+        function renderThread(messages, status) {
+            const list = document.getElementById('thread-messages');
+            list.innerHTML = messages.map(m => {
+                const isMe = m.sender !== 'ADMIN';
+                const time = new Date(m.date).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
+                return `
+                <div class="msg-bubble ${isMe ? 'player' : 'admin'}">
+                    <div style="font-size:18px; color:#64748b; margin-bottom:5px;">${isMe ? 'YOU' : 'ADMIN'} - ${time}</div>
+                    <div style="font-size:24px; color:#fff;">${m.text}</div>
+                </div>`;
+            }).join('');
+            list.scrollTop = list.scrollHeight;
+
+            const stLabel = document.getElementById('thread-status');
+            if (status === 'open') {
+                stLabel.innerText = '[ STATUS: OPEN ]';
+                stLabel.style.color = 'var(--success)';
+                document.getElementById('thread-reply-box').style.display = 'flex';
+                document.getElementById('thread-closed-box').classList.add('hidden');
+            } else {
+                stLabel.innerText = '[ STATUS: CLOSED ]';
+                stLabel.style.color = 'var(--danger)';
+                document.getElementById('thread-reply-box').style.display = 'none';
+                document.getElementById('thread-closed-box').classList.remove('hidden');
+            }
+        }
+
+        function sendReply() {
+            const input = document.getElementById('reply-input');
+            const text = input.value.trim();
+            if(!text || !currentOpenTicketId) return;
+            socket.emit('player_reply', { id: currentOpenTicketId, username: currentUser.username, text });
+            input.value = '';
+        }
+
+        function deleteTicket(id, event) {
+            event.stopPropagation();
+            if(confirm("Delete this message thread forever?")) {
+                socket.emit('del_ticket', { id, username: currentUser.username });
+            }
+        }
+
+        socket.on('inbox_data', (tickets) => {
+            const list = document.getElementById('inbox-list-view');
+            unreadNotifs = tickets.filter(t => t.unreadPlayer).length;
+            
+            const badge = document.getElementById('notif-badge');
+            if (unreadNotifs > 0) {
+                badge.innerText = unreadNotifs;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            if(tickets.length === 0) {
+                list.innerHTML = '<div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">NO MESSAGES</div>';
+                return;
+            }
+
+            list.innerHTML = tickets.map(t => {
+                const date = new Date(t.updatedAt).toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
+                const time = new Date(t.updatedAt).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
+                const borderClass = t.unreadPlayer ? 'ticket-unread' : 'ticket-read';
+                const newTag = t.unreadPlayer ? `<span style="color:var(--danger); font-weight:bold;">[ NEW ]</span>` : '';
+                const lastMsg = t.messages[t.messages.length - 1].text.substring(0, 30) + '...';
+                
+                // Safe string passing for onclick
+                const encodedMsg = encodeURIComponent(JSON.stringify(t.messages));
+                
+                return `
+                <div class="ticket-item ${borderClass}" onclick="openTicket('${t._id}', '${t.status}', '${encodedMsg}')">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                        <span style="font-size:26px; color:#fff;">${newTag} ADMIN SUPPORT <span style="font-size:20px; color:#94a3b8;">(${date} ${time})</span></span>
+                        <button class="wood-btn small" style="background:var(--danger);" onclick="deleteTicket('${t._id}', event)">DEL</button>
+                    </div>
+                    <div style="font-size:22px; color:#94a3b8;">${lastMsg}</div>
+                </div>`;
+            }).join('');
+        });
+
+        socket.on('ticket_updated', (t) => {
+            if(currentOpenTicketId === t._id) {
+                renderThread(t.messages, t.status);
+            }
+        });
+
+        // GLOBAL BROADCAST LISTENER
+        socket.on('system_notification', (data) => {
+            if (!currentUser) return;
+            const { target, username, message } = data;
+            let shouldShow = false;
+            if (target === 'all' || target === 'active') shouldShow = true;
+            
+            if (shouldShow) {
+                playSfx('win');
+                alert(`GLOBAL BROADCAST:\n\n${message}`);
+            }
+        });
+
+        // DIRECT TICKET LISTENER
+        socket.on('new_mail', (data) => {
+            if (currentUser && currentUser.username === data.username) {
+                playSfx('win');
+                socket.emit('req_inbox', { username: currentUser.username });
+            }
+        });
         
         function togglePlayerList(id, headerId) { 
             const list = document.getElementById(id); 
@@ -802,6 +962,7 @@
                 updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; 
                 const userPreview = document.getElementById('profile-username-preview'); if(userPreview) userPreview.innerText = currentUser.username;
                 playSfx('deal');
+                socket.emit('req_inbox', { username: currentUser.username }); // Fetch initial inbox
             } else document.getElementById('login-error').innerText = data.error;
         }
 
@@ -812,47 +973,6 @@
                 currentUser.credits = data.credits; 
                 updateAllCredits(); 
             } 
-        });
-
-        // NOTIFICATIONS LISTENER
-        socket.on('system_notification', (data) => {
-            if (!currentUser) return;
-            const { target, username, message } = data;
-            
-            let shouldShow = false;
-            if (target === 'all' || target === 'active') shouldShow = true;
-            if (target === 'specific' && username.toLowerCase() === currentUser.username.toLowerCase()) shouldShow = true;
-            
-            if (shouldShow) {
-                playSfx('win');
-                const list = document.getElementById('notify-list');
-                const emptyMsg = document.getElementById('empty-notif');
-                if (emptyMsg) emptyMsg.remove();
-                
-                const time = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' });
-                const typeColor = target === 'specific' ? 'var(--danger)' : 'var(--accent-glow-2)';
-                const typeText = target === 'specific' ? 'DIRECT MESSAGE' : 'GLOBAL BROADCAST';
-                
-                const notifHTML = `
-                    <div style="border-bottom: 1px dashed #333; padding-bottom: 10px; margin-bottom: 10px;">
-                        <div style="color: ${typeColor}; font-size: 22px;">[${time}] ${typeText}</div>
-                        <div style="color: #fff; font-size: 26px; margin-top: 5px;">${message}</div>
-                    </div>
-                `;
-                list.innerHTML = notifHTML + list.innerHTML;
-                
-                unreadNotifs++;
-                const badge = document.getElementById('notif-badge');
-                if(badge) {
-                    badge.innerText = unreadNotifs;
-                    badge.classList.remove('hidden');
-                }
-                
-                if (target === 'specific') {
-                    showModal('notify-modal');
-                    alert(`DIRECT MESSAGE FROM ADMIN:\n\n${message}`);
-                }
-            }
         });
 
         // GAME LOCKS LISTENER
