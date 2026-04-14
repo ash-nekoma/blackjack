@@ -14,13 +14,17 @@
             --border-std: #222;
         }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body, input, button, table, th, td { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; scrollbar-width: thin; scrollbar-color: #475569 #0f172a; }
+        body, input, button, table, th, td, textarea, select { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
         body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
         .hidden { display: none !important; }
-        .custom-scroll::-webkit-scrollbar { width: 12px; background: #000; border-left: 2px solid var(--border-std);}
-        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border: 2px solid var(--border-std); box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
+
+        /* --- GLOBAL RETRO SCROLLBARS --- */
+        ::-webkit-scrollbar { width: 16px; height: 16px; background: #0f172a; border-left: 2px solid var(--border-std); border-top: 2px solid var(--border-std); }
+        ::-webkit-scrollbar-thumb { background: #475569; border: 2px solid var(--border-std); box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        ::-webkit-scrollbar-corner { background: #000; }
 
         /* Remove Number Arrows */
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -180,7 +184,7 @@
                     <span>SURVEILLANCE: <span id="watch-target-name" style="color:#fff;">-</span></span>
                     <button class="wood-btn small" style="background:var(--danger);" onclick="closeWatchModal()">CLOSE MONITOR</button>
                 </div>
-                <div id="watch-matrix-log" class="custom-scroll"></div>
+                <div id="watch-matrix-log"></div>
             </div>
         </div>
 
@@ -197,7 +201,7 @@
 
         <div class="admin-content">
             
-            <div id="view-dashboard" class="view-panel active custom-scroll">
+            <div id="view-dashboard" class="view-panel active">
                 <h2 class="panel-title">LIVE ECONOMY & FLOOR CONTROL</h2>
                 
                 <div class="stat-grid">
@@ -240,7 +244,7 @@
                 </div>
             </div>
 
-            <div id="view-cashier" class="view-panel custom-scroll">
+            <div id="view-cashier" class="view-panel">
                 <h2 class="panel-title">PENDING BANK REQUESTS & RISK ANALYSIS</h2>
                 <table class="admin-table">
                     <thead><tr><th>DATE (PHT)</th><th>USER</th><th>TYPE</th><th>AMOUNT</th><th>LIFETIME DEP/PROMO</th><th>ACTION</th></tr></thead>
@@ -248,15 +252,15 @@
                 </table>
             </div>
 
-            <div id="view-players" class="view-panel custom-scroll">
+            <div id="view-players" class="view-panel">
                 <h2 class="panel-title">GOD-MODE PLAYER DATABASE</h2>
                 <table class="admin-table">
-                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>IP ADDRESS</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
                     <tbody id="player-list"></tbody>
                 </table>
             </div>
 
-            <div id="view-promo" class="view-panel custom-scroll">
+            <div id="view-promo" class="view-panel">
                 <h2 class="panel-title">BULK PROMO CODE ENGINE</h2>
                 <div style="display: flex; gap: 15px; margin-bottom: 20px; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px;">
                     <input type="text" id="gc-batch" class="retro-input" placeholder="BATCH NAME">
@@ -280,12 +284,12 @@
                         <button class="wood-btn small" onclick="wipeChat('color')">WIPE COLOR CHAT</button>
                     </div>
                 </h2>
-                <div id="matrix-log" class="custom-scroll">
+                <div id="matrix-log">
                     <div style="color: #64748b;">▶ SYSTEM: Awaiting secure websocket connection...</div>
                 </div>
             </div>
 
-            <div id="view-notify" class="view-panel custom-scroll">
+            <div id="view-notify" class="view-panel">
                 <h2 class="panel-title">GLOBAL NOTIFICATION SYSTEM</h2>
                 <div style="background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; width: 800px; max-width: 100%;">
                     <div style="margin-bottom: 15px;">
@@ -304,7 +308,7 @@
                 </div>
             </div>
 
-            <div id="view-settings" class="view-panel custom-scroll admin-only">
+            <div id="view-settings" class="view-panel admin-only">
                 <h2 class="panel-title">SYSTEM SETTINGS & CREDENTIALS</h2>
                 
                 <div class="control-panel admin-only" style="margin-top: 20px;">
@@ -525,6 +529,7 @@
                 playerList.innerHTML = sortedUsers.map(u => {
                     let isOnline = onlineUsers.includes(u.username);
                     let statusColor = '#94a3b8'; let displayStatus = 'OFFLINE';
+                    
                     if (u.status === 'banned') { statusColor = 'var(--danger)'; displayStatus = 'BANNED'; isOnline = false; }
                     else if (u.status === 'pending') { statusColor = 'var(--warning)'; displayStatus = 'PENDING'; }
                     else if (isOnline) { statusColor = 'var(--success)'; displayStatus = 'ONLINE'; }
@@ -533,6 +538,7 @@
                     <tr>
                         <td style="color:${u.nameColor}; font-weight:bold; font-size:28px;">${u.username}</td>
                         <td style="color:var(--warning);">${formatNumber(u.credits)}</td>
+                        <td><button class="wood-btn small" style="background:#475569;" onclick="this.innerText='${u.ipAddress || 'UNKNOWN'}'">[CLICK TO REVEAL]</button></td>
                         <td style="color:${statusColor}; font-weight:bold;">${displayStatus}</td>
                         <td>
                             <button class="wood-btn small" style="background:var(--accent-glow-2);" onclick="openPlayerModal('${u.username}')">VIEW</button>
