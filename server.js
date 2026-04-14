@@ -14,15 +14,17 @@ app.use(express.static(__dirname));
 // --- MONGODB CONNECTION ---
 mongoose.connect(process.env.MONGODB_URI).then(async () => {
     console.log('MongoDB Connected Successfully');
-    
-    // FIRST-TIME SETUP: Only creates these if the database is 100% empty.
-    const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
-    if (!adminConfig) await new SystemConfig({ configName: 'admin_password', configValue: 'admin123' }).save();
-    
-    const modConfig = await SystemConfig.findOne({ configName: 'mod_password' });
-    if (!modConfig) await new SystemConfig({ configName: 'mod_password', configValue: 'mod123' }).save();
-    
-    console.log('SYSTEM LOG: Security Credentials Initialized in Database.');
+    try {
+        const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
+        if (!adminConfig) await new SystemConfig({ configName: 'admin_password', configValue: 'admin123' }).save();
+        
+        const modConfig = await SystemConfig.findOne({ configName: 'mod_password' });
+        if (!modConfig) await new SystemConfig({ configName: 'mod_password', configValue: 'mod123' }).save();
+        
+        console.log('SYSTEM LOG: Security Credentials Initialized.');
+    } catch(e) {
+        console.error("DB Initialization Error:", e);
+    }
 }).catch(err => console.error('MongoDB connection error:', err));
 
 // --- DATABASE SCHEMAS ---
@@ -49,6 +51,16 @@ const GiftCode = mongoose.model('GiftCode', new mongoose.Schema({
     batchName: String, claimedBy: { type: String, default: null }, claimDate: { type: Date, default: null }
 }));
 
+// NEW: INBOX TICKET SCHEMA
+const Ticket = mongoose.model('Ticket', new mongoose.Schema({
+    username: String,
+    messages: [{ sender: String, text: String, date: { type: Date, default: Date.now } }],
+    status: { type: String, default: 'open' },
+    unreadPlayer: { type: Boolean, default: true },
+    unreadAdmin: { type: Boolean, default: false },
+    updatedAt: { type: Date, default: Date.now }
+}));
+
 // --- GAME LOGIC GLOBALS ---
 const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']; 
 const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -72,7 +84,10 @@ let strictHouseEdge = false;
 let gameLocks = { blackjack: false, dice: false, coin: false, color: false };
 
 // --- ADMIN LOGGER ---
-function getPHTTime() { return new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' }); }
+function getPHTTime() { 
+    try { return new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' }); } 
+    catch(e) { return new Date().toLocaleTimeString(); } 
+}
 function adminLog(action) { io.to('admin_room').emit('admin_log', `▶ [${getPHTTime()}] ${action}`); }
 
 // --- GAME LOOPS ---
@@ -118,10 +133,14 @@ setInterval(() => {
                 if (b.choice === 'over' && total > 7) { won = true; payout = b.amount * 2; }
                 if (b.choice === 'seven' && total === 7) { won = true; payout = b.amount * 5; }
                 if (won) {
-                    const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
-                    await new Transaction({ username: b.username, type: 'HIGH-LOW DICE WIN', amount: payout }).save();
-                    winners.push({ username: b.username, choice: b.choice, amount: payout });
-                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
+                    try {
+                        const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
+                        if(updatedUser) {
+                            await new Transaction({ username: b.username, type: 'HIGH-LOW DICE WIN', amount: payout }).save();
+                            winners.push({ username: b.username, choice: b.choice, amount: payout });
+                            io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
+                        }
+                    } catch(e) {}
                 }
             }
             io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, dice: diceGame.dice, total, winners, bets: diceGame.bets, history: diceGame.history });
@@ -147,10 +166,14 @@ setInterval(() => {
             for (let b of coinGame.bets) {
                 if (b.choice === coinGame.result) {
                     const payout = b.amount * 2;
-                    const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
-                    await new Transaction({ username: b.username, type: 'COIN FLIP WIN', amount: payout }).save();
-                    winners.push({ username: b.username, choice: b.choice, amount: payout });
-                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
+                    try {
+                        const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
+                        if(updatedUser) {
+                            await new Transaction({ username: b.username, type: 'COIN FLIP WIN', amount: payout }).save();
+                            winners.push({ username: b.username, choice: b.choice, amount: payout });
+                            io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
+                        }
+                    } catch(e) {}
                 }
             }
             io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, result: coinGame.result, winners, bets: coinGame.bets, history: coinGame.history });
@@ -172,10 +195,14 @@ setInterval(() => {
                 let matches = colorGame.dice.filter(c => c === b.choice).length;
                 if (matches > 0) {
                     const payout = b.amount + (b.amount * matches);
-                    const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
-                    await new Transaction({ username: b.username, type: 'COLOR GAME WIN', amount: payout }).save();
-                    winners.push({ username: b.username, choice: b.choice, amount: payout });
-                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
+                    try {
+                        const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
+                        if(updatedUser) {
+                            await new Transaction({ username: b.username, type: 'COLOR GAME WIN', amount: payout }).save();
+                            winners.push({ username: b.username, choice: b.choice, amount: payout });
+                            io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
+                        }
+                    } catch(e) {}
                 }
             }
             io.to('arcade_color').emit('color_state_update', { status: colorGame.status, dice: colorGame.dice, winners, bets: colorGame.bets, history: colorGame.history });
@@ -212,114 +239,130 @@ const checkAdminRole = async (req, res, next) => {
         const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
         const mConf = await SystemConfig.findOne({ configName: 'mod_password' });
         
-        if (pass === aConf.configValue) { req.role = 'admin'; next(); }
-        else if (pass === mConf.configValue) { req.role = 'mod'; next(); }
+        if (aConf && pass === aConf.configValue) { req.role = 'admin'; next(); }
+        else if (mConf && pass === mConf.configValue) { req.role = 'mod'; next(); }
         else { return res.status(403).json({ error: 'Unauthorized' }); }
     } catch (error) { res.status(500).json({ error: 'Database Error' }); }
 };
 
 app.post('/api/admin/login', async (req, res) => {
-    const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
-    const mConf = await SystemConfig.findOne({ configName: 'mod_password' });
-    
-    if (req.body.password === aConf.configValue) {
-        adminLog("MASTER ADMIN successfully logged in.");
-        res.json({ success: true, role: 'admin' });
-    } else if (req.body.password === mConf.configValue) {
-        adminLog("MODERATOR successfully logged in.");
-        res.json({ success: true, role: 'mod' });
-    } else { res.status(401).json({ error: 'Invalid password.' }); }
+    try {
+        const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
+        const mConf = await SystemConfig.findOne({ configName: 'mod_password' });
+        
+        if (aConf && req.body.password === aConf.configValue) {
+            adminLog("MASTER ADMIN successfully logged in.");
+            res.json({ success: true, role: 'admin' });
+        } else if (mConf && req.body.password === mConf.configValue) {
+            adminLog("MODERATOR successfully logged in.");
+            res.json({ success: true, role: 'mod' });
+        } else { res.status(401).json({ error: 'Invalid password.' }); }
+    } catch(e) { res.status(500).json({ error: 'Database loading, please try again.' }); }
 });
 
 app.post('/api/admin/change_password', checkAdminRole, async (req, res) => {
-    if (req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
-    const { targetRole, newPassword } = req.body;
-    if (!newPassword || newPassword.length < 4) return res.status(400).json({error: 'Password too short.'});
-    
-    const configName = targetRole === 'admin' ? 'admin_password' : 'mod_password';
-    await SystemConfig.updateOne({ configName }, { configValue: newPassword });
-    adminLog(`MASTER ADMIN changed the ${targetRole.toUpperCase()} password in the database.`);
-    res.json({ success: true });
+    try {
+        if (req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
+        const { targetRole, newPassword } = req.body;
+        if (!newPassword || newPassword.length < 4) return res.status(400).json({error: 'Password too short.'});
+        
+        const configName = targetRole === 'admin' ? 'admin_password' : 'mod_password';
+        await SystemConfig.updateOne({ configName }, { configValue: newPassword });
+        adminLog(`MASTER ADMIN changed the ${targetRole.toUpperCase()} password.`);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: 'Server Error' }); }
 });
 
 app.get('/api/admin/economy', checkAdminRole, async (req, res) => {
-    const users = await User.find({}, '-password');
-    const txs = await Transaction.find();
-    const codes = await GiftCode.find();
+    try {
+        const users = await User.find({}, '-password');
+        const txs = await Transaction.find();
+        const codes = await GiftCode.find();
 
-    let deposits = 0; let withdrawals = 0; let promoIssued = 0; let totalBets = 0; let totalWins = 0; let circulating = 0;
+        let deposits = 0; let withdrawals = 0; let promoIssued = 0; let totalBets = 0; let totalWins = 0; let circulating = 0;
 
-    users.forEach(u => circulating += u.credits);
-    txs.forEach(t => {
-        if(t.status === 'completed') {
-            if(t.type === 'BANK DEPOSIT') deposits += t.amount;
-            if(t.type === 'BANK WITHDRAWAL') withdrawals += t.amount;
-            if(['DAILY REWARD', 'GIFT CODE'].includes(t.type)) promoIssued += t.amount;
-            if(t.type.includes('WIN') || (t.amount > 0 && !t.type.includes('BANK') && !['DAILY REWARD', 'GIFT CODE'].includes(t.type))) totalWins += t.amount;
-        }
-        if(t.amount < 0 && !t.type.includes('BANK')) totalBets += Math.abs(t.amount);
-    });
+        users.forEach(u => circulating += u.credits);
+        txs.forEach(t => {
+            if(t.status === 'completed') {
+                if(t.type === 'BANK DEPOSIT') deposits += t.amount;
+                if(t.type === 'BANK WITHDRAWAL') withdrawals += t.amount;
+                if(['DAILY REWARD', 'GIFT CODE'].includes(t.type)) promoIssued += t.amount;
+                if(t.type.includes('WIN') || (t.amount > 0 && !t.type.includes('BANK') && !['DAILY REWARD', 'GIFT CODE'].includes(t.type))) totalWins += t.amount;
+            }
+            if(t.amount < 0 && !t.type.includes('BANK')) totalBets += Math.abs(t.amount);
+        });
 
-    const vault = 1500000 + deposits - withdrawals;
-    const ggr = totalBets - totalWins;
-    const onlineUsers = [...new Set(Object.values(socketUserMap).map(u => u.username))];
+        const vault = 1500000 + deposits - withdrawals;
+        const ggr = totalBets - totalWins;
+        const onlineUsers = [...new Set(Object.values(socketUserMap).map(u => u.username))];
 
-    res.json({ 
-        users, codes, 
-        bankRequests: txs.filter(t=>t.status==='pending'), 
-        economy: { baseVault: 1500000, deposits, withdrawals, vault, ggr, totalBets, totalWins, promoIssued, circulating }, 
-        strictHouseEdge, onlineUsers, gameLocks
-    });
+        res.json({ 
+            users, codes, 
+            bankRequests: txs.filter(t=>t.status==='pending'), 
+            economy: { baseVault: 1500000, deposits, withdrawals, vault, ggr, totalBets, totalWins, promoIssued, circulating }, 
+            strictHouseEdge, onlineUsers, gameLocks
+        });
+    } catch (e) { res.status(500).json({ error: 'Data Fetch Error' }); }
 });
 
 app.post('/api/admin/user/status', checkAdminRole, async (req, res) => { 
-    await User.updateOne({ username: req.body.username }, { status: req.body.status }); 
-    adminLog(`Changed status of player ${req.body.username} to ${req.body.status.toUpperCase()}`);
-    res.json({ success: true }); 
+    try {
+        await User.updateOne({ username: req.body.username }, { status: req.body.status }); 
+        adminLog(`Changed status of player ${req.body.username} to ${req.body.status.toUpperCase()}`);
+        res.json({ success: true }); 
+    } catch (e) { res.status(500).json({ error: 'Server Error' }); }
 });
 
 app.post('/api/admin/settings', checkAdminRole, async (req, res) => {
-    if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
-    strictHouseEdge = req.body.strictHouseEdge;
-    adminLog(`House Edge RTP modifier set to: ${strictHouseEdge ? 'ON' : 'OFF'}`);
-    res.json({ success: true });
+    try {
+        if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
+        strictHouseEdge = req.body.strictHouseEdge;
+        adminLog(`House Edge RTP modifier set to: ${strictHouseEdge ? 'ON' : 'OFF'}`);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: 'Server Error' }); }
 });
 
 app.post('/api/admin/tx/resolve', checkAdminRole, async (req, res) => {
-    if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
-    const { id, action } = req.body; 
-    const tx = await Transaction.findById(id); 
-    if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
-    
-    let updatedUser;
-    if (action === 'approve') { 
-        tx.status = 'completed'; 
-        if (tx.type === 'BANK DEPOSIT') { updatedUser = await User.findOneAndUpdate({ username: tx.username }, { $inc: { credits: tx.amount } }, { new: true }); } 
-    } else { 
-        tx.status = 'denied'; 
-        if (tx.type === 'BANK WITHDRAWAL') { updatedUser = await User.findOneAndUpdate({ username: tx.username }, { $inc: { credits: tx.amount } }, { new: true }); } 
-    }
-    await tx.save(); 
-    adminLog(`Admin ${action.toUpperCase()}ED bank request for ${tx.username} (${tx.amount} credits)`);
-    if(updatedUser) io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
-    res.json({ success: true });
+    try {
+        if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
+        const { id, action } = req.body; 
+        const tx = await Transaction.findById(id); 
+        if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
+        
+        let updatedUser;
+        if (action === 'approve') { 
+            tx.status = 'completed'; 
+            if (tx.type === 'BANK DEPOSIT') { updatedUser = await User.findOneAndUpdate({ username: tx.username }, { $inc: { credits: tx.amount } }, { new: true }); } 
+        } else { 
+            tx.status = 'denied'; 
+            if (tx.type === 'BANK WITHDRAWAL') { updatedUser = await User.findOneAndUpdate({ username: tx.username }, { $inc: { credits: tx.amount } }, { new: true }); } 
+        }
+        await tx.save(); 
+        adminLog(`Admin ${action.toUpperCase()}ED bank request for ${tx.username} (${tx.amount} credits)`);
+        if(updatedUser) io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: 'Server Error' }); }
 });
 
 app.post('/api/admin/giftcode', checkAdminRole, async (req, res) => { 
-    if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
-    const { batchName, amount, quantity } = req.body;
-    for(let i=0; i<quantity; i++) {
-        let code = Math.random().toString(36).substring(2, 8).toUpperCase();
-        await new GiftCode({ code, amount, usesLeft: 1, batchName }).save();
-    }
-    adminLog(`Generated ${quantity} gift codes for batch: ${batchName}`);
-    res.json({ success: true }); 
+    try {
+        if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
+        const { batchName, amount, quantity } = req.body;
+        for(let i=0; i<quantity; i++) {
+            let code = Math.random().toString(36).substring(2, 8).toUpperCase();
+            await new GiftCode({ code, amount, usesLeft: 1, batchName }).save();
+        }
+        adminLog(`Generated ${quantity} gift codes for batch: ${batchName}`);
+        res.json({ success: true }); 
+    } catch (e) { res.status(500).json({ error: 'Server Error' }); }
 });
 
 app.get('/api/admin/player_full/:username', checkAdminRole, async (req, res) => {
-    const user = await User.findOne({ username: req.params.username }, '-password');
-    const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 });
-    res.json({ user, txs });
+    try {
+        const user = await User.findOne({ username: req.params.username }, '-password');
+        const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 });
+        res.json({ user, txs });
+    } catch (e) { res.status(500).json({ error: 'Server Error' }); }
 });
 
 // --- PLAYER APIs ---
@@ -333,80 +376,171 @@ app.post('/api/signup', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-    const user = await User.findOne({ username: req.body.username, password: req.body.password });
-    if (!user) return res.status(401).json({ error: 'Invalid credentials.' }); 
-    if (user.status === 'banned') return res.status(401).json({ error: 'Account banned by administration.' });
-    
-    // Auto-active on login if not banned
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    user.ipAddress = ip; 
-    if(user.status !== 'active') user.status = 'active';
-    await user.save();
-    
-    adminLog(`${user.username} logged in.`);
-    
-    const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); 
-    const msLeft = new Date(lastClaim.getTime() + 24 * 60 * 60 * 1000).getTime() - now.getTime();
-    res.json({ username: user.username, credits: user.credits, status: user.status, createdAt: user.createdAt, cooldownSeconds: msLeft > 0 ? Math.floor(msLeft / 1000) : 0 });
+    try {
+        const user = await User.findOne({ username: req.body.username, password: req.body.password });
+        if (!user) return res.status(401).json({ error: 'Invalid credentials.' }); 
+        if (user.status === 'banned') return res.status(401).json({ error: 'Account banned by administration.' });
+        
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        user.ipAddress = ip; 
+        if(user.status !== 'active') user.status = 'active';
+        await user.save();
+        
+        adminLog(`${user.username} logged in.`);
+        
+        const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); 
+        const msLeft = new Date(lastClaim.getTime() + 24 * 60 * 60 * 1000).getTime() - now.getTime();
+        res.json({ username: user.username, credits: user.credits, status: user.status, createdAt: user.createdAt, cooldownSeconds: msLeft > 0 ? Math.floor(msLeft / 1000) : 0 });
+    } catch(e) { res.status(500).json({ error: 'Server loading...' }); }
 });
 
 app.post('/api/bank/request', async (req, res) => {
-    const { username, type, amount } = req.body; let txType = type === 'deposit' ? 'BANK DEPOSIT' : 'BANK WITHDRAWAL'; let currentCredits = undefined;
-    if (type === 'deposit') { if (amount < 10000 || amount > 100000) return res.status(400).json({ error: 'Limits: 10k - 100k.' }); } 
-    else if (type === 'withdrawal') {
-        if (amount < 50000 || amount > 100000) return res.status(400).json({ error: 'Limits: 50k - 100k.' });
-        const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
-        if (!user) return res.status(400).json({ error: 'Insufficient funds.' }); currentCredits = user.credits;
-    }
-    adminLog(`Bank request submitted: ${username} requested ${txType} of ${amount}.`);
-    await new Transaction({ username, type: txType, amount, status: 'pending' }).save(); res.json({ success: true, newCredits: currentCredits });
+    try {
+        const { username, type, amount } = req.body; let txType = type === 'deposit' ? 'BANK DEPOSIT' : 'BANK WITHDRAWAL'; let currentCredits = undefined;
+        if (type === 'deposit') { if (amount < 10000 || amount > 100000) return res.status(400).json({ error: 'Limits: 10k - 100k.' }); } 
+        else if (type === 'withdrawal') {
+            if (amount < 50000 || amount > 100000) return res.status(400).json({ error: 'Limits: 50k - 100k.' });
+            const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+            if (!user) return res.status(400).json({ error: 'Insufficient funds.' }); currentCredits = user.credits;
+        }
+        adminLog(`Bank request submitted: ${username} requested ${txType} of ${amount}.`);
+        await new Transaction({ username, type: txType, amount, status: 'pending' }).save(); res.json({ success: true, newCredits: currentCredits });
+    } catch(e) { res.status(500).json({ error: 'Server Error' }); }
 });
 
 app.post('/api/bank/giftcode', async (req, res) => {
-    const { username, code } = req.body; 
-    const gc = await GiftCode.findOneAndUpdate({ code, usesLeft: { $gt: 0 } }, { $set: { usesLeft: 0, claimedBy: username, claimDate: new Date() } });
-    if (!gc) return res.status(400).json({ error: 'Invalid or expired code.' });
-    
-    adminLog(`Gift code ${code} redeemed by ${username} for ${gc.amount} credits.`);
-    await User.updateOne({ username }, { $inc: { credits: gc.amount } }); 
-    await new Transaction({ username, type: 'GIFT CODE', amount: gc.amount, status: 'completed' }).save();
-    res.json({ success: true, amount: gc.amount });
+    try {
+        const { username, code } = req.body; 
+        const gc = await GiftCode.findOneAndUpdate({ code, usesLeft: { $gt: 0 } }, { $set: { usesLeft: 0, claimedBy: username, claimDate: new Date() } });
+        if (!gc) return res.status(400).json({ error: 'Invalid or expired code.' });
+        
+        adminLog(`Gift code ${code} redeemed by ${username} for ${gc.amount} credits.`);
+        await User.updateOne({ username }, { $inc: { credits: gc.amount } }); 
+        await new Transaction({ username, type: 'GIFT CODE', amount: gc.amount, status: 'completed' }).save();
+        res.json({ success: true, amount: gc.amount });
+    } catch(e) { res.status(500).json({ error: 'Server Error' }); }
 });
 
-app.get('/api/profile/ledger/:username', async (req, res) => { const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50); res.json(txs); });
+app.get('/api/profile/ledger/:username', async (req, res) => { 
+    try {
+        const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50); res.json(txs); 
+    } catch(e) { res.status(500).json({ error: 'Server Error' }); }
+});
 
 // --- SOCKET SYSTEM ---
 io.on('connection', (socket) => {
     
-    // ADMIN EYE IN THE SKY & CONTROLS
     socket.on('admin_join', () => { socket.join('admin_room'); socket.emit('game_lock_state', gameLocks); });
     
     socket.on('admin_action', ({ action, room, username, game, locked }) => {
-        if(action === 'wipe_chat') {
-            io.emit('chat_wiped', { room });
-        } else if (action === 'kick_user') {
-            const targetSocket = Object.keys(socketUserMap).find(id => socketUserMap[id].username === username);
-            if(targetSocket) { io.to(targetSocket).emit('force_disconnect'); io.sockets.sockets.get(targetSocket)?.disconnect(); }
-        } else if (action === 'toggle_game') {
-            gameLocks[game] = locked;
-            io.emit('game_lock_state', gameLocks);
-            adminLog(`System Override: ${game.toUpperCase()} is now ${locked ? 'LOCKED' : 'UNLOCKED'}`);
-        }
+        try {
+            if(action === 'wipe_chat') {
+                io.emit('chat_wiped', { room });
+            } else if (action === 'kick_user') {
+                const targetSocket = Object.keys(socketUserMap).find(id => socketUserMap[id].username === username);
+                if(targetSocket) { io.to(targetSocket).emit('force_disconnect'); io.sockets.sockets.get(targetSocket)?.disconnect(); }
+            } else if (action === 'toggle_game') {
+                gameLocks[game] = locked;
+                io.emit('game_lock_state', gameLocks);
+                adminLog(`System Override: ${game ? game.toUpperCase() : 'GAME'} is now ${locked ? 'LOCKED' : 'UNLOCKED'}`);
+            }
+        } catch (e) {}
     });
 
-    socket.on('admin_notify', ({ target, username, message }) => {
-        adminLog(`Notification Sent to [${target.toUpperCase()}]: ${message}`);
-        io.emit('system_notification', { target, username, message });
+    // --- NOTIFICATION / TICKET SYSTEM ---
+    socket.on('req_inbox', async ({ username }) => {
+        try {
+            const tickets = await Ticket.find({ username }).sort({ updatedAt: -1 });
+            socket.emit('inbox_data', tickets);
+        } catch(e){}
+    });
+
+    socket.on('read_ticket', async ({ id }) => {
+        try { await Ticket.findByIdAndUpdate(id, { unreadPlayer: false }); } catch(e){}
+    });
+
+    socket.on('player_reply', async ({ id, username, text }) => {
+        try {
+            const t = await Ticket.findById(id);
+            if(t && t.status === 'open') {
+                t.messages.push({ sender: username, text });
+                t.unreadAdmin = true; t.updatedAt = Date.now();
+                await t.save();
+                socket.emit('ticket_updated', t);
+                io.emit('admin_inbox_update'); 
+            }
+        } catch(e){}
+    });
+
+    socket.on('del_ticket', async ({ id, username }) => {
+        try {
+            await Ticket.findByIdAndDelete(id);
+            const tickets = await Ticket.find({ username }).sort({ updatedAt: -1 });
+            socket.emit('inbox_data', tickets);
+        } catch(e){}
+    });
+
+    // Admin Ticket Controls
+    socket.on('req_admin_inbox', async () => {
+        try {
+            const tickets = await Ticket.find().sort({ updatedAt: -1 });
+            socket.emit('admin_inbox_data', tickets);
+        } catch(e){}
+    });
+
+    socket.on('admin_read_ticket', async ({ id }) => {
+        try { await Ticket.findByIdAndUpdate(id, { unreadAdmin: false }); io.emit('admin_inbox_update'); } catch(e){}
+    });
+
+    socket.on('admin_reply', async ({ id, text }) => {
+        try {
+            const t = await Ticket.findById(id);
+            if(t && t.status === 'open') {
+                t.messages.push({ sender: 'ADMIN', text });
+                t.unreadPlayer = true; t.updatedAt = Date.now();
+                await t.save();
+                io.emit('admin_inbox_update');
+                io.emit('new_mail', { username: t.username });
+            }
+        } catch(e){}
+    });
+
+    socket.on('admin_close_ticket', async ({ id }) => {
+        try {
+            const t = await Ticket.findByIdAndUpdate(id, { status: 'closed' }, { new: true });
+            if(t) {
+                adminLog(`Closed support ticket for ${t.username}`);
+                io.emit('admin_inbox_update');
+                io.emit('new_mail', { username: t.username }); 
+            }
+        } catch(e){}
+    });
+
+    socket.on('admin_notify', async ({ target, username, message }) => {
+        try {
+            if(target === 'specific' && username) {
+                const t = new Ticket({ username, messages: [{ sender: 'ADMIN', text: message }], unreadPlayer: true, unreadAdmin: false });
+                await t.save();
+                adminLog(`Opened direct ticket with ${username}`);
+                io.emit('new_mail', { username }); 
+                io.emit('admin_inbox_update');
+            } else {
+                adminLog(`Global Broadcast: ${message}`);
+                io.emit('system_notification', { target, username, message });
+            }
+        } catch(e){}
     });
 
     // ARCADE LOBBIES
     socket.on('enter_arcade', async ({ username, game }) => {
-        const user = await User.findOne({ username }); if (!user) return;
-        socket.join('arcade_' + game); socketUserMap[socket.id] = { username, arcadeGame: game, roomId: game };
-        let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : coinLobby);
-        if (!lobby.find(p => p.username === username)) lobby.push({ username, color: user.nameColor });
-        io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
-        adminLog(`[SPECTATOR] ${username} entered the ${game.toUpperCase()} room.`);
+        try {
+            const user = await User.findOne({ username }); if (!user) return;
+            socket.join('arcade_' + game); socketUserMap[socket.id] = { username, arcadeGame: game, roomId: game };
+            let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : coinLobby);
+            if (!lobby.find(p => p.username === username)) lobby.push({ username, color: user.nameColor });
+            io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
+            adminLog(`[SPECTATOR] ${username} entered the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
+        } catch(e) {}
     });
 
     socket.on('leave_arcade', ({ username, game }) => {
@@ -416,7 +550,7 @@ io.on('connection', (socket) => {
         if(game === 'dice') diceLobby = lobby; else if (game === 'color') colorLobby = lobby; else coinLobby = lobby;
         if(socketUserMap[socket.id]) { delete socketUserMap[socket.id].arcadeGame; delete socketUserMap[socket.id].roomId; }
         io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
-        adminLog(`[SPECTATOR] ${username} left the ${game.toUpperCase()} room.`);
+        adminLog(`[SPECTATOR] ${username} left the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
     });
 
     socket.on('send_chat', ({ roomId, username, message }) => { 
@@ -430,65 +564,73 @@ io.on('connection', (socket) => {
     // --- ARCADE BETS ---
     socket.on('get_dice_state', () => { socket.emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); });
     socket.on('place_dice_bet', async ({ username, choice, amount }) => {
-        if(gameLocks.dice) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
-        if (diceGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
-        if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
-        let existingBet = diceGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
-        if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+        try {
+            if(gameLocks.dice) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
+            if (diceGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
+            if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+            let existingBet = diceGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+            if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
 
-        const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
-        if (!user) return socket.emit('arcade_error', 'Insufficient credits');
-        
-        await new Transaction({ username, type: 'HIGH-LOW DICE', amount: -amount }).save();
-        diceGame.bets.push({ username, choice, amount }); 
-        adminLog(`[BET] ${username} bet ${amount} on DICE (${choice})`);
-        io.emit('credit_update', { username: user.username, credits: user.credits }); 
-        socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
+            const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+            if (!user) return socket.emit('arcade_error', 'Insufficient credits');
+            
+            await new Transaction({ username, type: 'HIGH-LOW DICE', amount: -amount }).save();
+            diceGame.bets.push({ username, choice, amount }); 
+            adminLog(`[BET] ${username} bet ${amount} on DICE (${choice})`);
+            io.emit('credit_update', { username: user.username, credits: user.credits }); 
+            socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
+        } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
 
     socket.on('get_coin_state', () => { socket.emit('coin_state_update', { status: coinGame.status, betEndTime: coinGame.betEndTime, history: coinGame.history }); });
     socket.on('place_coin_bet', async ({ username, choice, amount }) => {
-        if(gameLocks.coin) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
-        if (coinGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
-        if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
-        let existingBet = coinGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
-        if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+        try {
+            if(gameLocks.coin) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
+            if (coinGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
+            if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+            let existingBet = coinGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+            if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
 
-        const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
-        if (!user) return socket.emit('arcade_error', 'Insufficient credits');
-        
-        await new Transaction({ username, type: 'COIN FLIP', amount: -amount }).save();
-        coinGame.bets.push({ username, choice, amount }); 
-        adminLog(`[BET] ${username} bet ${amount} on COIN (${choice})`);
-        io.emit('credit_update', { username: user.username, credits: user.credits });
-        socket.emit('arcade_bet_placed', { game: 'coin', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
+            const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+            if (!user) return socket.emit('arcade_error', 'Insufficient credits');
+            
+            await new Transaction({ username, type: 'COIN FLIP', amount: -amount }).save();
+            coinGame.bets.push({ username, choice, amount }); 
+            adminLog(`[BET] ${username} bet ${amount} on COIN (${choice})`);
+            io.emit('credit_update', { username: user.username, credits: user.credits });
+            socket.emit('arcade_bet_placed', { game: 'coin', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
+        } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
 
     socket.on('get_color_state', () => { socket.emit('color_state_update', { status: colorGame.status, betEndTime: colorGame.betEndTime, history: colorGame.history }); });
     socket.on('place_color_bet', async ({ username, choice, amount }) => {
-        if(gameLocks.color) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
-        if (colorGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
-        if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
-        let existingBet = colorGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
-        if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
+        try {
+            if(gameLocks.color) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
+            if (colorGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
+            if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
+            let existingBet = colorGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+            if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
 
-        const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
-        if (!user) return socket.emit('arcade_error', 'Insufficient credits');
-        
-        await new Transaction({ username, type: 'COLOR GAME', amount: -amount }).save();
-        colorGame.bets.push({ username, choice, amount }); 
-        adminLog(`[BET] ${username} bet ${amount} on COLOR (${choice})`);
-        io.emit('credit_update', { username: user.username, credits: user.credits }); 
-        socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
+            const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+            if (!user) return socket.emit('arcade_error', 'Insufficient credits');
+            
+            await new Transaction({ username, type: 'COLOR GAME', amount: -amount }).save();
+            colorGame.bets.push({ username, choice, amount }); 
+            adminLog(`[BET] ${username} bet ${amount} on COLOR (${choice})`);
+            io.emit('credit_update', { username: user.username, credits: user.credits }); 
+            socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
+        } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
 
     // --- BLACKJACK SOCKETS ---
     socket.on('enter_room', async ({ username, roomId }) => {
-        if (!rooms[roomId]) return; socket.join(roomId); socketUserMap[socket.id] = { username, roomId };
-        const user = await User.findOne({ username }); 
-        if (user && !rooms[roomId].lobby.find(p => p.username === username)) { rooms[roomId].lobby.push({ username: user.username, color: user.nameColor }); }
-        adminLog(`[SPECTATOR] ${username} entered ${getGameTitle(roomId)}.`);
-        emitGameState(roomId);
+        try {
+            if (!rooms[roomId]) return; socket.join(roomId); socketUserMap[socket.id] = { username, roomId };
+            const user = await User.findOne({ username }); 
+            if (user && !rooms[roomId].lobby.find(p => p.username === username)) { rooms[roomId].lobby.push({ username: user.username, color: user.nameColor }); }
+            adminLog(`[SPECTATOR] ${username} entered ${getGameTitle(roomId)}.`);
+            emitGameState(roomId);
+        } catch(e) {}
     });
 
     socket.on('leave_room', ({ username, roomId }) => {
@@ -501,12 +643,14 @@ io.on('connection', (socket) => {
     });
 
     socket.on('join_seat', async ({ roomId, username, seatIndex }) => {
-        let room = rooms[roomId]; if (!room || room.seats.some(s => s && s.username === username) || seatIndex < 0 || seatIndex >= room.seats.length || room.seats[seatIndex]) return;
-        const user = await User.findOne({ username }); if (!user) return;
-        room.seats[seatIndex] = { username: user.username, color: user.nameColor, socketId: socket.id, credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0, kickAt: Date.now() + 7000 };
-        if (room.status === 'waiting') room.status = 'betting'; 
-        adminLog(`[TABLE] ${username} sat down at ${getGameTitle(roomId)}.`);
-        emitGameState(roomId);
+        try {
+            let room = rooms[roomId]; if (!room || room.seats.some(s => s && s.username === username) || seatIndex < 0 || seatIndex >= room.seats.length || room.seats[seatIndex]) return;
+            const user = await User.findOne({ username }); if (!user) return;
+            room.seats[seatIndex] = { username: user.username, color: user.nameColor, socketId: socket.id, credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0, kickAt: Date.now() + 7000 };
+            if (room.status === 'waiting') room.status = 'betting'; 
+            adminLog(`[TABLE] ${username} sat down at ${getGameTitle(roomId)}.`);
+            emitGameState(roomId);
+        } catch(e) {}
     });
 
     socket.on('leave_seat', ({ roomId, username, seatIndex }) => {
@@ -515,34 +659,39 @@ io.on('connection', (socket) => {
     });
 
     socket.on('place_bet', async ({ roomId, username, seatIndex, betAmount }) => {
-        if(gameLocks[roomId]) return socket.emit('arcade_error', 'Table is currently offline for maintenance.');
-        let room = rooms[roomId]; if (!room) return; const seat = room.seats[seatIndex]; if (!seat || seat.username !== username || room.status !== 'betting') return;
-        if (betAmount >= 1000 && betAmount <= 50000) {
-            const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
-            if (!updatedUser) return; 
-            
-            seat.credits = updatedUser.credits; seat.hands[0].bet = betAmount; seat.kickAt = null; 
-            await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -betAmount }).save();
-            adminLog(`[BET] ${username} bet ${betAmount} at ${getGameTitle(roomId)}.`);
-            
-            io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
-            room.betEndTime = Date.now() + 15000; clearInterval(room.betTimerInterval);
-            
-            if (room.seats.every(s => s !== null && s.hands[0].bet > 0)) { clearInterval(room.betTimerInterval); startGame(roomId); } 
-            else { room.betTimerInterval = setInterval(() => { if (Date.now() >= room.betEndTime) { clearInterval(room.betTimerInterval); startGame(roomId); } }, 1000); emitGameState(roomId); }
-        }
+        try {
+            if(gameLocks[roomId]) return socket.emit('arcade_error', 'Table is currently offline for maintenance.');
+            let room = rooms[roomId]; if (!room) return; const seat = room.seats[seatIndex]; if (!seat || seat.username !== username || room.status !== 'betting') return;
+            if (betAmount >= 1000 && betAmount <= 50000) {
+                const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
+                if (!updatedUser) return; 
+                
+                seat.credits = updatedUser.credits; seat.hands[0].bet = betAmount; seat.kickAt = null; 
+                await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -betAmount }).save();
+                adminLog(`[BET] ${username} bet ${betAmount} at ${getGameTitle(roomId)}.`);
+                
+                io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
+                room.betEndTime = Date.now() + 15000; clearInterval(room.betTimerInterval);
+                
+                if (room.seats.every(s => s !== null && s.hands[0].bet > 0)) { clearInterval(room.betTimerInterval); startGame(roomId); } 
+                else { room.betTimerInterval = setInterval(() => { if (Date.now() >= room.betEndTime) { clearInterval(room.betTimerInterval); startGame(roomId); } }, 1000); emitGameState(roomId); }
+            }
+        } catch(e) {}
     });
 
     socket.on('player_action_hit', ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username !== username || hand.status !== 'waiting') return; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; moveToNextTurn(roomId); } else if (hand.value === 21) { hand.status = 'stand'; moveToNextTurn(roomId); } else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } });
     socket.on('player_action_stand', ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username !== username || hand.status !== 'waiting') return; hand.status = 'stand'; moveToNextTurn(roomId); });
-    socket.on('player_action_double', async ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username !== username || hand.status !== 'waiting' || hand.cards.length !== 2) return; const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); hand.bet *= 2; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; } else { hand.status = 'stand'; } moveToNextTurn(roomId); });
-    socket.on('player_action_split', async ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; if (seat.username !== username || seat.hands.length >= 2) return; const hand = seat.hands[seat.currentHand]; if (hand.status !== 'waiting' || hand.cards.length !== 2) return; if (hand.cards[0].weight === hand.cards[1].weight) { const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); const splitCard = hand.cards.pop(); const newHand = { cards: [splitCard], bet: hand.bet, status: 'waiting', value: 0 }; hand.cards.push(room.deck.pop()); newHand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); newHand.value = calculateValue(newHand.cards); if(hand.value === 21) hand.status = 'stand'; if(newHand.value === 21) newHand.status = 'stand'; seat.hands.push(newHand); if(hand.status === 'stand') moveToNextTurn(roomId); else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } } });
+    socket.on('player_action_double', async ({ roomId, username, seatIndex }) => { try { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username !== username || hand.status !== 'waiting' || hand.cards.length !== 2) return; const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); hand.bet *= 2; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; } else { hand.status = 'stand'; } moveToNextTurn(roomId); } catch(e){} });
+    socket.on('player_action_split', async ({ roomId, username, seatIndex }) => { try { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; if (seat.username !== username || seat.hands.length >= 2) return; const hand = seat.hands[seat.currentHand]; if (hand.status !== 'waiting' || hand.cards.length !== 2) return; if (hand.cards[0].weight === hand.cards[1].weight) { const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); const splitCard = hand.cards.pop(); const newHand = { cards: [splitCard], bet: hand.bet, status: 'waiting', value: 0 }; hand.cards.push(room.deck.pop()); newHand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); newHand.value = calculateValue(newHand.cards); if(hand.value === 21) hand.status = 'stand'; if(newHand.value === 21) newHand.status = 'stand'; seat.hands.push(newHand); if(hand.status === 'stand') moveToNextTurn(roomId); else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } } } catch(e){} });
 
     socket.on('claim_daily_reward_box', async ({ username, boxIndex }) => {
         try {
             const user = await User.findOne({ username }); if (!user) return; const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); const msIn24Hours = 24 * 60 * 60 * 1000;
             if (now.getTime() - lastClaim.getTime() >= msIn24Hours) {
-                let prizes = [1000, 0, 0, 0, 5000, 10000]; prizes = prizes.sort(() => Math.random() - 0.5); const wonAmount = prizes[boxIndex]; user.lastRewardClaim = now;
+                let prizes = [1000, 0, 0, 0, 5000, 10000]; prizes = prizes.sort(() => Math.random() - 0.5); 
+                let wonAmount = prizes[boxIndex]; if(typeof wonAmount !== 'number' || isNaN(wonAmount)) wonAmount = 0;
+                user.lastRewardClaim = now;
+                
                 if (wonAmount > 0) { user.credits += wonAmount; await new Transaction({ username, type: 'DAILY REWARD', amount: wonAmount, status: 'completed' }).save(); adminLog(`${username} claimed ${wonAmount} Daily Reward.`); } await user.save();
                 const msLeft = new Date(now.getTime() + msIn24Hours).getTime() - now.getTime(); const cooldownSeconds = Math.floor(msLeft / 1000);
                 socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, cooldownSeconds });
@@ -607,7 +756,14 @@ async function resolveBets(roomId, dealerValue) {
                     else if (hand.status !== 'bust' && hand.value === dealerValue) { payout = hand.bet; hand.result = 'push'; } 
                     else if (hand.status === 'bust') { hand.result = 'bust'; } 
                     else { hand.result = 'lose'; }
-                    if (payout > 0) { seat.credits += payout; const updatedUser = await User.findOneAndUpdate({ username: seat.username }, { $inc: { credits: payout } }, {new: true}); await new Transaction({ username: seat.username, type: getGameTitle(roomId)+" WIN", amount: payout }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); }
+                    if (payout > 0) { 
+                        seat.credits += payout; 
+                        try {
+                            const updatedUser = await User.findOneAndUpdate({ username: seat.username }, { $inc: { credits: payout } }, {new: true}); 
+                            await new Transaction({ username: seat.username, type: getGameTitle(roomId)+" WIN", amount: payout }).save(); 
+                            if(updatedUser) io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
+                        } catch(e){}
+                    }
                 }
             }
         }
