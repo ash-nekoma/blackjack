@@ -43,8 +43,8 @@
         
         /* MODALS */
         .overlay-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 500; }
-        .modal-content { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 800px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px #000; }
-        .modal-header { font-size: 36px; color: var(--accent-glow-2); border-bottom: 2px solid #334155; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;}
+        .modal-content { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 800px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px #000; overflow: hidden; }
+        .modal-header { font-size: 36px; color: var(--accent-glow-2); border-bottom: 2px solid #334155; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;}
 
         /* SIDEBAR */
         .admin-sidebar { width: 320px; background: #0f172a; border-right: 2px solid var(--border-std); display: flex; flex-direction: column; z-index: 10;}
@@ -55,10 +55,10 @@
 
         /* MAIN CONTENT */
         .admin-content { flex: 1; display: flex; flex-direction: column; background: #020617; position: relative;}
-        .view-panel { flex: 1; padding: 25px; display: none; overflow-y: auto; }
-        .view-panel.active { display: flex; flex-direction: column; }
-        
-        h2.panel-title { font-size: 45px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 10px;}
+        .view-panel { flex: 1; padding: 25px; display: none; flex-direction: column; overflow: hidden; }
+        .view-panel.active { display: flex; }
+        .panel-title { font-size: 45px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 10px; flex-shrink: 0;}
+        .panel-content { flex: 1; overflow-y: auto; padding-right: 5px; }
 
         /* ECONOMY WIDGETS */
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
@@ -77,11 +77,9 @@
 
         /* TABLES */
         .admin-table { width: 100%; border-collapse: collapse; background: #0f172a; border: 2px solid var(--border-std); }
-        .admin-table th { background: #1e293b; color: var(--accent-glow-2); padding: 12px; font-size: 24px; text-align: center; border-bottom: 2px solid var(--border-std); }
+        .admin-table thead th { position: sticky; top: 0; z-index: 10; background: #1e293b; color: var(--accent-glow-2); padding: 12px; font-size: 24px; text-align: center; border-bottom: 2px solid var(--border-std); box-shadow: 0 2px 0 var(--border-std); }
         .admin-table td { padding: 12px; font-size: 24px; border-bottom: 1px dashed #334155; vertical-align: middle; text-align: center;}
-        .admin-table tr:hover { background: #1e293b; }
-        
-        .ip-duplicate { color: #fff; background: var(--danger); padding: 2px 8px; border-radius: 4px; font-weight: bold; text-shadow: 1px 1px 0 #000; border: 1px solid #fff; cursor: pointer;}
+        .admin-table tr:hover td { background: #1e293b; }
         
         /* BUTTONS & INPUTS */
         .wood-btn { background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 8px 15px; font-size: 22px; cursor: pointer; box-shadow: 2px 2px 0 #000; transition: 0.1s; font-family: 'VT323';}
@@ -130,7 +128,7 @@
                     <span id="math-title" style="color:#fff;">CALCULATION</span>
                 </div>
                 <div id="math-body" style="font-size: 30px; line-height: 1.6; text-align: left; padding: 20px; background: #000; border: 2px dashed #334155; margin-bottom: 20px;"></div>
-                <button class="wood-btn" style="background:var(--danger); width:100%;" onclick="hideModal('math-modal')">CLOSE</button>
+                <button class="wood-btn" style="background:var(--danger); width:100%; flex-shrink: 0;" onclick="hideModal('math-modal')">CLOSE</button>
             </div>
         </div>
 
@@ -140,36 +138,39 @@
                     <span id="pm-name" style="color:#fff;">PLAYER</span>
                     <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('player-modal')">CLOSE</button>
                 </div>
-                <div style="display:flex; gap:10px; margin-bottom:20px;">
-                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
-                        <div style="color:#94a3b8; font-size:22px;">TOTAL WAGERED</div>
-                        <div id="pm-wager" style="font-size:28px; color:var(--danger);">0</div>
+                
+                <div class="panel-content custom-scroll" style="flex: 1; padding: 0;">
+                    <div style="display:flex; gap:10px; margin-bottom:20px;">
+                        <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                            <div style="color:#94a3b8; font-size:22px;">TOTAL WAGERED</div>
+                            <div id="pm-wager" style="font-size:28px; color:var(--danger);">0</div>
+                        </div>
+                        <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                            <div style="color:#94a3b8; font-size:22px;">TOTAL WON</div>
+                            <div id="pm-won" style="font-size:28px; color:var(--success);">0</div>
+                        </div>
+                        <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                            <div style="color:#94a3b8; font-size:22px;">NET GAME PROFIT</div>
+                            <div id="pm-net" style="font-size:28px; color:#fff;">0</div>
+                        </div>
                     </div>
-                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
-                        <div style="color:#94a3b8; font-size:22px;">TOTAL WON</div>
-                        <div id="pm-won" style="font-size:28px; color:var(--success);">0</div>
+                    <div style="display:flex; gap:10px; margin-bottom:20px;">
+                        <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                            <div style="color:#94a3b8; font-size:22px;">IP ADDRESS</div>
+                            <div id="pm-ip" style="font-size:28px;">-</div>
+                        </div>
+                        <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                            <div style="color:#94a3b8; font-size:22px;">PROMO RECEIVED</div>
+                            <div id="pm-promo" style="font-size:28px; color:var(--accent-glow-2);">0</div>
+                        </div>
                     </div>
-                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
-                        <div style="color:#94a3b8; font-size:22px;">NET GAME PROFIT</div>
-                        <div id="pm-net" style="font-size:28px; color:#fff;">0</div>
+                    <div style="color:var(--warning); font-size:28px; margin-bottom:10px;">TRANSACTION LEDGER (LATEST 50)</div>
+                    <div style="border:2px solid #334155; padding:0; display:block;">
+                        <table class="admin-table" style="margin:0; border:none;">
+                            <thead><tr><th>DATE (PHT)</th><th>TYPE</th><th>AMOUNT</th><th>STATUS</th></tr></thead>
+                            <tbody id="pm-ledger"></tbody>
+                        </table>
                     </div>
-                </div>
-                <div style="display:flex; gap:10px; margin-bottom:20px;">
-                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
-                        <div style="color:#94a3b8; font-size:22px;">IP ADDRESS</div>
-                        <div id="pm-ip" style="font-size:28px;">-</div>
-                    </div>
-                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
-                        <div style="color:#94a3b8; font-size:22px;">PROMO RECEIVED</div>
-                        <div id="pm-promo" style="font-size:28px; color:var(--accent-glow-2);">0</div>
-                    </div>
-                </div>
-                <div style="color:var(--warning); font-size:28px; margin-bottom:10px;">TRANSACTION LEDGER (LATEST 50)</div>
-                <div class="custom-scroll" style="border:2px solid #334155; padding:0; overflow-y:auto; max-height:250px; display:block;">
-                    <table class="admin-table" style="margin:0; border:none;">
-                        <thead style="position: sticky; top: 0; z-index: 10;"><tr><th>DATE (PHT)</th><th>TYPE</th><th>AMOUNT</th><th>STATUS</th></tr></thead>
-                        <tbody id="pm-ledger"></tbody>
-                    </table>
                 </div>
             </div>
         </div>
@@ -183,9 +184,9 @@
                         <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('batch-modal')">CLOSE</button>
                     </div>
                 </div>
-                <div class="custom-scroll" style="border:2px solid #334155; padding:0; overflow-y:auto; max-height:400px; display:block;">
+                <div class="panel-content custom-scroll" style="border:2px solid #334155; padding:0; display:block;">
                     <table class="admin-table" style="margin:0; border:none;">
-                        <thead style="position: sticky; top: 0; z-index: 10;"><tr><th>CODE</th><th>VALUE</th><th>STATUS</th><th>ACTION</th></tr></thead>
+                        <thead><tr><th>CODE</th><th>VALUE</th><th>STATUS</th><th>ACTION</th></tr></thead>
                         <tbody id="bm-list"></tbody>
                     </table>
                 </div>
@@ -208,17 +209,18 @@
                     <span>TICKET: <span id="tm-name" style="color:var(--accent-glow-2);"></span></span>
                     <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('ticket-modal')">CLOSE WINDOW</button>
                 </div>
-                <div style="font-size: 24px; color: var(--warning); margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px;">
+                <div style="font-size: 24px; color: var(--warning); margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px; flex-shrink: 0;">
                     SUBJECT: <span id="tm-subject" style="color: #fff;"></span>
                 </div>
+                
                 <div id="tm-messages" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left; margin-bottom: 10px;"></div>
                 
-                <div id="tm-reply-box" style="display: flex; gap: 10px;">
+                <div id="tm-reply-box" style="display: flex; gap: 10px; flex-shrink: 0;">
                     <input type="text" id="tm-input" class="retro-input" placeholder="Type reply..." style="flex: 1;">
                     <button class="wood-btn" style="background: var(--success); color: #000; width: 120px;" onclick="adminSendReply()">REPLY</button>
                 </div>
                 
-                <button id="tm-close-btn" class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 10px;" onclick="adminCloseTicket()">CLOSE CONVO (MARK RESOLVED)</button>
+                <button id="tm-close-btn" class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 10px; flex-shrink: 0;" onclick="adminCloseTicket()">CLOSE CONVO (MARK RESOLVED)</button>
             </div>
         </div>
 
@@ -240,80 +242,87 @@
 
         <div class="admin-content">
             
-            <div id="view-dashboard" class="view-panel active custom-scroll">
+            <div id="view-dashboard" class="view-panel active">
                 <h2 class="panel-title">LIVE ECONOMY & FLOOR CONTROL</h2>
-                
-                <div class="stat-grid">
-                    <div class="stat-box" onclick="showMath('vault')">
-                        <div class="stat-label">LIQUID VAULT</div>
-                        <div class="stat-value" id="stat-vault" style="color:var(--success);">0</div>
-                    </div>
-                    <div class="stat-box ggr" onclick="showMath('ggr')">
-                        <div class="stat-label">HOUSE GGR</div>
-                        <div class="stat-value" id="stat-ggr" style="color:var(--warning);">0</div>
-                    </div>
-                    <div class="stat-box promo" onclick="showMath('promo')">
-                        <div class="stat-label">PROMO LIABILITY</div>
-                        <div class="stat-value" id="stat-promo" style="color:var(--accent-glow-2);">0</div>
-                    </div>
-                    <div class="stat-box liab" onclick="showMath('liab')">
-                        <div class="stat-label">CIRCULATING CHIPS</div>
-                        <div class="stat-value" id="stat-liab" style="color:var(--danger);">0</div>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 20px;">
-                    <div class="control-panel admin-only" style="flex: 1;">
-                        <div class="control-title">GAME SERVER KILL SWITCHES</div>
-                        <div class="toggle-switch"><span class="switch-label">3-Seat Blackjack</span><button id="ks-3seat" class="wood-btn btn-toggle on" onclick="toggleGame('3seat', this)">ON</button></div>
-                        <div class="toggle-switch"><span class="switch-label">5-Seat Blackjack</span><button id="ks-5seat" class="wood-btn btn-toggle on" onclick="toggleGame('5seat', this)">ON</button></div>
-                        <div class="toggle-switch"><span class="switch-label">High-Low Dice</span><button id="ks-dice" class="wood-btn btn-toggle on" onclick="toggleGame('dice', this)">ON</button></div>
-                        <div class="toggle-switch"><span class="switch-label">Global Coin Flip</span><button id="ks-coin" class="wood-btn btn-toggle on" onclick="toggleGame('coin', this)">ON</button></div>
-                        <div class="toggle-switch"><span class="switch-label">Classic Color Game</span><button id="ks-color" class="wood-btn btn-toggle on" onclick="toggleGame('color', this)">ON</button></div>
+                <div class="panel-content custom-scroll">
+                    <div class="stat-grid">
+                        <div class="stat-box" onclick="showMath('vault')">
+                            <div class="stat-label">LIQUID VAULT</div>
+                            <div class="stat-value" id="stat-vault" style="color:var(--success);">0</div>
+                        </div>
+                        <div class="stat-box ggr" onclick="showMath('ggr')">
+                            <div class="stat-label">HOUSE GGR</div>
+                            <div class="stat-value" id="stat-ggr" style="color:var(--warning);">0</div>
+                        </div>
+                        <div class="stat-box promo" onclick="showMath('promo')">
+                            <div class="stat-label">PROMO LIABILITY</div>
+                            <div class="stat-value" id="stat-promo" style="color:var(--accent-glow-2);">0</div>
+                        </div>
+                        <div class="stat-box liab" onclick="showMath('liab')">
+                            <div class="stat-label">CIRCULATING CHIPS</div>
+                            <div class="stat-value" id="stat-liab" style="color:var(--danger);">0</div>
+                        </div>
                     </div>
 
-                    <div class="control-panel admin-only" style="flex: 1;">
-                        <div class="control-title">RNG ANALYTICS & SECURITY</div>
-                        <div style="background:#000; padding:15px; border:2px solid #334155; margin-bottom:15px; border-radius: 6px;">
-                            <div style="font-size:26px; color:var(--warning); margin-bottom:5px;">RNG PANIC SWITCH</div>
-                            <p style="font-size:20px; color:#94a3b8; margin-bottom:10px;">Forces server math to roll against the heaviest side to rapidly recover GGR.</p>
-                            <button id="rtp-btn" class="wood-btn" style="width:100%; background: var(--danger);" onclick="toggleRTP()">RTP MODIFIER: OFF</button>
+                    <div style="display: flex; gap: 20px;">
+                        <div class="control-panel admin-only" style="flex: 1;">
+                            <div class="control-title">GAME SERVER KILL SWITCHES</div>
+                            <div class="toggle-switch"><span class="switch-label">3-Seat Blackjack</span><button id="ks-3seat" class="wood-btn btn-toggle on" onclick="toggleGame('3seat', this)">ON</button></div>
+                            <div class="toggle-switch"><span class="switch-label">5-Seat Blackjack</span><button id="ks-5seat" class="wood-btn btn-toggle on" onclick="toggleGame('5seat', this)">ON</button></div>
+                            <div class="toggle-switch"><span class="switch-label">High-Low Dice</span><button id="ks-dice" class="wood-btn btn-toggle on" onclick="toggleGame('dice', this)">ON</button></div>
+                            <div class="toggle-switch"><span class="switch-label">Global Coin Flip</span><button id="ks-coin" class="wood-btn btn-toggle on" onclick="toggleGame('coin', this)">ON</button></div>
+                            <div class="toggle-switch"><span class="switch-label">Classic Color Game</span><button id="ks-color" class="wood-btn btn-toggle on" onclick="toggleGame('color', this)">ON</button></div>
+                        </div>
+
+                        <div class="control-panel admin-only" style="flex: 1;">
+                            <div class="control-title">RNG ANALYTICS & SECURITY</div>
+                            <div style="background:#000; padding:15px; border:2px solid #334155; margin-bottom:15px; border-radius: 6px;">
+                                <div style="font-size:26px; color:var(--warning); margin-bottom:5px;">RNG PANIC SWITCH</div>
+                                <p style="font-size:20px; color:#94a3b8; margin-bottom:10px;">Forces server math to roll against the heaviest side to rapidly recover GGR.</p>
+                                <button id="rtp-btn" class="wood-btn" style="width:100%; background: var(--danger);" onclick="toggleRTP()">RTP MODIFIER: OFF</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="view-cashier" class="view-panel custom-scroll">
+            <div id="view-cashier" class="view-panel">
                 <h2 class="panel-title">PENDING BANK REQUESTS & RISK ANALYSIS</h2>
-                <table class="admin-table">
-                    <thead><tr><th>DATE (PHT)</th><th>USER</th><th>TYPE</th><th>AMOUNT</th><th>ACTION</th></tr></thead>
-                    <tbody id="cashier-list"></tbody>
-                </table>
-            </div>
-
-            <div id="view-players" class="view-panel custom-scroll">
-                <h2 class="panel-title">GOD-MODE PLAYER DATABASE</h2>
-                <table class="admin-table">
-                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>IP ADDRESS</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
-                    <tbody id="player-list"></tbody>
-                </table>
-            </div>
-
-            <div id="view-promo" class="view-panel custom-scroll">
-                <h2 class="panel-title">BULK PROMO CODE ENGINE</h2>
-                <div style="display: flex; gap: 15px; margin-bottom: 20px; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px;">
-                    <input type="text" id="gc-batch" class="retro-input" placeholder="BATCH NAME" style="text-align: center;">
-                    <input type="number" id="gc-amount" class="retro-input" placeholder="CREDIT VALUE" style="text-align: center;">
-                    <input type="number" id="gc-qty" class="retro-input" placeholder="QUANTITY" style="text-align: center;">
-                    <button class="wood-btn" style="background: var(--success); color:#000; padding: 0 30px;" onclick="generateCodes()">GENERATE BATCH</button>
+                <div class="panel-content custom-scroll">
+                    <table class="admin-table">
+                        <thead><tr><th>DATE (PHT)</th><th>USER</th><th>TYPE</th><th>AMOUNT</th><th>ACTION</th></tr></thead>
+                        <tbody id="cashier-list"></tbody>
+                    </table>
                 </div>
-                <table class="admin-table">
-                    <thead><tr><th>BATCH NAME</th><th>TOTAL CODES</th><th>CLAIMED</th><th>ACTION</th></tr></thead>
-                    <tbody id="promo-batch-list"></tbody>
-                </table>
             </div>
 
-            <div id="view-eye" class="view-panel" style="overflow: hidden; flex-direction: column;">
+            <div id="view-players" class="view-panel">
+                <h2 class="panel-title">GOD-MODE PLAYER DATABASE</h2>
+                <div class="panel-content custom-scroll">
+                    <table class="admin-table">
+                        <thead><tr><th>USERNAME</th><th>BALANCE</th><th>IP ADDRESS</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                        <tbody id="player-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-promo" class="view-panel">
+                <h2 class="panel-title">BULK PROMO CODE ENGINE</h2>
+                <div class="panel-content custom-scroll">
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px;">
+                        <input type="text" id="gc-batch" class="retro-input" placeholder="BATCH NAME" style="text-align: center;">
+                        <input type="number" id="gc-amount" class="retro-input" placeholder="CREDIT VALUE" style="text-align: center;">
+                        <input type="number" id="gc-qty" class="retro-input" placeholder="QUANTITY" style="text-align: center;">
+                        <button class="wood-btn" style="background: var(--success); color:#000; padding: 0 30px;" onclick="generateCodes()">GENERATE BATCH</button>
+                    </div>
+                    <table class="admin-table">
+                        <thead><tr><th>BATCH NAME</th><th>TOTAL CODES</th><th>CLAIMED</th><th>ACTION</th></tr></thead>
+                        <tbody id="promo-batch-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-eye" class="view-panel">
                 <h2 class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
                     <span>LIVE MATRIX FEED</span>
                     <div style="display: flex; gap: 10px;">
@@ -323,16 +332,16 @@
                         <button class="wood-btn small" onclick="wipeChat('color')">WIPE COLOR CHAT</button>
                     </div>
                 </h2>
-                <div id="matrix-log" class="custom-scroll">
+                <div id="matrix-log" class="panel-content custom-scroll" style="background: #000; border: 2px solid #334155; padding: 15px; font-size: 24px; color: #10b981; font-family: monospace; text-shadow: 0 0 5px #10b981; line-height: 1.4;">
                     <div style="color: #64748b;">▶ SYSTEM: Awaiting secure websocket connection...</div>
                 </div>
             </div>
 
-            <div id="view-notify" class="view-panel custom-scroll">
+            <div id="view-notify" class="view-panel">
                 <h2 class="panel-title">SUPPORT INBOX & BROADCASTS</h2>
                 
-                <div style="display: flex; gap: 20px;">
-                    <div style="flex: 1; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; display:flex; flex-direction:column;">
+                <div style="display: flex; gap: 20px; flex: 1; min-height: 0;">
+                    <div style="flex: 1; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; display:flex; flex-direction:column; min-height: 0;">
                         <div class="control-title">SEND NEW COMMUNICATION</div>
                         <div style="margin-bottom: 15px;">
                             <span style="font-size: 24px; color: #cbd5e1; margin-right: 15px;">TYPE:</span>
@@ -356,43 +365,44 @@
                         <div style="margin-bottom: 15px;">
                             <input type="text" id="notify-subject" class="retro-input" placeholder="SUBJECT LINE" style="width: 100%;">
                         </div>
-                        <div style="flex: 1; display: flex; flex-direction: column; margin-bottom: 15px;">
-                            <textarea id="notify-msg" class="retro-input custom-scroll" style="flex: 1; width: 100%; min-height: 150px; text-align: left; resize: none;" placeholder="ENTER MESSAGE CONTENT..."></textarea>
+                        <div style="flex: 1; display: flex; flex-direction: column; margin-bottom: 15px; min-height: 0;">
+                            <textarea id="notify-msg" class="retro-input custom-scroll" style="flex: 1; width: 100%; text-align: left; resize: none;" placeholder="ENTER MESSAGE CONTENT..."></textarea>
                         </div>
-                        <button class="wood-btn" style="width: 100%; background: var(--accent-glow-2);" onclick="sendNotification()">SEND COMMUNICATION</button>
+                        <button class="wood-btn" style="width: 100%; background: var(--accent-glow-2); flex-shrink: 0;" onclick="sendNotification()">SEND COMMUNICATION</button>
                     </div>
 
-                    <div style="flex: 1; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; display:flex; flex-direction:column;">
+                    <div style="flex: 1; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; display:flex; flex-direction:column; min-height: 0;">
                         <div class="control-title">SUPPORT INBOX TRACKER</div>
                         
-                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0;">
                             <button id="admin-tab-announcement" class="wood-btn small active" onclick="setAdminInboxTab('announcement')">ANNOUNCEMENTS</button>
                             <button id="admin-tab-message" class="wood-btn small" onclick="setAdminInboxTab('message')">MESSAGES</button>
                             <button id="admin-tab-support" class="wood-btn small" onclick="setAdminInboxTab('support')">SUPPORT TICKETS</button>
                         </div>
 
-                        <div id="admin-inbox-list" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 10px; overflow-y: auto; max-height: 400px; display: flex; flex-direction: column;">
+                        <div id="admin-inbox-list" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 10px; overflow-y: auto; display: flex; flex-direction: column;">
                             <div style="color: #64748b; font-size: 24px; text-align: center; margin-top: 20px;">LOADING INBOX...</div>
                         </div>
-                        <button class="wood-btn small" style="width: 100%; margin-top: 15px; background: #475569;" onclick="fetchAdminInbox()">REFRESH INBOX</button>
+                        <button class="wood-btn small" style="width: 100%; margin-top: 15px; background: #475569; flex-shrink: 0;" onclick="fetchAdminInbox()">REFRESH INBOX</button>
                     </div>
                 </div>
             </div>
 
-            <div id="view-settings" class="view-panel custom-scroll admin-only">
+            <div id="view-settings" class="view-panel admin-only">
                 <h2 class="panel-title">SYSTEM SETTINGS & CREDENTIALS</h2>
-                
-                <div class="control-panel admin-only" style="margin-top: 20px;">
-                    <div class="control-title">SECURITY CREDENTIALS</div>
-                    <div style="background:#000; padding:15px; border:2px solid #334155; border-radius: 6px;">
-                        <p style="font-size:20px; color:#94a3b8; margin-bottom:10px;">Update the database passwords for dashboard access.</p>
-                        <div style="display: flex; gap: 10px;">
-                            <select id="pw-role" class="retro-input" style="width: 200px;">
-                                <option value="admin">MASTER ADMIN</option>
-                                <option value="mod">MODERATOR</option>
-                            </select>
-                            <input type="text" id="pw-new" class="retro-input" placeholder="NEW PASSWORD">
-                            <button class="wood-btn" style="background:var(--warning); color:#000;" onclick="changePassword()">UPDATE IN DB</button>
+                <div class="panel-content custom-scroll">
+                    <div class="control-panel admin-only" style="margin-top: 20px;">
+                        <div class="control-title">SECURITY CREDENTIALS</div>
+                        <div style="background:#000; padding:15px; border:2px solid #334155; border-radius: 6px;">
+                            <p style="font-size:20px; color:#94a3b8; margin-bottom:10px;">Update the database passwords for dashboard access.</p>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="pw-role" class="retro-input" style="width: 200px;">
+                                    <option value="admin">MASTER ADMIN</option>
+                                    <option value="mod">MODERATOR</option>
+                                </select>
+                                <input type="text" id="pw-new" class="retro-input" placeholder="NEW PASSWORD">
+                                <button class="wood-btn" style="background:var(--warning); color:#000;" onclick="changePassword()">UPDATE IN DB</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -785,6 +795,7 @@
                     <tr>
                         <td style="color:${u.nameColor}; font-weight:bold; font-size:28px;">${u.username}</td>
                         <td style="color:var(--warning);">${formatNumber(u.credits)}</td>
+                        <td><button class="wood-btn small" style="background:#475569;" onclick="this.innerText='${u.ipAddress || 'UNKNOWN'}'">[CLICK TO REVEAL]</button></td>
                         <td style="color:${statusColor}; font-weight:bold;">${displayStatus}</td>
                         <td>
                             <button class="wood-btn small" style="background:var(--accent-glow-2);" onclick="openPlayerModal('${u.username}')">VIEW</button>
