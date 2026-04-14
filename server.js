@@ -51,13 +51,16 @@ const GiftCode = mongoose.model('GiftCode', new mongoose.Schema({
     batchName: String, claimedBy: { type: String, default: null }, claimDate: { type: Date, default: null }
 }));
 
-// NEW: INBOX TICKET SCHEMA
 const Ticket = mongoose.model('Ticket', new mongoose.Schema({
-    username: String,
+    username: String, 
+    target: String, 
+    type: String, 
+    subject: String,
     messages: [{ sender: String, text: String, date: { type: Date, default: Date.now } }],
     status: { type: String, default: 'open' },
     unreadPlayer: { type: Boolean, default: true },
     unreadAdmin: { type: Boolean, default: false },
+    readBy: { type: [String], default: [] },
     updatedAt: { type: Date, default: Date.now }
 }));
 
@@ -134,10 +137,10 @@ setInterval(() => {
                 if (b.choice === 'seven' && total === 7) { won = true; payout = b.amount * 5; }
                 if (won) {
                     try {
-                        const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
+                        const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: payout } }, {new: true}); 
                         if(updatedUser) {
-                            await new Transaction({ username: b.username, type: 'HIGH-LOW DICE WIN', amount: payout }).save();
-                            winners.push({ username: b.username, choice: b.choice, amount: payout });
+                            await new Transaction({ username: updatedUser.username, type: 'HIGH-LOW DICE WIN', amount: payout }).save();
+                            winners.push({ username: updatedUser.username, choice: b.choice, amount: payout });
                             io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
                         }
                     } catch(e) {}
@@ -167,10 +170,10 @@ setInterval(() => {
                 if (b.choice === coinGame.result) {
                     const payout = b.amount * 2;
                     try {
-                        const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
+                        const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: payout } }, {new: true}); 
                         if(updatedUser) {
-                            await new Transaction({ username: b.username, type: 'COIN FLIP WIN', amount: payout }).save();
-                            winners.push({ username: b.username, choice: b.choice, amount: payout });
+                            await new Transaction({ username: updatedUser.username, type: 'COIN FLIP WIN', amount: payout }).save();
+                            winners.push({ username: updatedUser.username, choice: b.choice, amount: payout });
                             io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
                         }
                     } catch(e) {}
@@ -196,10 +199,10 @@ setInterval(() => {
                 if (matches > 0) {
                     const payout = b.amount + (b.amount * matches);
                     try {
-                        const updatedUser = await User.findOneAndUpdate({ username: b.username }, { $inc: { credits: payout } }, {new: true}); 
+                        const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: payout } }, {new: true}); 
                         if(updatedUser) {
-                            await new Transaction({ username: b.username, type: 'COLOR GAME WIN', amount: payout }).save();
-                            winners.push({ username: b.username, choice: b.choice, amount: payout });
+                            await new Transaction({ username: updatedUser.username, type: 'COLOR GAME WIN', amount: payout }).save();
+                            winners.push({ username: updatedUser.username, choice: b.choice, amount: payout });
                             io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
                         }
                     } catch(e) {}
@@ -307,7 +310,7 @@ app.get('/api/admin/economy', checkAdminRole, async (req, res) => {
 
 app.post('/api/admin/user/status', checkAdminRole, async (req, res) => { 
     try {
-        await User.updateOne({ username: req.body.username }, { status: req.body.status }); 
+        await User.updateOne({ username: new RegExp('^' + req.body.username + '$', 'i') }, { status: req.body.status }); 
         adminLog(`Changed status of player ${req.body.username} to ${req.body.status.toUpperCase()}`);
         res.json({ success: true }); 
     } catch (e) { res.status(500).json({ error: 'Server Error' }); }
@@ -332,10 +335,10 @@ app.post('/api/admin/tx/resolve', checkAdminRole, async (req, res) => {
         let updatedUser;
         if (action === 'approve') { 
             tx.status = 'completed'; 
-            if (tx.type === 'BANK DEPOSIT') { updatedUser = await User.findOneAndUpdate({ username: tx.username }, { $inc: { credits: tx.amount } }, { new: true }); } 
+            if (tx.type === 'BANK DEPOSIT') { updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + tx.username + '$', 'i') }, { $inc: { credits: tx.amount } }, { new: true }); } 
         } else { 
             tx.status = 'denied'; 
-            if (tx.type === 'BANK WITHDRAWAL') { updatedUser = await User.findOneAndUpdate({ username: tx.username }, { $inc: { credits: tx.amount } }, { new: true }); } 
+            if (tx.type === 'BANK WITHDRAWAL') { updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + tx.username + '$', 'i') }, { $inc: { credits: tx.amount } }, { new: true }); } 
         }
         await tx.save(); 
         adminLog(`Admin ${action.toUpperCase()}ED bank request for ${tx.username} (${tx.amount} credits)`);
@@ -359,8 +362,8 @@ app.post('/api/admin/giftcode', checkAdminRole, async (req, res) => {
 
 app.get('/api/admin/player_full/:username', checkAdminRole, async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.params.username }, '-password');
-        const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 });
+        const user = await User.findOne({ username: new RegExp('^' + req.params.username + '$', 'i') }, '-password');
+        const txs = await Transaction.find({ username: new RegExp('^' + req.params.username + '$', 'i') }).sort({ date: -1 });
         res.json({ user, txs });
     } catch (e) { res.status(500).json({ error: 'Server Error' }); }
 });
@@ -369,6 +372,11 @@ app.get('/api/admin/player_full/:username', checkAdminRole, async (req, res) => 
 app.post('/api/signup', async (req, res) => { 
     try { 
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        
+        // Case insensitive unique check manually to avoid crash before save
+        const existing = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i') });
+        if(existing) return res.status(400).json({ error: 'Username taken.' });
+
         await new User({ username: req.body.username, password: req.body.password, ipAddress: ip, tosAccepted: true, status: 'active' }).save(); 
         adminLog(`New account created: ${req.body.username} (IP: ${ip})`);
         res.status(201).json({ message: 'Account requested successfully.' }); 
@@ -377,7 +385,7 @@ app.post('/api/signup', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.body.username, password: req.body.password });
+        const user = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i'), password: req.body.password });
         if (!user) return res.status(401).json({ error: 'Invalid credentials.' }); 
         if (user.status === 'banned') return res.status(401).json({ error: 'Account banned by administration.' });
         
@@ -400,7 +408,7 @@ app.post('/api/bank/request', async (req, res) => {
         if (type === 'deposit') { if (amount < 10000 || amount > 100000) return res.status(400).json({ error: 'Limits: 10k - 100k.' }); } 
         else if (type === 'withdrawal') {
             if (amount < 50000 || amount > 100000) return res.status(400).json({ error: 'Limits: 50k - 100k.' });
-            const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
             if (!user) return res.status(400).json({ error: 'Insufficient funds.' }); currentCredits = user.credits;
         }
         adminLog(`Bank request submitted: ${username} requested ${txType} of ${amount}.`);
@@ -415,7 +423,7 @@ app.post('/api/bank/giftcode', async (req, res) => {
         if (!gc) return res.status(400).json({ error: 'Invalid or expired code.' });
         
         adminLog(`Gift code ${code} redeemed by ${username} for ${gc.amount} credits.`);
-        await User.updateOne({ username }, { $inc: { credits: gc.amount } }); 
+        await User.updateOne({ username: new RegExp('^' + username + '$', 'i') }, { $inc: { credits: gc.amount } }); 
         await new Transaction({ username, type: 'GIFT CODE', amount: gc.amount, status: 'completed' }).save();
         res.json({ success: true, amount: gc.amount });
     } catch(e) { res.status(500).json({ error: 'Server Error' }); }
@@ -423,7 +431,7 @@ app.post('/api/bank/giftcode', async (req, res) => {
 
 app.get('/api/profile/ledger/:username', async (req, res) => { 
     try {
-        const txs = await Transaction.find({ username: req.params.username }).sort({ date: -1 }).limit(50); res.json(txs); 
+        const txs = await Transaction.find({ username: new RegExp('^' + req.params.username + '$', 'i') }).sort({ date: -1 }).limit(50); res.json(txs); 
     } catch(e) { res.status(500).json({ error: 'Server Error' }); }
 });
 
@@ -437,7 +445,7 @@ io.on('connection', (socket) => {
             if(action === 'wipe_chat') {
                 io.emit('chat_wiped', { room });
             } else if (action === 'kick_user') {
-                const targetSocket = Object.keys(socketUserMap).find(id => socketUserMap[id].username === username);
+                const targetSocket = Object.keys(socketUserMap).find(id => socketUserMap[id].username.toLowerCase() === username.toLowerCase());
                 if(targetSocket) { io.to(targetSocket).emit('force_disconnect'); io.sockets.sockets.get(targetSocket)?.disconnect(); }
             } else if (action === 'toggle_game') {
                 gameLocks[game] = locked;
@@ -450,20 +458,44 @@ io.on('connection', (socket) => {
     // --- NOTIFICATION / TICKET SYSTEM ---
     socket.on('req_inbox', async ({ username }) => {
         try {
-            const tickets = await Ticket.find({ username }).sort({ updatedAt: -1 });
+            const tickets = await Ticket.find({ $or: [{ username: new RegExp('^' + username + '$', 'i') }, { username: 'GLOBAL' }] }).sort({ updatedAt: -1 });
             socket.emit('inbox_data', tickets);
         } catch(e){}
     });
 
-    socket.on('read_ticket', async ({ id }) => {
-        try { await Ticket.findByIdAndUpdate(id, { unreadPlayer: false }); } catch(e){}
+    socket.on('read_ticket', async ({ id, username }) => {
+        try { 
+            const t = await Ticket.findById(id);
+            if(t) {
+                if(t.username === 'GLOBAL') {
+                    if(!t.readBy.includes(username)) { t.readBy.push(username); await t.save(); }
+                } else {
+                    t.unreadPlayer = false; await t.save(); 
+                }
+            }
+        } catch(e){}
+    });
+
+    socket.on('player_create_ticket', async ({ username, subject, text }) => {
+        try {
+            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
+            if(!user) return;
+            const t = new Ticket({ username: user.username, target: 'specific', type: 'support', subject, messages: [{ sender: user.username, text }], unreadPlayer: false, unreadAdmin: true });
+            await t.save();
+            adminLog(`New support ticket from ${user.username}: ${subject}`);
+            io.emit('admin_inbox_update');
+            const tickets = await Ticket.find({ $or: [{ username: user.username }, { username: 'GLOBAL' }] }).sort({ updatedAt: -1 });
+            socket.emit('inbox_data', tickets);
+        } catch(e){}
     });
 
     socket.on('player_reply', async ({ id, username, text }) => {
         try {
+            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
+            if(!user) return;
             const t = await Ticket.findById(id);
-            if(t && t.status === 'open') {
-                t.messages.push({ sender: username, text });
+            if(t && t.status === 'open' && t.type !== 'announcement') {
+                t.messages.push({ sender: user.username, text });
                 t.unreadAdmin = true; t.updatedAt = Date.now();
                 await t.save();
                 socket.emit('ticket_updated', t);
@@ -474,8 +506,11 @@ io.on('connection', (socket) => {
 
     socket.on('del_ticket', async ({ id, username }) => {
         try {
-            await Ticket.findByIdAndDelete(id);
-            const tickets = await Ticket.find({ username }).sort({ updatedAt: -1 });
+            const t = await Ticket.findById(id);
+            if(t && t.username !== 'GLOBAL') {
+                await Ticket.findByIdAndDelete(id);
+            }
+            const tickets = await Ticket.find({ $or: [{ username: new RegExp('^' + username + '$', 'i') }, { username: 'GLOBAL' }] }).sort({ updatedAt: -1 });
             socket.emit('inbox_data', tickets);
         } catch(e){}
     });
@@ -495,7 +530,7 @@ io.on('connection', (socket) => {
     socket.on('admin_reply', async ({ id, text }) => {
         try {
             const t = await Ticket.findById(id);
-            if(t && t.status === 'open') {
+            if(t && t.status === 'open' && t.type !== 'announcement') {
                 t.messages.push({ sender: 'ADMIN', text });
                 t.unreadPlayer = true; t.updatedAt = Date.now();
                 await t.save();
@@ -509,24 +544,53 @@ io.on('connection', (socket) => {
         try {
             const t = await Ticket.findByIdAndUpdate(id, { status: 'closed' }, { new: true });
             if(t) {
-                adminLog(`Closed support ticket for ${t.username}`);
+                adminLog(`Closed conversation for ${t.username}`);
                 io.emit('admin_inbox_update');
                 io.emit('new_mail', { username: t.username }); 
             }
         } catch(e){}
     });
 
-    socket.on('admin_notify', async ({ target, username, message }) => {
+    socket.on('admin_notify', async ({ target, username, type, subject, message }) => {
         try {
-            if(target === 'specific' && username) {
-                const t = new Ticket({ username, messages: [{ sender: 'ADMIN', text: message }], unreadPlayer: true, unreadAdmin: false });
-                await t.save();
-                adminLog(`Opened direct ticket with ${username}`);
-                io.emit('new_mail', { username }); 
+            if (target === 'all') {
+                if(type === 'announcement') {
+                    const t = new Ticket({ username: 'GLOBAL', target, type, subject, messages: [{ sender: 'ADMIN', text: message }] });
+                    await t.save();
+                    adminLog(`Global Announcement Broadcasted: ${subject}`);
+                    io.emit('system_notification', { target, type, subject, message });
+                    io.emit('new_mail', { username: 'GLOBAL' });
+                } else {
+                    // Send specific tickets to ALL users (Mass Message)
+                    const allUsers = await User.find({});
+                    for(let u of allUsers) {
+                        await new Ticket({ username: u.username, target: 'specific', type, subject, messages: [{ sender: 'ADMIN', text: message }], unreadPlayer: true, unreadAdmin: false }).save();
+                    }
+                    adminLog(`Mass Message sent to ALL ${allUsers.length} players in the database.`);
+                    io.emit('system_notification', { target, type, subject, message });
+                    io.emit('new_mail', { target: 'all' });
+                }
                 io.emit('admin_inbox_update');
-            } else {
-                adminLog(`Global Broadcast: ${message}`);
-                io.emit('system_notification', { target, username, message });
+                
+            } else if (target === 'active') {
+                const onlineUsernames = [...new Set(Object.values(socketUserMap).map(u => u.username))];
+                for(let u of onlineUsernames) {
+                    await new Ticket({ username: u, target: 'specific', type, subject, messages: [{ sender: 'ADMIN', text: message }], unreadPlayer: true, unreadAdmin: false }).save();
+                }
+                adminLog(`Broadcast sent to ${onlineUsernames.length} Active Players: ${onlineUsernames.join(', ')}`);
+                io.emit('system_notification', { target, type, subject, message });
+                io.emit('new_mail', { target: 'active' });
+                io.emit('admin_inbox_update');
+                
+            } else if (target === 'specific_online' || target === 'specific_all') {
+                const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
+                if(user) {
+                    const t = new Ticket({ username: user.username, target: 'specific', type, subject, messages: [{ sender: 'ADMIN', text: message }], unreadPlayer: true, unreadAdmin: false });
+                    await t.save();
+                    adminLog(`Sent direct ${type} to ${user.username}: ${subject}`);
+                    io.emit('new_mail', { username: user.username }); 
+                    io.emit('admin_inbox_update');
+                }
             }
         } catch(e){}
     });
@@ -534,19 +598,20 @@ io.on('connection', (socket) => {
     // ARCADE LOBBIES
     socket.on('enter_arcade', async ({ username, game }) => {
         try {
-            const user = await User.findOne({ username }); if (!user) return;
-            socket.join('arcade_' + game); socketUserMap[socket.id] = { username, arcadeGame: game, roomId: game };
+            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return;
+            socket.join('arcade_' + game); socketUserMap[socket.id] = { username: user.username, arcadeGame: game, roomId: game };
             let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : coinLobby);
-            if (!lobby.find(p => p.username === username)) lobby.push({ username, color: user.nameColor });
+            if (!lobby.find(p => p.username === user.username)) lobby.push({ username: user.username, color: user.nameColor });
             io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
-            adminLog(`[SPECTATOR] ${username} entered the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
+            adminLog(`[SPECTATOR] ${user.username} entered the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
         } catch(e) {}
     });
 
     socket.on('leave_arcade', ({ username, game }) => {
         socket.leave('arcade_' + game);
+        const searchUser = new RegExp('^' + username + '$', 'i');
         let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : coinLobby);
-        lobby = lobby.filter(p => p.username !== username);
+        lobby = lobby.filter(p => !searchUser.test(p.username));
         if(game === 'dice') diceLobby = lobby; else if (game === 'color') colorLobby = lobby; else coinLobby = lobby;
         if(socketUserMap[socket.id]) { delete socketUserMap[socket.id].arcadeGame; delete socketUserMap[socket.id].roomId; }
         io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
@@ -568,15 +633,15 @@ io.on('connection', (socket) => {
             if(gameLocks.dice) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
             if (diceGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
             if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
-            let existingBet = diceGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+            let existingBet = diceGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
             if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
 
-            const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
             if (!user) return socket.emit('arcade_error', 'Insufficient credits');
             
-            await new Transaction({ username, type: 'HIGH-LOW DICE', amount: -amount }).save();
-            diceGame.bets.push({ username, choice, amount }); 
-            adminLog(`[BET] ${username} bet ${amount} on DICE (${choice})`);
+            await new Transaction({ username: user.username, type: 'HIGH-LOW DICE', amount: -amount }).save();
+            diceGame.bets.push({ username: user.username, choice, amount }); 
+            adminLog(`[BET] ${user.username} bet ${amount} on DICE (${choice})`);
             io.emit('credit_update', { username: user.username, credits: user.credits }); 
             socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
@@ -588,15 +653,15 @@ io.on('connection', (socket) => {
             if(gameLocks.coin) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
             if (coinGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
             if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
-            let existingBet = coinGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+            let existingBet = coinGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
             if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
 
-            const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
             if (!user) return socket.emit('arcade_error', 'Insufficient credits');
             
-            await new Transaction({ username, type: 'COIN FLIP', amount: -amount }).save();
-            coinGame.bets.push({ username, choice, amount }); 
-            adminLog(`[BET] ${username} bet ${amount} on COIN (${choice})`);
+            await new Transaction({ username: user.username, type: 'COIN FLIP', amount: -amount }).save();
+            coinGame.bets.push({ username: user.username, choice, amount }); 
+            adminLog(`[BET] ${user.username} bet ${amount} on COIN (${choice})`);
             io.emit('credit_update', { username: user.username, credits: user.credits });
             socket.emit('arcade_bet_placed', { game: 'coin', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
@@ -608,15 +673,15 @@ io.on('connection', (socket) => {
             if(gameLocks.color) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
             if (colorGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
             if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
-            let existingBet = colorGame.bets.filter(b=>b.username===username && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+            let existingBet = colorGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
             if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
 
-            const user = await User.findOneAndUpdate({ username, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
             if (!user) return socket.emit('arcade_error', 'Insufficient credits');
             
-            await new Transaction({ username, type: 'COLOR GAME', amount: -amount }).save();
-            colorGame.bets.push({ username, choice, amount }); 
-            adminLog(`[BET] ${username} bet ${amount} on COLOR (${choice})`);
+            await new Transaction({ username: user.username, type: 'COLOR GAME', amount: -amount }).save();
+            colorGame.bets.push({ username: user.username, choice, amount }); 
+            adminLog(`[BET] ${user.username} bet ${amount} on COLOR (${choice})`);
             io.emit('credit_update', { username: user.username, credits: user.credits }); 
             socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
@@ -625,17 +690,20 @@ io.on('connection', (socket) => {
     // --- BLACKJACK SOCKETS ---
     socket.on('enter_room', async ({ username, roomId }) => {
         try {
-            if (!rooms[roomId]) return; socket.join(roomId); socketUserMap[socket.id] = { username, roomId };
-            const user = await User.findOne({ username }); 
-            if (user && !rooms[roomId].lobby.find(p => p.username === username)) { rooms[roomId].lobby.push({ username: user.username, color: user.nameColor }); }
-            adminLog(`[SPECTATOR] ${username} entered ${getGameTitle(roomId)}.`);
+            if (!rooms[roomId]) return; socket.join(roomId); 
+            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); 
+            if (user) {
+                socketUserMap[socket.id] = { username: user.username, roomId };
+                if(!rooms[roomId].lobby.find(p => p.username === user.username)) { rooms[roomId].lobby.push({ username: user.username, color: user.nameColor }); }
+                adminLog(`[SPECTATOR] ${user.username} entered ${getGameTitle(roomId)}.`);
+            }
             emitGameState(roomId);
         } catch(e) {}
     });
 
     socket.on('leave_room', ({ username, roomId }) => {
-        let room = rooms[roomId]; if (!room) return; socket.leave(roomId); room.lobby = room.lobby.filter(p => p.username !== username);
-        const seatIndex = room.seats.findIndex(s => s && s.username === username);
+        let room = rooms[roomId]; if (!room) return; socket.leave(roomId); room.lobby = room.lobby.filter(p => p.username.toLowerCase() !== username.toLowerCase());
+        const seatIndex = room.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
         if (seatIndex !== -1) { room.seats[seatIndex] = null; if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } }
         if(socketUserMap[socket.id]) delete socketUserMap[socket.id]; 
         adminLog(`[SPECTATOR] ${username} left ${getGameTitle(roomId)}.`);
@@ -644,31 +712,31 @@ io.on('connection', (socket) => {
 
     socket.on('join_seat', async ({ roomId, username, seatIndex }) => {
         try {
-            let room = rooms[roomId]; if (!room || room.seats.some(s => s && s.username === username) || seatIndex < 0 || seatIndex >= room.seats.length || room.seats[seatIndex]) return;
-            const user = await User.findOne({ username }); if (!user) return;
+            let room = rooms[roomId]; if (!room || room.seats.some(s => s && s.username.toLowerCase() === username.toLowerCase()) || seatIndex < 0 || seatIndex >= room.seats.length || room.seats[seatIndex]) return;
+            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return;
             room.seats[seatIndex] = { username: user.username, color: user.nameColor, socketId: socket.id, credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0, kickAt: Date.now() + 7000 };
             if (room.status === 'waiting') room.status = 'betting'; 
-            adminLog(`[TABLE] ${username} sat down at ${getGameTitle(roomId)}.`);
+            adminLog(`[TABLE] ${user.username} sat down at ${getGameTitle(roomId)}.`);
             emitGameState(roomId);
         } catch(e) {}
     });
 
     socket.on('leave_seat', ({ roomId, username, seatIndex }) => {
         let room = rooms[roomId]; if (!room) return;
-        if (room.seats[seatIndex] && room.seats[seatIndex].username === username) { room.seats[seatIndex] = null; if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } emitGameState(roomId); }
+        if (room.seats[seatIndex] && room.seats[seatIndex].username.toLowerCase() === username.toLowerCase()) { room.seats[seatIndex] = null; if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } emitGameState(roomId); }
     });
 
     socket.on('place_bet', async ({ roomId, username, seatIndex, betAmount }) => {
         try {
             if(gameLocks[roomId]) return socket.emit('arcade_error', 'Table is currently offline for maintenance.');
-            let room = rooms[roomId]; if (!room) return; const seat = room.seats[seatIndex]; if (!seat || seat.username !== username || room.status !== 'betting') return;
+            let room = rooms[roomId]; if (!room) return; const seat = room.seats[seatIndex]; if (!seat || seat.username.toLowerCase() !== username.toLowerCase() || room.status !== 'betting') return;
             if (betAmount >= 1000 && betAmount <= 50000) {
-                const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
+                const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i'), credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
                 if (!updatedUser) return; 
                 
                 seat.credits = updatedUser.credits; seat.hands[0].bet = betAmount; seat.kickAt = null; 
-                await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -betAmount }).save();
-                adminLog(`[BET] ${username} bet ${betAmount} at ${getGameTitle(roomId)}.`);
+                await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId), amount: -betAmount }).save();
+                adminLog(`[BET] ${updatedUser.username} bet ${betAmount} at ${getGameTitle(roomId)}.`);
                 
                 io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
                 room.betEndTime = Date.now() + 15000; clearInterval(room.betTimerInterval);
@@ -679,24 +747,24 @@ io.on('connection', (socket) => {
         } catch(e) {}
     });
 
-    socket.on('player_action_hit', ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username !== username || hand.status !== 'waiting') return; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; moveToNextTurn(roomId); } else if (hand.value === 21) { hand.status = 'stand'; moveToNextTurn(roomId); } else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } });
-    socket.on('player_action_stand', ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username !== username || hand.status !== 'waiting') return; hand.status = 'stand'; moveToNextTurn(roomId); });
-    socket.on('player_action_double', async ({ roomId, username, seatIndex }) => { try { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username !== username || hand.status !== 'waiting' || hand.cards.length !== 2) return; const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); hand.bet *= 2; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; } else { hand.status = 'stand'; } moveToNextTurn(roomId); } catch(e){} });
-    socket.on('player_action_split', async ({ roomId, username, seatIndex }) => { try { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; if (seat.username !== username || seat.hands.length >= 2) return; const hand = seat.hands[seat.currentHand]; if (hand.status !== 'waiting' || hand.cards.length !== 2) return; if (hand.cards[0].weight === hand.cards[1].weight) { const updatedUser = await User.findOneAndUpdate({ username: seat.username, credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: seat.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); const splitCard = hand.cards.pop(); const newHand = { cards: [splitCard], bet: hand.bet, status: 'waiting', value: 0 }; hand.cards.push(room.deck.pop()); newHand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); newHand.value = calculateValue(newHand.cards); if(hand.value === 21) hand.status = 'stand'; if(newHand.value === 21) newHand.status = 'stand'; seat.hands.push(newHand); if(hand.status === 'stand') moveToNextTurn(roomId); else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } } } catch(e){} });
+    socket.on('player_action_hit', ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username.toLowerCase() !== username.toLowerCase() || hand.status !== 'waiting') return; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; moveToNextTurn(roomId); } else if (hand.value === 21) { hand.status = 'stand'; moveToNextTurn(roomId); } else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } });
+    socket.on('player_action_stand', ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username.toLowerCase() !== username.toLowerCase() || hand.status !== 'waiting') return; hand.status = 'stand'; moveToNextTurn(roomId); });
+    socket.on('player_action_double', async ({ roomId, username, seatIndex }) => { try { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username.toLowerCase() !== username.toLowerCase() || hand.status !== 'waiting' || hand.cards.length !== 2) return; const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i'), credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); hand.bet *= 2; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; } else { hand.status = 'stand'; } moveToNextTurn(roomId); } catch(e){} });
+    socket.on('player_action_split', async ({ roomId, username, seatIndex }) => { try { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; if (seat.username.toLowerCase() !== username.toLowerCase() || seat.hands.length >= 2) return; const hand = seat.hands[seat.currentHand]; if (hand.status !== 'waiting' || hand.cards.length !== 2) return; if (hand.cards[0].weight === hand.cards[1].weight) { const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i'), credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); const splitCard = hand.cards.pop(); const newHand = { cards: [splitCard], bet: hand.bet, status: 'waiting', value: 0 }; hand.cards.push(room.deck.pop()); newHand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); newHand.value = calculateValue(newHand.cards); if(hand.value === 21) hand.status = 'stand'; if(newHand.value === 21) newHand.status = 'stand'; seat.hands.push(newHand); if(hand.status === 'stand') moveToNextTurn(roomId); else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } } } catch(e){} });
 
     socket.on('claim_daily_reward_box', async ({ username, boxIndex }) => {
         try {
-            const user = await User.findOne({ username }); if (!user) return; const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); const msIn24Hours = 24 * 60 * 60 * 1000;
+            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return; const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); const msIn24Hours = 24 * 60 * 60 * 1000;
             if (now.getTime() - lastClaim.getTime() >= msIn24Hours) {
                 let prizes = [1000, 0, 0, 0, 5000, 10000]; prizes = prizes.sort(() => Math.random() - 0.5); 
                 let wonAmount = prizes[boxIndex]; if(typeof wonAmount !== 'number' || isNaN(wonAmount)) wonAmount = 0;
                 user.lastRewardClaim = now;
                 
-                if (wonAmount > 0) { user.credits += wonAmount; await new Transaction({ username, type: 'DAILY REWARD', amount: wonAmount, status: 'completed' }).save(); adminLog(`${username} claimed ${wonAmount} Daily Reward.`); } await user.save();
+                if (wonAmount > 0) { user.credits += wonAmount; await new Transaction({ username: user.username, type: 'DAILY REWARD', amount: wonAmount, status: 'completed' }).save(); adminLog(`${user.username} claimed ${wonAmount} Daily Reward.`); } await user.save();
                 const msLeft = new Date(now.getTime() + msIn24Hours).getTime() - now.getTime(); const cooldownSeconds = Math.floor(msLeft / 1000);
                 socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, cooldownSeconds });
                 io.emit('credit_update', { username: user.username, credits: user.credits }); 
-                Object.keys(rooms).forEach(rId => { const seat = rooms[rId].seats.find(s => s && s.username === username); if(seat) { seat.credits = user.credits; emitGameState(rId); } });
+                Object.keys(rooms).forEach(rId => { const seat = rooms[rId].seats.find(s => s && s.username === user.username); if(seat) { seat.credits = user.credits; emitGameState(rId); } });
             } else { socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); }
         } catch (e) { socket.emit('reward_box_opened', { success: false, message: 'Server sync error' }); }
     });
@@ -759,9 +827,11 @@ async function resolveBets(roomId, dealerValue) {
                     if (payout > 0) { 
                         seat.credits += payout; 
                         try {
-                            const updatedUser = await User.findOneAndUpdate({ username: seat.username }, { $inc: { credits: payout } }, {new: true}); 
-                            await new Transaction({ username: seat.username, type: getGameTitle(roomId)+" WIN", amount: payout }).save(); 
-                            if(updatedUser) io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
+                            const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i') }, { $inc: { credits: payout } }, {new: true}); 
+                            if(updatedUser) {
+                                await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId)+" WIN", amount: payout }).save(); 
+                                io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
+                            }
                         } catch(e){}
                     }
                 }
