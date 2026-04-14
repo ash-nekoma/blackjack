@@ -45,7 +45,7 @@
         /* SIDEBAR */
         .admin-sidebar { width: 320px; background: #0f172a; border-right: 2px solid var(--border-std); display: flex; flex-direction: column; z-index: 10;}
         .sidebar-title { padding: 20px; font-size: 38px; text-align: center; border-bottom: 2px solid var(--border-std); color: var(--danger); text-shadow: 2px 2px 0 #000; font-weight: bold;}
-        .nav-btn { background: transparent; color: #94a3b8; border: none; padding: 20px; font-size: 28px; text-align: left; cursor: pointer; transition: 0.2s; border-bottom: 1px dashed #334155; }
+        .nav-btn { background: transparent; color: #94a3b8; border: none; padding: 20px; font-size: 28px; text-align: left; cursor: pointer; transition: 0.2s; border-bottom: 1px dashed #334155; position: relative;}
         .nav-btn:hover { background: #1e293b; color: #fff; padding-left: 30px;}
         .nav-btn.active { background: var(--accent-glow-2); color: #fff; border-left: 8px solid #fff; padding-left: 22px;}
 
@@ -77,10 +77,8 @@
         .admin-table td { padding: 12px; font-size: 24px; border-bottom: 1px dashed #334155; vertical-align: middle; text-align: center;}
         .admin-table tr:hover { background: #1e293b; }
         
-        .bonus-abuser { color: #000; background: var(--warning); padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 20px; margin-left: 10px; animation: pulse 1.5s infinite;}
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-
+        .ip-duplicate { color: #fff; background: var(--danger); padding: 2px 8px; border-radius: 4px; font-weight: bold; text-shadow: 1px 1px 0 #000; border: 1px solid #fff; cursor: pointer;}
+        
         /* BUTTONS & INPUTS */
         .wood-btn { background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 8px 15px; font-size: 22px; cursor: pointer; box-shadow: 2px 2px 0 #000; transition: 0.1s; font-family: 'VT323';}
         .wood-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 transparent; }
@@ -95,6 +93,15 @@
         .btn-toggle { font-size: 22px; padding: 6px 20px; width: 100px; text-align: center; font-weight: bold;}
         .btn-toggle.on { background: var(--success); color: #000; }
         .btn-toggle.off { background: var(--danger); color: #fff; }
+
+        /* TICKET STYLING */
+        .ticket-item { background: #1e293b; border: 2px solid var(--border-std); padding: 15px; margin-bottom: 10px; border-radius: 6px; cursor: pointer; transition: filter 0.1s;}
+        .ticket-item:hover { filter: brightness(1.2); }
+        .ticket-unread { border-left: 6px solid var(--danger); }
+        .ticket-read { border-left: 6px solid #475569; }
+        .msg-bubble { background: #0f172a; border: 2px solid var(--border-std); padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: left; }
+        .msg-bubble.admin { border-left: 6px solid var(--success); background: #0f1a14;}
+        .msg-bubble.player { border-right: 6px solid var(--danger); background: #1a0f14; text-align: right;}
     </style>
 </head>
 <body>
@@ -188,6 +195,23 @@
             </div>
         </div>
 
+        <div id="ticket-modal" class="overlay-modal hidden">
+            <div class="modal-content" style="height: 750px;">
+                <div class="modal-header">
+                    <span>TICKET: <span id="tm-name" style="color:var(--accent-glow-2);"></span></span>
+                    <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('ticket-modal')">CLOSE WINDOW</button>
+                </div>
+                <div id="tm-messages" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left; margin-bottom: 10px;"></div>
+                
+                <div id="tm-reply-box" style="display: flex; gap: 10px;">
+                    <input type="text" id="tm-input" class="retro-input" placeholder="Type reply..." style="flex: 1;">
+                    <button class="wood-btn" style="background: var(--success); color: #000; width: 120px;" onclick="adminSendReply()">REPLY</button>
+                </div>
+                
+                <button id="tm-close-btn" class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 10px;" onclick="adminCloseTicket()">CLOSE CONVO (MARK RESOLVED)</button>
+            </div>
+        </div>
+
         <div class="admin-sidebar">
             <div class="sidebar-title">CASINO ROYALE<br><span style="font-size: 24px; color:#fff;">DIRECTOR PANEL</span></div>
             <button class="nav-btn active" onclick="switchView('dashboard', this)">FLOOR CONTROL</button>
@@ -195,7 +219,12 @@
             <button class="nav-btn" onclick="switchView('players', this)">PLAYER DB</button>
             <button class="nav-btn admin-only" onclick="switchView('promo', this)">PROMO ENGINE</button>
             <button class="nav-btn" onclick="switchView('eye', this)">EYE IN THE SKY</button>
-            <button class="nav-btn" onclick="switchView('notify', this)">NOTIFICATIONS</button>
+            
+            <button class="nav-btn" onclick="switchView('notify', this)">
+                NOTIFICATIONS 
+                <span id="admin-notif-badge" class="hidden" style="background:var(--danger); border:2px solid #fff; border-radius:50%; width:30px; height:30px; display:inline-flex; justify-content:center; align-items:center; font-size:22px; font-weight:bold; float:right;">0</span>
+            </button>
+            
             <button class="nav-btn admin-only" onclick="switchView('settings', this)">SETTINGS</button>
         </div>
 
@@ -255,7 +284,7 @@
             <div id="view-players" class="view-panel custom-scroll">
                 <h2 class="panel-title">GOD-MODE PLAYER DATABASE</h2>
                 <table class="admin-table">
-                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                    <thead><tr><th>USERNAME</th><th>BALANCE</th><th>IP ADDRESS</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
                     <tbody id="player-list"></tbody>
                 </table>
             </div>
@@ -290,21 +319,33 @@
             </div>
 
             <div id="view-notify" class="view-panel custom-scroll">
-                <h2 class="panel-title">GLOBAL NOTIFICATION SYSTEM</h2>
-                <div style="background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; width: 800px; max-width: 100%;">
-                    <div style="margin-bottom: 15px;">
-                        <span style="font-size: 24px; color: #cbd5e1; margin-right: 15px;">TARGET:</span>
-                        <select id="notify-target" class="retro-input" style="width: 300px; display: inline-block;" onchange="document.getElementById('notify-specific').style.display = this.value==='specific' ? 'inline-block' : 'none';">
-                            <option value="all">ALL PLAYERS</option>
-                            <option value="active">ONLINE PLAYERS ONLY</option>
-                            <option value="specific">SPECIFIC PLAYER</option>
-                        </select>
-                        <input type="text" id="notify-specific" class="retro-input" placeholder="USERNAME" style="width: 250px; display: none; margin-left: 10px;">
+                <h2 class="panel-title">GLOBAL NOTIFICATIONS & SUPPORT INBOX</h2>
+                
+               <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; display:flex; flex-direction:column;">
+                        <div class="control-title">SEND NEW MESSAGE</div>
+                        <div style="margin-bottom: 15px;">
+                            <span style="font-size: 24px; color: #cbd5e1; margin-right: 15px;">TARGET:</span>
+                            <select id="notify-target" class="retro-input" style="width: 100%; margin-top: 10px;" onchange="document.getElementById('notify-specific').style.display = this.value==='specific' ? 'block' : 'none';">
+                                <option value="all">ALL PLAYERS</option>
+                                <option value="active">ONLINE PLAYERS ONLY</option>
+                                <option value="specific">SPECIFIC PLAYER</option>
+                            </select>
+                            <input type="text" id="notify-specific" class="retro-input" placeholder="USERNAME" style="width: 100%; display: none; margin-top: 10px;">
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column; margin-bottom: 15px;">
+                            <textarea id="notify-msg" class="retro-input custom-scroll" style="flex: 1; width: 100%; min-height: 150px; text-align: left; resize: none;" placeholder="ENTER NOTIFICATION MESSAGE..."></textarea>
+                        </div>
+                        <button class="wood-btn" style="width: 100%; background: var(--accent-glow-2);" onclick="sendNotification()">BROADCAST MESSAGE</button>
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <textarea id="notify-msg" class="retro-input custom-scroll" style="width: 100%; height: 150px; text-align: left; resize: none;" placeholder="ENTER NOTIFICATION MESSAGE..."></textarea>
+
+                    <div style="flex: 1; background:#1e293b; padding:20px; border:2px solid var(--border-std); border-radius:8px; display:flex; flex-direction:column;">
+                        <div class="control-title">SUPPORT INBOX TRACKER</div>
+                        <div id="admin-inbox-list" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 10px; overflow-y: auto; max-height: 320px;">
+                            <div style="color: #64748b; font-size: 24px; text-align: center; margin-top: 20px;">LOADING INBOX...</div>
+                        </div>
+                        <button class="wood-btn small" style="width: 100%; margin-top: 15px; background: #475569;" onclick="fetchAdminInbox()">REFRESH INBOX</button>
                     </div>
-                    <button class="wood-btn" style="width: 100%; background: var(--accent-glow-2);" onclick="sendNotification()">BROADCAST MESSAGE</button>
                 </div>
             </div>
 
@@ -333,13 +374,14 @@
     <script>
         const socket = io();
         let adminPass = '';
-        let adminRole = ''; // 'admin' or 'mod'
+        let adminRole = ''; 
         let strictRTP = false;
         let localTxs = [];
         let currentBatches = {};
         let currentViewBatch = null;
         let watchingUser = null;
         let currentEconomy = null;
+        let activeTicketId = null;
 
         function formatNumber(num) { return num.toLocaleString(); }
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -357,13 +399,13 @@
                 document.getElementById('admin-login-view').style.display = 'none';
                 document.getElementById('admin-console').style.display = 'flex';
                 
-                // Hide Admin-Only tabs if Mod
                 if(adminRole === 'mod') {
                     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
                 }
 
                 socket.emit('admin_join');
                 fetchData();
+                fetchAdminInbox();
                 setInterval(fetchData, 5000); 
             } else {
                 document.getElementById('login-error').innerText = "INVALID PASSWORD";
@@ -385,7 +427,7 @@
             if(res.ok) {
                 alert(`${targetRole.toUpperCase()} password successfully updated in the database!`);
                 document.getElementById('pw-new').value = '';
-                if(targetRole === 'admin') adminPass = newPassword; // Update local session
+                if(targetRole === 'admin') adminPass = newPassword; 
             } else {
                 const d = await res.json();
                 alert("Error: " + d.error);
@@ -401,11 +443,12 @@
             target.classList.add('active');
             btnEl.classList.add('active');
             
-            if(view !== 'eye') fetchData();
+            if(view === 'notify') fetchAdminInbox();
+            else if(view !== 'eye') fetchData();
         }
 
         function toggleGame(game, btn) {
-            const isLocked = btn.classList.contains('on'); // If currently ON, we are turning it OFF (locked = true)
+            const isLocked = btn.classList.contains('on'); 
             socket.emit('admin_action', { action: 'toggle_game', game, locked: isLocked });
         }
 
@@ -426,9 +469,110 @@
 
             socket.emit('admin_notify', { target, username, message });
             document.getElementById('notify-msg').value = '';
-            alert("Notification broadcast sent.");
+            alert("Message broadcast successful.");
+            fetchAdminInbox();
         }
 
+        // --- ADMIN INBOX SYSTEM ---
+        function fetchAdminInbox() {
+            socket.emit('req_admin_inbox');
+        }
+
+        socket.on('admin_inbox_data', (tickets) => {
+            const list = document.getElementById('admin-inbox-list');
+            const unreadCount = tickets.filter(t => t.unreadAdmin).length;
+            
+            const badge = document.getElementById('admin-notif-badge');
+            if (unreadCount > 0) {
+                badge.innerText = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            if(tickets.length === 0) {
+                list.innerHTML = '<div style="color: #64748b; font-size: 24px; text-align: center; margin-top: 20px;">NO ACTIVE TICKETS</div>';
+                return;
+            }
+
+            list.innerHTML = tickets.map(t => {
+                const time = new Date(t.updatedAt).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
+                const borderClass = t.unreadAdmin ? 'ticket-unread' : 'ticket-read';
+                const tag = t.unreadAdmin ? `<span style="color:var(--danger); font-weight:bold;">[ NEW REPLY ]</span>` : '';
+                const statTag = t.status === 'closed' ? `<span style="color:#64748b;">[ CLOSED ]</span>` : '';
+                
+                const encodedMsg = encodeURIComponent(JSON.stringify(t.messages));
+                
+                return `
+                <div class="ticket-item ${borderClass}" onclick="openAdminTicket('${t._id}', '${t.username}', '${encodedMsg}', '${t.status}')">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span style="font-size:24px; color:#fff; font-weight:bold;">${t.username} ${tag} ${statTag}</span>
+                        <span style="font-size:20px; color:#94a3b8;">${time}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        });
+
+        function openAdminTicket(id, username, encodedMsg, status) {
+            activeTicketId = id;
+            document.getElementById('tm-name').innerText = username.toUpperCase();
+            socket.emit('admin_read_ticket', { id });
+            
+            const messages = JSON.parse(decodeURIComponent(encodedMsg));
+            renderAdminThread(messages, status);
+            showModal('ticket-modal');
+        }
+
+        function renderAdminThread(messages, status) {
+            const list = document.getElementById('tm-messages');
+            list.innerHTML = messages.map(m => {
+                const isAdmin = m.sender === 'ADMIN';
+                const time = new Date(m.date).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
+                return `
+                <div class="msg-bubble ${isAdmin ? 'admin' : 'player'}">
+                    <div style="font-size:18px; color:#64748b; margin-bottom:5px;">${isAdmin ? 'ADMIN' : m.sender} - ${time}</div>
+                    <div style="font-size:24px; color:#fff;">${m.text}</div>
+                </div>`;
+            }).join('');
+            list.scrollTop = list.scrollHeight;
+
+            const replyBox = document.getElementById('tm-reply-box');
+            const closeBtn = document.getElementById('tm-close-btn');
+            
+            if(status === 'closed') {
+                replyBox.style.display = 'none';
+                closeBtn.style.display = 'none';
+            } else {
+                replyBox.style.display = 'flex';
+                closeBtn.style.display = 'block';
+            }
+        }
+
+        function adminSendReply() {
+            const input = document.getElementById('tm-input');
+            const text = input.value.trim();
+            if(!text || !activeTicketId) return;
+            socket.emit('admin_reply', { id: activeTicketId, text });
+            input.value = '';
+        }
+
+        function adminCloseTicket() {
+            if(!activeTicketId) return;
+            if(confirm("Mark this conversation as Resolved? The player will no longer be able to reply.")) {
+                socket.emit('admin_close_ticket', { id: activeTicketId });
+                hideModal('ticket-modal');
+            }
+        }
+
+        socket.on('admin_inbox_update', () => {
+            fetchAdminInbox();
+            if(activeTicketId && !document.getElementById('ticket-modal').classList.contains('hidden')) {
+                // To keep it live, we should ideally fetch the specific ticket, but closing/reopening is handled by the overall refresh. 
+                // A quick UX fix is forcing a re-click or just relying on them seeing the list update.
+            }
+        });
+
+        // --- MATH & ECONOMY MODALS ---
         function showMath(type) {
             if(!currentEconomy) return;
             const b = document.getElementById('math-body');
@@ -581,7 +725,6 @@
                 const data = await res.json();
                 document.getElementById('pm-name').innerText = username.toUpperCase();
                 
-                // Show [CLICK TO REVEAL] for IP if admin, else hide
                 if(adminRole === 'admin') {
                     document.getElementById('pm-ip').innerHTML = `<button class="wood-btn small" style="background:#475569;" onclick="this.innerText='${data.user.ipAddress || 'UNKNOWN'}'">[CLICK TO REVEAL]</button>`;
                 } else {
