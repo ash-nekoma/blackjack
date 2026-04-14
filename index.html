@@ -60,6 +60,7 @@
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.8; }
         .wood-btn.locked { border-color: #555; background: #333; color: #aaa; box-shadow: none; transform: translate(2px, 2px); }
         .wood-btn.small { padding: 4px 8px; font-size: 20px; box-shadow: 2px 2px 0 #000; width: auto;}
+        .wood-btn.small.active { background: var(--accent-glow-2); border-color: #fff;}
 
         .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; overflow-x: hidden; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
 
@@ -202,10 +203,8 @@
         
         .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 20px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20; pointer-events:none;}
         
-        .history-content { flex: 1; overflow-y: auto; padding: 0 5px; margin-bottom: 2px; }
-        .history-list-item { font-size: 26px; border-bottom: 1px dashed #333; padding: 6px 0; text-align: center; }
-        
-        #dice-history, #coin-history, #color-history { max-height: 250px; overflow-y: auto; }
+        .history-content { flex: 1; overflow-y: auto; padding: 5px; margin: 0; padding-right: 0; padding-bottom: 0;}
+        .history-list-item { font-size: 26px; border-bottom: 1px dashed #333; padding: 6px 10px; text-align: center; }
         
         /* INBOX TICKET STYLING */
         .ticket-item { background: #1e293b; border: 2px solid var(--border-std); padding: 15px; margin-bottom: 10px; border-radius: 6px; cursor: pointer; transition: filter 0.1s;}
@@ -262,7 +261,7 @@
                 <button class="wood-btn" style="background: #3b82f6;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
                 
                 <button class="wood-btn" style="background: #8b5cf6; position:relative;" onclick="openInbox()">
-                    NOTIFICATIONS 
+                    INBOX 
                     <span id="notif-badge" class="hidden" style="position:absolute; top:-10px; right:-10px; background:var(--danger); border:2px solid #fff; border-radius:50%; width:30px; height:30px; display:flex; justify-content:center; align-items:center; font-size:22px; font-weight:bold; box-shadow: 2px 2px 0 #000;">0</span>
                 </button>
 
@@ -297,15 +296,25 @@
 
         <div id="notify-modal" class="overlay-menu hidden" style="z-index: 400;">
             <div class="modal-box custom-scroll" style="width: 750px; height: 750px; max-height: 90vh; display: flex; flex-direction: column;">
-                <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 15px; font-size: 50px;">SUPPORT INBOX</h2>
+                <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 15px; font-size: 50px;">SYSTEM INBOX</h2>
                 
-                <div id="inbox-list-view" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left;">
-                    <div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">LOADING INBOX...</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button id="tab-announcement" class="wood-btn small active" onclick="setInboxTab('announcement')">ANNOUNCEMENTS</button>
+                    <button id="tab-message" class="wood-btn small" onclick="setInboxTab('message')">MESSAGES</button>
+                    <button id="tab-support" class="wood-btn small" onclick="setInboxTab('support')">SUPPORT</button>
+                </div>
+
+                <div id="inbox-list-view" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left; display: flex; flex-direction: column;">
+                    <div id="inbox-content" style="flex:1;">
+                        <div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">LOADING INBOX...</div>
+                    </div>
+                    <button id="btn-create-ticket" class="wood-btn hidden" style="background: var(--accent-glow-2); width: 100%; margin-top: 10px;" onclick="openCreateTicket()">CREATE SUPPORT TICKET</button>
                 </div>
 
                 <div id="inbox-thread-view" class="hidden" style="flex: 1; display: flex; flex-direction: column;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <button class="wood-btn small" style="background: #475569;" onclick="backToInbox()">◄ BACK TO INBOX</button>
+                        <button class="wood-btn small" style="background: #475569;" onclick="backToInbox()">◄ BACK</button>
+                        <span id="thread-subject" style="font-size: 24px; font-weight: bold; color: var(--warning);"></span>
                         <span id="thread-status" style="font-size: 24px; font-weight: bold;"></span>
                     </div>
                     <div id="thread-messages" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left; margin-bottom: 10px;"></div>
@@ -315,11 +324,27 @@
                         <button class="wood-btn" style="background: var(--success); color: #000; width: 120px;" onclick="sendReply()">REPLY</button>
                     </div>
                     <div id="thread-closed-box" class="hidden" style="background: var(--danger); padding: 10px; border: 2px solid #fff; font-size: 24px; font-weight: bold; text-shadow: 1px 1px 0 #000;">
-                        [ THIS CONVERSATION HAS BEEN CLOSED BY THE ADMINISTRATOR ]
+                        [ THIS CONVERSATION IS CLOSED ]
+                    </div>
+                    <div id="thread-readonly-box" class="hidden" style="background: #1e293b; padding: 10px; border: 2px solid var(--border-std); font-size: 24px; font-weight: bold; color: #94a3b8;">
+                        [ ANNOUNCEMENTS ARE READ-ONLY ]
                     </div>
                 </div>
 
-                <button id="inbox-close-btn" class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 15px;" onclick="hideModal('notify-modal')">CLOSE INBOX</button>
+                <div id="inbox-create-view" class="hidden" style="flex: 1; display: flex; flex-direction: column; text-align: left;">
+                    <div style="margin-bottom: 15px;">
+                        <button class="wood-btn small" style="background: #475569;" onclick="backToInbox()">◄ CANCEL</button>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" id="ticket-subject" class="retro-input" placeholder="SUBJECT" style="width: 100%;">
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; margin-bottom: 10px;">
+                        <textarea id="ticket-text" class="retro-input custom-scroll" style="flex: 1; width: 100%; resize: none;" placeholder="DESCRIBE YOUR ISSUE..."></textarea>
+                    </div>
+                    <button class="wood-btn" style="background: var(--success); color: #000; width: 100%;" onclick="submitTicket()">SUBMIT TICKET</button>
+                </div>
+
+                <button id="inbox-close-btn" class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 15px;" onclick="hideModal('notify-modal')">CLOSE WINDOW</button>
             </div>
         </div>
 
@@ -775,6 +800,8 @@
         let unreadNotifs = 0;
         let gameLocks = {};
         let currentOpenTicketId = null;
+        let currentInboxTab = 'announcement'; // Default tab
+        let allMyTickets = [];
 
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
         let myCoinBets = { heads: 0, tails: 0 }; 
@@ -803,30 +830,72 @@
         function openInbox() {
             if(!currentUser) return;
             showModal('notify-modal');
+            setInboxTab('announcement');
+            socket.emit('req_inbox', { username: currentUser.username });
+        }
+
+        function setInboxTab(tab) {
+            currentInboxTab = tab;
+            document.getElementById('tab-announcement').classList.remove('active');
+            document.getElementById('tab-message').classList.remove('active');
+            document.getElementById('tab-support').classList.remove('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+
             document.getElementById('inbox-list-view').classList.remove('hidden');
             document.getElementById('inbox-thread-view').classList.add('hidden');
-            socket.emit('req_inbox', { username: currentUser.username });
+            document.getElementById('inbox-create-view').classList.add('hidden');
+            
+            if(tab === 'support') {
+                document.getElementById('btn-create-ticket').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-create-ticket').classList.add('hidden');
+            }
+            
+            renderInboxList();
         }
 
         function backToInbox() {
             currentOpenTicketId = null;
             document.getElementById('inbox-list-view').classList.remove('hidden');
             document.getElementById('inbox-thread-view').classList.add('hidden');
+            document.getElementById('inbox-create-view').classList.add('hidden');
+            
+            if(currentInboxTab === 'support') document.getElementById('btn-create-ticket').classList.remove('hidden');
             socket.emit('req_inbox', { username: currentUser.username });
         }
 
-        function openTicket(id, status, messagesStr) {
+        function openCreateTicket() {
+            document.getElementById('inbox-list-view').classList.add('hidden');
+            document.getElementById('inbox-create-view').classList.remove('hidden');
+            document.getElementById('ticket-subject').value = '';
+            document.getElementById('ticket-text').value = '';
+        }
+
+        function submitTicket() {
+            const subject = document.getElementById('ticket-subject').value.trim();
+            const text = document.getElementById('ticket-text').value.trim();
+            if(!subject || !text) return alert("Please provide a subject and a message.");
+            
+            socket.emit('player_create_ticket', { username: currentUser.username, subject, text });
+            alert("Support Ticket Submitted.");
+            backToInbox();
+        }
+
+        function openTicket(id, status, type, encodedMsg, subjectStr) {
             currentOpenTicketId = id;
             document.getElementById('inbox-list-view').classList.add('hidden');
             document.getElementById('inbox-thread-view').classList.remove('hidden');
             
-            socket.emit('read_ticket', { id });
+            socket.emit('read_ticket', { id, username: currentUser.username });
             
-            const messages = JSON.parse(decodeURIComponent(messagesStr));
-            renderThread(messages, status);
+            const messages = JSON.parse(decodeURIComponent(encodedMsg));
+            const subject = decodeURIComponent(subjectStr);
+            document.getElementById('thread-subject').innerText = subject;
+            
+            renderThread(messages, status, type);
         }
 
-        function renderThread(messages, status) {
+        function renderThread(messages, status, type) {
             const list = document.getElementById('thread-messages');
             list.innerHTML = messages.map(m => {
                 const isMe = m.sender !== 'ADMIN';
@@ -834,22 +903,34 @@
                 return `
                 <div class="msg-bubble ${isMe ? 'player' : 'admin'}">
                     <div style="font-size:18px; color:#64748b; margin-bottom:5px;">${isMe ? 'YOU' : 'ADMIN'} - ${time}</div>
-                    <div style="font-size:24px; color:#fff;">${m.text}</div>
+                    <div style="font-size:24px; color:#fff; white-space:pre-wrap;">${m.text}</div>
                 </div>`;
             }).join('');
             list.scrollTop = list.scrollHeight;
 
             const stLabel = document.getElementById('thread-status');
-            if (status === 'open') {
-                stLabel.innerText = '[ STATUS: OPEN ]';
-                stLabel.style.color = 'var(--success)';
-                document.getElementById('thread-reply-box').style.display = 'flex';
-                document.getElementById('thread-closed-box').classList.add('hidden');
+            const replyBox = document.getElementById('thread-reply-box');
+            const closedBox = document.getElementById('thread-closed-box');
+            const readOnlyBox = document.getElementById('thread-readonly-box');
+
+            if (type === 'announcement') {
+                stLabel.innerText = '';
+                replyBox.style.display = 'none';
+                closedBox.classList.add('hidden');
+                readOnlyBox.classList.remove('hidden');
             } else {
-                stLabel.innerText = '[ STATUS: CLOSED ]';
-                stLabel.style.color = 'var(--danger)';
-                document.getElementById('thread-reply-box').style.display = 'none';
-                document.getElementById('thread-closed-box').classList.remove('hidden');
+                readOnlyBox.classList.add('hidden');
+                if (status === 'open') {
+                    stLabel.innerText = '[ STATUS: OPEN ]';
+                    stLabel.style.color = 'var(--success)';
+                    replyBox.style.display = 'flex';
+                    closedBox.classList.add('hidden');
+                } else {
+                    stLabel.innerText = '[ STATUS: CLOSED ]';
+                    stLabel.style.color = 'var(--danger)';
+                    replyBox.style.display = 'none';
+                    closedBox.classList.remove('hidden');
+                }
             }
         }
 
@@ -868,9 +949,59 @@
             }
         }
 
+        function renderInboxList() {
+            const list = document.getElementById('inbox-content');
+            
+            // Filter based on active tab
+            let filtered = allMyTickets.filter(t => t.type === currentInboxTab);
+
+            if(filtered.length === 0) {
+                list.innerHTML = '<div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">NO MESSAGES</div>';
+                return;
+            }
+
+            list.innerHTML = filtered.map(t => {
+                const date = new Date(t.updatedAt).toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
+                const time = new Date(t.updatedAt).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
+                
+                let isUnread = false;
+                if(t.username === 'GLOBAL') {
+                    isUnread = !t.readBy.includes(currentUser.username);
+                } else {
+                    isUnread = t.unreadPlayer;
+                }
+                
+                const borderClass = isUnread ? 'ticket-unread' : 'ticket-read';
+                const newTag = isUnread ? `<span style="color:var(--danger); font-weight:bold;">[ NEW ]</span> ` : '';
+                const lastMsg = t.messages[t.messages.length - 1].text.substring(0, 40) + '...';
+                
+                let tagVisual = '';
+                if(t.type === 'announcement') tagVisual = `<span style="color:var(--warning);">[ANNOUNCEMENT]</span>`;
+                else if(t.type === 'message') tagVisual = `<span style="color:var(--accent-glow-2);">[MESSAGE]</span>`;
+                else if(t.type === 'support') tagVisual = `<span style="color:var(--success);">[SUPPORT]</span>`;
+
+                const encodedMsg = encodeURIComponent(JSON.stringify(t.messages));
+                const encodedSub = encodeURIComponent(t.subject || 'NO SUBJECT');
+                
+                return `
+                <div class="ticket-item ${borderClass}" onclick="openTicket('${t._id}', '${t.status}', '${t.type}', '${encodedMsg}', '${encodedSub}')">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                        <span style="font-size:24px; color:#fff;">${newTag}${tagVisual} <span style="font-weight:bold;">${t.subject || 'SYSTEM NOTIFICATION'}</span></span>
+                        ${t.username !== 'GLOBAL' ? `<button class="wood-btn small" style="background:var(--danger); box-shadow:none;" onclick="deleteTicket('${t._id}', event)">DEL</button>` : `<span style="font-size:20px; color:#94a3b8;">${date} ${time}</span>`}
+                    </div>
+                    <div style="font-size:22px; color:#94a3b8;">${lastMsg}</div>
+                </div>`;
+            }).join('');
+        }
+
         socket.on('inbox_data', (tickets) => {
-            const list = document.getElementById('inbox-list-view');
-            unreadNotifs = tickets.filter(t => t.unreadPlayer).length;
+            allMyTickets = tickets;
+            
+            // Calculate global unread count
+            unreadNotifs = tickets.filter(t => {
+                if(t.username === 'GLOBAL') return !t.readBy.includes(currentUser.username);
+                return t.unreadPlayer;
+            }).length;
             
             const badge = document.getElementById('notif-badge');
             if (unreadNotifs > 0) {
@@ -880,53 +1011,31 @@
                 badge.classList.add('hidden');
             }
 
-            if(tickets.length === 0) {
-                list.innerHTML = '<div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">NO MESSAGES</div>';
-                return;
-            }
-
-            list.innerHTML = tickets.map(t => {
-                const date = new Date(t.updatedAt).toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
-                const time = new Date(t.updatedAt).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
-                const borderClass = t.unreadPlayer ? 'ticket-unread' : 'ticket-read';
-                const newTag = t.unreadPlayer ? `<span style="color:var(--danger); font-weight:bold;">[ NEW ]</span>` : '';
-                const lastMsg = t.messages[t.messages.length - 1].text.substring(0, 30) + '...';
-                
-                const encodedMsg = encodeURIComponent(JSON.stringify(t.messages));
-                
-                return `
-                <div class="ticket-item ${borderClass}" onclick="openTicket('${t._id}', '${t.status}', '${encodedMsg}')">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                        <span style="font-size:26px; color:#fff;">${newTag} ADMIN SUPPORT <span style="font-size:20px; color:#94a3b8;">(${date} ${time})</span></span>
-                        <button class="wood-btn small" style="background:var(--danger);" onclick="deleteTicket('${t._id}', event)">DEL</button>
-                    </div>
-                    <div style="font-size:22px; color:#94a3b8;">${lastMsg}</div>
-                </div>`;
-            }).join('');
+            renderInboxList();
         });
 
         socket.on('ticket_updated', (t) => {
             if(currentOpenTicketId === t._id) {
-                renderThread(t.messages, t.status);
+                renderThread(t.messages, t.status, t.type);
             }
         });
 
         // GLOBAL BROADCAST LISTENER
         socket.on('system_notification', (data) => {
             if (!currentUser) return;
-            const { target, username, message } = data;
+            const { target, type } = data;
             let shouldShow = false;
             if (target === 'all' || target === 'active') shouldShow = true;
             
             if (shouldShow) {
                 playSfx('win');
-                alert(`GLOBAL BROADCAST:\n\n${message}`);
+                socket.emit('req_inbox', { username: currentUser.username }); // fetch silently to update badge
             }
         });
 
         // DIRECT TICKET LISTENER
         socket.on('new_mail', (data) => {
-            if (currentUser && currentUser.username === data.username) {
+            if (currentUser && (data.username === currentUser.username || data.username === 'GLOBAL')) {
                 playSfx('win');
                 socket.emit('req_inbox', { username: currentUser.username });
             }
