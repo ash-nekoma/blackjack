@@ -183,17 +183,30 @@
         .coin-3d.flipping { animation: flipCoin 0.3s infinite linear; }
         @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
 
-        /* PERYA COLOR GAME */
-        .color-grid-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 850px; margin: 0 auto; }
+       /* PERYA COLOR GAME TILES FIX */
+        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 650px; margin: 0 auto; }
         .color-die-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1;}
-        .color-die { width: 100px; height: 100px; border: 6px solid var(--border-std); border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5); transition: background-color 0.1s;}
+        .color-die { width: 90px; height: 90px; border: 5px solid var(--border-std); border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5); transition: background-color 0.1s;}
         .color-die.shake { animation: subtleShake 0.2s infinite; }
         
         .bg-red { background-color: #ef4444; } .bg-blue { background-color: #3b82f6; } .bg-yellow { background-color: #eab308; } 
         .bg-green { background-color: #10b981; } .bg-pink { background-color: #ec4899; } .bg-white { background-color: #f8fafc; }
         
-        .br-red { border-top-color: #ef4444; } .br-blue { border-top-color: #3b82f6; } .br-yellow { border-top-color: #eab308; }
-        .br-green { border-top-color: #10b981; } .br-pink { border-top-color: #ec4899; } .br-white { border-top-color: #f8fafc; }
+        .color-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; text-align: center; box-shadow: 0 6px 15px rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; cursor: pointer; transition: transform 0.1s, filter 0.1s; position: relative; height: 110px; padding: 10px; }
+        .color-bet-box:active:not(.locked) { transform: scale(0.95); }
+        .color-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
+        
+        .color-bet-box.br-red { border-top-color: #ef4444; } 
+        .color-bet-box.br-blue { border-top-color: #3b82f6; } 
+        .color-bet-box.br-yellow { border-top-color: #eab308; }
+        .color-bet-box.br-green { border-top-color: #10b981; } 
+        .color-bet-box.br-pink { border-top-color: #ec4899; } 
+        .color-bet-box.br-white { border-top-color: #f8fafc; }
+        
+        .color-bet-title { font-size: 34px; color: #fff; text-shadow: 2px 2px 0 #000; margin: 0; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
+        
+        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 20px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20; pointer-events:none;}
+        .history-list-item { font-size: 26px; border-bottom: 1px dashed #333; padding: 6px 0; text-align: center; }
         
     </style>
 </head>
@@ -655,31 +668,32 @@
                             <option value="50000">50,000</option>
                         </select>
                     </div>
-                    <div class="color-grid-wrapper">
-                        <div id="color-btn-red" class="color-bet-box br-red" onclick="placeColorBet('red')">
-                            <div class="bet-badge hidden" id="badge-red">0</div><div class="color-payout-overlay hidden" id="payout-red"></div>
+                <div class="color-grid">
+                        <div id="color-btn-red" class="color-bet-box br-red color-bet-btn" onclick="placeColorBet('red')">
+                            <div class="bet-badge pixel-text hidden" id="badge-red">0</div><div class="color-payout-overlay hidden" id="payout-red"></div>
                             <div class="color-bet-title">RED</div>
                         </div>
-                        <div id="color-btn-blue" class="color-bet-box br-blue" onclick="placeColorBet('blue')">
-                            <div class="bet-badge hidden" id="badge-blue">0</div><div class="color-payout-overlay hidden" id="payout-blue"></div>
+                        <div id="color-btn-blue" class="color-bet-box br-blue color-bet-btn" onclick="placeColorBet('blue')">
+                            <div class="bet-badge pixel-text hidden" id="badge-blue">0</div><div class="color-payout-overlay hidden" id="payout-blue"></div>
                             <div class="color-bet-title">BLUE</div>
                         </div>
-                        <div id="color-btn-yellow" class="color-bet-box br-yellow" onclick="placeColorBet('yellow')">
-                            <div class="bet-badge hidden" id="badge-yellow">0</div><div class="color-payout-overlay hidden" id="payout-yellow"></div>
+                        <div id="color-btn-yellow" class="color-bet-box br-yellow color-bet-btn" onclick="placeColorBet('yellow')">
+                            <div class="bet-badge pixel-text hidden" id="badge-yellow">0</div><div class="color-payout-overlay hidden" id="payout-yellow"></div>
                             <div class="color-bet-title">YELLOW</div>
                         </div>
-                        <div id="color-btn-green" class="color-bet-box br-green" onclick="placeColorBet('green')">
-                            <div class="bet-badge hidden" id="badge-green">0</div><div class="color-payout-overlay hidden" id="payout-green"></div>
+                        <div id="color-btn-green" class="color-bet-box br-green color-bet-btn" onclick="placeColorBet('green')">
+                            <div class="bet-badge pixel-text hidden" id="badge-green">0</div><div class="color-payout-overlay hidden" id="payout-green"></div>
                             <div class="color-bet-title">GREEN</div>
                         </div>
-                        <div id="color-btn-pink" class="color-bet-box br-pink" onclick="placeColorBet('pink')">
-                            <div class="bet-badge hidden" id="badge-pink">0</div><div class="color-payout-overlay hidden" id="payout-pink"></div>
+                        <div id="color-btn-pink" class="color-bet-box br-pink color-bet-btn" onclick="placeColorBet('pink')">
+                            <div class="bet-badge pixel-text hidden" id="badge-pink">0</div><div class="color-payout-overlay hidden" id="payout-pink"></div>
                             <div class="color-bet-title">PINK</div>
                         </div>
-                        <div id="color-btn-white" class="color-bet-box br-white" onclick="placeColorBet('white')">
-                            <div class="bet-badge hidden" id="badge-white">0</div><div class="color-payout-overlay hidden" id="payout-white"></div>
+                        <div id="color-btn-white" class="color-bet-box br-white color-bet-btn" onclick="placeColorBet('white')">
+                            <div class="bet-badge pixel-text hidden" id="badge-white">0</div><div class="color-payout-overlay hidden" id="payout-white"></div>
                             <div class="color-bet-title" style="color:#f8fafc; text-shadow: 2px 2px 0 #555;">WHITE</div>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>
