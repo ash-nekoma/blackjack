@@ -15,20 +15,26 @@
             --border-std: #222;
         }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body, input, button, table, th, td, select { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; scrollbar-width: thin; scrollbar-color: #475569 #0f172a; }
+        body, input, button, table, th, td, textarea, select { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
         body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .hidden { display: none !important; }
         
+        .hidden { display: none !important; }
+
+        /* --- GLOBAL RETRO SCROLLBARS --- */
+        ::-webkit-scrollbar { width: 16px; height: 16px; background: #0f172a; border-left: 2px solid var(--border-std); border-top: 2px solid var(--border-std); }
+        ::-webkit-scrollbar-thumb { background: #475569; border: 2px solid var(--border-std); box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        ::-webkit-scrollbar-corner { background: #000; }
+
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
+
         input[type="range"] { -webkit-appearance: none; background: transparent; height: 10px; border-radius: 5px; border: 2px solid var(--border-std); outline: none; margin: 0 10px; cursor: pointer; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 14px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 2px; cursor: pointer; }
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; }
 
         #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100vh; background: var(--bg-dark); border-radius: 12px; border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
-        .custom-scroll::-webkit-scrollbar { width: 12px; background: #000; border-left: 2px solid var(--border-std);}
-        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border: 2px solid var(--border-std); box-shadow: inset 2px 2px 0 rgba(255,255,255,0.3); }
 
         .full-menu, .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
         .full-menu { background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); }
@@ -43,7 +49,7 @@
         input.retro-input::placeholder { color: #64748b; }
         
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px; flex-shrink: 0;}
-        .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; transition: 0.1s; font-family: 'VT323', monospace; letter-spacing: 1px;}
+        .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; transition: 0.1s; font-family: 'VT323', monospace; letter-spacing: 1px; display: flex; justify-content: center; align-items: center;}
         .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.8; }
@@ -76,7 +82,7 @@
         .player-dropdown-btn:active { transform: scale(0.98); }
         
         .player-dropdown-list { position: absolute; top: calc(100% + 8px); left: 0; width: 100%; background: var(--bg-darker); border: 2px solid var(--border-std); border-radius: 12px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.9); padding: 5px; box-sizing: border-box; }
-        .lobby-player { font-size: 28px; margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 5px; text-shadow: 1px 1px 0 #000; padding-left: 10px;}
+        .player-dropdown-list .lobby-player { padding: 5px 10px; margin: 0; border-bottom: 1px dashed #333; text-align: left; font-size: 26px; }
         .player-dropdown-list .lobby-player:last-child { border-bottom: none; }
 
         .top-hud { width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); box-sizing: border-box; flex-shrink: 0;}
@@ -110,7 +116,6 @@
         .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
         .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
 
-        @keyframes coinCollect { 0% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;} 50% { transform: translateY(-20px) scale(1.2); color: #fff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24; } 100% { transform: translateY(0) scale(1); color: var(--warning); text-shadow: 1px 1px 0 #000;} }
         @keyframes loseDrop { 0% { transform: translateY(0); color: var(--warning); } 50% { transform: translateY(5px); color: var(--danger); text-shadow: 0 0 10px var(--danger); } 100% { transform: translateY(10px); color: #555; opacity: 0.5; } }
         .anim-win { animation: coinCollect 0.8s ease-out forwards; } .anim-lose { animation: loseDrop 0.8s ease-out forwards; }
         .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
@@ -240,8 +245,13 @@
             <div class="menu-grid">
                 <button class="wood-btn" style="background: var(--success);" onclick="showModal('play-modal')">PLAY GAMES</button>
                 <button class="wood-btn" style="background: #3b82f6;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
-                <button class="wood-btn" style="background: #8b5cf6;" onclick="showModal('leaderboard-modal')">LEADERBOARDS</button>
-                <button class="wood-btn" style="background: var(--warning); color:#000;" onclick="showModal('bank-modal')">BANKING</button>
+                
+                <button class="wood-btn" style="background: #8b5cf6;" onclick="showModal('notify-modal')">
+                    NOTIFICATIONS 
+                    <span id="notif-badge" class="hidden" style="background:var(--danger); border-radius:5px; padding:2px 8px; font-size:20px; box-shadow: 2px 2px 0 #000; margin-left: 10px;">0</span>
+                </button>
+
+                <button class="wood-btn" style="background: var(--warning); color:#000;" onclick="showBank()">BANKING</button>
                 <button class="wood-btn" style="background: #10b981; color:#000;" onclick="showProfile()">PROFILE</button>
                 <button class="wood-btn" style="background: #0f766e;" onclick="showRewards()">DAILY REWARDS</button>
                 <button class="wood-btn" style="background: #d946ef;" onclick="showModal('redeem-modal')">REDEEM CODE</button>
@@ -267,6 +277,16 @@
                     </div>
                     <button class="wood-btn" style="background: var(--danger); margin-top: 10px;" onclick="hideModal('play-modal')">BACK TO DASHBOARD</button>
                 </div>
+            </div>
+        </div>
+
+        <div id="notify-modal" class="overlay-menu hidden" style="z-index: 400;">
+            <div class="modal-box custom-scroll" style="width: 750px;">
+                <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 20px; font-size: 60px;">SYSTEM MESSAGES</h2>
+                <div id="notify-list" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; max-height: 400px; text-align: left;">
+                    <div id="empty-notif" style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">NO NEW NOTIFICATIONS</div>
+                </div>
+                <button class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 15px;" onclick="hideModal('notify-modal')">CLOSE</button>
             </div>
         </div>
 
@@ -353,14 +373,6 @@
                     - All accounts require manual Admin approval.
                 </div>
                 <div style="display: flex; justify-content: center; margin-top: 15px;"><button class="wood-btn" style="background: var(--success); width: 100%; color:#000;" onclick="hideModal('tos-modal')">I UNDERSTAND</button></div>
-            </div>
-        </div>
-
-        <div id="leaderboard-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll">
-                <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 20px; font-size: 60px;">HALL OF FAME</h2>
-                <div class="pixel-text" style="font-size: 30px; margin: 40px 0; color: #94a3b8;">[ DATABASE SYNCING - COMING SOON ]</div>
-                <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('leaderboard-modal')">CLOSE</button>
             </div>
         </div>
 
@@ -654,8 +666,8 @@
                     <div id="color-result-text" class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
                     <div id="color-timer" class="pixel-text" style="font-size: 26px; color: var(--accent-glow-2);">15s REMAINING</div>
                 </div>
-                <div class="arcade-bet-area">
-                    <div class="master-bet-row">
+                <div style="padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6);">
+                    <div style="display:flex; justify-content: center; margin-bottom: 10px;">
                         <select id="color-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
                             <option value="1000" selected>1,000</option>
                             <option value="5000">5,000</option>
@@ -726,6 +738,9 @@
         let globalTimerInt = null; let nextRoundTimerInt = null; let idleTimerInt = null; let turnTimerVisualInt = null;
         let rewardTimerInt = null; let actionLocked = false; window.lastBetAmount = 0; let pendingBankAction = null; 
         let rewardCooldownSeconds = 0;
+        
+        let unreadNotifs = 0;
+        let gameLocks = {};
 
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
         let myCoinBets = { heads: 0, tails: 0 }; 
@@ -743,6 +758,12 @@
             document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden')); 
             const el = document.getElementById(id); 
             if(el) el.classList.remove('hidden'); 
+            
+            if(id === 'notify-modal') {
+                unreadNotifs = 0;
+                const badge = document.getElementById('notif-badge');
+                if(badge) badge.classList.add('hidden');
+            }
         }
         
         function hideModal(id) { 
@@ -752,9 +773,7 @@
         
         function togglePlayerList(id, headerId) { 
             const list = document.getElementById(id); 
-            if(list) {
-                list.classList.toggle('hidden'); 
-            }
+            if(list) list.classList.toggle('hidden'); 
         }
 
         function toggleAuth(panel) { 
@@ -792,6 +811,60 @@
                 currentUser.credits = data.credits; 
                 updateAllCredits(); 
             } 
+        });
+
+        // NOTIFICATIONS LISTENER
+        socket.on('system_notification', (data) => {
+            if (!currentUser) return;
+            const { target, username, message } = data;
+            
+            let shouldShow = false;
+            if (target === 'all' || target === 'active') shouldShow = true;
+            if (target === 'specific' && username.toLowerCase() === currentUser.username.toLowerCase()) shouldShow = true;
+            
+            if (shouldShow) {
+                playSfx('win');
+                const list = document.getElementById('notify-list');
+                const emptyMsg = document.getElementById('empty-notif');
+                if (emptyMsg) emptyMsg.remove();
+                
+                const time = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' });
+                const typeColor = target === 'specific' ? 'var(--danger)' : 'var(--accent-glow-2)';
+                const typeText = target === 'specific' ? 'DIRECT MESSAGE' : 'GLOBAL BROADCAST';
+                
+                const notifHTML = `
+                    <div style="border-bottom: 1px dashed #333; padding-bottom: 10px; margin-bottom: 10px;">
+                        <div style="color: ${typeColor}; font-size: 22px;">[${time}] ${typeText}</div>
+                        <div style="color: #fff; font-size: 26px; margin-top: 5px;">${message}</div>
+                    </div>
+                `;
+                list.innerHTML = notifHTML + list.innerHTML;
+                
+                unreadNotifs++;
+                const badge = document.getElementById('notif-badge');
+                if(badge) {
+                    badge.innerText = unreadNotifs;
+                    badge.classList.remove('hidden');
+                }
+                
+                if (target === 'specific') {
+                    showModal('notify-modal');
+                    alert(`DIRECT MESSAGE FROM ADMIN:\n\n${message}`);
+                }
+            }
+        });
+
+        // GAME LOCKS LISTENER
+        socket.on('game_lock_state', (locks) => {
+            gameLocks = locks;
+            ['under', 'seven', 'over'].forEach(c => { const b = document.getElementById(`dice-btn-${c}`); if(b) locks.dice ? b.classList.add('locked') : b.classList.remove('locked'); });
+            ['heads', 'tails'].forEach(c => { const b = document.getElementById(`coin-btn-${c}`); if(b) locks.coin ? b.classList.add('locked') : b.classList.remove('locked'); });
+            ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { const b = document.getElementById(`color-btn-${c}`); if(b) locks.color ? b.classList.add('locked') : b.classList.remove('locked'); });
+        });
+
+        socket.on('force_disconnect', () => {
+            alert("Your connection was severed by the Administrator.");
+            logout();
         });
 
         function updateAllCredits() {
@@ -833,8 +906,9 @@
         function joinColorGame() { currentRoomId = 'color'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
 
         // --- BLACKJACK ENGINE ---
-        window.actSitDown = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        window.actSitDown = function(idx) { if(gameLocks[currentRoomId]) return alert('Table is currently offline for maintenance.'); if(actionLocked) return; actionLocked = true; socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
         window.actPlaceBet = function(idx) { 
+            if(gameLocks[currentRoomId]) return alert('Table is currently offline for maintenance.');
             if(actionLocked) return; const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value.replace(/,/g, '')) : 0;
             if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount."); if (amt > 50000) return alert("Maximum initial bet is 50,000 credits."); if (amt > currentUser.credits) return alert("Insufficient credits!");
             actionLocked = true; window.lastBetAmount = amt; socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet');
@@ -877,7 +951,7 @@
             if (visibleDealerCards.length > 0) { dBadge.innerText = calculateValue(visibleDealerCards); dBadge.classList.remove('hidden'); } else { dBadge.classList.add('hidden'); }
 
             const seatsArea = document.getElementById('seats-area'); seatsArea.innerHTML = ''; let activeElements = [];
-            if(currentUser) { const mySeatData = state.seats.find(s => s && s.username === currentUser.username); if(mySeatData) { currentUser.credits = mySeatData.credits; updateAllCredits(); mySeatIndex = state.seats.indexOf(mySeatData);} else { mySeatIndex = -1; } }
+            if(currentUser) { const mySeatData = state.seats.find(s => s && s.username === currentUser.username); if(mySeatData) { mySeatIndex = state.seats.indexOf(mySeatData);} else { mySeatIndex = -1; } }
 
             for(let index=0; index<state.seats.length; index++) {
                 let seatData = state.seats[index]; let isMySeat = currentUser && seatData && seatData.username === currentUser.username;
@@ -975,8 +1049,6 @@
         function applyThrottle() {
             isBetting = true; clearTimeout(betThrottleTimeout); betThrottleTimeout = setTimeout(() => { isBetting = false; }, 250);
         }
-        function lockBets(game) { document.querySelectorAll(`.${game}-bet-box`).forEach(b => { b.classList.add('locked'); }); }
-        function unlockBets(game) { document.querySelectorAll(`.${game}-bet-box`).forEach(b => { b.classList.remove('locked'); }); }
         function showPayoutAnim(choiceId, amount, isWin) {
             const c = document.getElementById(`payout-${choiceId}`); if(!c) return;
             c.innerHTML = `<span style="color:${isWin?'var(--success)':'var(--danger)'}">${isWin ? '+' : ''}${formatNumber(amount)}</span>`;
@@ -992,11 +1064,11 @@
             if(data.history) document.getElementById('dice-history').innerHTML = data.history.map(n => `<div class="history-list-item"><span style="color:${n[0]+n[1]===7?'#a855f7':(n[0]+n[1]<7?'var(--accent-glow-2)':'var(--success)')}">${diceFaces[n[0]-1]} ${diceFaces[n[1]-1]} = ${n[0]+n[1]}</span></div>`).join('');
 
             if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; d1.classList.remove('shake'); d2.classList.remove('shake'); unlockBets('dice'); myDiceBets = { under: 0, seven: 0, over: 0 }; clearInterval(diceInterval);
+                statusText.innerText = "PLACE YOUR BETS"; d1.classList.remove('shake'); d2.classList.remove('shake'); myDiceBets = { under: 0, seven: 0, over: 0 }; clearInterval(diceInterval);
                 document.querySelectorAll('.bet-badge').forEach(b => { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; });
                 diceInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(diceInterval); }, 1000);
             } 
-            else if (data.status === 'rolling') { lockBets('dice'); statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); playSfx('deal'); } 
+            else if (data.status === 'rolling') { statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); playSfx('deal'); } 
             else if (data.status === 'resolving') {
                 d1.classList.remove('shake'); d2.classList.remove('shake'); d1.innerText = diceFaces[data.dice[0]-1]; d2.innerText = diceFaces[data.dice[1]-1]; statusText.innerText = `RESULT: ${data.total}`;
                 let totalDiceBet = Object.values(myDiceBets).reduce((a,b)=>a+b, 0);
@@ -1018,6 +1090,7 @@
         });
         
         window.placeDiceBet = function(choice) {
+            if(gameLocks.dice) return alert('This game is currently offline for maintenance.');
             if(isBetting) return; const box = document.getElementById(`dice-btn-${choice}`); if(box && box.classList.contains('locked')) return;
             const amt = parseInt(document.getElementById(`dice-master-bet`).value);
             if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
@@ -1033,11 +1106,11 @@
             if(data.history) { document.getElementById('coin-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${r==='heads'?'var(--accent-glow-2)':'#ea580c'}">${r.toUpperCase()}</span></div>`).join(''); }
 
             if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; coinVis.classList.remove('flipping'); coinVis.innerText = '?'; unlockBets('coin'); myCoinBets = { heads: 0, tails: 0 }; clearInterval(coinInterval);
+                statusText.innerText = "PLACE YOUR BETS"; coinVis.classList.remove('flipping'); coinVis.innerText = '?'; myCoinBets = { heads: 0, tails: 0 }; clearInterval(coinInterval);
                 document.querySelectorAll('.bet-badge').forEach(b => { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; });
                 coinInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(coinInterval); }, 1000);
             }
-            else if (data.status === 'flipping') { lockBets('coin'); statusText.innerText = "FLIPPING..."; timerText.innerText = "NO MORE BETS"; coinVis.classList.add('flipping'); playSfx('deal'); }
+            else if (data.status === 'flipping') { statusText.innerText = "FLIPPING..."; timerText.innerText = "NO MORE BETS"; coinVis.classList.add('flipping'); playSfx('deal'); }
             else if (data.status === 'resolving') {
                 coinVis.classList.remove('flipping'); coinVis.innerText = data.result === 'heads' ? 'H' : 'T'; statusText.innerText = `RESULT: ${data.result.toUpperCase()}`;
                 let totalCoinBet = Object.values(myCoinBets).reduce((a,b)=>a+b, 0);
@@ -1058,6 +1131,7 @@
             }
         });
         window.placeCoinBet = function(choice) {
+            if(gameLocks.coin) return alert('This game is currently offline for maintenance.');
             if(isBetting) return; const box = document.getElementById(`coin-btn-${choice}`); if(box && box.classList.contains('locked')) return;
             const amt = parseInt(document.getElementById(`coin-master-bet`).value);
             if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
@@ -1075,12 +1149,12 @@
             if(data.history) { document.getElementById('color-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${getColorHex(r[0])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[1])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[2])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span></div>`).join(''); }
 
             if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; unlockBets('color'); myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 }; d1.classList.remove('shake'); d2.classList.remove('shake'); d3.classList.remove('shake'); clearInterval(colorInterval);
+                statusText.innerText = "PLACE YOUR BETS"; myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 }; d1.classList.remove('shake'); d2.classList.remove('shake'); d3.classList.remove('shake'); clearInterval(colorInterval);
                 document.querySelectorAll('.bet-badge').forEach(b => { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; });
                 colorInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(colorInterval); }, 1000);
             }
             else if (data.status === 'rolling') { 
-                lockBets('color'); statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); d3.classList.add('shake'); playSfx('deal'); 
+                statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); d3.classList.add('shake'); playSfx('deal'); 
                 colorAnimInterval = setInterval(()=>{
                     d1.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`; d2.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`; d3.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`;
                 }, 100);
@@ -1111,7 +1185,9 @@
                 }, 600);
             }
         });
+
         window.placeColorBet = function(choice) {
+            if(gameLocks.color) return alert('This game is currently offline for maintenance.');
             if(isBetting) return; const box = document.getElementById(`color-btn-${choice}`); if(box && box.classList.contains('locked')) return;
             const amt = parseInt(document.getElementById(`color-master-bet`).value);
             if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
@@ -1123,10 +1199,11 @@
         socket.on('arcade_bet_placed', (data) => { 
             const badge = document.getElementById(`badge-${data.choice}`); 
             if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); badge.classList.remove('hidden'); }
-            if(data.totalChoiceBet >= 50000) { let prefix = data.game === 'dice' ? 'dice-btn' : (data.game === 'coin' ? 'coin-btn' : 'color-btn'); const box = document.getElementById(`${prefix}-${data.choice}`); if(box) box.classList.add('locked'); }
-            // Do not manually increment credits here, live sync handles it.
+            
+            // Do not manually apply lock class here since the CSS handles global locks, just rely on throttle
             playSfx('bet'); 
         });
+
         socket.on('arcade_error', (msg) => { alert(msg); isBetting = false; });
 
         function getColorHex(c) {
@@ -1151,6 +1228,12 @@
             if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
         });
 
+        socket.on('chat_wiped', (data) => {
+            let boxId = 'chat-messages'; if (data.room === 'dice') boxId = 'dice-chat-messages'; if (data.room === 'coin') boxId = 'coin-chat-messages'; if (data.room === 'color') boxId = 'color-chat-messages';
+            const msgs = document.getElementById(boxId);
+            if(msgs) msgs.innerHTML = `<div style="color:var(--danger); text-align:center; margin-top:20px;">[CHAT CLEARED BY ADMIN]</div>`;
+        });
+
         // --- UI MENUS & BANKING ---
         function showProfile() { if(!currentUser) return; document.getElementById('profile-username-preview').innerText = currentUser.username; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showModal('profile-modal'); }
         function showBank() { if(!currentUser) return; document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showModal('bank-modal'); }
@@ -1169,7 +1252,11 @@
                     if (tx.status === 'pending') amtColor = '#94a3b8'; else if (tx.status === 'completed') amtColor = isWithdrawal ? 'var(--danger)' : 'var(--success)'; else amtColor = 'var(--danger)'; 
                     let stColor = tx.status === 'pending' ? '#fbbf24' : (tx.status === 'completed' ? '#10b981' : '#ef4444'); statusBadge = ` <span style="color:${stColor}; font-size:20px;">[${(tx.status === 'completed' ? 'APPROVED' : tx.status).toUpperCase()}]</span>`;
                 } else { amtColor = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff'); prefix = tx.amount > 0 ? '+' : (tx.amount < 0 ? '-' : ''); }
-                list.innerHTML += `<div class="ledger-item"><span class="ledger-desc">${tx.type.toUpperCase()}${statusBadge}</span> <span style="color:${amtColor}">${prefix}${formatNumber(displayAmt)} <span class="coin-icon">🪙</span></span></div>`;
+                const time = new Date(tx.date).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
+                list.innerHTML += `<div class="ledger-item">
+                    <span><span style="color:#64748b; font-size:20px; margin-right:10px;">[${time}]</span><span class="ledger-desc">${tx.type.toUpperCase()}${statusBadge}</span></span> 
+                    <span style="color:${amtColor}">${prefix}${formatNumber(displayAmt)} <span class="coin-icon">🪙</span></span>
+                </div>`;
             });
         }
 
