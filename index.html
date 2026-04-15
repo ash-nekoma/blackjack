@@ -189,7 +189,7 @@
         .coin-3d.flipping { animation: flipCoin 0.3s infinite linear; }
         @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
 
-        /* PERYA COLOR GAME & HISTORY LISTS */
+        /* PERYA COLOR GAME */
         .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 650px; margin: 0 auto; }
         .color-die-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1;}
         .color-die { width: 90px; height: 90px; border: 5px solid var(--border-std); border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5); transition: background-color 0.1s;}
@@ -212,7 +212,7 @@
         
         .history-content { flex: 1; overflow-y: auto; padding: 0 5px; margin-bottom: 2px; }
         .history-list-item { font-size: 26px; border-bottom: 1px dashed #333; padding: 6px 10px; text-align: center; }
-
+        
         /* INBOX TICKET STYLING */
         .ticket-item { background: #1e293b; border: 2px solid var(--border-std); padding: 15px; margin-bottom: 10px; border-radius: 6px; cursor: pointer; transition: filter 0.1s;}
         .ticket-item:hover { filter: brightness(1.2); }
@@ -222,28 +222,28 @@
         .msg-bubble.admin { border-left: 6px solid var(--danger); background: #1a0f14;}
         .msg-bubble.player { border-right: 6px solid var(--success); background: #0f1a14; text-align: right;}
 
-        /* ROULETTE STYLING */
+        /* --- 8-BIT ROULETTE STYLING --- */
         .r-board { display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; flex: 1;}
         .r-grid-main { display: flex; flex-direction: row; border: 4px solid var(--border-std); background: #111; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .r-zero-col { display: flex; flex-direction: column; justify-content: center; }
         .r-num-cols { display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: repeat(3, 1fr); }
-        .r-cell { width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); cursor: crosshair; position: relative; font-family: Arial; }
+        .r-cell { width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; font-size: 34px; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); cursor: crosshair; position: relative; font-family: 'VT323', monospace; }
         .r-cell:hover { filter: brightness(1.4); }
         .r-cell.r-zero { width: 60px; height: 180px; background: var(--success); color: #fff; text-shadow: 2px 2px 0 #000;}
         .r-cell.r-red { background: #dc2626; color: #fff; text-shadow: 2px 2px 0 #000;}
         .r-cell.r-black { background: #1e293b; color: #fff; text-shadow: 2px 2px 0 #000;}
         .r-col-bets { display: flex; flex-direction: column; }
-        .r-cell.r-outside { width: 60px; height: 60px; background: #0f172a; color: var(--warning); font-size: 20px; font-family: 'VT323'; text-transform: uppercase;}
+        .r-cell.r-outside { width: 60px; height: 60px; background: #0f172a; color: var(--warning); font-size: 26px; text-transform: uppercase;}
         
-        .r-dozens { display: flex; width: 720px; margin-left: 60px;} /* 12 cols * 60px = 720px */
-        .r-doz-cell { flex: 1; height: 50px; background: #0f172a; border: 1px solid rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; color: var(--warning); font-size: 24px; cursor: pointer; text-transform: uppercase;}
+        .r-dozens { display: grid; grid-template-columns: repeat(3, 1fr); width: 720px; margin-left: 60px; height: 50px; }
+        .r-doz-cell { width: 100%; height: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; color: var(--warning); font-size: 26px; cursor: pointer; text-transform: uppercase; font-family: 'VT323', monospace; font-weight: bold;}
         .r-doz-cell:hover { background: #1e293b; }
         
-        .r-halves { display: flex; width: 720px; margin-left: 60px; }
-        .r-half-cell { flex: 1; height: 50px; background: #0f172a; border: 1px solid rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; color: var(--warning); font-size: 24px; cursor: pointer; text-transform: uppercase;}
+        .r-halves { display: grid; grid-template-columns: repeat(6, 1fr); width: 720px; margin-left: 60px; height: 50px; }
+        .r-half-cell { width: 100%; height: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; color: var(--warning); font-size: 26px; cursor: pointer; text-transform: uppercase; font-family: 'VT323', monospace; font-weight: bold;}
         .r-half-cell:hover { background: #1e293b; }
-        .r-half-cell.red-btn { background: #dc2626; color:#fff;} .r-half-cell.red-btn:hover { background: #ef4444; }
-        .r-half-cell.black-btn { background: #1e293b; color:#fff;} .r-half-cell.black-btn:hover { background: #334155; }
+        .r-half-cell.red-btn { background: #dc2626; color:#fff; text-shadow: 2px 2px 0 #000;} .r-half-cell.red-btn:hover { background: #ef4444; }
+        .r-half-cell.black-btn { background: #1e293b; color:#fff; text-shadow: 2px 2px 0 #000;} .r-half-cell.black-btn:hover { background: #334155; }
         
         .r-highlight { background: rgba(255,255,255,0.4) !important; border: 2px solid #fff !important; z-index: 10;}
         .r-hover-indicator { position: absolute; background: rgba(59, 130, 246, 0.8); border: 2px solid #fff; pointer-events: none; z-index: 5; display: none;}
@@ -251,6 +251,14 @@
         .r-live-panel { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.6); border-top: 2px solid var(--border-std); padding: 10px 20px;}
         .r-readout { font-size: 24px; color: #94a3b8; text-transform: uppercase; }
         .r-readout span { color: #fff; font-weight: bold; }
+
+        .r-chip { position: absolute; width: 30px; height: 30px; background: var(--warning); border: 4px dashed #b45309; border-radius: 50%; color: #000; font-size: 14px; display: flex; justify-content: center; align-items: center; font-weight: bold; transform: translate(-50%, -50%); z-index: 15; box-shadow: 2px 2px 0 #000; font-family: Arial, sans-serif;}
+
+        .r-wheel-box { width: 90px; height: 90px; border: 6px solid var(--border-std); border-radius: 50%; background: repeating-conic-gradient(#dc2626 0% 9.7%, #1e293b 9.7% 19.4%, #10b981 19.4% 22%); position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; transition: transform 0.1s;}
+        .r-wheel-box.spinning { animation: spinWheel 0.2s linear infinite; }
+        .r-wheel-box::after { content: ''; position: absolute; width: 55px; height: 55px; background: #0f172a; border-radius: 50%; border: 4px solid var(--warning); }
+        .r-wheel-inner { position: absolute; z-index: 5; font-size: 40px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000; }
+        @keyframes spinWheel { 100% { transform: rotate(360deg); } }
 
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
@@ -704,9 +712,14 @@
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="roulette-credits"></span></div></div>
                 </div>
                 
-                <div style="text-align: center; margin: 10px 0;">
-                    <div id="roulette-result-text" class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 4px 4px 0 #000;">WHEEL IDLE</div>
-                    <div id="roulette-timer" class="pixel-text" style="font-size: 26px; color: var(--accent-glow-2);">15s REMAINING</div>
+                <div style="display:flex; justify-content:center; align-items:center; gap: 30px; margin-bottom: 10px; margin-top: 10px;">
+                    <div class="r-wheel-box" id="r-wheel-box">
+                        <div class="r-wheel-inner pixel-text" id="r-wheel-result">?</div>
+                    </div>
+                    <div style="text-align: left;">
+                        <div id="roulette-result-text" class="pixel-text" style="font-size: 40px; color: #fff; text-shadow: 2px 2px 0 #000;">WHEEL IDLE</div>
+                        <div id="roulette-timer" class="pixel-text" style="font-size: 26px; color: var(--accent-glow-2);">15s REMAINING</div>
+                    </div>
                 </div>
                 
                 <div class="arcade-bet-area" style="flex: 1; display: flex; flex-direction: column; justify-content: center; border-top:none; background:transparent;">
@@ -725,8 +738,9 @@
                     </div>
                     
                     <div class="r-board" id="r-board-container" style="position: relative;">
+                        <div id="r-chips-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25;"></div>
                         <div class="r-hover-indicator" id="r-hover-indicator"></div>
-                    </div>
+                        </div>
                 </div>
             </div>
             
@@ -1434,7 +1448,7 @@
 
         function buildRouletteBoard() {
             const container = document.getElementById('r-board-container');
-            if(container.children.length > 1) return; 
+            if(document.querySelector('.r-grid-main')) return; 
 
             const gridMain = document.createElement('div');
             gridMain.className = 'r-grid-main';
@@ -1545,7 +1559,6 @@
                     let indW = 40; let indH = 40;
                     let indX = rect.left + 10; let indY = rect.top + 10;
 
-                    // SMART HITBOX CALCULATOR
                     if (y < edge && x < edge && row > 0 && col > 0) {
                         betType = 'corner'; covered = [num, num+1, num-3, num-2]; pOut = '8:1';
                         indW = 20; indH = 20; indX = rect.left - 10; indY = rect.top - 10;
@@ -1630,19 +1643,73 @@
             });
         }
 
+        function renderRouletteChips() {
+            const container = document.getElementById('r-chips-container');
+            container.innerHTML = '';
+            const boardRect = document.getElementById('r-board-container').getBoundingClientRect();
+
+            myRouletteBets.forEach(bet => {
+                let targetEl = null; let x = 0, y = 0;
+
+                if (['red', 'black', 'even', 'odd', 'high', 'low'].includes(bet.type)) {
+                    targetEl = document.querySelector(`[data-outside="${bet.type}"]`);
+                } else if (bet.type === 'doz') {
+                    let val = bet.numbers[0] <= 12 ? 1 : (bet.numbers[0] <= 24 ? 2 : 3);
+                    targetEl = document.querySelector(`[data-outside="doz"][data-val="${val}"]`);
+                } else if (bet.type === 'col') {
+                    let mod = bet.numbers[0] % 3; let valMap = { 0: 0, 2: 1, 1: 2 };
+                    targetEl = document.querySelector(`[data-outside="col"][data-val="${valMap[mod]}"]`);
+                }
+
+                if (targetEl) {
+                    const rect = targetEl.getBoundingClientRect();
+                    x = (rect.left - boardRect.left) + rect.width / 2;
+                    y = (rect.top - boardRect.top) + rect.height / 2;
+                } else {
+                    let sumX = 0, sumY = 0, count = 0;
+                    bet.numbers.forEach(num => {
+                        const cell = document.querySelector(`.r-cell[data-num="${num}"]`);
+                        if (cell) {
+                            const rect = cell.getBoundingClientRect();
+                            sumX += (rect.left - boardRect.left) + rect.width / 2;
+                            sumY += (rect.top - boardRect.top) + rect.height / 2;
+                            count++;
+                        }
+                    });
+                    if (count > 0) { x = sumX / count; y = sumY / count; }
+                }
+
+                if (x > 0 && y > 0) {
+                    const chip = document.createElement('div');
+                    chip.className = 'r-chip';
+                    chip.style.left = x + 'px'; chip.style.top = y + 'px';
+                    let amtText = bet.amount >= 1000 ? (bet.amount/1000) + 'k' : bet.amount;
+                    chip.innerText = amtText;
+                    container.appendChild(chip);
+                }
+            });
+        }
+
         socket.on('roulette_state_update', (data) => {
             const statusText = document.getElementById('roulette-result-text'); const timerText = document.getElementById('roulette-timer');
+            const wheelBox = document.getElementById('r-wheel-box'); const wheelRes = document.getElementById('r-wheel-result');
             
             if(data.history) document.getElementById('roulette-history').innerHTML = data.history.map(n => `<div class="history-list-item"><span style="color:${n===0?'var(--success)':(ROULETTE_RED.includes(n)?'var(--danger)':'#fff')}; font-size:32px; font-weight:bold; text-shadow:2px 2px 0 #000;">${n}</span></div>`).join('');
 
             if (data.status === 'betting') {
                 statusText.innerText = "WHEEL IDLE"; statusText.style.color = '#fff'; myRouletteBets = []; clearInterval(rouletteInterval);
+                wheelBox.classList.remove('spinning'); wheelRes.innerText = '?'; document.getElementById('r-chips-container').innerHTML = '';
                 rouletteInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(rouletteInterval); }, 1000);
             } 
-            else if (data.status === 'spinning') { statusText.innerText = "WHEEL SPINNING..."; timerText.innerText = "NO MORE BETS"; playSfx('deal'); } 
+            else if (data.status === 'spinning') { 
+                statusText.innerText = "WHEEL SPINNING..."; timerText.innerText = "NO MORE BETS"; playSfx('deal'); 
+                wheelBox.classList.add('spinning'); wheelRes.innerText = '';
+            } 
             else if (data.status === 'resolving') {
                 statusText.innerText = `RESULT: ${data.result}`;
+                wheelBox.classList.remove('spinning'); wheelRes.innerText = data.result; wheelRes.style.color = data.result===0 ? 'var(--success)' : (ROULETTE_RED.includes(data.result) ? 'var(--danger)' : '#fff');
                 statusText.style.color = data.result===0 ? 'var(--success)' : (ROULETTE_RED.includes(data.result) ? 'var(--danger)' : '#fff');
+                
                 if (myRouletteBets.length > 0) {
                     let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
                     if (myWins.length > 0) { 
@@ -1662,289 +1729,16 @@
             
             applyThrottle(); myRouletteBets.push(betData);
             socket.emit('place_roulette_bet', { username: currentUser.username, betType: betData.type, coveredNumbers: betData.numbers, amount: amt });
+            renderRouletteChips();
         }
 
-        socket.on('arcade_bet_placed', (data) => { 
-            if(data.game !== 'roulette') {
-                const badge = document.getElementById(`badge-${data.choice}`); 
-                if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); badge.classList.remove('hidden'); }
-            }
-            playSfx('bet'); 
+        // --- SECURITY: DISABLE DEV TOOLS & RIGHT CLICK ---
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
         });
-
-        // --- DICE LOGIC ---
-        const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']; let diceInterval = null;
-        socket.on('dice_state_update', (data) => {
-            const statusText = document.getElementById('dice-result-text'); const timerText = document.getElementById('dice-timer');
-            const d1 = document.getElementById('die1'); const d2 = document.getElementById('die2');
-            
-            if(data.history) document.getElementById('dice-history').innerHTML = data.history.map(n => `<div class="history-list-item"><span style="color:${n[0]+n[1]===7?'#a855f7':(n[0]+n[1]<7?'var(--accent-glow-2)':'var(--success)')}">${diceFaces[n[0]-1]} ${diceFaces[n[1]-1]} = ${n[0]+n[1]}</span></div>`).join('');
-
-            if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; d1.classList.remove('shake'); d2.classList.remove('shake'); myDiceBets = { under: 0, seven: 0, over: 0 }; clearInterval(diceInterval);
-                document.querySelectorAll('.bet-badge').forEach(b => { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; });
-                diceInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(diceInterval); }, 1000);
-            } 
-            else if (data.status === 'rolling') { statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); playSfx('deal'); } 
-            else if (data.status === 'resolving') {
-                d1.classList.remove('shake'); d2.classList.remove('shake'); d1.innerText = diceFaces[data.dice[0]-1]; d2.innerText = diceFaces[data.dice[1]-1]; statusText.innerText = `RESULT: ${data.total}`;
-                let totalDiceBet = Object.values(myDiceBets).reduce((a,b)=>a+b, 0);
-                if (totalDiceBet > 0) {
-                    let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
-                    if (myWins.length > 0) { 
-                        let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
-                        timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
-                    } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
-                    ['under', 'seven', 'over'].forEach(c => { 
-                        if(myDiceBets[c] > 0) {
-                            const badge = document.getElementById(`badge-${c}`); let winData = myWins.find(w=>w.choice===c);
-                            if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
-                            else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
-                        }
-                    });
-                }
-            }
-        });
-        
-        window.placeDiceBet = function(choice) {
-            if(gameLocks.dice) return alert('This game is currently offline for maintenance.');
-            if(isBetting) return; const box = document.getElementById(`dice-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`dice-master-bet`).value);
-            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-            if (myDiceBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            
-            applyThrottle(); myDiceBets[choice] += amt; socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt });
-        };
-
-        // --- GLOBAL COIN FLIP LOGIC ---
-        let coinInterval = null;
-        socket.on('coin_state_update', (data) => {
-            const statusText = document.getElementById('coin-result-text'); const timerText = document.getElementById('coin-timer'); const coinVis = document.getElementById('global-coin-visual');
-            if(data.history) { document.getElementById('coin-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${r==='heads'?'var(--accent-glow-2)':'#ea580c'}">${r.toUpperCase()}</span></div>`).join(''); }
-
-            if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; coinVis.classList.remove('flipping'); coinVis.innerText = '?'; myCoinBets = { heads: 0, tails: 0 }; clearInterval(coinInterval);
-                document.querySelectorAll('.bet-badge').forEach(b => { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; });
-                coinInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(coinInterval); }, 1000);
-            }
-            else if (data.status === 'flipping') { statusText.innerText = "FLIPPING..."; timerText.innerText = "NO MORE BETS"; coinVis.classList.add('flipping'); playSfx('deal'); }
-            else if (data.status === 'resolving') {
-                coinVis.classList.remove('flipping'); coinVis.innerText = data.result === 'heads' ? 'H' : 'T'; statusText.innerText = `RESULT: ${data.result.toUpperCase()}`;
-                let totalCoinBet = Object.values(myCoinBets).reduce((a,b)=>a+b, 0);
-                if (totalCoinBet > 0) {
-                    let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
-                    if (myWins.length > 0) { 
-                            let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
-                            timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
-                        } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
-                        ['heads', 'tails'].forEach(c => { 
-                            if(myCoinBets[c] > 0) {
-                                const badge = document.getElementById(`badge-${c}`); let winData = myWins.find(w=>w.choice===c);
-                                if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
-                                else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
-                            }
-                        });
-                    }
-                }
-            });
-            window.placeCoinBet = function(choice) {
-                if(gameLocks.coin) return alert('This game is currently offline for maintenance.');
-                if(isBetting) return; const box = document.getElementById(`coin-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-                const amt = parseInt(document.getElementById(`coin-master-bet`).value);
-                if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-                if (myCoinBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-                
-                applyThrottle(); myCoinBets[choice] += amt; socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); 
-            };
-
-            // --- CLASSIC COLOR GAME LOGIC ---
-            let colorInterval = null; let colorAnimInterval = null; const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
-            socket.on('color_state_update', (data) => {
-                const statusText = document.getElementById('color-result-text'); const timerText = document.getElementById('color-timer');
-                const d1 = document.getElementById('col-die1'); const d2 = document.getElementById('col-die2'); const d3 = document.getElementById('col-die3');
-                
-                if(data.history) { document.getElementById('color-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${getColorHex(r[0])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[1])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[2])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span></div>`).join(''); }
-
-                if (data.status === 'betting') {
-                    statusText.innerText = "PLACE YOUR BETS"; myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 }; d1.classList.remove('shake'); d2.classList.remove('shake'); d3.classList.remove('shake'); clearInterval(colorInterval);
-                    document.querySelectorAll('.bet-badge').forEach(b => { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; });
-                    colorInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(colorInterval); }, 1000);
-                }
-                else if (data.status === 'rolling') { 
-                    statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); d3.classList.add('shake'); playSfx('deal'); 
-                    colorAnimInterval = setInterval(()=>{
-                        d1.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`; d2.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`; d3.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`;
-                    }, 100);
-                }
-                else if (data.status === 'resolving') {
-                    clearInterval(colorAnimInterval); d1.classList.remove('shake'); d2.classList.remove('shake'); d3.classList.remove('shake');
-                    setTimeout(()=> { d1.className = `color-die bg-${data.dice[0]}`; }, 100);
-                    setTimeout(()=> { d2.className = `color-die bg-${data.dice[1]}`; }, 300);
-                    setTimeout(()=> { d3.className = `color-die bg-${data.dice[2]}`; statusText.innerText = "RESULT!"; }, 500);
-                    
-                    setTimeout(() => {
-                        let totalColorBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
-                        if (totalColorBet > 0) {
-                            let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
-                            if (myWins.length > 0) { 
-                                let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
-                                timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
-                            } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
-                            
-                            ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { 
-                                if(myColorBets[c] > 0) {
-                                    const badge = document.getElementById(`badge-${c}`); let winData = myWins.find(w=>w.choice===c);
-                                    if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
-                                    else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
-                                }
-                            });
-                        }
-                    }, 600);
-                }
-            });
-
-            window.placeColorBet = function(choice) {
-                if(gameLocks.color) return alert('This game is currently offline for maintenance.');
-                if(isBetting) return; const box = document.getElementById(`color-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-                const amt = parseInt(document.getElementById(`color-master-bet`).value);
-                if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-                if (myColorBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per color!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-                
-                applyThrottle(); myColorBets[choice] += amt; socket.emit('place_color_bet', { username: currentUser.username, choice, amount: amt }); 
-            };
-
-            socket.on('arcade_bet_placed', (data) => { 
-                if(data.game !== 'roulette') {
-                    const badge = document.getElementById(`badge-${data.choice}`); 
-                    if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); badge.classList.remove('hidden'); }
-                }
-                playSfx('bet'); 
-            });
-
-            socket.on('arcade_error', (msg) => { alert(msg); isBetting = false; });
-
-            function getColorHex(c) {
-                if(c==='red') return '#ef4444'; if(c==='blue') return '#3b82f6'; if(c==='yellow') return '#eab308';
-                if(c==='green') return '#10b981'; if(c==='pink') return '#ec4899'; return '#f8fafc';
-            }
-
-            // --- UTILITY & CHAT ---
-            function actSendChat(gameType) {
-                let inputId = 'chat-input'; if (gameType === 'dice') inputId = 'dice-chat-input'; if (gameType === 'coin') inputId = 'coin-chat-input'; if (gameType === 'color') inputId = 'color-chat-input'; if (gameType === 'roulette') inputId = 'roulette-chat-input';
-                const input = document.getElementById(inputId);
-                if (input.value.trim() && currentUser && currentRoomId) { socket.emit('send_chat', { roomId: currentRoomId, username: currentUser.username, message: input.value.trim() }); input.value = ''; } 
-            }
-            document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat('blackjack'); });
-            document.getElementById('dice-chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat('dice'); });
-            document.getElementById('coin-chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat('coin'); });
-            document.getElementById('color-chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat('color'); });
-            if(document.getElementById('roulette-chat-input')) document.getElementById('roulette-chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat('roulette'); });
-
-            socket.on('receive_chat', data => { 
-                let boxId = 'chat-messages'; if (data.roomId === 'dice') boxId = 'dice-chat-messages'; if (data.roomId === 'coin') boxId = 'coin-chat-messages'; if (data.roomId === 'color') boxId = 'color-chat-messages'; if (data.roomId === 'roulette') boxId = 'roulette-chat-messages';
-                const msgs = document.getElementById(boxId);
-                if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
-            });
-
-            socket.on('chat_wiped', (data) => {
-                let boxId = 'chat-messages'; if (data.room === 'dice') boxId = 'dice-chat-messages'; if (data.room === 'coin') boxId = 'coin-chat-messages'; if (data.room === 'color') boxId = 'color-chat-messages'; if (data.room === 'roulette') boxId = 'roulette-chat-messages';
-                const msgs = document.getElementById(boxId);
-                if(msgs) msgs.innerHTML = `<div style="color:var(--danger); text-align:center; margin-top:20px;">[CHAT CLEARED BY ADMIN]</div>`;
-            });
-
-            // --- UI MENUS & BANKING ---
-            function showProfile() { if(!currentUser) return; document.getElementById('profile-username-preview').innerText = currentUser.username; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showModal('profile-modal'); }
-            function showBank() { if(!currentUser) return; document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showModal('bank-modal'); }
-            function openProfileLedger() { if(!currentUser) return; hideModal('profile-modal'); showModal('profile-ledger-modal'); loadLedger(false); }
-            function openBankLedger() { if(!currentUser) return; hideModal('bank-modal'); showModal('bank-ledger-modal'); loadLedger(true); }
-            
-            async function loadLedger(isBankOnly) {
-                const res = await fetch(`/api/profile/ledger/${currentUser.username}`); const data = await res.json();
-                const list = document.getElementById(isBankOnly ? 'bank-ledger-list' : 'ledger-list'); list.innerHTML = '';
-                let filteredData = isBankOnly ? data.filter(tx => tx.type.includes('BANK')) : data;
-                if (filteredData.length === 0) { list.innerHTML = '<div style="color:#475569; text-align:center; margin-top:20px;">No records found.</div>'; return; }
-                filteredData.forEach(tx => {
-                    let statusBadge = ''; let amtColor = '#fff'; let displayAmt = Math.abs(tx.amount); let prefix = '';
-                    if (tx.type.includes('BANK')) {
-                        let isWithdrawal = tx.type.includes('WITHDRAWAL'); prefix = isWithdrawal ? '-' : '+';
-                        if (tx.status === 'pending') amtColor = '#94a3b8'; else if (tx.status === 'completed') amtColor = isWithdrawal ? 'var(--danger)' : 'var(--success)'; else amtColor = 'var(--danger)'; 
-                        let stColor = tx.status === 'pending' ? '#fbbf24' : (tx.status === 'completed' ? '#10b981' : '#ef4444'); statusBadge = ` <span style="color:${stColor}; font-size:20px;">[${(tx.status === 'completed' ? 'APPROVED' : tx.status).toUpperCase()}]</span>`;
-                    } else { amtColor = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff'); prefix = tx.amount > 0 ? '+' : (tx.amount < 0 ? '-' : ''); }
-                    const time = new Date(tx.date).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
-                    list.innerHTML += `<div class="ledger-item">
-                        <span><span style="color:#64748b; font-size:20px; margin-right:10px;">[${time}]</span><span class="ledger-desc">${tx.type.toUpperCase()}${statusBadge}</span></span> 
-                        <span style="color:${amtColor}">${prefix}${formatNumber(displayAmt)} <span class="coin-icon">🪙</span></span>
-                    </div>`;
-                });
-            }
-
-            function showBankConfirm(type) {
-                const amtInput = document.getElementById('bank-amount').value.replace(/,/g, ''); const amt = parseInt(amtInput);
-                if(isNaN(amt) || amt <= 0) return alert("Enter a valid amount.");
-                if (type === 'deposit' && (amt < 10000 || amt > 100000)) return alert("Deposit must be between 10,000 and 100,000.");
-                if (type === 'withdrawal' && (amt < 50000 || amt > 100000)) return alert("Withdrawal must be between 50,000 and 100,000.");
-                if (type === 'withdrawal' && amt > currentUser.credits) return alert("Insufficient funds.");
-                pendingBankAction = { type, amount: amt }; document.getElementById('confirm-bank-type').innerText = type.toUpperCase(); document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
-                document.getElementById('bank-confirm-msg').innerText = '';
-                document.getElementById('bank-confirm-btn-row').innerHTML = `<button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button><button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>`;
-                hideModal('bank-modal'); showModal('bank-confirm-modal');
-            }
-
-            async function executeBankRequest() {
-                if(!pendingBankAction) return; const { type, amount } = pendingBankAction;
-                const btnRow = document.getElementById('bank-confirm-btn-row'); const statusMsg = document.getElementById('bank-confirm-msg');
-                statusMsg.style.color = "#fff"; statusMsg.innerText = "SENDING REQUEST...";
-                const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount}) });
-                if(res.ok) { statusMsg.style.color = "var(--success)"; statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; document.getElementById('bank-amount').value=''; playSfx('deal'); btnRow.innerHTML = `<button class="wood-btn pixel-text" style="width:100%; background: #475569;" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">BACK TO BANK</button>`; }
-                else { const d = await res.json(); statusMsg.style.color = "var(--danger)"; statusMsg.innerText = d.error; }
-                pendingBankAction = null;
-            }
-
-            async function redeemCodeMain() {
-                if(!currentUser) return; const code = document.getElementById('gift-code-main').value; const msgBox = document.getElementById('redeem-msg');
-                if(!code) return; const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
-                if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; updateAllCredits(); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code-main').value=''; playSfx('win'); }
-                else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
-                setTimeout(()=> msgBox.innerText='', 3000);
-            }
-            
-            function updateRewardTimerUI() {
-                if (rewardCooldownSeconds <= 0) { clearInterval(rewardTimerInt); showRewards(); return; }
-                let h = Math.floor(rewardCooldownSeconds / 3600); let m = Math.floor((rewardCooldownSeconds % 3600) / 60); let s = rewardCooldownSeconds % 60;
-                const tEl = document.getElementById('reward-timer'); if(tEl) tEl.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            }
-            function startRewardTimer() { clearInterval(rewardTimerInt); updateRewardTimerUI(); rewardTimerInt = setInterval(() => { rewardCooldownSeconds--; updateRewardTimerUI(); }, 1000); }
-            function showRewards() {
-                if(!currentUser) return; showModal('reward-modal'); document.getElementById('reward-msg').innerText = ''; document.querySelectorAll('.reward-box').forEach(b => b.classList.remove('open')); isPickingReward = false;
-                if (rewardCooldownSeconds <= 0) { document.getElementById('reward-active-view').classList.remove('hidden'); document.getElementById('reward-cooldown-view').classList.add('hidden'); } 
-                else { document.getElementById('reward-active-view').classList.add('hidden'); document.getElementById('reward-cooldown-view').classList.remove('hidden'); startRewardTimer(); }
-            }
-
-            let isPickingReward = false;
-            function pickRewardBox(index) { if(isPickingReward) return; isPickingReward = true; socket.emit('claim_daily_reward_box', { username: currentUser.username, boxIndex: index }); }
-            socket.on('reward_box_opened', (data) => {
-                isPickingReward = false; 
-                if(data.success) {
-                    data.allPrizes.forEach((prize, i) => {
-                        const backEl = document.getElementById(`box-val-${i}`); backEl.innerHTML = prize > 0 ? `+${formatNumber(prize)} <span class="coin-icon">🪙</span>` : 'EMPTY';
-                        if(prize === 0) backEl.classList.add('zero'); else backEl.classList.remove('zero'); setTimeout(() => document.querySelectorAll('.reward-box')[i].classList.add('open'), i * 100);
-                    });
-                    
-                    rewardCooldownSeconds = data.cooldownSeconds; startRewardTimer();
-                    const msg = document.getElementById('reward-msg');
-                    if (data.wonAmount > 0) { msg.style.color = "var(--success)"; msg.innerText = `YOU WON ${formatNumber(data.wonAmount)} CREDITS!`; playSfx('win'); }
-                    else { msg.style.color = "var(--danger)"; msg.innerText = "BETTER LUCK NEXT TIME!"; playSfx('lose');}
-                    setTimeout(() => { showRewards(); }, 4000); 
-                } else { alert(data.message); showRewards(); }
-            });
-
-            // --- SECURITY: DISABLE DEV TOOLS & RIGHT CLICK ---
-            document.addEventListener('contextmenu', event => event.preventDefault());
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
-                if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
-                if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
-            });
-        </script>
-    </body>
-    </html>
+    </script>
+</body>
+</html>
