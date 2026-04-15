@@ -21,16 +21,12 @@
         
         .hidden { display: none !important; }
 
-        /* --- HOVER-ONLY RETRO SCROLLBARS --- */
-        ::-webkit-scrollbar { width: 14px; height: 14px; background: transparent; }
-        ::-webkit-scrollbar-thumb { background: transparent; border: none; border-radius: 0px; }
-        ::-webkit-scrollbar-corner { background: transparent; }
-        ::-webkit-scrollbar-button:single-button { display: none; }
-
-        .custom-scroll:hover::-webkit-scrollbar { background: #020617; border-left: 2px solid #334155; }
-        .custom-scroll:hover::-webkit-scrollbar-thumb { background: #475569; border: 2px solid #000; border-top: 2px solid #94a3b8; border-left: 2px solid #94a3b8; }
-        .custom-scroll:hover::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        .custom-scroll:hover::-webkit-scrollbar-button:single-button { display: block; background-color: #1e293b; border: 2px solid #000; border-top: 2px solid #94a3b8; border-left: 2px solid #94a3b8; height: 14px; width: 14px; }
+        /* --- STRICT 8-BIT SCROLLBARS --- */
+        ::-webkit-scrollbar { width: 18px; height: 18px; background: #020617; border-left: 3px solid #334155; }
+        ::-webkit-scrollbar-thumb { background: #475569; border: 3px solid #000; border-top: 3px solid #94a3b8; border-left: 3px solid #94a3b8; border-radius: 0px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        ::-webkit-scrollbar-corner { background: #000; }
+        ::-webkit-scrollbar-button:single-button { display: block; background-color: #1e293b; border: 3px solid #000; border-top: 3px solid #94a3b8; border-left: 3px solid #94a3b8; height: 18px; width: 18px; }
 
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
@@ -203,17 +199,56 @@
         
         .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 20px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20; pointer-events:none;}
         
-        .history-content { flex: 1; overflow-y: auto; padding: 5px; margin: 0; padding-right: 0; padding-bottom: 0;}
-        .history-list-item { font-size: 26px; border-bottom: 1px dashed #333; padding: 6px 10px; text-align: center; }
-        
+        .history-content { flex: 1; overflow-y: auto; padding: 0 5px; margin-bottom: 2px; }
+        .history-list-item { font-size: 26px; border-bottom: 1px dashed #333; padding: 6px 0; text-align: center; }
+
         /* INBOX TICKET STYLING */
         .ticket-item { background: #1e293b; border: 2px solid var(--border-std); padding: 15px; margin-bottom: 10px; border-radius: 6px; cursor: pointer; transition: filter 0.1s;}
         .ticket-item:hover { filter: brightness(1.2); }
         .ticket-unread { border-left: 6px solid var(--danger); }
         .ticket-read { border-left: 6px solid #475569; }
         .msg-bubble { background: #0f172a; border: 2px solid var(--border-std); padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: left; }
-        .msg-bubble.admin { border-left: 6px solid var(--danger); background: #1a0f14;}
-        .msg-bubble.player { border-right: 6px solid var(--success); background: #0f1a14; text-align: right;}
+        .msg-bubble.admin { border-left: 6px solid var(--success); background: #0f1a14;}
+        .msg-bubble.player { border-right: 6px solid var(--danger); background: #1a0f14; text-align: right;}
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            #arcade-cabinet { width: 100vw; height: 100vh; border: none; border-radius: 0; flex-direction: column; }
+            .game-interface { display: flex; flex-direction: column; overflow-y: auto; padding: 10px; }
+            .game-area { min-width: 100%; min-height: 65vh; flex-shrink: 0; }
+            .sidebar-col { min-height: 50vh; flex-shrink: 0; }
+            .top-hud { padding: 10px; grid-template-columns: 1fr; gap: 10px; text-align: center; }
+            .hud-left, .hud-right { justify-self: center; }
+            .menu-grid { width: 100%; grid-template-columns: 1fr; padding: 0 15px; }
+            .wood-btn { grid-column: span 1 !important; font-size: 20px; padding: 10px; }
+            .modal-box { width: 95%; padding: 15px; }
+            
+            /* Arcade Adjustments */
+            .arcade-grid { flex-wrap: wrap; gap: 10px; }
+            .arcade-bet-box { width: 48%; height: 120px; padding: 10px; }
+            .arcade-bet-title { font-size: 26px; }
+            .arcade-bet-payout { font-size: 18px; }
+            .dice { font-size: 80px; }
+            .coin-3d { width: 100px; height: 100px; font-size: 50px; }
+            
+            /* Color Game */
+            .color-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+            .color-die { width: 60px; height: 60px; }
+            .color-bet-box { height: 80px; }
+            .color-bet-title { font-size: 20px; }
+            
+            /* Blackjack Adjustments */
+            #seats-area { gap: 10px; flex-wrap: wrap; }
+            .seat { width: 30%; transform: scale(0.8); }
+            .banker-station { top: 10px; transform: translateX(-50%) scale(0.8); }
+            #timers-container { top: 150px; transform: translateX(-50%) scale(0.8); }
+            
+            /* Modals and Inputs */
+            .input-group { flex-direction: column; }
+            .rewards-grid { grid-template-columns: 1fr 1fr; }
+            #inbox-thread-view { padding: 5px; }
+            .msg-bubble { font-size: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -227,7 +262,7 @@
     <div id="arcade-cabinet">
         
         <div id="auth-view" class="full-menu">
-            <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 10px;">CASINO ROYALE</h1>
+            <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 10px; text-align: center;">CASINO ROYALE</h1>
             
             <div id="panel-login" class="modal-box custom-scroll">
                 <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 40px;">MEMBER LOGIN</h2>
@@ -255,7 +290,7 @@
         </div>
 
         <div id="main-menu-view" class="full-menu hidden">
-            <h1 class="pixel-text" style="font-size: 80px; margin-bottom: 10px; text-shadow: 4px 4px 0px #000;">ARCADE DASHBOARD</h1>
+            <h1 class="pixel-text" style="font-size: 80px; margin-bottom: 10px; text-shadow: 4px 4px 0px #000; text-align: center;">ARCADE DASHBOARD</h1>
             <div class="menu-grid">
                 <button class="wood-btn" style="background: var(--success);" onclick="showModal('play-modal')">PLAY GAMES</button>
                 <button class="wood-btn" style="background: #3b82f6;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
@@ -800,7 +835,7 @@
         let unreadNotifs = 0;
         let gameLocks = {};
         let currentOpenTicketId = null;
-        let currentInboxTab = 'announcement'; // Default tab
+        let currentInboxTab = 'announcement'; 
         let allMyTickets = [];
 
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
@@ -1035,7 +1070,7 @@
 
         // DIRECT TICKET LISTENER
         socket.on('new_mail', (data) => {
-            if (currentUser && (data.username === currentUser.username || data.username === 'GLOBAL')) {
+            if (currentUser && (data.username.toLowerCase() === currentUser.username.toLowerCase() || data.username === 'GLOBAL' || data.target === 'all' || data.target === 'active')) {
                 playSfx('win');
                 socket.emit('req_inbox', { username: currentUser.username });
             }
@@ -1181,11 +1216,11 @@
             if (visibleDealerCards.length > 0) { dBadge.innerText = calculateValue(visibleDealerCards); dBadge.classList.remove('hidden'); } else { dBadge.classList.add('hidden'); }
 
             const seatsArea = document.getElementById('seats-area'); seatsArea.innerHTML = ''; let activeElements = [];
-            if(currentUser) { const mySeatData = state.seats.find(s => s && s.username === currentUser.username); if(mySeatData) { mySeatIndex = state.seats.indexOf(mySeatData);} else { mySeatIndex = -1; } }
+            if(currentUser) { const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if(mySeatData) { mySeatIndex = state.seats.indexOf(mySeatData);} else { mySeatIndex = -1; } }
 
             for(let index=0; index<state.seats.length; index++) {
-                let seatData = state.seats[index]; let isMySeat = currentUser && seatData && seatData.username === currentUser.username;
-                let hasSeatAnywhere = state.seats.some(s => s && s.username === currentUser.username);
+                let seatData = state.seats[index]; let isMySeat = currentUser && seatData && seatData.username.toLowerCase() === currentUser.username.toLowerCase();
+                let hasSeatAnywhere = state.seats.some(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
                 const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
 
                 if (!seatData) {
