@@ -31,7 +31,6 @@
         .custom-scroll:hover::-webkit-scrollbar-thumb:hover { background: #64748b; }
         .custom-scroll:hover::-webkit-scrollbar-button:single-button { display: block; background-color: #1e293b; border: 2px solid #000; border-top: 2px solid #94a3b8; border-left: 2px solid #94a3b8; height: 14px; width: 14px; }
 
-        /* Remove Number Arrows */
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
@@ -43,7 +42,7 @@
         
         /* MODALS */
         .overlay-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 500; }
-        .modal-content { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 800px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px #000; overflow: hidden; }
+        .modal-content { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 800px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px #000; overflow: hidden; }
         .modal-header { font-size: 36px; color: var(--accent-glow-2); border-bottom: 2px solid #334155; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;}
 
         /* SIDEBAR */
@@ -84,7 +83,7 @@
         /* BUTTONS & INPUTS */
         .wood-btn { background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 8px 15px; font-size: 22px; cursor: pointer; box-shadow: 2px 2px 0 #000; transition: 0.1s; font-family: 'VT323';}
         .wood-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 transparent; }
-        .wood-btn.small { padding: 4px 8px; font-size: 20px; }
+        .wood-btn.small { padding: 4px 8px; font-size: 20px; box-shadow: 2px 2px 0 #000; width: auto;}
         .wood-btn.small.active { background: var(--accent-glow-2); border-color: #fff; }
         
         .retro-input, select.retro-input, textarea.retro-input { padding: 12px; background: #000; color: #fff; border: 2px solid #64748b; font-size: 24px; outline: none; text-align: left; border-radius: 4px; font-family: 'VT323', monospace;}
@@ -133,44 +132,45 @@
         </div>
 
         <div id="player-modal" class="overlay-modal hidden">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content" style="max-height: 85vh; display: flex; flex-direction: column;">
+                <div class="modal-header" style="flex-shrink: 0;">
                     <span id="pm-name" style="color:#fff;">PLAYER</span>
                     <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('player-modal')">CLOSE</button>
                 </div>
                 
-                <div class="panel-content custom-scroll" style="flex: 1; padding: 0;">
-                    <div style="display:flex; gap:10px; margin-bottom:20px;">
-                        <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
-                            <div style="color:#94a3b8; font-size:22px;">TOTAL WAGERED</div>
-                            <div id="pm-wager" style="font-size:28px; color:var(--danger);">0</div>
-                        </div>
-                        <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
-                            <div style="color:#94a3b8; font-size:22px;">TOTAL WON</div>
-                            <div id="pm-won" style="font-size:28px; color:var(--success);">0</div>
-                        </div>
-                        <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
-                            <div style="color:#94a3b8; font-size:22px;">NET GAME PROFIT</div>
-                            <div id="pm-net" style="font-size:28px; color:#fff;">0</div>
-                        </div>
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-shrink: 0;">
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">TOTAL WAGERED</div>
+                        <div id="pm-wager" style="font-size:28px; color:var(--danger);">0</div>
                     </div>
-                    <div style="display:flex; gap:10px; margin-bottom:20px;">
-                        <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
-                            <div style="color:#94a3b8; font-size:22px;">IP ADDRESS</div>
-                            <div id="pm-ip" style="font-size:28px;">-</div>
-                        </div>
-                        <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
-                            <div style="color:#94a3b8; font-size:22px;">PROMO RECEIVED</div>
-                            <div id="pm-promo" style="font-size:28px; color:var(--accent-glow-2);">0</div>
-                        </div>
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">TOTAL WON</div>
+                        <div id="pm-won" style="font-size:28px; color:var(--success);">0</div>
                     </div>
-                    <div style="color:var(--warning); font-size:28px; margin-bottom:10px;">TRANSACTION LEDGER (LATEST 50)</div>
-                    <div style="border:2px solid #334155; padding:0; display:block;">
-                        <table class="admin-table" style="margin:0; border:none;">
-                            <thead><tr><th>DATE (PHT)</th><th>TYPE</th><th>AMOUNT</th><th>STATUS</th></tr></thead>
-                            <tbody id="pm-ledger"></tbody>
-                        </table>
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">NET GAME PROFIT</div>
+                        <div id="pm-net" style="font-size:28px; color:#fff;">0</div>
                     </div>
+                </div>
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-shrink: 0;">
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">IP ADDRESS</div>
+                        <div id="pm-ip" style="font-size:28px;">-</div>
+                    </div>
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">PROMO RECEIVED</div>
+                        <div id="pm-promo" style="font-size:28px; color:var(--accent-glow-2);">0</div>
+                    </div>
+                </div>
+                <div style="color:var(--warning); font-size:28px; margin-bottom:10px; flex-shrink: 0;">TRANSACTION LEDGER (LATEST 50)</div>
+                
+                <div class="custom-scroll" style="flex: 1; min-height: 0; border:2px solid #334155; padding:0; overflow-y:auto; display:block; max-height: 200px;">
+                    <table class="admin-table" style="margin:0; border:none; width: 100%;">
+                        <thead style="position: sticky; top: 0; z-index: 10; background: #1e293b;">
+                            <tr><th>DATE (PHT)</th><th>TYPE</th><th>AMOUNT</th><th>STATUS</th></tr>
+                        </thead>
+                        <tbody id="pm-ledger"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -184,9 +184,9 @@
                         <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('batch-modal')">CLOSE</button>
                     </div>
                 </div>
-                <div class="panel-content custom-scroll" style="border:2px solid #334155; padding:0; display:block;">
+                <div class="custom-scroll" style="border:2px solid #334155; padding:0; overflow-y:auto; max-height:400px; display:block;">
                     <table class="admin-table" style="margin:0; border:none;">
-                        <thead><tr><th>CODE</th><th>VALUE</th><th>STATUS</th><th>ACTION</th></tr></thead>
+                        <thead style="position: sticky; top: 0; z-index: 10;"><tr><th>CODE</th><th>VALUE</th><th>STATUS</th><th>ACTION</th></tr></thead>
                         <tbody id="bm-list"></tbody>
                     </table>
                 </div>
@@ -212,7 +212,6 @@
                 <div style="font-size: 24px; color: var(--warning); margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px; flex-shrink: 0;">
                     SUBJECT: <span id="tm-subject" style="color: #fff;"></span>
                 </div>
-                
                 <div id="tm-messages" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left; margin-bottom: 10px;"></div>
                 
                 <div id="tm-reply-box" style="display: flex; gap: 10px; flex-shrink: 0;">
@@ -231,12 +230,10 @@
             <button class="nav-btn" onclick="switchView('players', this)">PLAYER DB</button>
             <button class="nav-btn admin-only" onclick="switchView('promo', this)">PROMO ENGINE</button>
             <button class="nav-btn" onclick="switchView('eye', this)">EYE IN THE SKY</button>
-            
             <button class="nav-btn" onclick="switchView('notify', this)">
                 SUPPORT INBOX 
                 <span id="admin-notif-badge" class="hidden" style="background:var(--danger); border:2px solid #fff; border-radius:50%; width:30px; height:30px; display:inline-flex; justify-content:center; align-items:center; font-size:22px; font-weight:bold; float:right;">0</span>
             </button>
-            
             <button class="nav-btn admin-only" onclick="switchView('settings', this)">SETTINGS</button>
         </div>
 
@@ -359,8 +356,8 @@
                                 <option value="specific_all">SPECIFIC PLAYER (ALL)</option>
                             </select>
                             
-                            <select id="notify-specific-online" class="retro-input" style="width: 100%; display: none; margin-top: 10px;"></select>
-                            <select id="notify-specific-all" class="retro-input" style="width: 100%; display: none; margin-top: 10px;"></select>
+                            <select id="notify-specific-online" class="retro-input custom-scroll" style="width: 100%; display: none; margin-top: 10px;"></select>
+                            <select id="notify-specific-all" class="retro-input custom-scroll" style="width: 100%; display: none; margin-top: 10px;"></select>
                         </div>
                         <div style="margin-bottom: 15px;">
                             <input type="text" id="notify-subject" class="retro-input" placeholder="SUBJECT LINE" style="width: 100%;">
@@ -502,7 +499,6 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        // --- SMART DROPDOWNS & BROADCASTING ---
         function updateTargetOptions(type) {
             const targetSelect = document.getElementById('notify-target');
             if(type === 'message') {
@@ -549,7 +545,6 @@
             fetchAdminInbox();
         }
 
-        // --- ADMIN INBOX SYSTEM ---
         function fetchAdminInbox() {
             socket.emit('req_admin_inbox');
         }
@@ -571,7 +566,6 @@
         function renderAdminInbox() {
             const list = document.getElementById('admin-inbox-list');
             
-            // Global Unread Badge Logic
             const unreadCount = allAdminTickets.filter(t => t.unreadAdmin).length;
             const badge = document.getElementById('admin-notif-badge');
             if (unreadCount > 0) {
@@ -581,7 +575,6 @@
                 badge.classList.add('hidden');
             }
 
-            // Filter for current tab
             let filtered = allAdminTickets.filter(t => t.type === currentAdminInboxTab);
 
             if(filtered.length === 0) {
@@ -674,7 +667,6 @@
             fetchAdminInbox();
         });
 
-        // --- MATH & ECONOMY MODALS ---
         function showMath(type) {
             if(!currentEconomy) return;
             const b = document.getElementById('math-body');
@@ -722,7 +714,6 @@
                 localTxs = data.bankRequests || []; 
                 currentEconomy = data.economy;
                 
-                // Dashboard Updates
                 document.getElementById('stat-vault').innerText = formatNumber(data.economy.vault);
                 document.getElementById('stat-ggr').innerText = formatNumber(data.economy.ggr);
                 document.getElementById('stat-promo').innerText = formatNumber(data.economy.promoIssued);
@@ -733,7 +724,6 @@
                 if(strictRTP) { rtpBtn.style.background = 'var(--success)'; rtpBtn.style.color = '#000'; rtpBtn.innerText = 'RTP MODIFIER: ON'; }
                 else { rtpBtn.style.background = 'var(--danger)'; rtpBtn.style.color = '#fff'; rtpBtn.innerText = 'RTP MODIFIER: OFF'; }
 
-                // Populate Target Dropdowns (Alphabetically)
                 let onlineUsersAlpha = [...data.onlineUsers].sort((a,b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
                 let allUsersAlpha = [...data.users].map(u => u.username).sort((a,b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
                 
@@ -745,7 +735,6 @@
                     ? allUsersAlpha.map(u => `<option value="${u}">${u}</option>`).join('') 
                     : '<option value="">NO PLAYERS FOUND</option>';
 
-                // Sync Game Kill Switches
                 ['3seat', '5seat', 'dice', 'coin', 'color'].forEach(g => {
                     const btn = document.getElementById(`ks-${g}`);
                     if(btn) {
@@ -754,7 +743,6 @@
                     }
                 });
 
-                // Cashier Table (Only render if admin)
                 if(adminRole === 'admin') {
                     const cashierList = document.getElementById('cashier-list');
                     cashierList.innerHTML = data.bankRequests.map(t => {
@@ -772,7 +760,6 @@
                     `}).join('');
                 }
 
-                // Player DB Table
                 const onlineUsers = data.onlineUsers || [];
                 let sortedUsers = data.users.sort((a,b) => {
                     const aOnline = onlineUsers.includes(a.username);
@@ -806,7 +793,6 @@
                     </tr>
                 `}).join('');
 
-                // Promo Engine
                 if(adminRole === 'admin') {
                     currentBatches = {};
                     data.codes.forEach(c => {
@@ -965,7 +951,6 @@
             });
         });
 
-        // Live Eye in the Sky Socket
         socket.on('admin_log', (msg) => {
             const globalLog = document.getElementById('matrix-log');
             
@@ -977,13 +962,11 @@
 
             const logLine = `<div style="color:${logColor}; margin-bottom: 4px;">${msg}</div>`;
 
-            // Update Global Matrix
             globalLog.innerHTML += logLine;
             globalLog.scrollTop = globalLog.scrollHeight;
             if(globalLog.children.length > 100) globalLog.removeChild(globalLog.firstChild);
 
-            // Update Targeted Player Matrix if watching
-            if (watchingUser && msg.includes(watchingUser)) {
+            if (watchingUser && msg.toLowerCase().includes(watchingUser.toLowerCase())) {
                 const watchLog = document.getElementById('watch-matrix-log');
                 watchLog.innerHTML += logLine;
                 watchLog.scrollTop = watchLog.scrollHeight;
@@ -991,6 +974,13 @@
             }
         });
 
+        // --- SECURITY: DISABLE DEV TOOLS & RIGHT CLICK ---
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
+        });
     </script>
 </body>
 </html>
