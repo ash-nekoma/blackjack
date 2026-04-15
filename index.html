@@ -223,36 +223,43 @@
         .msg-bubble.player { border-right: 6px solid var(--success); background: #0f1a14; text-align: right;}
 
         /* --- 8-BIT ROULETTE STYLING --- */
-        .r-board { display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; flex: 1;}
-        .r-grid-main { display: flex; flex-direction: row; border: 4px solid var(--border-std); background: #111; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .r-zero-col { display: flex; flex-direction: column; justify-content: center; }
-        .r-num-cols { display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: repeat(3, 1fr); }
-        .r-cell { width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; font-size: 34px; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); cursor: crosshair; position: relative; font-family: 'VT323', monospace; }
-        .r-cell:hover { filter: brightness(1.4); }
-        .r-cell.r-zero { width: 60px; height: 180px; background: var(--success); color: #fff; text-shadow: 2px 2px 0 #000;}
-        .r-cell.r-red { background: #dc2626; color: #fff; text-shadow: 2px 2px 0 #000;}
-        .r-cell.r-black { background: #1e293b; color: #fff; text-shadow: 2px 2px 0 #000;}
-        .r-col-bets { display: flex; flex-direction: column; }
-        .r-cell.r-outside { width: 60px; height: 60px; background: #0f172a; color: var(--warning); font-size: 26px; text-transform: uppercase;}
-        
-        .r-dozens { display: grid; grid-template-columns: repeat(3, 1fr); width: 720px; margin-left: 60px; height: 50px; }
-        .r-doz-cell { width: 100%; height: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; color: var(--warning); font-size: 26px; cursor: pointer; text-transform: uppercase; font-family: 'VT323', monospace; font-weight: bold;}
-        .r-doz-cell:hover { background: #1e293b; }
-        
-        .r-halves { display: grid; grid-template-columns: repeat(6, 1fr); width: 720px; margin-left: 60px; height: 50px; }
-        .r-half-cell { width: 100%; height: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; color: var(--warning); font-size: 26px; cursor: pointer; text-transform: uppercase; font-family: 'VT323', monospace; font-weight: bold;}
-        .r-half-cell:hover { background: #1e293b; }
-        .r-half-cell.red-btn { background: #dc2626; color:#fff; text-shadow: 2px 2px 0 #000;} .r-half-cell.red-btn:hover { background: #ef4444; }
-        .r-half-cell.black-btn { background: #1e293b; color:#fff; text-shadow: 2px 2px 0 #000;} .r-half-cell.black-btn:hover { background: #334155; }
+        .r-board-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; position: relative; }
+        .r-table {
+            display: grid;
+            grid-template-columns: 60px repeat(12, 60px) 60px;
+            grid-template-rows: 60px 60px 60px 50px 50px;
+            background: #020617;
+            border: 4px solid var(--border-std);
+            box-shadow: 10px 10px 0 #000;
+            width: fit-content;
+            margin: 0 auto;
+            position: relative;
+        }
+        .r-cell {
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'VT323', monospace; font-size: 36px; font-weight: bold;
+            border: 2px solid #111; cursor: crosshair; position: relative;
+            text-shadow: 2px 2px 0 #000; color: #fff;
+        }
+        .r-cell:hover { filter: brightness(1.5); z-index: 2; box-shadow: 0 0 10px #fff; }
+        .r-zero { grid-column: 1; grid-row: 1 / span 3; background: var(--success); }
+        .r-red { background: var(--danger); }
+        .r-black { background: #1e293b; }
+        .r-col-bet { background: #0f172a; color: var(--warning); font-size: 28px; cursor: pointer; }
+        .r-doz-bet { background: #0f172a; color: var(--warning); font-size: 28px; cursor: pointer; }
+        .r-half-bet { background: #0f172a; color: var(--warning); font-size: 28px; cursor: pointer; }
+        .r-half-red { background: var(--danger); }
+        .r-half-black { background: #1e293b; }
         
         .r-highlight { background: rgba(255,255,255,0.4) !important; border: 2px solid #fff !important; z-index: 10;}
         .r-hover-indicator { position: absolute; background: rgba(59, 130, 246, 0.8); border: 2px solid #fff; pointer-events: none; z-index: 5; display: none;}
         
-        .r-live-panel { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.6); border-top: 2px solid var(--border-std); padding: 10px 20px;}
+        .r-live-panel { width: 100%; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.6); border-top: 2px solid var(--border-std); padding: 10px 20px; margin-bottom: 15px;}
         .r-readout { font-size: 24px; color: #94a3b8; text-transform: uppercase; }
         .r-readout span { color: #fff; font-weight: bold; }
 
-        .r-chip { position: absolute; width: 30px; height: 30px; background: var(--warning); border: 4px dashed #b45309; border-radius: 50%; color: #000; font-size: 14px; display: flex; justify-content: center; align-items: center; font-weight: bold; transform: translate(-50%, -50%); z-index: 15; box-shadow: 2px 2px 0 #000; font-family: Arial, sans-serif;}
+        .r-chip { position: absolute; width: 32px; height: 32px; background: var(--warning); border: 3px dashed #b45309; border-radius: 50%; color: #000; font-size: 14px; display: flex; justify-content: center; align-items: center; font-weight: bold; transform: translate(-50%, -50%); z-index: 100; box-shadow: 2px 2px 0 #000; font-family: 'VT323', monospace; pointer-events: none; text-shadow: none;}
+        .r-chip.mine { background: var(--success); border-color: #064e3b; color: #fff; text-shadow: 1px 1px 0 #000;}
 
         .r-wheel-box { width: 90px; height: 90px; border: 6px solid var(--border-std); border-radius: 50%; background: repeating-conic-gradient(#dc2626 0% 9.7%, #1e293b 9.7% 19.4%, #10b981 19.4% 22%); position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; transition: transform 0.1s;}
         .r-wheel-box.spinning { animation: spinWheel 0.2s linear infinite; }
@@ -302,9 +309,7 @@
             .global-timer { font-size: 24px; padding: 5px 15px; white-space: normal; }
 
             /* Roulette Mobile Shrink */
-            .r-grid-main { transform: scale(0.6); transform-origin: top center; margin-bottom: -60px;}
-            .r-dozens { transform: scale(0.6); transform-origin: top left; width: 720px; margin-left: 36px; margin-bottom: -15px;}
-            .r-halves { transform: scale(0.6); transform-origin: top left; width: 720px; margin-left: 36px; margin-bottom: -15px;}
+            .r-board-wrapper { transform: scale(0.45); transform-origin: top center; margin-bottom: -150px;}
             
             /* Modals and Inputs */
             .input-group { flex-direction: column; }
@@ -722,22 +727,24 @@
                     </div>
                 </div>
                 
-                <div class="arcade-bet-area" style="flex: 1; display: flex; flex-direction: column; justify-content: center; border-top:none; background:transparent;">
-                    <div class="master-bet-row" style="margin-bottom: 5px;">
-                        <select id="roulette-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
-                            <option value="1000" selected>1,000</option>
-                            <option value="5000">5,000</option>
-                            <option value="20000">20,000</option>
-                            <option value="50000">50,000</option>
-                        </select>
-                    </div>
+                <div class="arcade-bet-area" style="flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; border-top:none; background:transparent;">
                     
                     <div class="r-live-panel">
                         <div class="r-readout">BET DETECTED: <span id="r-hover-type">-</span></div>
+                        
+                        <div class="master-bet-row" style="margin: 0;">
+                            <select id="roulette-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 4px 8px; margin: 0;">
+                                <option value="1000" selected>1,000</option>
+                                <option value="5000">5,000</option>
+                                <option value="20000">20,000</option>
+                                <option value="50000">50,000</option>
+                            </select>
+                        </div>
+                        
                         <div class="r-readout">PAYS: <span id="r-hover-payout">-</span></div>
                     </div>
                     
-                    <div class="r-board" id="r-board-container" style="position: relative;">
+                    <div class="r-board-wrapper" id="r-board-container">
                         <div id="r-chips-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25;"></div>
                         <div class="r-hover-indicator" id="r-hover-indicator"></div>
                         </div>
@@ -983,6 +990,7 @@
         let myCoinBets = { heads: 0, tails: 0 }; 
         let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
         let myRouletteBets = [];
+        let globalRouletteBets = [];
         let isBetting = false; let betThrottleTimeout = null;
 
         const audioNodes = { bgm: document.getElementById('sfx-bgm'), deal: document.getElementById('sfx-deal'), bet: document.getElementById('sfx-bet'), win: document.getElementById('sfx-win'), lose: document.getElementById('sfx-lose') };
@@ -1138,6 +1146,7 @@
             list.innerHTML = filtered.map(t => {
                 const date = new Date(t.updatedAt).toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
                 const time = new Date(t.updatedAt).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
+                
                 let isUnread = false;
                 if(t.username === 'GLOBAL') { isUnread = !t.readBy.includes(currentUser.username); } else { isUnread = t.unreadPlayer; }
                 const borderClass = isUnread ? 'ticket-unread' : 'ticket-read';
@@ -1448,75 +1457,89 @@
 
         function buildRouletteBoard() {
             const container = document.getElementById('r-board-container');
-            if(document.querySelector('.r-grid-main')) return; 
+            if(document.getElementById('r-table-id')) return; 
 
-            const gridMain = document.createElement('div');
-            gridMain.className = 'r-grid-main';
+            const table = document.createElement('div');
+            table.className = 'r-table';
+            table.id = 'r-table-id';
 
-            const zeroCol = document.createElement('div');
-            zeroCol.className = 'r-zero-col';
-            const zeroCell = document.createElement('div');
-            zeroCell.className = 'r-cell r-zero';
-            zeroCell.innerText = '0';
-            zeroCell.dataset.num = '0';
-            zeroCol.appendChild(zeroCell);
-            gridMain.appendChild(zeroCol);
+            // Zero
+            const zero = document.createElement('div');
+            zero.className = 'r-cell r-zero';
+            zero.innerText = '0'; zero.dataset.num = '0';
+            table.appendChild(zero);
 
-            const numCols = document.createElement('div');
-            numCols.className = 'r-num-cols';
-            
+            // Numbers
             const gridLayout = [
                 [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36],
                 [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35],
                 [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34]
             ];
 
-            for(let row=0; row<3; row++) {
-                for(let col=0; col<12; col++) {
-                    const num = gridLayout[row][col];
+            for(let r=0; r<3; r++) {
+                for(let c=0; c<12; c++) {
+                    const num = gridLayout[r][c];
                     const cell = document.createElement('div');
                     cell.className = `r-cell ${ROULETTE_RED.includes(num) ? 'r-red' : 'r-black'}`;
+                    cell.style.gridColumn = c + 2;
+                    cell.style.gridRow = r + 1;
                     cell.innerText = num;
                     cell.dataset.num = num;
-                    cell.dataset.row = row;
-                    cell.dataset.col = col;
-                    numCols.appendChild(cell);
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    table.appendChild(cell);
                 }
             }
-            gridMain.appendChild(numCols);
 
-            const colBets = document.createElement('div');
-            colBets.className = 'r-col-bets';
+            // Columns
             for(let i=0; i<3; i++) {
                 const cell = document.createElement('div');
-                cell.className = 'r-cell r-outside';
+                cell.className = 'r-cell r-col-bet';
+                cell.style.gridColumn = 14;
+                cell.style.gridRow = i + 1;
                 cell.innerText = '2:1';
                 cell.dataset.outside = 'col';
                 cell.dataset.val = i;
-                colBets.appendChild(cell);
+                table.appendChild(cell);
             }
-            gridMain.appendChild(colBets);
-            container.appendChild(gridMain);
 
-            const dozensRow = document.createElement('div');
-            dozensRow.className = 'r-dozens';
-            const d1 = document.createElement('div'); d1.className = 'r-doz-cell'; d1.innerText = '1st 12'; d1.dataset.outside = 'doz'; d1.dataset.val = 1;
-            const d2 = document.createElement('div'); d2.className = 'r-doz-cell'; d2.innerText = '2nd 12'; d2.dataset.outside = 'doz'; d2.dataset.val = 2;
-            const d3 = document.createElement('div'); d3.className = 'r-doz-cell'; d3.innerText = '3rd 12'; d3.dataset.outside = 'doz'; d3.dataset.val = 3;
-            dozensRow.appendChild(d1); dozensRow.appendChild(d2); dozensRow.appendChild(d3);
-            container.appendChild(dozensRow);
+            // Dozens
+            const dozData = [
+                { text: '1ST 12', val: 1, col: 2, span: 4 },
+                { text: '2ND 12', val: 2, col: 6, span: 4 },
+                { text: '3RD 12', val: 3, col: 10, span: 4 }
+            ];
+            dozData.forEach(d => {
+                const cell = document.createElement('div');
+                cell.className = 'r-cell r-doz-bet';
+                cell.style.gridColumn = `${d.col} / span ${d.span}`;
+                cell.style.gridRow = 4;
+                cell.innerText = d.text;
+                cell.dataset.outside = 'doz';
+                cell.dataset.val = d.val;
+                table.appendChild(cell);
+            });
 
-            const halvesRow = document.createElement('div');
-            halvesRow.className = 'r-halves';
-            const h1 = document.createElement('div'); h1.className = 'r-half-cell'; h1.innerText = '1 TO 18'; h1.dataset.outside = 'low';
-            const h2 = document.createElement('div'); h2.className = 'r-half-cell'; h2.innerText = 'EVEN'; h2.dataset.outside = 'even';
-            const h3 = document.createElement('div'); h3.className = 'r-half-cell red-btn'; h3.innerText = 'RED'; h3.dataset.outside = 'red';
-            const h4 = document.createElement('div'); h4.className = 'r-half-cell black-btn'; h4.innerText = 'BLACK'; h4.dataset.outside = 'black';
-            const h5 = document.createElement('div'); h5.className = 'r-half-cell'; h5.innerText = 'ODD'; h5.dataset.outside = 'odd';
-            const h6 = document.createElement('div'); h6.className = 'r-half-cell'; h6.innerText = '19 TO 36'; h6.dataset.outside = 'high';
-            halvesRow.appendChild(h1); halvesRow.appendChild(h2); halvesRow.appendChild(h3); halvesRow.appendChild(h4); halvesRow.appendChild(h5); halvesRow.appendChild(h6);
-            container.appendChild(halvesRow);
+            // Halves
+            const halfData = [
+                { text: '1 TO 18', type: 'low', col: 2 },
+                { text: 'EVEN', type: 'even', col: 4 },
+                { text: 'RED', type: 'red', col: 6, exClass: 'r-half-red' },
+                { text: 'BLACK', type: 'black', col: 8, exClass: 'r-half-black' },
+                { text: 'ODD', type: 'odd', col: 10 },
+                { text: '19 TO 36', type: 'high', col: 12 }
+            ];
+            halfData.forEach(h => {
+                const cell = document.createElement('div');
+                cell.className = `r-cell r-half-bet ${h.exClass || ''}`;
+                cell.style.gridColumn = `${h.col} / span 2`;
+                cell.style.gridRow = 5;
+                cell.innerText = h.text;
+                cell.dataset.outside = h.type;
+                table.appendChild(cell);
+            });
 
+            container.appendChild(table);
             setupRouletteHitboxes();
         }
 
@@ -1536,10 +1559,11 @@
         }
 
         function setupRouletteHitboxes() {
-            const cells = document.querySelectorAll('.r-num-cols .r-cell');
+            const cells = document.querySelectorAll('.r-cell[data-num]');
             const ind = document.getElementById('r-hover-indicator');
             const typeLabel = document.getElementById('r-hover-type');
             const payoutLabel = document.getElementById('r-hover-payout');
+            const tableRect = document.getElementById('r-table-id');
 
             cells.forEach(cell => {
                 cell.addEventListener('mousemove', (e) => {
@@ -1547,9 +1571,12 @@
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
                     const w = rect.width; const h = rect.height;
+                    const num = parseInt(cell.dataset.num);
+                    
+                    if(num === 0) return; // Zero has simple hitbox
+
                     const row = parseInt(cell.dataset.row);
                     const col = parseInt(cell.dataset.col);
-                    const num = parseInt(cell.dataset.num);
 
                     const edge = 15;
                     let betType = 'straight';
@@ -1645,10 +1672,12 @@
 
         function renderRouletteChips() {
             const container = document.getElementById('r-chips-container');
+            if(!container) return;
             container.innerHTML = '';
-            const boardRect = document.getElementById('r-board-container').getBoundingClientRect();
+            const boardRect = document.getElementById('r-table-id')?.getBoundingClientRect();
+            if(!boardRect) return;
 
-            myRouletteBets.forEach(bet => {
+            globalRouletteBets.forEach(bet => {
                 let targetEl = null; let x = 0, y = 0;
 
                 if (['red', 'black', 'even', 'odd', 'high', 'low'].includes(bet.type)) {
@@ -1682,7 +1711,14 @@
                 if (x > 0 && y > 0) {
                     const chip = document.createElement('div');
                     chip.className = 'r-chip';
-                    chip.style.left = x + 'px'; chip.style.top = y + 'px';
+                    if (currentUser && bet.username.toLowerCase() === currentUser.username.toLowerCase()) chip.classList.add('mine');
+                    
+                    const offsetX = (Math.random() - 0.5) * 12;
+                    const offsetY = (Math.random() - 0.5) * 12;
+
+                    chip.style.left = (x + offsetX) + 'px'; 
+                    chip.style.top = (y + offsetY) + 'px';
+                    
                     let amtText = bet.amount >= 1000 ? (bet.amount/1000) + 'k' : bet.amount;
                     chip.innerText = amtText;
                     container.appendChild(chip);
@@ -1696,9 +1732,12 @@
             
             if(data.history) document.getElementById('roulette-history').innerHTML = data.history.map(n => `<div class="history-list-item"><span style="color:${n===0?'var(--success)':(ROULETTE_RED.includes(n)?'var(--danger)':'#fff')}; font-size:32px; font-weight:bold; text-shadow:2px 2px 0 #000;">${n}</span></div>`).join('');
 
+            globalRouletteBets = data.bets || [];
+            if(document.getElementById('r-table-id')) renderRouletteChips();
+
             if (data.status === 'betting') {
                 statusText.innerText = "WHEEL IDLE"; statusText.style.color = '#fff'; myRouletteBets = []; clearInterval(rouletteInterval);
-                wheelBox.classList.remove('spinning'); wheelRes.innerText = '?'; document.getElementById('r-chips-container').innerHTML = '';
+                wheelBox.classList.remove('spinning'); wheelRes.innerText = '?';
                 rouletteInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(rouletteInterval); }, 1000);
             } 
             else if (data.status === 'spinning') { 
@@ -1729,7 +1768,6 @@
             
             applyThrottle(); myRouletteBets.push(betData);
             socket.emit('place_roulette_bet', { username: currentUser.username, betType: betData.type, coveredNumbers: betData.numbers, amount: amt });
-            renderRouletteChips();
         }
 
         // --- SECURITY: DISABLE DEV TOOLS & RIGHT CLICK ---
