@@ -8,12 +8,22 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
-        :root { color-scheme: light dark; --bg-dark: #0f172a; --bg-darker: #020617; --table-green: #0d7a42; --table-dark: #054522; --accent-glow: #8b5cf6; --accent-glow-2: #3b82f6; --danger: #ef4444; --success: #10b981; --warning: #fbbf24; --border-std: #222; }
+        :root {
+            color-scheme: light dark;
+            --bg-dark: #0f172a; --bg-darker: #020617;
+            --table-green: #0d7a42; --table-dark: #054522; 
+            --accent-glow: #8b5cf6; --accent-glow-2: #3b82f6;
+            --danger: #ef4444; --success: #10b981; --warning: #fbbf24;
+            --border-std: #222;
+        }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body, input, button, table, th, td, textarea, select { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
         body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        
         .hidden { display: none !important; }
 
+        /* --- HOVER-ONLY RETRO SCROLLBARS --- */
         ::-webkit-scrollbar { width: 14px; height: 14px; background: transparent; }
         ::-webkit-scrollbar-thumb { background: transparent; border: none; border-radius: 0px; }
         ::-webkit-scrollbar-corner { background: transparent; }
@@ -26,7 +36,10 @@
 
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
-        select { cursor: pointer; }
+
+        input[type="range"] { -webkit-appearance: none; background: transparent; height: 10px; border-radius: 5px; border: 2px solid var(--border-std); outline: none; margin: 0 10px; cursor: pointer; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 14px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 2px; cursor: pointer; }
+        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; }
 
         #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100vh; background: var(--bg-dark); border-radius: 12px; border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
 
@@ -36,123 +49,227 @@
         
         .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; max-width: 100%; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 85vh; display: flex; flex-direction: column; overflow-y: auto;}
         
-        input.retro-input, select.retro-input, textarea.retro-input { width: 100%; padding: 12px; margin-bottom: 15px; background: #0f172a; color: var(--warning); border: 3px solid #64748b; border-radius: 6px; font-size: 24px; font-weight:bold; text-align: center; outline: none; transition: 0.2s; box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);}
+        .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; flex-shrink: 0;}
+        
+        input.retro-input, select.retro-input, textarea.retro-input { flex: 1; padding: 12px; margin: 0; background: #0f172a; color: var(--warning); border: 3px solid #64748b; border-radius: 6px; font-size: 24px; font-weight:bold; text-align: center; outline: none; cursor:pointer; transition: 0.2s; box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);}
         input.retro-input:focus, select.retro-input:focus, textarea.retro-input:focus { border-color: var(--accent-glow-2); box-shadow: 0 0 12px rgba(59,130,246,0.6), inset 0 2px 8px rgba(0,0,0,0.8); }
+        input.retro-input::placeholder, textarea.retro-input::placeholder { color: #64748b; }
         
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px; flex-shrink: 0;}
-        .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; transition: 0.1s; font-weight: bold;}
+        .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; transition: 0.1s; font-family: 'VT323', monospace; letter-spacing: 1px; display: flex; justify-content: center; align-items: center;}
         .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
         .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.8; }
-        .wood-btn.small { padding: 4px 8px; font-size: 20px; box-shadow: 2px 2px 0 #000; width: auto; margin:0;}
+        .wood-btn.locked { border-color: #555; background: #333; color: #aaa; box-shadow: none; transform: translate(2px, 2px); }
+        .wood-btn.small { padding: 4px 8px; font-size: 20px; box-shadow: 2px 2px 0 #000; width: auto;}
         .wood-btn.small.active { background: var(--accent-glow-2); border-color: #fff;}
 
-        .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px;}
+        .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; overflow-x: hidden; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
+
+        .profile-preview { font-size: 50px; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; text-transform: uppercase;}
+        
         .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
         .reward-box { height: 100px; background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
+        .reward-box:hover { background: #3b82f6; transform: translateY(-5px); }
         .reward-box .inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; }
         .reward-box.open .inner { transform: rotateY(180deg); }
-        .reward-box .front, .reward-box .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center;}
-        .reward-box .front { background: #1e293b; }
+        .reward-box .front, .reward-box .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; border-radius: 4px;}
+        .reward-box .front { background: #1e293b; font-size: 40px; }
         .reward-box .back { background: #000; transform: rotateY(180deg); font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
 
         .game-interface { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; width: 100%; height: 100%; min-height: 0; background: #000; box-sizing: border-box; overflow: hidden;}
-        .game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px;}
+        .game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px; min-height: 0;}
         .game-area.dice-bg { background: radial-gradient(circle at center, #7e22ce 0%, #4c1d95 100%); }
         .game-area.coin-bg { background: radial-gradient(circle at center, #9a3412 0%, #7c2d12 100%); }
         .game-area.color-bg { background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
         .game-area.roulette-bg { background: radial-gradient(circle at center, #022c22 0%, #064e3b 100%); }
         
-        .sidebar-col { display: flex; flex-direction: column; gap: 20px; height: 100%; min-height: 0; position: relative;}
-        .sidebar-box { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); min-height: 0;}
-        .sidebar-header { background: #1e293b; color: #fff; padding: 10px; text-align: center; font-size: 28px; border-bottom: 2px solid var(--border-std); display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000; font-weight: bold; flex-shrink: 0;}
+        .sidebar-col { display: flex; flex-direction: column; gap: 20px; height: 100%; flex-shrink: 0; min-height: 0; position: relative;}
+        .sidebar-box { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); min-height: 0; position: relative;}
         
-        .player-dropdown-btn { background: #1e293b; color: #fff; padding: 10px 15px; font-size: 28px; display: flex; justify-content: space-between; align-items: center; text-shadow: 1px 1px 0 #000; font-weight: bold; cursor: pointer; border-radius: 12px; border: 2px solid var(--border-std); box-shadow: 0 0 20px rgba(0,0,0,0.8);}
-        .player-dropdown-list { position: absolute; top: calc(100% + 8px); left: 0; width: 100%; background: var(--bg-darker); border: 2px solid var(--border-std); border-radius: 12px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.9); padding: 5px;}
+        .player-dropdown-btn { background: #1e293b; color: #fff; padding: 10px 15px; font-size: 28px; display: flex; justify-content: space-between; align-items: center; text-shadow: 1px 1px 0 #000; font-weight: bold; cursor: pointer; border-radius: 12px; border: 2px solid var(--border-std); box-shadow: 0 0 20px rgba(0,0,0,0.8); transition: filter 0.1s; }
+        .player-dropdown-btn:hover { filter: brightness(1.2); }
+        .player-dropdown-btn:active { transform: scale(0.98); }
+        
+        .player-dropdown-list { position: absolute; top: calc(100% + 8px); left: 0; width: 100%; background: var(--bg-darker); border: 2px solid var(--border-std); border-radius: 12px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.9); padding: 5px; box-sizing: border-box; }
+        
         .lobby-player { padding: 5px 10px; margin: 0; border-bottom: 1px dashed #333; text-align: left; font-size: 28px; }
-        
-        .top-hud { width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); flex-shrink: 0;}
+        .lobby-player:last-child { border-bottom: none; }
+
+        .top-hud { width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); box-sizing: border-box; flex-shrink: 0;}
         .hud-left { justify-self: start; } .hud-center { justify-self: center; text-align: center; } .hud-right { justify-self: end; }
-        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; background: none; border: none; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
+        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
 
-        .chat-messages { flex: 1; padding: 10px; font-size: 22px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word;}
+        .sidebar-header { background: #1e293b; color: #fff; padding: 10px; text-align: center; font-size: 28px; border-bottom: 2px solid var(--border-std); display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000; font-weight: bold; flex-shrink: 0; align-items: center;}
+        
+        .chat-messages { flex: 1; padding: 10px; font-size: 22px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word; min-height: 0;}
         .chat-input-area { display: flex; border-top: 2px solid var(--border-std); background: #000; flex-shrink: 0;}
         .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none; font-family: 'VT323';}
         .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold; font-family: 'VT323';}
 
-        /* --- BLACKJACK UI --- */
         .table-surface { flex: 1; display: flex; flex-direction: column; width: 100%; position: relative; }
         .banker-station { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; width: 100%;}
-        #timers-container { position: absolute; top: 240px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 20; width: 100%; pointer-events: none;}
-        .global-timer { font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000;}
-        #seats-area { position: absolute; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center; align-items: flex-end; box-sizing: border-box; z-index: 5; min-height: 250px; gap: 30px;}
-        .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex-shrink: 0; position: relative;}
+        #timers-container { position: absolute; top: 240px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; z-index: 20; width: 100%; pointer-events: none;}
+        .global-timer { font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000; white-space: nowrap;}
+        .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
+        .global-timer.warning { background: #eab308; color: #000; font-size: 32px; font-weight: bold; text-shadow: none !important; border: 2px solid #000;}
+
+        #seats-area { position: absolute; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center; align-items: flex-end; box-sizing: border-box; z-index: 5; height: auto; min-height: 250px; gap: 30px;}
+        .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0; position: relative;}
         .seat-empty-box { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 160px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 8px; background: rgba(0,0,0,0.3); padding: 10px;}
-        .btn-sit-empty { background: #10b981; color: #000; font-size: 26px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 6px 30px; cursor: pointer; border-radius: 4px; font-weight: bold; font-family: 'VT323';}
+        .btn-sit-empty { background: #10b981; color: #000; font-size: 26px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 6px 30px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s; font-family: 'VT323'; text-shadow: none;}
+        .btn-sit-empty:active { transform: translate(4px, 4px); box-shadow: 0 0 0 transparent; }
         .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
         .turn-bar-container { width: 100%; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
         .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
-        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; text-align: center; }
-        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; display: inline-block;}
-        .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center;}
-        .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px;}
-        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; text-align: center; font-family: 'VT323'; font-size: 20px;}
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323';}
-        .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; min-height: 120px; width: 100%; margin-bottom: 12px;}
+        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
+        .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
+
+        @keyframes loseDrop { 0% { transform: translateY(0); color: var(--warning); } 50% { transform: translateY(5px); color: var(--danger); text-shadow: 0 0 10px var(--danger); } 100% { transform: translateY(10px); color: #555; opacity: 0.5; } }
+        .anim-win { animation: coinCollect 0.8s ease-out forwards; } .anim-lose { animation: loseDrop 0.8s ease-out forwards; }
+        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
+
+        .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
+        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; font-family: 'VT323', monospace; letter-spacing: 1px; font-size: 20px;}
+        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 12px;}
+        .s-btn:active:not(:disabled) { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
+        .s-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.8; }
+        
+        .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; box-sizing: border-box;}
+        .btn-hit { background: var(--success); color: #000; font-size: 18px; padding: 6px;} .btn-stand { background: #b45309; color: #fff; font-size: 18px; padding: 6px;} .btn-double { background: var(--accent-glow-2); color: #fff; font-size: 18px; padding: 6px;} .btn-split { background: var(--accent-glow); color: #fff; font-size: 18px; padding: 6px;}
+        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323';}
+        .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
+
+        .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 120px; width: 100%; margin-bottom: 12px;}
         .hand-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative; min-height: 120px;}
         .hand-container { position: relative; display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px;}
-        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; margin-left: -35px; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: Arial; flex-shrink: 0; z-index: 2;}
+        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; margin-left: -35px; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; flex-shrink: 0; z-index: 2;}
         .card:first-child { margin-left: 0; z-index: 1;}
         .card.red { color: #d00; } .card.black { color: #000; }
-        .card-corner { position: absolute; font-size: 15px; font-weight: bold; line-height: 1;}
+        .card-corner { position: absolute; font-size: 15px; font-weight: bold; line-height: 1; text-align: center; letter-spacing: -1px; font-family: Arial;}
         .card-corner.top-left { top: 3px; left: 3px; } .card-corner.bottom-right { bottom: 3px; right: 3px; transform: rotate(180deg); }
         .card-center-suit { font-size: 34px; font-family: Arial;}
-        .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; z-index: 10; font-family: Arial;}
-        .hand-status-label { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); font-size: 28px; font-weight: bold; text-shadow: 2px 2px 0 #000; padding: 2px 10px; border: 3px solid currentColor; border-radius: 4px; background: rgba(0,0,0,0.85); z-index: 20; white-space: nowrap;}
+        .card.dealer-hidden { background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); color: transparent; }
+        .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10; font-family: Arial, sans-serif; line-height: 1; padding: 0; padding-top: 1px;}
+        .hand-status-label { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); font-size: 28px; font-weight: bold; text-shadow: 2px 2px 0 #000; padding: 2px 10px; border: 3px solid currentColor; border-radius: 4px; background: rgba(0,0,0,0.85); z-index: 20; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 10px rgba(0,0,0,0.5);}
+        .hand-status-bust { color: var(--danger); } .hand-status-win { color: var(--success); } .hand-status-lose { color: var(--danger); } .hand-status-push { color: #94a3b8; } .hand-status-blackjack { color: var(--warning); }
         
-        /* --- ARCADE COMMON --- */
+        .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px dashed #333; font-size: 24px; margin-bottom: 5px; border-radius: 4px;}
+        .coin-icon { color:#fbbf24; text-shadow: 1px 1px 0 #000; font-family: 'Segoe UI Emoji', sans-serif;}
+        
+        /* Arcade Components */
+        .dice-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1; perspective: 1000px; }
+        .dice { font-size: 120px; color: #fff; text-shadow: 0 0 30px var(--accent-glow); line-height: 1; font-family: Arial, sans-serif; }
+        .dice.shake { animation: subtleShake 0.2s infinite; color: var(--warning); text-shadow: 0 0 40px var(--warning);}
+        
+        @keyframes subtleShake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-1deg); } 50% { transform: translate(-2px, 1px) rotate(1deg); } 75% { transform: translate(2px, 1px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(1deg); } }
+
         .arcade-bet-area { padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6); }
         .master-bet-row { display:flex; justify-content: center; margin-bottom: 15px; align-items: center; gap: 10px;}
         .arcade-grid { display: flex; justify-content: center; gap: 20px; }
+        
         .arcade-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; width: 250px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; cursor: pointer; transition: 0.1s; position: relative; height: 160px;}
         .arcade-bet-box:active:not(.locked) { transform: scale(0.95); }
         .arcade-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
+        
         .arcade-bet-title { font-size: 40px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 10px; text-transform: uppercase;}
         .arcade-bet-payout { font-size: 24px; color: var(--success); font-weight: bold;}
+        
         .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 30;}
-        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 20px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20; pointer-events:none;}
 
-        /* --- 8-BIT ROULETTE --- */
+        .coin-3d { width: 150px; height: 150px; background: #fbbf24; border-radius: 50%; border: 10px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 80px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 50px #fbbf24; font-family: Arial; }
+        .coin-3d.flipping { animation: flipCoin 0.3s infinite linear; }
+        @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+
+        /* PERYA COLOR GAME */
+        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 650px; margin: 0 auto; }
+        .color-die-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1;}
+        .color-die { width: 90px; height: 90px; border: 5px solid var(--border-std); border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5); transition: background-color 0.1s;}
+        .color-die.shake { animation: subtleShake 0.2s infinite; }
+        
+        .bg-red { background-color: #ef4444; } .bg-blue { background-color: #3b82f6; } .bg-yellow { background-color: #eab308; } 
+        .bg-green { background-color: #10b981; } .bg-pink { background-color: #ec4899; } 
+        .bg-white { background-color: #f8fafc !important; color: #000 !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.5) !important; }
+        
+        .color-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 8px; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
+        .color-bet-box:active:not(.locked) { transform: scale(0.95); }
+        .color-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
+        .color-bet-box.br-red { border-top-color: #ef4444; } .color-bet-box.br-blue { border-top-color: #3b82f6; } .color-bet-box.br-yellow { border-top-color: #eab308; }
+        .color-bet-box.br-green { border-top-color: #10b981; } .color-bet-box.br-pink { border-top-color: #ec4899; } .color-bet-box.br-white { border-top-color: #f8fafc; }
+        
+        .color-bet-title { font-size: 34px; color: #fff; text-shadow: 2px 2px 0 #000; margin: 0; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;}
+        .color-bet-box.br-white .color-bet-title { color: #f8fafc !important; text-shadow: 2px 2px 0 #555 !important; }
+        
+        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 20px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20; pointer-events:none;}
+        
+        .history-content { flex: 1; overflow-y: auto; padding: 0 5px; margin-bottom: 2px; }
+        .history-list-item { font-size: 26px; border-bottom: 1px dashed #333; padding: 6px 10px; text-align: center; }
+        
+        /* INBOX TICKET STYLING */
+        .ticket-item { background: #1e293b; border: 2px solid var(--border-std); padding: 15px; margin-bottom: 10px; border-radius: 6px; cursor: pointer; transition: filter 0.1s;}
+        .ticket-item:hover { filter: brightness(1.2); }
+        .ticket-unread { border-left: 6px solid var(--danger); }
+        .ticket-read { border-left: 6px solid #475569; }
+        .msg-bubble { background: #0f172a; border: 2px solid var(--border-std); padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: left; }
+        .msg-bubble.admin { border-left: 6px solid var(--danger); background: #1a0f14;}
+        .msg-bubble.player { border-right: 6px solid var(--success); background: #0f1a14; text-align: right;}
+
+        /* --- 8-BIT ROULETTE STYLING --- */
         .r-board-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; position: relative; }
-        .r-table { display: grid; grid-template-columns: 60px repeat(12, 60px) 60px; grid-template-rows: 60px 60px 60px 50px 50px; background: #222; gap: 2px; border: 4px solid var(--border-std); box-shadow: 10px 10px 0 #000; width: fit-content; margin: 0 auto; position: relative; }
-        .r-cell { display: flex; justify-content: center; align-items: center; font-family: 'VT323', monospace; font-size: 36px; font-weight: bold; cursor: crosshair; position: relative; text-shadow: 2px 2px 0 #000; color: #fff; }
+        .r-table {
+            display: grid;
+            grid-template-columns: 60px repeat(12, 60px) 60px;
+            grid-template-rows: 60px 60px 60px 50px 50px;
+            background: #020617;
+            border: 4px solid var(--border-std);
+            box-shadow: 10px 10px 0 #000;
+            width: fit-content;
+            margin: 0 auto;
+            position: relative;
+        }
+        .r-cell {
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'VT323', monospace; font-size: 36px; font-weight: bold;
+            border: 2px solid #111; cursor: crosshair; position: relative;
+            text-shadow: 2px 2px 0 #000; color: #fff;
+        }
         .r-cell:hover { filter: brightness(1.5); z-index: 2; box-shadow: inset 0 0 10px #fff; }
         .r-zero { grid-column: 1; grid-row: 1 / span 3; background: var(--success); }
         .r-red { background: var(--danger); }
         .r-black { background: #1e293b; }
-        .r-col-bet, .r-doz-bet, .r-half-bet { background: #0f172a; color: var(--warning); font-size: 28px; cursor: pointer; }
+        .r-col-bet { background: #0f172a; color: var(--warning); font-size: 28px; cursor: pointer; }
+        .r-doz-bet { background: #0f172a; color: var(--warning); font-size: 28px; cursor: pointer; }
+        .r-half-bet { background: #0f172a; color: var(--warning); font-size: 28px; cursor: pointer; }
         .r-half-red { background: var(--danger); }
         .r-half-black { background: #1e293b; }
         
+        .r-highlight { background: rgba(255,255,255,0.4) !important; border: 2px solid #fff !important; z-index: 10;}
         .r-hover-indicator { position: absolute; background: rgba(59, 130, 246, 0.8); border: 2px solid #fff; pointer-events: none; z-index: 5; display: none;}
-        .r-live-panel { width: 100%; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.6); border-top: 2px solid var(--border-std); padding: 10px 20px;}
-        .r-readout { font-size: 24px; color: #94a3b8; text-transform: uppercase; width: 250px;}
+        
+        .r-live-panel { width: 100%; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.6); border-top: 2px solid var(--border-std); padding: 10px 20px; margin-bottom: 15px;}
+        .r-readout { font-size: 24px; color: #94a3b8; text-transform: uppercase; }
         .r-readout span { color: #fff; font-weight: bold; }
 
         .r-chip { position: absolute; width: 32px; height: 32px; background: var(--warning); border: 3px dashed #b45309; border-radius: 50%; color: #000; font-size: 14px; display: flex; justify-content: center; align-items: center; font-weight: bold; transform: translate(-50%, -50%); z-index: 100; box-shadow: 2px 2px 0 #000; font-family: 'VT323', monospace; pointer-events: none; text-shadow: none;}
         .r-chip.mine { background: var(--success); border-color: #064e3b; color: #fff; text-shadow: 1px 1px 0 #000;}
 
-        .r-wheel-box { width: 120px; height: 120px; border: 6px solid var(--border-std); border-radius: 50%; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; transition: transform 0.1s;}
+        /* True 8-Bit Wheel Visual */
+        .r-wheel-box { 
+            width: 120px; height: 120px; border-radius: 50%; 
+            border: 6px solid var(--border-std); box-sizing: border-box;
+            position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.8); 
+            display: flex; justify-content: center; align-items: center; transition: transform 0.1s;
+        }
         .r-wheel-box.spinning { animation: spinWheel 0.2s linear infinite; }
-        .r-wheel-box::after { content: ''; position: absolute; width: 75px; height: 75px; background: #0f172a; border-radius: 50%; border: 4px solid var(--warning); }
-        .r-wheel-inner { position: absolute; z-index: 5; font-size: 50px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000; }
+        .r-wheel-box::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75px; height: 75px; background: #0f172a; border-radius: 50%; border: 4px solid var(--warning); box-sizing: border-box;}
+        .r-wheel-inner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 5; font-size: 50px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000; }
         @keyframes spinWheel { 100% { transform: rotate(360deg); } }
 
         /* --- PVP DUELS --- */
         .duel-item { background: #1e293b; border: 2px solid var(--border-std); padding: 15px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;}
-        
+
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
             #arcade-cabinet { width: 100vw; height: 100vh; border: none; border-radius: 0; flex-direction: column; }
@@ -164,15 +281,44 @@
             .menu-grid { width: 100%; grid-template-columns: 1fr; padding: 0 15px; }
             .wood-btn { grid-column: span 1 !important; font-size: 20px; padding: 10px; }
             .modal-box { width: 95%; padding: 15px; }
+            
+            /* Arcade Adjustments */
             .arcade-grid { flex-wrap: wrap; gap: 10px; }
             .arcade-bet-box { width: 48%; height: 120px; padding: 10px; }
-            .r-board-wrapper { transform: scale(0.45); transform-origin: top center; margin-bottom: -150px;}
+            .arcade-bet-title { font-size: 26px; }
+            .arcade-bet-payout { font-size: 18px; }
+            .dice { font-size: 80px; }
+            .coin-3d { width: 100px; height: 100px; font-size: 50px; }
+            
+            /* Color Game */
+            .color-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+            .color-die { width: 60px; height: 60px; }
+            .color-bet-box { height: 80px; }
+            .color-bet-title { font-size: 20px; }
+            
+            /* Blackjack Overlap Fixes */
             .table-surface { flex-direction: column; overflow-y: auto; justify-content: flex-start; padding-top: 10px; }
             .banker-station { position: relative; top: auto; left: auto; transform: none; margin-bottom: 15px; }
             #timers-container { position: relative; top: auto; left: auto; transform: none; margin-bottom: 15px; }
             #seats-area { position: relative; bottom: auto; left: auto; flex-wrap: wrap; justify-content: center; gap: 10px; padding-bottom: 20px; height: auto; margin-top: 10px;}
             .seat { width: 45%; max-width: 140px; transform: none !important; }
+            .hands-wrapper { min-height: 80px; }
             .card { width: 45px; height: 64px; margin-left: -25px; }
+            .card-corner { font-size: 12px; }
+            .card-center-suit { font-size: 24px; }
+            .player-name-text { font-size: 18px; }
+            .seat-empty-box { height: 120px; }
+            .btn-sit-empty { font-size: 20px; padding: 4px 15px; }
+            .global-timer { font-size: 24px; padding: 5px 15px; white-space: normal; }
+
+            /* Roulette Mobile Shrink */
+            .r-board-wrapper { transform: scale(0.45); transform-origin: top center; margin-bottom: -150px;}
+            
+            /* Modals and Inputs */
+            .input-group { flex-direction: column; }
+            .rewards-grid { grid-template-columns: 1fr 1fr; }
+            #inbox-thread-view { padding: 5px; }
+            .msg-bubble { font-size: 20px; }
         }
     </style>
 </head>
@@ -239,6 +385,7 @@
                         <button class="wood-btn" style="background: #10b981; margin-bottom: 10px; color:#000;" onclick="joinRoulette()">8-BIT ROULETTE</button>
                         <button class="wood-btn" style="background: #a855f7; margin-bottom: 10px;" onclick="joinDice()">HIGH-LOW DICE</button>
                         <button class="wood-btn" style="background: #ea580c; margin-bottom: 10px;" onclick="joinCoinFlip()">GLOBAL COIN FLIP & PVP</button>
+                        <button class="wood-btn" style="background: #ef4444;" onclick="joinColorGame()">CLASSIC COLOR GAME</button>
                     </div>
                     <button class="wood-btn" style="background: var(--danger); margin-top: 10px;" onclick="hideModal('play-modal')">BACK TO DASHBOARD</button>
                 </div>
@@ -302,8 +449,104 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="roulette-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="roulette-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <input type="text" id="roulette-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('roulette')">
                         <button class="pixel-text" onclick="actSendChat('roulette')">SEND</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-interface" class="game-interface hidden">
+            <div class="game-area">
+                <div class="top-hud">
+                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('blackjack')">◄ DASHBOARD</button></div>
+                    <div class="hud-center"><div style="font-size: 36px; color: var(--accent-glow-2);" id="phase-display" class="pixel-text">WAITING</div></div>
+                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="hud-credits"></span></div></div>
+                </div>
+                <div class="table-surface">
+                    <div class="banker-station">
+                        <div class="pixel-text" style="font-size: 40px; color: #f8fafc; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; letter-spacing: 2px;">DEALER</div>
+                        <div class="hand-container"><div id="dealer-cards" class="hands-wrapper" style="margin: 0; min-height: 88px; align-items: center;"></div><div id="dealer-val" class="hd-badge hidden"></div></div>
+                    </div>
+                    <div id="timers-container">
+                        <div id="global-timer" class="global-timer pixel-text hidden">BETS CLOSING: <span id="g-time">15</span>s</div>
+                        <div id="next-round-timer" class="global-timer pixel-text blue hidden">NEXT ROUND: <span id="n-time">5</span>s</div>
+                        <div id="idle-timer" class="global-timer pixel-text warning hidden">PLACE BET OR LOSE SEAT: <span id="i-time">7</span>s</div>
+                    </div>
+                    <div id="seats-area"></div>
+                </div>
+            </div>
+            <div class="sidebar-col">
+                <div class="sidebar-box">
+                    <div class="sidebar-header pixel-text"><span>PLAYERS</span> <span id="player-count" style="color:var(--accent-glow-2);">0</span></div>
+                    <div id="lobby-list" style="flex: 1; padding: 10px; overflow-y: auto;" class="pixel-text custom-scroll"></div>
+                </div>
+                <div class="sidebar-box">
+                    <div class="sidebar-header pixel-text">TABLE CHAT</div>
+                    <div id="chat-messages" class="chat-messages custom-scroll pixel-text"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="blackjack-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('blackjack')">
+                        <button class="pixel-text" onclick="actSendChat('blackjack')">SEND</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="dice-interface" class="game-interface hidden">
+            <div class="game-area dice-bg">
+                <div class="top-hud">
+                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('dice')">◄ DASHBOARD</button></div>
+                    <div class="hud-center"><div style="font-size: 36px; color: var(--warning);" id="dice-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="dice-credits"></span></div></div>
+                </div>
+                <div class="dice-container"><div id="die1" class="dice">⚀</div><div id="die2" class="dice">⚀</div></div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div id="dice-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
+                    <div id="dice-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
+                </div>
+                <div class="arcade-bet-area">
+                    <div class="master-bet-row">
+                        <select id="dice-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
+                            <option value="1000" selected>1,000</option>
+                            <option value="5000">5,000</option>
+                            <option value="20000">20,000</option>
+                            <option value="50000">50,000</option>
+                        </select>
+                    </div>
+                    <div class="arcade-grid">
+                        <div id="dice-btn-under" class="arcade-bet-box color-bet-btn" onclick="placeDiceBet('under')">
+                            <div class="bet-badge pixel-text hidden" id="badge-under">0</div><div class="payout-overlay hidden" id="payout-under"></div>
+                            <div class="arcade-bet-title pixel-text">UNDER 7</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                        </div>
+                        <div id="dice-btn-seven" class="arcade-bet-box color-bet-btn" onclick="placeDiceBet('seven')">
+                            <div class="bet-badge pixel-text hidden" id="badge-seven">0</div><div class="payout-overlay hidden" id="payout-seven"></div>
+                            <div class="arcade-bet-title pixel-text" style="color:#a855f7;">EXACTLY 7</div><div class="arcade-bet-payout pixel-text">PAYS 4:1</div>
+                        </div>
+                        <div id="dice-btn-over" class="arcade-bet-box color-bet-btn" onclick="placeDiceBet('over')">
+                            <div class="bet-badge pixel-text hidden" id="badge-over">0</div><div class="payout-overlay hidden" id="payout-over"></div>
+                            <div class="arcade-bet-title pixel-text" style="color:var(--success);">OVER 7</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar-col">
+                <div style="position: relative; z-index: 50; flex-shrink: 0;">
+                    <div id="dice-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('dice-players-list', 'dice-dropdown-header')">
+                        <span>PLAYERS</span>
+                        <span><span id="dice-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
+                    </div>
+                    <div id="dice-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                </div>
+                <div class="sidebar-box">
+                    <div class="sidebar-header pixel-text">ROLL HISTORY</div>
+                    <div class="history-content custom-scroll pixel-text" id="dice-history"></div>
+                </div>
+                <div class="sidebar-box">
+                    <div class="sidebar-header pixel-text">TABLE CHAT</div>
+                    <div id="dice-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="dice-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('dice')">
+                        <button class="pixel-text" onclick="actSendChat('dice')">SEND</button>
                     </div>
                 </div>
             </div>
@@ -390,8 +633,85 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="coin-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="coin-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <input type="text" id="coin-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('coin')">
                         <button class="pixel-text" onclick="actSendChat('coin')">SEND</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="color-interface" class="game-interface hidden">
+            <div class="game-area color-bg">
+                <div class="top-hud">
+                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('color')">◄ DASHBOARD</button></div>
+                    <div class="hud-center"><div style="font-size: 36px; color: var(--success);" id="color-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="color-credits"></span></div></div>
+                </div>
+                
+                <div class="color-die-container">
+                    <div id="col-die1" class="color-die bg-red"></div>
+                    <div id="col-die2" class="color-die bg-blue"></div>
+                    <div id="col-die3" class="color-die bg-yellow"></div>
+                </div>
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <div id="color-result-text" class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
+                    <div id="color-timer" class="pixel-text" style="font-size: 26px; color: var(--accent-glow-2);">15s REMAINING</div>
+                </div>
+                <div style="padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6);">
+                    <div style="display:flex; justify-content: center; margin-bottom: 10px;">
+                        <select id="color-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
+                            <option value="1000" selected>1,000</option>
+                            <option value="5000">5,000</option>
+                            <option value="20000">20,000</option>
+                            <option value="50000">50,000</option>
+                        </select>
+                    </div>
+                    <div class="color-grid">
+                        <div id="color-btn-red" class="color-bet-box br-red color-bet-btn" onclick="placeColorBet('red')">
+                            <div class="bet-badge pixel-text hidden" id="badge-red">0</div><div class="color-payout-overlay hidden" id="payout-red"></div>
+                            <div class="color-bet-title">RED</div>
+                        </div>
+                        <div id="color-btn-blue" class="color-bet-box br-blue color-bet-btn" onclick="placeColorBet('blue')">
+                            <div class="bet-badge pixel-text hidden" id="badge-blue">0</div><div class="color-payout-overlay hidden" id="payout-blue"></div>
+                            <div class="color-bet-title">BLUE</div>
+                        </div>
+                        <div id="color-btn-yellow" class="color-bet-box br-yellow color-bet-btn" onclick="placeColorBet('yellow')">
+                            <div class="bet-badge pixel-text hidden" id="badge-yellow">0</div><div class="color-payout-overlay hidden" id="payout-yellow"></div>
+                            <div class="color-bet-title">YELLOW</div>
+                        </div>
+                        <div id="color-btn-green" class="color-bet-box br-green color-bet-btn" onclick="placeColorBet('green')">
+                            <div class="bet-badge pixel-text hidden" id="badge-green">0</div><div class="color-payout-overlay hidden" id="payout-green"></div>
+                            <div class="color-bet-title">GREEN</div>
+                        </div>
+                        <div id="color-btn-pink" class="color-bet-box br-pink color-bet-btn" onclick="placeColorBet('pink')">
+                            <div class="bet-badge pixel-text hidden" id="badge-pink">0</div><div class="color-payout-overlay hidden" id="payout-pink"></div>
+                            <div class="color-bet-title">PINK</div>
+                        </div>
+                        <div id="color-btn-white" class="color-bet-box br-white color-bet-btn" onclick="placeColorBet('white')">
+                            <div class="bet-badge pixel-text hidden" id="badge-white">0</div><div class="color-payout-overlay hidden" id="payout-white"></div>
+                            <div class="color-bet-title" style="color:#f8fafc; text-shadow: 2px 2px 0 #555;">WHITE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-col">
+                <div style="position: relative; z-index: 50; flex-shrink: 0;">
+                    <div id="color-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('color-players-list')">
+                        <span>PLAYERS</span><span><span id="color-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
+                    </div>
+                    <div id="color-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                </div>
+                <div class="sidebar-box">
+                    <div class="sidebar-header pixel-text">ROLL HISTORY</div>
+                    <div class="history-content custom-scroll pixel-text" id="color-history"></div>
+                </div>
+                <div class="sidebar-box">
+                    <div class="sidebar-header pixel-text">TABLE CHAT</div>
+                    <div id="color-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="color-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('color')">
+                        <button class="pixel-text" onclick="actSendChat('color')">SEND</button>
                     </div>
                 </div>
             </div>
@@ -462,11 +782,6 @@
             if (input && input.value.trim() && currentUser && currentRoomId) { socket.emit('send_chat', { roomId: currentRoomId, username: currentUser.username, message: input.value.trim() }); input.value = ''; } 
         }
         
-        ['blackjack', 'dice', 'coin', 'color', 'roulette'].forEach(game => {
-            const input = document.getElementById(`${game}-chat-input`);
-            if(input) input.addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat(game); });
-        });
-
         socket.on('receive_chat', data => { 
             let boxId = `${data.roomId}-chat-messages`;
             const msgs = document.getElementById(boxId);
@@ -688,8 +1003,16 @@
         function renderRouletteChips() {
             const container = document.getElementById('r-chips-container');
             if(!container) return; container.innerHTML = '';
+            
+            let aggregated = {};
+            globalRouletteBets.forEach(b => {
+                let key = b.type + '-' + b.numbers.join(',');
+                if(!aggregated[key]) aggregated[key] = { ...b, totalAmount: 0, isMine: false };
+                aggregated[key].totalAmount += b.amount;
+                if(currentUser && b.username.toLowerCase() === currentUser.username.toLowerCase()) aggregated[key].isMine = true;
+            });
 
-            globalRouletteBets.forEach(bet => {
+            Object.values(aggregated).forEach(bet => {
                 let targetEl = null; let x = 0, y = 0;
 
                 if (['red', 'black', 'even', 'odd', 'high', 'low'].includes(bet.type)) { targetEl = document.querySelector(`[data-outside="${bet.type}"]`);
@@ -711,10 +1034,9 @@
                 if (x > 0 && y > 0) {
                     const chip = document.createElement('div');
                     chip.className = 'r-chip';
-                    if (currentUser && bet.username.toLowerCase() === currentUser.username.toLowerCase()) chip.classList.add('mine');
-                    const offsetX = (Math.random() - 0.5) * 12; const offsetY = (Math.random() - 0.5) * 12;
-                    chip.style.left = (x + offsetX) + 'px'; chip.style.top = (y + offsetY) + 'px';
-                    chip.innerText = bet.amount >= 1000 ? (bet.amount/1000) + 'k' : bet.amount;
+                    if (bet.isMine) chip.classList.add('mine');
+                    chip.style.left = x + 'px'; chip.style.top = y + 'px';
+                    chip.innerText = bet.totalAmount >= 1000 ? (bet.totalAmount/1000) + 'k' : bet.totalAmount;
                     container.appendChild(chip);
                 }
             });
@@ -731,16 +1053,17 @@
 
             if (data.status === 'betting') {
                 statusText.innerText = "WHEEL IDLE"; statusText.style.color = '#fff'; myRouletteBets = []; clearInterval(rouletteInterval);
-                wheelBox.classList.remove('spinning'); wheelRes.innerText = '?';
+                if(wheelBox) wheelBox.classList.remove('spinning'); if(wheelRes) wheelRes.innerText = '?';
                 rouletteInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(rouletteInterval); }, 1000);
             } 
             else if (data.status === 'spinning') { 
                 statusText.innerText = "WHEEL SPINNING..."; timerText.innerText = "NO MORE BETS"; playSfx('deal'); 
-                wheelBox.classList.add('spinning'); wheelRes.innerText = '';
+                if(wheelBox) wheelBox.classList.add('spinning'); if(wheelRes) wheelRes.innerText = '';
             } 
             else if (data.status === 'resolving') {
                 statusText.innerText = `RESULT: ${data.result}`;
-                wheelBox.classList.remove('spinning'); wheelRes.innerText = data.result; wheelRes.style.color = data.result===0 ? 'var(--success)' : (ROULETTE_RED.includes(data.result) ? 'var(--danger)' : '#fff');
+                if(wheelBox) wheelBox.classList.remove('spinning'); 
+                if(wheelRes) { wheelRes.innerText = data.result; wheelRes.style.color = data.result===0 ? 'var(--success)' : (ROULETTE_RED.includes(data.result) ? 'var(--danger)' : '#fff'); }
                 statusText.style.color = data.result===0 ? 'var(--success)' : (ROULETTE_RED.includes(data.result) ? 'var(--danger)' : '#fff');
                 
                 if (myRouletteBets.length > 0) {
@@ -769,6 +1092,7 @@
             socket.emit('undo_roulette_bet', { username: currentUser.username });
         }
 
+        // --- SECURITY: DISABLE DEV TOOLS & RIGHT CLICK ---
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
