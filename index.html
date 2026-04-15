@@ -173,7 +173,7 @@
         }
 
         .arcade-bet-area { padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6); }
-        .master-bet-row { display:flex; justify-content: center; margin-bottom: 15px; }
+        .master-bet-row { display:flex; justify-content: center; margin-bottom: 15px; align-items: center; gap: 10px;}
         .arcade-grid { display: flex; justify-content: center; gap: 20px; }
         
         .arcade-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; width: 250px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; cursor: pointer; transition: 0.1s; position: relative; height: 160px;}
@@ -254,17 +254,22 @@
         .r-highlight { background: rgba(255,255,255,0.4) !important; border: 2px solid #fff !important; z-index: 10;}
         .r-hover-indicator { position: absolute; background: rgba(59, 130, 246, 0.8); border: 2px solid #fff; pointer-events: none; z-index: 5; display: none;}
         
-        .r-live-panel { width: 100%; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.6); border-top: 2px solid var(--border-std); padding: 10px 20px; margin-bottom: 15px;}
+        .r-live-panel { width: 100%; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.6); border-top: 2px solid var(--border-std); padding: 10px 20px; margin-top: 20px; margin-bottom: 20px;}
         .r-readout { font-size: 24px; color: #94a3b8; text-transform: uppercase; }
         .r-readout span { color: #fff; font-weight: bold; }
 
         .r-chip { position: absolute; width: 32px; height: 32px; background: var(--warning); border: 3px dashed #b45309; border-radius: 50%; color: #000; font-size: 14px; display: flex; justify-content: center; align-items: center; font-weight: bold; transform: translate(-50%, -50%); z-index: 100; box-shadow: 2px 2px 0 #000; font-family: 'VT323', monospace; pointer-events: none; text-shadow: none;}
         .r-chip.mine { background: var(--success); border-color: #064e3b; color: #fff; text-shadow: 1px 1px 0 #000;}
 
-        .r-wheel-box { width: 90px; height: 90px; border: 6px solid var(--border-std); border-radius: 50%; background: repeating-conic-gradient(#dc2626 0% 9.7%, #1e293b 9.7% 19.4%, #10b981 19.4% 22%); position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; transition: transform 0.1s;}
+        /* True 8-Bit Wheel Visual */
+        .r-wheel-box { 
+            width: 120px; height: 120px; border: 6px solid var(--border-std); border-radius: 50%; 
+            background: conic-gradient(#10b981 0deg 9deg, #dc2626 9deg 27deg, #1e293b 27deg 45deg, #dc2626 45deg 63deg, #1e293b 63deg 81deg, #dc2626 81deg 99deg, #1e293b 99deg 117deg, #dc2626 117deg 135deg, #1e293b 135deg 153deg, #dc2626 153deg 171deg, #1e293b 171deg 189deg, #dc2626 189deg 207deg, #1e293b 207deg 225deg, #dc2626 225deg 243deg, #1e293b 243deg 261deg, #dc2626 261deg 279deg, #1e293b 279deg 297deg, #dc2626 297deg 315deg, #1e293b 315deg 333deg, #dc2626 333deg 351deg, #1e293b 351deg 360deg); 
+            position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; transition: transform 0.1s;
+        }
         .r-wheel-box.spinning { animation: spinWheel 0.2s linear infinite; }
-        .r-wheel-box::after { content: ''; position: absolute; width: 55px; height: 55px; background: #0f172a; border-radius: 50%; border: 4px solid var(--warning); }
-        .r-wheel-inner { position: absolute; z-index: 5; font-size: 40px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000; }
+        .r-wheel-box::after { content: ''; position: absolute; width: 75px; height: 75px; background: #0f172a; border-radius: 50%; border: 4px solid var(--warning); }
+        .r-wheel-inner { position: absolute; z-index: 5; font-size: 50px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000; }
         @keyframes spinWheel { 100% { transform: rotate(360deg); } }
 
         /* --- MOBILE RESPONSIVENESS --- */
@@ -717,28 +722,29 @@
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="roulette-credits"></span></div></div>
                 </div>
                 
-                <div style="display:flex; justify-content:center; align-items:center; gap: 30px; margin-bottom: 10px; margin-top: 10px;">
+                <div style="display:flex; justify-content:center; align-items:center; gap: 30px; margin-top: 40px; margin-bottom: 10px;">
                     <div class="r-wheel-box" id="r-wheel-box">
                         <div class="r-wheel-inner pixel-text" id="r-wheel-result">?</div>
                     </div>
                     <div style="text-align: left;">
-                        <div id="roulette-result-text" class="pixel-text" style="font-size: 40px; color: #fff; text-shadow: 2px 2px 0 #000;">WHEEL IDLE</div>
-                        <div id="roulette-timer" class="pixel-text" style="font-size: 26px; color: var(--accent-glow-2);">15s REMAINING</div>
+                        <div id="roulette-result-text" class="pixel-text" style="font-size: 45px; color: #fff; text-shadow: 2px 2px 0 #000;">WHEEL IDLE</div>
+                        <div id="roulette-timer" class="pixel-text" style="font-size: 28px; color: var(--accent-glow-2);">15s REMAINING</div>
                     </div>
                 </div>
                 
                 <div class="arcade-bet-area" style="flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; border-top:none; background:transparent;">
                     
-                    <div class="r-live-panel">
-                        <div class="r-readout">BET DETECTED: <span id="r-hover-type">-</span></div>
+                    <div class="r-live-panel" style="margin-top: 20px;">
+                        <div class="r-readout">DETECTED: <span id="r-hover-type">-</span></div>
                         
                         <div class="master-bet-row" style="margin: 0;">
-                            <select id="roulette-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 4px 8px; margin: 0;">
+                            <select id="roulette-master-bet" class="retro-input pixel-text" style="max-width: 200px; font-size: 24px; padding: 4px 8px; margin: 0;">
                                 <option value="1000" selected>1,000</option>
                                 <option value="5000">5,000</option>
                                 <option value="20000">20,000</option>
                                 <option value="50000">50,000</option>
                             </select>
+                            <button class="wood-btn small" onclick="undoRouletteBet()" style="background:var(--danger); margin-left:10px;">UNDO LAST BET</button>
                         </div>
                         
                         <div class="r-readout">PAYS: <span id="r-hover-payout">-</span></div>
@@ -841,31 +847,64 @@
                     <div class="hud-center"><div style="font-size: 36px; color: var(--warning);" id="coin-phase-display" class="pixel-text">BETS OPEN</div></div>
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="coin-credits"></span></div></div>
                 </div>
-                <div style="display: flex; justify-content: center; align-items: center; flex: 1;"><div id="global-coin-visual" class="coin-3d">?</div></div>
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <div id="coin-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">FLIPPING...</div>
-                    <div id="coin-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
+                
+                <div style="display:flex; border-bottom:2px solid var(--border-std);">
+                    <button class="wood-btn" style="flex:1; border:none; border-radius:0; box-shadow:none; background:var(--accent-glow-2)" id="tab-coin-global" onclick="switchCoinTab('global')">GLOBAL FLIP</button>
+                    <button class="wood-btn" style="flex:1; border:none; border-radius:0; box-shadow:none; background:#1e293b" id="tab-coin-pvp" onclick="switchCoinTab('pvp')">PVP DUEL LOBBY</button>
                 </div>
-                <div class="arcade-bet-area">
-                    <div class="master-bet-row">
-                        <select id="coin-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
-                            <option value="1000" selected>1,000</option>
-                            <option value="5000">5,000</option>
-                            <option value="20000">20,000</option>
-                            <option value="50000">50,000</option>
-                        </select>
+
+                <div id="coin-global-container" style="display:flex; flex-direction:column; flex:1;">
+                    <div style="display: flex; justify-content: center; align-items: center; flex: 1; margin-top:20px;">
+                        <div id="global-coin-visual" class="coin-3d">?</div>
                     </div>
-                    <div class="arcade-grid">
-                        <div id="coin-btn-heads" class="arcade-bet-box color-bet-btn" onclick="placeCoinBet('heads')" style="width:300px;">
-                            <div class="bet-badge pixel-text hidden" id="badge-heads">0</div><div class="payout-overlay hidden" id="payout-heads"></div>
-                            <div class="arcade-bet-title pixel-text" style="color:var(--accent-glow-2);">HEADS</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div id="coin-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">FLIPPING...</div>
+                        <div id="coin-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
+                    </div>
+                    <div class="arcade-bet-area">
+                        <div class="master-bet-row">
+                            <select id="coin-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
+                                <option value="1000" selected>1,000</option>
+                                <option value="5000">5,000</option>
+                                <option value="20000">20,000</option>
+                                <option value="50000">50,000</option>
+                            </select>
                         </div>
-                        <div id="coin-btn-tails" class="arcade-bet-box color-bet-btn" onclick="placeCoinBet('tails')" style="width:300px;">
-                            <div class="bet-badge pixel-text hidden" id="badge-tails">0</div><div class="payout-overlay hidden" id="payout-tails"></div>
-                            <div class="arcade-bet-title pixel-text" style="color:#ea580c;">TAILS</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                        <div class="arcade-grid">
+                            <div id="coin-btn-heads" class="arcade-bet-box color-bet-btn" onclick="placeCoinBet('heads')" style="width:300px;">
+                                <div class="bet-badge pixel-text hidden" id="badge-heads">0</div><div class="payout-overlay hidden" id="payout-heads"></div>
+                                <div class="arcade-bet-title pixel-text" style="color:var(--accent-glow-2);">HEADS</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                            </div>
+                            <div id="coin-btn-tails" class="arcade-bet-box color-bet-btn" onclick="placeCoinBet('tails')" style="width:300px;">
+                                <div class="bet-badge pixel-text hidden" id="badge-tails">0</div><div class="payout-overlay hidden" id="payout-tails"></div>
+                                <div class="arcade-bet-title pixel-text" style="color:#ea580c;">TAILS</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <div id="coin-pvp-container" class="hidden custom-scroll" style="flex:1; display:flex; flex-direction:column; padding: 20px; overflow-y:auto;">
+                    <div style="background:rgba(0,0,0,0.6); padding:15px; border-radius:8px; border:2px solid var(--border-std); margin-bottom: 20px;">
+                        <div style="font-size:28px; color:var(--warning); margin-bottom:10px; text-shadow:2px 2px 0 #000;">CREATE A DUEL</div>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <select id="pvp-wager" class="retro-input pixel-text" style="font-size:20px; padding:8px;">
+                                <option value="1000">WAGER: 1,000</option>
+                                <option value="5000">WAGER: 5,000</option>
+                                <option value="20000">WAGER: 20,000</option>
+                                <option value="50000">WAGER: 50,000</option>
+                                <option value="100000">WAGER: 100,000</option>
+                            </select>
+                            <select id="pvp-side" class="retro-input pixel-text" style="font-size:20px; padding:8px;">
+                                <option value="heads">I PICK HEADS</option>
+                                <option value="tails">I PICK TAILS</option>
+                            </select>
+                            <button class="wood-btn pixel-text" style="background:var(--success); color:#000;" onclick="createCoinDuel()">SUBMIT DUEL</button>
+                        </div>
+                    </div>
+                    <div style="font-size:28px; color:#fff; margin-bottom:10px; text-shadow:2px 2px 0 #000;">OPEN DUELS</div>
+                    <div id="pvp-duel-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+                </div>
+
             </div>
             <div class="sidebar-col">
                 <div style="position: relative; z-index: 50; flex-shrink: 0;">
@@ -1280,7 +1319,18 @@
 
         function joinRoom(roomId) { currentRoomId = roomId; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
         function joinDice() { currentRoomId = 'dice'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
-        function joinCoinFlip() { currentRoomId = 'coin'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('coin-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'coin' }); socket.emit('get_coin_state'); playSfx('deal'); }
+        
+        function joinCoinFlip() { 
+            currentRoomId = 'coin'; hideModal('play-modal'); 
+            document.getElementById('main-menu-view').classList.add('hidden'); 
+            document.getElementById('coin-interface').classList.remove('hidden'); 
+            switchCoinTab('global');
+            socket.emit('enter_arcade', { username: currentUser.username, game: 'coin' }); 
+            socket.emit('get_coin_state'); 
+            socket.emit('get_coin_duels');
+            playSfx('deal'); 
+        }
+
         function joinColorGame() { currentRoomId = 'color'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
         function joinRoulette() { currentRoomId = 'roulette'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('roulette-interface').classList.remove('hidden'); buildRouletteBoard(); socket.emit('enter_arcade', { username: currentUser.username, game: 'roulette' }); socket.emit('get_roulette_state'); playSfx('deal'); }
 
@@ -1463,13 +1513,11 @@
             table.className = 'r-table';
             table.id = 'r-table-id';
 
-            // Zero
             const zero = document.createElement('div');
             zero.className = 'r-cell r-zero';
             zero.innerText = '0'; zero.dataset.num = '0';
             table.appendChild(zero);
 
-            // Numbers
             const gridLayout = [
                 [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36],
                 [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35],
@@ -1491,7 +1539,6 @@
                 }
             }
 
-            // Columns
             for(let i=0; i<3; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'r-cell r-col-bet';
@@ -1503,7 +1550,6 @@
                 table.appendChild(cell);
             }
 
-            // Dozens
             const dozData = [
                 { text: '1ST 12', val: 1, col: 2, span: 4 },
                 { text: '2ND 12', val: 2, col: 6, span: 4 },
@@ -1520,7 +1566,6 @@
                 table.appendChild(cell);
             });
 
-            // Halves
             const halfData = [
                 { text: '1 TO 18', type: 'low', col: 2 },
                 { text: 'EVEN', type: 'even', col: 4 },
@@ -1573,7 +1618,7 @@
                     const w = rect.width; const h = rect.height;
                     const num = parseInt(cell.dataset.num);
                     
-                    if(num === 0) return; // Zero has simple hitbox
+                    if(num === 0) return;
 
                     const row = parseInt(cell.dataset.row);
                     const col = parseInt(cell.dataset.col);
@@ -1768,6 +1813,11 @@
             
             applyThrottle(); myRouletteBets.push(betData);
             socket.emit('place_roulette_bet', { username: currentUser.username, betType: betData.type, coveredNumbers: betData.numbers, amount: amt });
+        }
+
+        function undoRouletteBet() {
+            if(gameLocks.roulette) return alert('This game is currently offline for maintenance.');
+            socket.emit('undo_roulette_bet', { username: currentUser.username });
         }
 
         // --- SECURITY: DISABLE DEV TOOLS & RIGHT CLICK ---
