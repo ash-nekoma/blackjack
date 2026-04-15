@@ -74,8 +74,8 @@
         .control-panel { background: #0f172a; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
         .control-title { font-size: 30px; color: var(--warning); margin-bottom: 15px; border-bottom: 1px dashed #334155; padding-bottom: 5px; }
 
-        /* SCROLLABLE TABLES */
-        .table-wrapper { flex: 1; min-height: 0; overflow-y: auto; border: 2px solid #334155; background: #000; position: relative; }
+        /* SCROLLABLE TABLES WITH STRICT HEIGHT CAP */
+        .table-wrapper { flex: 1; min-height: 0; overflow-y: auto; border: 2px solid #334155; background: #000; position: relative; max-height: 500px; }
         .admin-table { width: 100%; border-collapse: collapse; background: transparent; border: none; }
         .admin-table thead th { position: sticky; top: 0; z-index: 10; background: #1e293b; color: var(--accent-glow-2); padding: 12px; font-size: 24px; text-align: center; border-bottom: 2px solid var(--border-std); box-shadow: 0 2px 0 var(--border-std); }
         .admin-table td { padding: 12px; font-size: 24px; border-bottom: 1px dashed #334155; vertical-align: middle; text-align: center;}
@@ -301,6 +301,12 @@
 
             <div id="view-players" class="view-panel" style="display: flex; flex-direction: column; max-height: 100%;">
                 <h2 class="panel-title">GOD-MODE PLAYER DATABASE</h2>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0;">
+                    <button id="pdb-tab-active" class="wood-btn small active" onclick="setPlayerDbTab('active')">ACTIVE / BANNED PLAYERS</button>
+                    <button id="pdb-tab-pending" class="wood-btn small" onclick="setPlayerDbTab('pending')">SIGN-UP REQUESTS <span id="pending-badge" style="color:var(--danger); font-weight:bold; margin-left: 8px;"></span></button>
+                </div>
+                
                 <div class="table-wrapper custom-scroll">
                     <table class="admin-table">
                         <thead><tr><th>USERNAME</th><th>BALANCE</th><th>IP ADDRESS</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
@@ -428,6 +434,11 @@
         
         let allAdminTickets = [];
         let currentAdminInboxTab = 'announcement';
+
+        // Variables for Player DB Tabs
+        let globalAllUsers = [];
+        let globalOnlineUsers = [];
+        let currentPlayerDbTab = 'active'; // 'active' or 'pending'
 
         function formatNumber(num) { return num.toLocaleString(); }
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -717,6 +728,72 @@
             showModal('math-modal');
         }
 
+        // --- PLAYER DB TABS & RENDERING ---
+        function setPlayerDbTab(tab) {
+            currentPlayerDbTab = tab;
+            document.getElementById('pdb-tab-active').classList.remove('active');
+            document.getElementById('pdb-tab-pending').classList.remove('active');
+            document.getElementById(`pdb-tab-${tab}`).classList.add('active');
+            renderPlayerDB();
+        }
+
+        function renderPlayerDB() {
+            const pendingUsers = globalAllUsers.filter(u => u.status === 'pending');
+            const activeUsers = globalAllUsers.filter(u => u.status !== 'pending');
+            
+            const badge = document.getElementById('pending-badge');
+            badge.innerText = pendingUsers.length > 0 ? `(${pendingUsers.length})` : '';
+
+            let displayUsers = currentPlayerDbTab === 'pending' ? pendingUsers : activeUsers;
+
+            let sortedUsers = displayUsers.sort((a,b) => {
+                const aOnline = globalOnlineUsers.includes(a.username);
+                const bOnline = globalOnlineUsers.includes(b.username);
+                if(aOnline && !bOnline) return -1;
+                if(!aOnline && bOnline) return 1;
+                return b.credits - a.credits;
+            });
+
+            const playerList = document.getElementById('player-list');
+            if (sortedUsers.length === 0) {
+                playerList.innerHTML = `<tr><td colspan="5" style="color:#64748b; padding:20px;">NO PLAYERS FOUND IN THIS CATEGORY</td></tr>`;
+                return;
+            }
+
+            playerList.innerHTML = sortedUsers.map(u => {
+                let isOnline = globalOnlineUsers.includes(u.username);
+                let statusColor = '#94a3b8'; let displayStatus = 'OFFLINE';
+                
+                if (u.status === 'banned') { statusColor = 'var(--danger)'; displayStatus = 'BANNED'; isOnline = false; }
+                else if (u.status === 'pending') { statusColor = 'var(--warning)'; displayStatus = 'PENDING'; }
+                else if (isOnline) { statusColor = 'var(--success)'; displayStatus = 'ONLINE'; }
+
+                let actionHtml = '';
+                if(u.status === 'pending') {
+                    actionHtml = `
+                        <button class="wood-btn small" style="background:var(--success); color:#000;" onclick="changeStatus('${u.username}', 'active')">APPROVE</button>
+                        <button class="wood-btn small" style="background:var(--danger);" onclick="changeStatus('${u.username}', 'banned')">DENY</button>
+                    `;
+                } else {
+                    actionHtml = `
+                        <button class="wood-btn small" style="background:var(--accent-glow-2);" onclick="openPlayerModal('${u.username}')">VIEW</button>
+                        <button class="wood-btn small" style="background:#0f766e;" onclick="watchPlayer('${u.username}')">WATCH</button>
+                        ${u.status !== 'active' ? `<button class="wood-btn small" style="background:var(--success); color:#000;" onclick="changeStatus('${u.username}', 'active')">ACTIVATE</button>` : ''}
+                        ${u.status !== 'banned' && adminRole === 'admin' ? `<button class="wood-btn small" style="background:var(--danger);" onclick="changeStatus('${u.username}', 'banned')">BAN</button>` : ''}
+                    `;
+                }
+
+                return `
+                <tr>
+                    <td style="color:${u.nameColor}; font-weight:bold; font-size:28px;">${u.username}</td>
+                    <td style="color:var(--warning);">${formatNumber(u.credits)}</td>
+                    <td><button class="wood-btn small" style="background:#475569;" onclick="this.innerText='${u.ipAddress || 'UNKNOWN'}'">[CLICK TO REVEAL]</button></td>
+                    <td style="color:${statusColor}; font-weight:bold;">${displayStatus}</td>
+                    <td>${actionHtml}</td>
+                </tr>
+            `}).join('');
+        }
+
         async function fetchData() {
             if(!adminPass) return;
             const res = await fetch('/api/admin/economy', { headers: { 'x-admin-pass': adminPass }});
@@ -757,7 +834,7 @@
                     }
                 });
 
-                // Cashier Table (Only render if admin)
+                // Cashier Table
                 if(adminRole === 'admin') {
                     const cashierList = document.getElementById('cashier-list');
                     cashierList.innerHTML = data.bankRequests.map(t => {
@@ -768,50 +845,17 @@
                             <td style="color:${t.type.includes('DEPOSIT')?'var(--success)':'var(--danger)'}; font-weight:bold;">${t.type}</td>
                             <td>${formatNumber(t.amount)}</td>
                             <td>
-                                <button class="wood-btn small" style="background:var(--success);" onclick="resolveBank('${t._id}', 'approve')">APPROVE</button>
+                                <button class="wood-btn small" style="background:var(--success); color:#000;" onclick="resolveBank('${t._id}', 'approve')">APPROVE</button>
                                 <button class="wood-btn small" style="background:var(--danger);" onclick="resolveBank('${t._id}', 'deny')">DENY</button>
                             </td>
                         </tr>
                     `}).join('');
                 }
 
-                // Player DB Table
-                const onlineUsers = data.onlineUsers || [];
-                let sortedUsers = data.users.sort((a,b) => {
-                    if(a.status === 'pending' && b.status !== 'pending') return -1;
-                    if(a.status !== 'pending' && b.status === 'pending') return 1;
-                    
-                    const aOnline = onlineUsers.includes(a.username);
-                    const bOnline = onlineUsers.includes(b.username);
-                    if(aOnline && !bOnline) return -1;
-                    if(!aOnline && bOnline) return 1;
-                    
-                    return b.credits - a.credits;
-                });
-                
-                const playerList = document.getElementById('player-list');
-                playerList.innerHTML = sortedUsers.map(u => {
-                    let isOnline = onlineUsers.includes(u.username);
-                    let statusColor = '#94a3b8'; let displayStatus = 'OFFLINE';
-                    
-                    if (u.status === 'banned') { statusColor = 'var(--danger)'; displayStatus = 'BANNED'; isOnline = false; }
-                    else if (u.status === 'pending') { statusColor = 'var(--warning)'; displayStatus = 'PENDING'; }
-                    else if (isOnline) { statusColor = 'var(--success)'; displayStatus = 'ONLINE'; }
-
-                    return `
-                    <tr>
-                        <td style="color:${u.nameColor}; font-weight:bold; font-size:28px;">${u.username}</td>
-                        <td style="color:var(--warning);">${formatNumber(u.credits)}</td>
-                        <td><button class="wood-btn small" style="background:#475569;" onclick="this.innerText='${u.ipAddress || 'UNKNOWN'}'">[CLICK TO REVEAL]</button></td>
-                        <td style="color:${statusColor}; font-weight:bold;">${displayStatus}</td>
-                        <td>
-                            <button class="wood-btn small" style="background:var(--accent-glow-2);" onclick="openPlayerModal('${u.username}')">VIEW</button>
-                            <button class="wood-btn small" style="background:#0f766e;" onclick="watchPlayer('${u.username}')">WATCH</button>
-                            ${u.status !== 'active' ? `<button class="wood-btn small" style="background:var(--success); color:#000;" onclick="changeStatus('${u.username}', 'active')">ACTIVATE</button>` : ''}
-                            ${u.status !== 'banned' && adminRole === 'admin' ? `<button class="wood-btn small" style="background:var(--danger);" onclick="changeStatus('${u.username}', 'banned')">BAN</button>` : ''}
-                        </td>
-                    </tr>
-                `}).join('');
+                // Player DB Tabs & Render
+                globalAllUsers = data.users;
+                globalOnlineUsers = data.onlineUsers || [];
+                renderPlayerDB();
 
                 // Promo Engine
                 if(adminRole === 'admin') {
