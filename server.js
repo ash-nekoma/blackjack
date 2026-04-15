@@ -82,16 +82,9 @@ const coinGame = { status: 'betting', betEndTime: Date.now() + 15000, result: 'h
 const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
 const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
 
-// ROULETTE GLOBALS
-const ROULETTE_RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-const rouletteGame = { status: 'betting', betEndTime: Date.now() + 15000, result: null, bets: [], history: [] };
-
-// COIN DUELS
-let coinDuels = [];
-
-const socketUserMap = {}; let diceLobby = []; let coinLobby = []; let colorLobby = []; let rouletteLobby = [];
+const socketUserMap = {}; let diceLobby = []; let coinLobby = []; let colorLobby = [];
 let strictHouseEdge = false; 
-let gameLocks = { blackjack: false, dice: false, coin: false, color: false, roulette: false };
+let gameLocks = { blackjack: false, dice: false, coin: false, color: false };
 
 // --- ADMIN LOGGER ---
 function getPHTTime() { 
@@ -100,34 +93,9 @@ function getPHTTime() {
 }
 function adminLog(action) { io.to('admin_room').emit('admin_log', `▶ [${getPHTTime()}] ${action}`); }
 
-// --- ROULETTE MATH HELPERS ---
-function checkRouletteWin(bet, resNum) {
-    const isRed = ROULETTE_RED.includes(resNum);
-    const isBlack = resNum !== 0 && !isRed;
-    const isEven = resNum !== 0 && resNum % 2 === 0;
-    const isOdd = resNum !== 0 && resNum % 2 !== 0;
-    const amt = bet.amount;
-
-    if(bet.type === 'straight' && bet.numbers.includes(resNum)) return amt * 36;
-    if(bet.type === 'split' && bet.numbers.includes(resNum)) return amt * 18;
-    if(bet.type === 'street' && bet.numbers.includes(resNum)) return amt * 12;
-    if(bet.type === 'corner' && bet.numbers.includes(resNum)) return amt * 9;
-    if(bet.type === 'sixline' && bet.numbers.includes(resNum)) return amt * 6;
-    if(bet.type === 'col' && bet.numbers.includes(resNum)) return amt * 3;
-    if(bet.type === 'doz' && bet.numbers.includes(resNum)) return amt * 3;
-    if(bet.type === 'red' && isRed) return amt * 2;
-    if(bet.type === 'black' && isBlack) return amt * 2;
-    if(bet.type === 'even' && isEven) return amt * 2;
-    if(bet.type === 'odd' && isOdd) return amt * 2;
-    if(bet.type === 'low' && resNum >= 1 && resNum <= 18) return amt * 2;
-    if(bet.type === 'high' && resNum >= 19 && resNum <= 36) return amt * 2;
-    return 0;
-}
-
 // --- GAME LOOPS ---
 setInterval(() => {
     const now = Date.now();
-    
     Object.keys(rooms).forEach(roomId => {
         let room = rooms[roomId]; let changed = false;
         room.seats.forEach((seat, i) => { 
@@ -138,12 +106,6 @@ setInterval(() => {
             emitGameState(roomId); 
         }
     });
-
-    // Clean up old resolved coin duels (older than 1 minute)
-    const originalLength = coinDuels.length;
-    coinDuels = coinDuels.filter(d => d.status === 'open' || (now - d.timestamp < 60000));
-    if (coinDuels.length !== originalLength) io.emit('coin_duels_update', coinDuels);
-
 }, 1000);
 
 setInterval(() => {
@@ -249,52 +211,6 @@ setInterval(() => {
             io.to('arcade_color').emit('color_state_update', { status: colorGame.status, dice: colorGame.dice, winners, bets: colorGame.bets, history: colorGame.history });
             setTimeout(() => { colorGame.bets = []; colorGame.status = 'betting'; colorGame.betEndTime = Date.now() + 15000; io.to('arcade_color').emit('color_state_update', { status: colorGame.status, betEndTime: colorGame.betEndTime, history: colorGame.history }); }, 5000);
         }, 3000); 
-    }
-
-    // ROULETTE LOOP
-    if (rouletteGame.status === 'betting' && now >= rouletteGame.betEndTime) {
-        rouletteGame.status = 'spinning';
-        io.to('arcade_roulette').emit('roulette_state_update', { status: rouletteGame.status, timeLeft: 0, history: rouletteGame.history });
-
-        setTimeout(async () => {
-            let resNum = Math.floor(Math.random() * 37);
-
-            if (strictHouseEdge && rouletteGame.bets.length > 0) {
-                let lowestPayout = Infinity; let bestNum = 0;
-                for(let i=0; i<=36; i++) {
-                    let simPayout = 0;
-                    rouletteGame.bets.forEach(b => { simPayout += checkRouletteWin(b, i); });
-                    if(simPayout < lowestPayout) { lowestPayout = simPayout; bestNum = i; }
-                }
-                resNum = bestNum;
-            }
-
-            rouletteGame.result = resNum;
-            rouletteGame.history.unshift(resNum);
-            if(rouletteGame.history.length > 20) rouletteGame.history.pop();
-            rouletteGame.status = 'resolving';
-
-            let winners = [];
-            for(let b of rouletteGame.bets) {
-                let winAmount = checkRouletteWin(b, resNum);
-                if(winAmount > 0) {
-                    try {
-                        const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: winAmount } }, {new: true});
-                        if(updatedUser) {
-                            await new Transaction({ username: updatedUser.username, type: 'ROULETTE WIN', amount: winAmount }).save();
-                            winners.push({ username: updatedUser.username, betType: b.type, amount: winAmount });
-                            io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
-                        }
-                    } catch(e){}
-                }
-            }
-            io.to('arcade_roulette').emit('roulette_state_update', { status: rouletteGame.status, result: rouletteGame.result, winners, bets: rouletteGame.bets, history: rouletteGame.history });
-
-            setTimeout(() => {
-                rouletteGame.bets = []; rouletteGame.status = 'betting'; rouletteGame.betEndTime = Date.now() + 15000;
-                io.to('arcade_roulette').emit('roulette_state_update', { status: rouletteGame.status, betEndTime: rouletteGame.betEndTime, history: rouletteGame.history, bets: rouletteGame.bets });
-            }, 6000);
-        }, 4000); 
     }
 }, 1000);
 
@@ -456,6 +372,8 @@ app.get('/api/admin/player_full/:username', checkAdminRole, async (req, res) => 
 app.post('/api/signup', async (req, res) => { 
     try { 
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        
+        // Case insensitive unique check manually to avoid crash before save
         const existing = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i') });
         if(existing) return res.status(400).json({ error: 'Username taken.' });
 
@@ -681,7 +599,7 @@ io.on('connection', (socket) => {
         try {
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return;
             socket.join('arcade_' + game); socketUserMap[socket.id] = { username: user.username, arcadeGame: game, roomId: game };
-            let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : (game === 'roulette' ? rouletteLobby : coinLobby));
+            let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : coinLobby);
             if (!lobby.find(p => p.username === user.username)) lobby.push({ username: user.username, color: user.nameColor });
             io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
             adminLog(`[SPECTATOR] ${user.username} entered the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
@@ -691,9 +609,9 @@ io.on('connection', (socket) => {
     socket.on('leave_arcade', ({ username, game }) => {
         socket.leave('arcade_' + game);
         const searchUser = new RegExp('^' + username + '$', 'i');
-        let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : (game === 'roulette' ? rouletteLobby : coinLobby));
+        let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : coinLobby);
         lobby = lobby.filter(p => !searchUser.test(p.username));
-        if(game === 'dice') diceLobby = lobby; else if (game === 'color') colorLobby = lobby; else if (game === 'roulette') rouletteLobby = lobby; else coinLobby = lobby;
+        if(game === 'dice') diceLobby = lobby; else if (game === 'color') colorLobby = lobby; else coinLobby = lobby;
         if(socketUserMap[socket.id]) { delete socketUserMap[socket.id].arcadeGame; delete socketUserMap[socket.id].roomId; }
         io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
         adminLog(`[SPECTATOR] ${username} left the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
@@ -702,55 +620,12 @@ io.on('connection', (socket) => {
     socket.on('send_chat', ({ roomId, username, message }) => { 
         if(roomId && username && message) {
             adminLog(`[CHAT] (${roomId}) ${username}: ${message}`); 
-            if (['dice', 'coin', 'color', 'roulette'].includes(roomId)) io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
+            if (['dice', 'coin', 'color'].includes(roomId)) io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
             else io.to(roomId).emit('receive_chat', { roomId, username, message }); 
         }
     });
 
-    // --- ROULETTE LOGIC ---
-    socket.on('get_roulette_state', () => { socket.emit('roulette_state_update', { status: rouletteGame.status, betEndTime: rouletteGame.betEndTime, history: rouletteGame.history, bets: rouletteGame.bets }); });
-    socket.on('place_roulette_bet', async ({ username, betType, coveredNumbers, amount }) => {
-        try {
-            if(gameLocks.roulette) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
-            if (rouletteGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
-            if (amount > 50000) return socket.emit('arcade_error', 'Maximum limit is 50,000 per bet!');
-
-            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
-            if (!user) return socket.emit('arcade_error', 'Insufficient credits');
-            
-            await new Transaction({ username: user.username, type: '8-BIT ROULETTE', amount: -amount }).save();
-            rouletteGame.bets.push({ username: user.username, type: betType, numbers: coveredNumbers, amount }); 
-            adminLog(`[BET] ${user.username} bet ${amount} on ROULETTE (${betType})`);
-            
-            io.emit('credit_update', { username: user.username, credits: user.credits }); 
-            // Re-emit state to render chips globally
-            io.to('arcade_roulette').emit('roulette_state_update', { status: rouletteGame.status, betEndTime: rouletteGame.betEndTime, history: rouletteGame.history, bets: rouletteGame.bets });
-            socket.emit('arcade_bet_placed', { game: 'roulette', credits: user.credits, choice: betType, amount });
-        } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
-    });
-
-    socket.on('undo_roulette_bet', async ({ username }) => {
-        try {
-            if(rouletteGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are closed!');
-            let idx = -1;
-            for(let i = rouletteGame.bets.length - 1; i >= 0; i--) {
-                if(rouletteGame.bets[i].username.toLowerCase() === username.toLowerCase()) { idx = i; break; }
-            }
-            if(idx !== -1) {
-                let bet = rouletteGame.bets[idx];
-                rouletteGame.bets.splice(idx, 1);
-                const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i') }, { $inc: { credits: bet.amount } }, {new: true});
-                if(user) {
-                    await new Transaction({ username: user.username, type: 'ROULETTE UNDO', amount: bet.amount }).save();
-                    io.emit('credit_update', { username: user.username, credits: user.credits });
-                    io.to('arcade_roulette').emit('roulette_state_update', { status: rouletteGame.status, betEndTime: rouletteGame.betEndTime, history: rouletteGame.history, bets: rouletteGame.bets });
-                    adminLog(`[REFUND] ${user.username} reversed a ${bet.amount} roulette bet.`);
-                }
-            } else { socket.emit('arcade_error', 'No active bets to undo.'); }
-        } catch(e) {}
-    });
-
-    // --- ARCADE BETS (DICE, COIN, COLOR) ---
+    // --- ARCADE BETS ---
     socket.on('get_dice_state', () => { socket.emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); });
     socket.on('place_dice_bet', async ({ username, choice, amount }) => {
         try {
@@ -809,60 +684,6 @@ io.on('connection', (socket) => {
             io.emit('credit_update', { username: user.username, credits: user.credits }); 
             socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
-    });
-
-    // --- COIN PVP DUELS ---
-    socket.on('get_coin_duels', () => { socket.emit('coin_duels_update', coinDuels); });
-    socket.on('create_coin_duel', async ({ username, amount, side }) => {
-        try {
-            if(amount < 1000 || amount > 100000) return socket.emit('arcade_error', 'Duel limits: 1k to 100k.');
-            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
-            if (!user) return socket.emit('arcade_error', 'Insufficient credits to duel.');
-
-            await new Transaction({ username: user.username, type: 'PVP DUEL CREATE', amount: -amount }).save();
-            io.emit('credit_update', { username: user.username, credits: user.credits });
-
-            let id = Math.random().toString(36).substr(2, 9).toUpperCase();
-            coinDuels.push({ id, creator: user.username, amount, side, status: 'open', timestamp: Date.now() });
-            adminLog(`[DUEL] ${user.username} created a ${amount} credit duel on ${side.toUpperCase()}.`);
-            io.emit('coin_duels_update', coinDuels);
-        } catch(e) {}
-    });
-
-    socket.on('join_coin_duel', async ({ username, duelId }) => {
-        try {
-            let duelIndex = coinDuels.findIndex(d => d.id === duelId);
-            if(duelIndex === -1 || coinDuels[duelIndex].status !== 'open') return socket.emit('arcade_error', 'Duel is no longer available.');
-            
-            let duel = coinDuels[duelIndex];
-            if(duel.creator.toLowerCase() === username.toLowerCase()) return socket.emit('arcade_error', 'You cannot join your own duel.');
-
-            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: duel.amount } }, { $inc: { credits: -duel.amount } }, { new: true });
-            if (!user) return socket.emit('arcade_error', 'Insufficient credits to join this duel.');
-
-            await new Transaction({ username: user.username, type: 'PVP DUEL JOIN', amount: -duel.amount }).save();
-            io.emit('credit_update', { username: user.username, credits: user.credits });
-
-            duel.status = 'resolved';
-            duel.joiner = user.username;
-            
-            let res = Math.random() < 0.5 ? 'heads' : 'tails';
-            duel.result = res;
-            let winner = (res === duel.side) ? duel.creator : duel.joiner;
-            let loser = (res === duel.side) ? duel.joiner : duel.creator;
-            duel.winner = winner;
-
-            adminLog(`[DUEL] ${user.username} joined ${duel.creator}'s duel. Result: ${res.toUpperCase()}. Winner: ${winner}.`);
-
-            const winAmount = duel.amount * 2;
-            const updatedWinner = await User.findOneAndUpdate({ username: new RegExp('^' + winner + '$', 'i') }, { $inc: { credits: winAmount } }, { new: true });
-            if(updatedWinner) {
-                await new Transaction({ username: updatedWinner.username, type: 'PVP DUEL WIN', amount: winAmount }).save();
-                io.emit('credit_update', { username: updatedWinner.username, credits: updatedWinner.credits });
-            }
-            
-            io.emit('coin_duels_update', coinDuels);
-        } catch(e) {}
     });
 
     // --- BLACKJACK SOCKETS ---
@@ -951,9 +772,9 @@ io.on('connection', (socket) => {
         const data = socketUserMap[socket.id];
         if (data) {
             if (data.arcadeGame) {
-                let g = data.arcadeGame; let lobby = g === 'dice' ? diceLobby : (g === 'color' ? colorLobby : (g === 'roulette' ? rouletteLobby : coinLobby));
+                let g = data.arcadeGame; let lobby = g === 'dice' ? diceLobby : (g === 'color' ? colorLobby : coinLobby);
                 lobby = lobby.filter(p => p.username !== data.username);
-                if(g === 'dice') diceLobby = lobby; else if(g === 'color') colorLobby = lobby; else if(g === 'roulette') rouletteLobby = lobby; else coinLobby = lobby;
+                if(g === 'dice') diceLobby = lobby; else if(g === 'color') colorLobby = lobby; else coinLobby = lobby;
                 io.to('arcade_' + g).emit('arcade_lobby_update', { game: g, lobby });
             }
             if (data.roomId && rooms[data.roomId]) {
