@@ -82,6 +82,18 @@ const coinGame = { status: 'betting', betEndTime: Date.now() + 15000, result: 'h
 const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
 const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
 
+// --- COIN DUEL GLOBALS ---
+let coinDuel = {
+    seats: [null, null], // { username, color, score, choice, ready }
+    status: 'waiting', // waiting, readying, flipping, resolved
+    format: 1, // 1, 3, 5
+    betAmount: 0,
+    hostIndex: -1,
+    result: null,
+    message: 'WAITING FOR CHALLENGER',
+    flipInterval: null
+};
+
 const socketUserMap = {}; let diceLobby = []; let coinLobby = []; let colorLobby = [];
 let strictHouseEdge = false; 
 let gameLocks = { blackjack: false, dice: false, coin: false, color: false };
@@ -96,6 +108,7 @@ function adminLog(action) { io.to('admin_room').emit('admin_log', `▶ [${getPHT
 // --- GAME LOOPS ---
 setInterval(() => {
     const now = Date.now();
+    
     Object.keys(rooms).forEach(roomId => {
         let room = rooms[roomId]; let changed = false;
         room.seats.forEach((seat, i) => { 
@@ -106,6 +119,7 @@ setInterval(() => {
             emitGameState(roomId); 
         }
     });
+
 }, 1000);
 
 setInterval(() => {
@@ -151,7 +165,7 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // COIN LOOP
+    // GLOBAL COIN LOOP
     if (coinGame.status === 'betting' && now >= coinGame.betEndTime) {
         coinGame.status = 'flipping'; 
         io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, timeLeft: 0, history: coinGame.history });
@@ -212,6 +226,7 @@ setInterval(() => {
             setTimeout(() => { colorGame.bets = []; colorGame.status = 'betting'; colorGame.betEndTime = Date.now() + 15000; io.to('arcade_color').emit('color_state_update', { status: colorGame.status, betEndTime: colorGame.betEndTime, history: colorGame.history }); }, 5000);
         }, 3000); 
     }
+
 }, 1000);
 
 function getNewDeck() { let deck = []; for (let i = 0; i < 6; i++) { for (let s of suits) { for (let v of values) { deck.push({ suit: s, value: v, weight: ['J','Q','K'].includes(v) ? 10 : (v==='A'?11:parseInt(v)) }); } } } return deck.sort(() => Math.random() - 0.5); }
@@ -373,7 +388,6 @@ app.post('/api/signup', async (req, res) => {
     try { 
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         
-        // Case insensitive unique check manually to avoid crash before save
         const existing = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i') });
         if(existing) return res.status(400).json({ error: 'Username taken.' });
 
@@ -603,6 +617,11 @@ io.on('connection', (socket) => {
             if (!lobby.find(p => p.username === user.username)) lobby.push({ username: user.username, color: user.nameColor });
             io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
             adminLog(`[SPECTATOR] ${user.username} entered the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
+            
+            // Auto-emit coin duels if entering coin room
+            if(game === 'coin') {
+                socket.emit('coin_duel_state_update', coinDuel);
+            }
         } catch(e) {}
     });
 
@@ -612,6 +631,13 @@ io.on('connection', (socket) => {
         let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : coinLobby);
         lobby = lobby.filter(p => !searchUser.test(p.username));
         if(game === 'dice') diceLobby = lobby; else if (game === 'color') colorLobby = lobby; else coinLobby = lobby;
+        
+        if(game === 'coin') {
+            // Eject from duel room if seated
+            const seatIdx = coinDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
+            if(seatIdx !== -1) handleCoinDuelLeave(seatIdx);
+        }
+
         if(socketUserMap[socket.id]) { delete socketUserMap[socket.id].arcadeGame; delete socketUserMap[socket.id].roomId; }
         io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
         adminLog(`[SPECTATOR] ${username} left the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
@@ -625,7 +651,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // --- ARCADE BETS ---
+    // --- ARCADE BETS (DICE, COIN, COLOR) ---
     socket.on('get_dice_state', () => { socket.emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); });
     socket.on('place_dice_bet', async ({ username, choice, amount }) => {
         try {
@@ -684,6 +710,103 @@ io.on('connection', (socket) => {
             io.emit('credit_update', { username: user.username, credits: user.credits }); 
             socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
+    });
+
+    // --- COIN DUEL PVP ROOM ---
+    socket.on('join_coin_duel_seat', async ({ username, seatIndex }) => {
+        try {
+            if(seatIndex < 0 || seatIndex > 1) return;
+            if(coinDuel.seats.some(s => s && s.username.toLowerCase() === username.toLowerCase())) return socket.emit('arcade_error', 'You are already seated.');
+            if(coinDuel.seats[seatIndex]) return socket.emit('arcade_error', 'Seat taken.');
+            
+            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
+            if(!user) return;
+
+            coinDuel.seats[seatIndex] = { username: user.username, color: user.nameColor, score: 0, choice: 'heads', ready: false };
+            
+            if(coinDuel.hostIndex === -1) {
+                coinDuel.hostIndex = seatIndex;
+                coinDuel.message = 'HOST CONFIGURING MATCH';
+            } else {
+                coinDuel.message = 'WAITING FOR READY';
+                // Auto assign opposite choice
+                const hostChoice = coinDuel.seats[coinDuel.hostIndex].choice;
+                coinDuel.seats[seatIndex].choice = hostChoice === 'heads' ? 'tails' : 'heads';
+            }
+            
+            adminLog(`[DUEL] ${user.username} sat at duel seat ${seatIndex+1}`);
+            io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+        } catch(e) {}
+    });
+
+    socket.on('leave_coin_duel_seat', ({ username, seatIndex }) => {
+        const seat = coinDuel.seats[seatIndex];
+        if (seat && seat.username.toLowerCase() === username.toLowerCase()) {
+            handleCoinDuelLeave(seatIndex);
+        }
+    });
+
+    socket.on('update_coin_duel_settings', ({ username, format, betAmount, choice }) => {
+        const seatIndex = coinDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
+        if(seatIndex === -1 || seatIndex !== coinDuel.hostIndex || coinDuel.status !== 'waiting') return;
+        
+        if(betAmount < 0 || betAmount > 100000) return socket.emit('arcade_error', 'Invalid bet limits (0-100k).');
+        if(![1, 3, 5].includes(format)) return;
+
+        coinDuel.format = format;
+        coinDuel.betAmount = betAmount;
+        coinDuel.seats[seatIndex].choice = choice;
+        
+        const otherIndex = seatIndex === 0 ? 1 : 0;
+        if(coinDuel.seats[otherIndex]) {
+            coinDuel.seats[otherIndex].choice = choice === 'heads' ? 'tails' : 'heads';
+            coinDuel.seats[otherIndex].ready = false; // Reset ready if host changes settings
+        }
+        
+        io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+    });
+
+    socket.on('ready_coin_duel', async ({ username }) => {
+        const seatIndex = coinDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
+        if(seatIndex === -1 || coinDuel.status !== 'waiting') return;
+
+        coinDuel.seats[seatIndex].ready = !coinDuel.seats[seatIndex].ready;
+        io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+
+        if(coinDuel.seats[0] && coinDuel.seats[0].ready && coinDuel.seats[1] && coinDuel.seats[1].ready) {
+            coinDuel.status = 'readying';
+            coinDuel.message = 'LOCKING IN BETS...';
+            io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+
+            // Verify credits
+            if(coinDuel.betAmount > 0) {
+                const u1 = await User.findOne({ username: new RegExp('^' + coinDuel.seats[0].username + '$', 'i') });
+                const u2 = await User.findOne({ username: new RegExp('^' + coinDuel.seats[1].username + '$', 'i') });
+
+                if(!u1 || u1.credits < coinDuel.betAmount) {
+                    coinDuel.message = `${coinDuel.seats[0].username.toUpperCase()} HAS INSUFFICIENT CREDITS.`;
+                    coinDuel.status = 'waiting'; coinDuel.seats[0].ready = false; coinDuel.seats[1].ready = false;
+                    return io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+                }
+                if(!u2 || u2.credits < coinDuel.betAmount) {
+                    coinDuel.message = `${coinDuel.seats[1].username.toUpperCase()} HAS INSUFFICIENT CREDITS.`;
+                    coinDuel.status = 'waiting'; coinDuel.seats[0].ready = false; coinDuel.seats[1].ready = false;
+                    return io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+                }
+
+                // Deduct bets
+                await User.updateOne({ username: u1.username }, { $inc: { credits: -coinDuel.betAmount } });
+                await User.updateOne({ username: u2.username }, { $inc: { credits: -coinDuel.betAmount } });
+                await new Transaction({ username: u1.username, type: 'DUEL ROOM BET', amount: -coinDuel.betAmount }).save();
+                await new Transaction({ username: u2.username, type: 'DUEL ROOM BET', amount: -coinDuel.betAmount }).save();
+                io.emit('credit_update', { username: u1.username, credits: u1.credits - coinDuel.betAmount });
+                io.emit('credit_update', { username: u2.username, credits: u2.credits - coinDuel.betAmount });
+                adminLog(`[DUEL] ${u1.username} vs ${u2.username} match started. Pot: ${coinDuel.betAmount * 2}`);
+            }
+
+            coinDuel.status = 'flipping';
+            runDuelFlipSequence();
+        }
     });
 
     // --- BLACKJACK SOCKETS ---
@@ -776,6 +899,11 @@ io.on('connection', (socket) => {
                 lobby = lobby.filter(p => p.username !== data.username);
                 if(g === 'dice') diceLobby = lobby; else if(g === 'color') colorLobby = lobby; else coinLobby = lobby;
                 io.to('arcade_' + g).emit('arcade_lobby_update', { game: g, lobby });
+
+                if(g === 'coin') {
+                    const seatIdx = coinDuel.seats.findIndex(s => s && s.username.toLowerCase() === data.username.toLowerCase());
+                    if(seatIdx !== -1) handleCoinDuelLeave(seatIdx);
+                }
             }
             if (data.roomId && rooms[data.roomId]) {
                 let room = rooms[data.roomId]; room.lobby = room.lobby.filter(p => p.username !== data.username);
@@ -787,6 +915,124 @@ io.on('connection', (socket) => {
         }
     });
 });
+
+// --- COIN DUEL LOGIC ---
+async function handleCoinDuelLeave(seatIndex) {
+    const seat = coinDuel.seats[seatIndex];
+    if(!seat) return;
+
+    if(coinDuel.status === 'flipping' && coinDuel.betAmount > 0) {
+        // Player abandoned during flip. Refund both sides to be safe and fair.
+        const otherIndex = seatIndex === 0 ? 1 : 0;
+        const otherSeat = coinDuel.seats[otherIndex];
+        
+        await refundDuelSeat(seat.username, coinDuel.betAmount);
+        if(otherSeat) await refundDuelSeat(otherSeat.username, coinDuel.betAmount);
+        
+        adminLog(`[DUEL ABORTED] ${seat.username} left mid-game. Bets refunded.`);
+    }
+
+    coinDuel.seats[seatIndex] = null;
+    if(coinDuel.seats.every(s => s === null)) {
+        coinDuel = { seats: [null, null], status: 'waiting', format: 1, betAmount: 0, hostIndex: -1, result: null, message: 'WAITING FOR CHALLENGER', flipInterval: null };
+    } else {
+        coinDuel.hostIndex = seatIndex === 0 ? 1 : 0;
+        coinDuel.status = 'waiting';
+        coinDuel.message = 'CHALLENGER ABANDONED.';
+        coinDuel.seats[coinDuel.hostIndex].ready = false;
+        coinDuel.seats[coinDuel.hostIndex].score = 0;
+    }
+    io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+}
+
+async function refundDuelSeat(username, amount) {
+    const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i') }, { $inc: { credits: amount } }, { new: true });
+    if(user) {
+        await new Transaction({ username: user.username, type: 'DUEL REFUND', amount: amount }).save();
+        io.emit('credit_update', { username: user.username, credits: user.credits });
+    }
+}
+
+function runDuelFlipSequence() {
+    coinDuel.timer = 3;
+    coinDuel.message = 'FLIPPING IN 3...';
+    io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+
+    let countdown = setInterval(() => {
+        coinDuel.timer--;
+        if(coinDuel.timer > 0) {
+            coinDuel.message = `FLIPPING IN ${coinDuel.timer}...`;
+            io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+        } else {
+            clearInterval(countdown);
+            coinDuel.message = 'FLIPPING...';
+            io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+
+            setTimeout(async () => {
+                let res = Math.random() < 0.5 ? 'heads' : 'tails';
+                coinDuel.result = res;
+                coinDuel.status = 'resolving';
+
+                let roundWinnerIndex = -1;
+                if(coinDuel.seats[0].choice === res) roundWinnerIndex = 0;
+                if(coinDuel.seats[1].choice === res) roundWinnerIndex = 1;
+
+                if(roundWinnerIndex !== -1) {
+                    coinDuel.seats[roundWinnerIndex].score++;
+                    coinDuel.message = `${coinDuel.seats[roundWinnerIndex].username.toUpperCase()} SCORES!`;
+                }
+
+                io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+
+                // Check if match won
+                let matchWinner = null;
+                if(coinDuel.seats[0].score >= coinDuel.format) matchWinner = 0;
+                if(coinDuel.seats[1].score >= coinDuel.format) matchWinner = 1;
+
+                setTimeout(async () => {
+                    if(matchWinner !== null) {
+                        coinDuel.status = 'finished';
+                        const winner = coinDuel.seats[matchWinner];
+                        coinDuel.message = `${winner.username.toUpperCase()} WINS THE DUEL!`;
+                        
+                        if(coinDuel.betAmount > 0) {
+                            const winAmount = coinDuel.betAmount * 2;
+                            try {
+                                const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + winner.username + '$', 'i') }, { $inc: { credits: winAmount } }, {new: true}); 
+                                if(updatedUser) {
+                                    await new Transaction({ username: updatedUser.username, type: 'DUEL ROOM WIN', amount: winAmount }).save();
+                                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
+                                }
+                            } catch(e){}
+                        }
+                        io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+
+                        // Reset for rematch after 5s
+                        setTimeout(() => {
+                            if(coinDuel.status === 'finished') {
+                                coinDuel.status = 'waiting';
+                                coinDuel.result = null;
+                                coinDuel.message = 'WAITING FOR READY';
+                                if(coinDuel.seats[0]) { coinDuel.seats[0].ready = false; coinDuel.seats[0].score = 0; }
+                                if(coinDuel.seats[1]) { coinDuel.seats[1].ready = false; coinDuel.seats[1].score = 0; }
+                                io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+                            }
+                        }, 5000);
+
+                    } else {
+                        // Next round
+                        if(coinDuel.status !== 'finished') {
+                            coinDuel.status = 'flipping';
+                            coinDuel.result = null;
+                            runDuelFlipSequence();
+                        }
+                    }
+                }, 3000);
+
+            }, 2000);
+        }
+    }, 1000);
+}
 
 // --- BLACKJACK RESOLUTION LOGIC ---
 function startGame(roomId) {
