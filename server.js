@@ -86,6 +86,9 @@ const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['r
 const ROULETTE_RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
 const rouletteGame = { status: 'betting', betEndTime: Date.now() + 15000, result: null, bets: [], history: [] };
 
+// COIN DUELS
+let coinDuels = [];
+
 const socketUserMap = {}; let diceLobby = []; let coinLobby = []; let colorLobby = []; let rouletteLobby = [];
 let strictHouseEdge = false; 
 let gameLocks = { blackjack: false, dice: false, coin: false, color: false, roulette: false };
@@ -125,7 +128,6 @@ function checkRouletteWin(bet, resNum) {
 setInterval(() => {
     const now = Date.now();
     
-    // BLACKJACK CLEANUP
     Object.keys(rooms).forEach(roomId => {
         let room = rooms[roomId]; let changed = false;
         room.seats.forEach((seat, i) => { 
@@ -136,6 +138,12 @@ setInterval(() => {
             emitGameState(roomId); 
         }
     });
+
+    // Clean up old resolved coin duels (older than 1 minute)
+    const originalLength = coinDuels.length;
+    coinDuels = coinDuels.filter(d => d.status === 'open' || (now - d.timestamp < 60000));
+    if (coinDuels.length !== originalLength) io.emit('coin_duels_update', coinDuels);
+
 }, 1000);
 
 setInterval(() => {
@@ -145,15 +153,20 @@ setInterval(() => {
     if (diceGame.status === 'betting' && now >= diceGame.betEndTime) {
         diceGame.status = 'rolling'; 
         io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, timeLeft: 0, history: diceGame.history });
+        
         setTimeout(async () => {
             let totalUnder = 0; let totalOver = 0;
             diceGame.bets.forEach(b => { if(b.choice==='under') totalUnder+=b.amount; if(b.choice==='over') totalOver+=b.amount; });
+            
             let d1 = Math.floor(Math.random() * 6) + 1; let d2 = Math.floor(Math.random() * 6) + 1;
             if (strictHouseEdge && (totalUnder > 0 || totalOver > 0)) {
-                if (totalUnder > totalOver && (d1+d2) < 7) { d1=4; d2=4; } else if (totalOver > totalUnder && (d1+d2) > 7) { d1=2; d2=2; } 
+                if (totalUnder > totalOver && (d1+d2) < 7) { d1=4; d2=4; } 
+                else if (totalOver > totalUnder && (d1+d2) > 7) { d1=2; d2=2; } 
             }
+            
             diceGame.dice = [d1, d2]; const total = d1 + d2;
             diceGame.status = 'resolving'; diceGame.history.unshift(diceGame.dice); if(diceGame.history.length > 20) diceGame.history.pop();
+            
             let winners = [];
             for (let b of diceGame.bets) {
                 let won = false; let payout = 0;
@@ -180,12 +193,16 @@ setInterval(() => {
     if (coinGame.status === 'betting' && now >= coinGame.betEndTime) {
         coinGame.status = 'flipping'; 
         io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, timeLeft: 0, history: coinGame.history });
+        
         setTimeout(async () => {
             let totalHeads = 0; let totalTails = 0;
             coinGame.bets.forEach(b => { if(b.choice==='heads') totalHeads+=b.amount; if(b.choice==='tails') totalTails+=b.amount; });
+            
             let res = Math.random() < 0.5 ? 'heads' : 'tails';
             if (strictHouseEdge && (totalHeads > 0 || totalTails > 0)) { res = totalHeads > totalTails ? 'tails' : 'heads'; }
+
             coinGame.result = res; coinGame.status = 'resolving'; coinGame.history.unshift(coinGame.result); if(coinGame.history.length > 20) coinGame.history.pop();
+            
             let winners = [];
             for (let b of coinGame.bets) {
                 if (b.choice === coinGame.result) {
@@ -209,9 +226,11 @@ setInterval(() => {
     if (colorGame.status === 'betting' && now >= colorGame.betEndTime) {
         colorGame.status = 'rolling'; 
         io.to('arcade_color').emit('color_state_update', { status: colorGame.status, timeLeft: 0, history: colorGame.history });
+        
         setTimeout(async () => {
             colorGame.dice = [PERYA_COLORS[Math.floor(Math.random() * 6)], PERYA_COLORS[Math.floor(Math.random() * 6)], PERYA_COLORS[Math.floor(Math.random() * 6)]];
             colorGame.status = 'resolving'; colorGame.history.unshift(colorGame.dice); if(colorGame.history.length > 20) colorGame.history.pop();
+            
             let winners = [];
             for (let b of colorGame.bets) {
                 let matches = colorGame.dice.filter(c => c === b.choice).length;
@@ -273,7 +292,7 @@ setInterval(() => {
 
             setTimeout(() => {
                 rouletteGame.bets = []; rouletteGame.status = 'betting'; rouletteGame.betEndTime = Date.now() + 15000;
-                io.to('arcade_roulette').emit('roulette_state_update', { status: rouletteGame.status, betEndTime: rouletteGame.betEndTime, history: rouletteGame.history });
+                io.to('arcade_roulette').emit('roulette_state_update', { status: rouletteGame.status, betEndTime: rouletteGame.betEndTime, history: rouletteGame.history, bets: rouletteGame.bets });
             }, 6000);
         }, 4000); 
     }
@@ -689,7 +708,7 @@ io.on('connection', (socket) => {
     });
 
     // --- ROULETTE LOGIC ---
-    socket.on('get_roulette_state', () => { socket.emit('roulette_state_update', { status: rouletteGame.status, betEndTime: rouletteGame.betEndTime, history: rouletteGame.history }); });
+    socket.on('get_roulette_state', () => { socket.emit('roulette_state_update', { status: rouletteGame.status, betEndTime: rouletteGame.betEndTime, history: rouletteGame.history, bets: rouletteGame.bets }); });
     socket.on('place_roulette_bet', async ({ username, betType, coveredNumbers, amount }) => {
         try {
             if(gameLocks.roulette) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
@@ -702,9 +721,33 @@ io.on('connection', (socket) => {
             await new Transaction({ username: user.username, type: '8-BIT ROULETTE', amount: -amount }).save();
             rouletteGame.bets.push({ username: user.username, type: betType, numbers: coveredNumbers, amount }); 
             adminLog(`[BET] ${user.username} bet ${amount} on ROULETTE (${betType})`);
+            
             io.emit('credit_update', { username: user.username, credits: user.credits }); 
+            // Re-emit state to render chips globally
+            io.to('arcade_roulette').emit('roulette_state_update', { status: rouletteGame.status, betEndTime: rouletteGame.betEndTime, history: rouletteGame.history, bets: rouletteGame.bets });
             socket.emit('arcade_bet_placed', { game: 'roulette', credits: user.credits, choice: betType, amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
+    });
+
+    socket.on('undo_roulette_bet', async ({ username }) => {
+        try {
+            if(rouletteGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are closed!');
+            let idx = -1;
+            for(let i = rouletteGame.bets.length - 1; i >= 0; i--) {
+                if(rouletteGame.bets[i].username.toLowerCase() === username.toLowerCase()) { idx = i; break; }
+            }
+            if(idx !== -1) {
+                let bet = rouletteGame.bets[idx];
+                rouletteGame.bets.splice(idx, 1);
+                const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i') }, { $inc: { credits: bet.amount } }, {new: true});
+                if(user) {
+                    await new Transaction({ username: user.username, type: 'ROULETTE UNDO', amount: bet.amount }).save();
+                    io.emit('credit_update', { username: user.username, credits: user.credits });
+                    io.to('arcade_roulette').emit('roulette_state_update', { status: rouletteGame.status, betEndTime: rouletteGame.betEndTime, history: rouletteGame.history, bets: rouletteGame.bets });
+                    adminLog(`[REFUND] ${user.username} reversed a ${bet.amount} roulette bet.`);
+                }
+            } else { socket.emit('arcade_error', 'No active bets to undo.'); }
+        } catch(e) {}
     });
 
     // --- ARCADE BETS (DICE, COIN, COLOR) ---
@@ -766,6 +809,60 @@ io.on('connection', (socket) => {
             io.emit('credit_update', { username: user.username, credits: user.credits }); 
             socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
+    });
+
+    // --- COIN PVP DUELS ---
+    socket.on('get_coin_duels', () => { socket.emit('coin_duels_update', coinDuels); });
+    socket.on('create_coin_duel', async ({ username, amount, side }) => {
+        try {
+            if(amount < 1000 || amount > 100000) return socket.emit('arcade_error', 'Duel limits: 1k to 100k.');
+            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+            if (!user) return socket.emit('arcade_error', 'Insufficient credits to duel.');
+
+            await new Transaction({ username: user.username, type: 'PVP DUEL CREATE', amount: -amount }).save();
+            io.emit('credit_update', { username: user.username, credits: user.credits });
+
+            let id = Math.random().toString(36).substr(2, 9).toUpperCase();
+            coinDuels.push({ id, creator: user.username, amount, side, status: 'open', timestamp: Date.now() });
+            adminLog(`[DUEL] ${user.username} created a ${amount} credit duel on ${side.toUpperCase()}.`);
+            io.emit('coin_duels_update', coinDuels);
+        } catch(e) {}
+    });
+
+    socket.on('join_coin_duel', async ({ username, duelId }) => {
+        try {
+            let duelIndex = coinDuels.findIndex(d => d.id === duelId);
+            if(duelIndex === -1 || coinDuels[duelIndex].status !== 'open') return socket.emit('arcade_error', 'Duel is no longer available.');
+            
+            let duel = coinDuels[duelIndex];
+            if(duel.creator.toLowerCase() === username.toLowerCase()) return socket.emit('arcade_error', 'You cannot join your own duel.');
+
+            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: duel.amount } }, { $inc: { credits: -duel.amount } }, { new: true });
+            if (!user) return socket.emit('arcade_error', 'Insufficient credits to join this duel.');
+
+            await new Transaction({ username: user.username, type: 'PVP DUEL JOIN', amount: -duel.amount }).save();
+            io.emit('credit_update', { username: user.username, credits: user.credits });
+
+            duel.status = 'resolved';
+            duel.joiner = user.username;
+            
+            let res = Math.random() < 0.5 ? 'heads' : 'tails';
+            duel.result = res;
+            let winner = (res === duel.side) ? duel.creator : duel.joiner;
+            let loser = (res === duel.side) ? duel.joiner : duel.creator;
+            duel.winner = winner;
+
+            adminLog(`[DUEL] ${user.username} joined ${duel.creator}'s duel. Result: ${res.toUpperCase()}. Winner: ${winner}.`);
+
+            const winAmount = duel.amount * 2;
+            const updatedWinner = await User.findOneAndUpdate({ username: new RegExp('^' + winner + '$', 'i') }, { $inc: { credits: winAmount } }, { new: true });
+            if(updatedWinner) {
+                await new Transaction({ username: updatedWinner.username, type: 'PVP DUEL WIN', amount: winAmount }).save();
+                io.emit('credit_update', { username: updatedWinner.username, credits: updatedWinner.credits });
+            }
+            
+            io.emit('coin_duels_update', coinDuels);
+        } catch(e) {}
     });
 
     // --- BLACKJACK SOCKETS ---
