@@ -377,8 +377,8 @@ app.post('/api/signup', async (req, res) => {
         const existing = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i') });
         if(existing) return res.status(400).json({ error: 'Username taken.' });
 
-        await new User({ username: req.body.username, password: req.body.password, ipAddress: ip, tosAccepted: true, status: 'active' }).save(); 
-        adminLog(`New account created: ${req.body.username} (IP: ${ip})`);
+        await new User({ username: req.body.username, password: req.body.password, ipAddress: ip, tosAccepted: true, status: 'pending' }).save(); 
+        adminLog(`New account requested: ${req.body.username} (IP: ${ip})`);
         res.status(201).json({ message: 'Account requested successfully.' }); 
     } catch (err) { res.status(400).json({ error: 'Username taken.' }); } 
 });
@@ -387,11 +387,11 @@ app.post('/api/login', async (req, res) => {
     try {
         const user = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i'), password: req.body.password });
         if (!user) return res.status(401).json({ error: 'Invalid credentials.' }); 
+        if (user.status === 'pending') return res.status(401).json({ error: 'Account pending Admin approval.' });
         if (user.status === 'banned') return res.status(401).json({ error: 'Account banned by administration.' });
         
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         user.ipAddress = ip; 
-        if(user.status !== 'active') user.status = 'active';
         await user.save();
         
         adminLog(`${user.username} logged in.`);
@@ -561,7 +561,6 @@ io.on('connection', (socket) => {
                     io.emit('system_notification', { target, type, subject, message });
                     io.emit('new_mail', { username: 'GLOBAL' });
                 } else {
-                    // Send specific tickets to ALL users (Mass Message)
                     const allUsers = await User.find({});
                     for(let u of allUsers) {
                         await new Ticket({ username: u.username, target: 'specific', type, subject, messages: [{ sender: 'ADMIN', text: message }], unreadPlayer: true, unreadAdmin: false }).save();
