@@ -101,8 +101,6 @@
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
 
-        .sidebar-header { background: #1e293b; color: #fff; padding: 10px; text-align: center; font-size: 28px; border-bottom: 2px solid var(--border-std); display: flex; justify-content: space-between; text-shadow: 1px 1px 0 #000; font-weight: bold; flex-shrink: 0; align-items: center;}
-        
         .chat-messages { flex: 1; padding: 10px; font-size: 22px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word; min-height: 0;}
         .chat-input-area { display: flex; border-top: 2px solid var(--border-std); background: #000; flex-shrink: 0;}
         .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none; font-family: 'VT323';}
@@ -223,22 +221,22 @@
 
         /* --- PVP DUELS --- */
         .duel-arena-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 20px 0; }
-        .duel-arena { display: flex; justify-content: center; align-items: stretch; gap: 40px; width: 100%; max-width: 800px; height: 250px;}
-        .duel-seat { flex: 1; background: #1e293b; border: 4px solid var(--border-std); border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); position: relative; }
+        .duel-arena { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 800px; height: 280px;}
+        .duel-seat { width: 280px; height: 100%; flex-shrink: 0; background: #1e293b; border: 4px solid var(--border-std); border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); position: relative; box-sizing: border-box; }
         .duel-seat.my-seat { border-color: var(--accent-glow-2); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
-        .duel-seat-empty { flex: 1; border: 4px dashed rgba(255,255,255,0.2); border-radius: 12px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); cursor: pointer; transition: 0.2s;}
+        .duel-seat-empty { width: 100%; height: 100%; border: 4px dashed rgba(255,255,255,0.2); border-radius: 12px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); cursor: pointer; transition: 0.2s;}
         .duel-seat-empty:hover { background: rgba(255,255,255,0.1); border-color: #fff;}
         .duel-seat-name { font-size: 32px; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 0 #000; }
         .duel-seat-score { font-size: 60px; font-weight: bold; color: var(--warning); text-shadow: 4px 4px 0 #000; line-height: 1;}
         .duel-seat-choice { font-size: 24px; color: #94a3b8; background: #0f172a; padding: 4px 12px; border-radius: 4px; border: 2px solid var(--border-std); margin-top: 10px;}
         .duel-seat-ready { position: absolute; top: -15px; background: var(--success); color: #000; padding: 4px 15px; border-radius: 8px; font-size: 20px; font-weight: bold; border: 2px solid #fff; box-shadow: 2px 2px 0 #000;}
         
-        .duel-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 200px;}
+        .duel-center { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 160px; flex-shrink: 0;}
         .duel-center-vs { font-size: 40px; font-weight: bold; color: #ef4444; text-shadow: 2px 2px 0 #000; margin-bottom: 20px;}
         .duel-coin { width: 120px; height: 120px; background: #fbbf24; border-radius: 50%; border: 8px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 60px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 30px #fbbf24; font-family: Arial; }
         .duel-coin.flipping { animation: flipCoin 0.3s infinite linear; }
         
-        .duel-status-box { background: rgba(0,0,0,0.8); border: 2px solid var(--accent-glow-2); padding: 10px 20px; border-radius: 8px; font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; margin-top: 20px; text-align: center; width: 100%; max-width: 600px;}
+        .duel-status-box { background: rgba(0,0,0,0.8); border: 2px solid var(--accent-glow-2); padding: 10px 20px; border-radius: 8px; font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 20px; text-align: center; width: 100%; max-width: 800px; height: 60px; display: flex; justify-content: center; align-items: center; box-sizing: border-box;}
 
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
@@ -283,10 +281,14 @@
 
             /* Duel Room Adjustments */
             .duel-arena { flex-direction: column; height: auto; gap: 20px; padding: 10px;}
-            .duel-seat, .duel-seat-empty { height: 150px; }
-            .duel-center { min-width: auto; flex-direction: row; gap: 20px;}
+            .duel-seat, .duel-seat-empty { width: 100%; height: 150px; }
+            .duel-center { width: 100%; flex-direction: row; gap: 20px;}
             .duel-center-vs { margin-bottom: 0; }
             .duel-coin { width: 80px; height: 80px; font-size: 40px; border-width: 4px;}
+            #duel-action-row { flex-direction: column; height: auto !important; }
+            #duel-action-row > * { height: 50px !important; }
+            #duel-host-controls > div:last-child { flex-direction: column; height: auto !important; gap: 10px; }
+            #duel-host-controls select { height: 50px !important; }
             
             /* Modals and Inputs */
             .input-group { flex-direction: column; }
@@ -616,6 +618,27 @@
             </div>
         </div>
 
+        <div id="settings-modal" class="overlay-menu hidden" style="z-index: 400;">
+            <div class="modal-box custom-scroll">
+                <h2 class="pixel-text" style="font-size: 50px; margin-bottom: 20px;">SYSTEM SETTINGS</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; background: #000; padding: 15px; border: 2px solid var(--border-std);">
+                    <span class="pixel-text" style="font-size: 32px;">SFX</span>
+                    <input type="range" id="vol-sfx" min="0" max="1" step="0.05" value="1" oninput="updateVol('sfx', this.value)">
+                </div>
+                <button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('settings-modal')">CLOSE</button>
+            </div>
+        </div>
+
+        <div id="logout-modal" class="overlay-menu hidden" style="z-index: 400;">
+            <div class="modal-box custom-scroll">
+                <h2 class="pixel-text" style="color: var(--danger); font-size: 50px;">CONFIRM LOGOUT?</h2>
+                <div style="display: flex; gap: 10px; margin-top: 30px;">
+                    <button class="wood-btn" style="flex: 1; background: var(--danger);" onclick="logout()">YES</button>
+                    <button class="wood-btn" style="flex: 1;" onclick="hideModal('logout-modal')">NO</button>
+                </div>
+            </div>
+        </div>
+
         <div id="game-interface" class="game-interface hidden">
             <div class="game-area">
                 <div class="top-hud">
@@ -705,7 +728,7 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="dice-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="dice-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <input type="text" id="dice-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('dice')">
                         <button class="pixel-text" onclick="actSendChat('dice')">SEND</button>
                     </div>
                 </div>
@@ -793,15 +816,15 @@
 
                         </div>
 
-                        <div id="duel-host-controls" class="hidden" style="margin-top: 30px; background: rgba(0,0,0,0.6); padding: 15px; border: 2px solid var(--border-std); border-radius: 8px; width: 100%; max-width: 800px;">
+                        <div id="duel-host-controls" class="hidden" style="margin-top: 20px; background: rgba(0,0,0,0.6); padding: 15px; border: 2px solid var(--border-std); border-radius: 8px; width: 100%; max-width: 800px; box-sizing: border-box;">
                             <div style="font-size: 24px; color: var(--warning); margin-bottom: 10px;">HOST MATCH SETTINGS</div>
-                            <div style="display: flex; gap: 10px;">
-                                <select id="duel-format" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px;" onchange="updateDuelSettings()">
+                            <div style="display: flex; gap: 10px; height: 50px;">
+                                <select id="duel-format" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
                                     <option value="1">1 ROUND (SUDDEN DEATH)</option>
                                     <option value="3">FIRST TO 3 WINS</option>
                                     <option value="5">FIRST TO 5 WINS</option>
                                 </select>
-                                <select id="duel-bet" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px;" onchange="updateDuelSettings()">
+                                <select id="duel-bet" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
                                     <option value="0">0 CREDITS (ITEM WAGER)</option>
                                     <option value="1000">1,000 CREDITS</option>
                                     <option value="5000">5,000 CREDITS</option>
@@ -809,17 +832,17 @@
                                     <option value="50000">50,000 CREDITS</option>
                                     <option value="100000">100,000 CREDITS</option>
                                 </select>
-                                <select id="duel-host-choice" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px;" onchange="updateDuelSettings()">
+                                <select id="duel-host-choice" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
                                     <option value="heads">I TAKE HEADS</option>
                                     <option value="tails">I TAKE TAILS</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div id="duel-action-row" class="hidden" style="margin-top: 20px; width: 100%; max-width: 800px; display: flex; gap: 10px;">
-                            <div id="duel-terms-display" style="flex: 1; background: #0f172a; border: 2px solid var(--border-std); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 24px; color: #fff;"></div>
-                            <button id="duel-btn-ready" class="wood-btn" style="flex: 1; background: var(--success); color: #000;" onclick="readyDuel()">LOCK IN & READY</button>
-                            <button class="wood-btn" style="flex: 1; background: var(--danger);" onclick="leaveDuelSeat()">STAND UP (LEAVE)</button>
+                        <div id="duel-action-row" class="hidden" style="margin-top: 20px; width: 100%; max-width: 800px; display: flex; gap: 10px; height: 60px; box-sizing: border-box;">
+                            <div id="duel-terms-display" style="flex: 1; background: #0f172a; border: 2px solid var(--border-std); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 24px; color: #fff; height: 100%;"></div>
+                            <button id="duel-btn-ready" class="wood-btn" style="flex: 1; background: var(--success); color: #000; height: 100%; margin: 0;" onclick="readyDuel()">LOCK IN & READY</button>
+                            <button class="wood-btn" style="flex: 1; background: var(--danger); height: 100%; margin: 0;" onclick="leaveDuelSeat()">STAND UP (LEAVE)</button>
                         </div>
                     </div>
                 </div>
@@ -840,7 +863,7 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="coin-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="coin-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <input type="text" id="coin-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('coin')">
                         <button class="pixel-text" onclick="actSendChat('coin')">SEND</button>
                     </div>
                 </div>
@@ -917,7 +940,7 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="color-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="color-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <input type="text" id="color-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('color')">
                         <button class="pixel-text" onclick="actSendChat('color')">SEND</button>
                     </div>
                 </div>
