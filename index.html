@@ -163,16 +163,10 @@
         .dice { font-size: 120px; color: #fff; text-shadow: 0 0 30px var(--accent-glow); line-height: 1; font-family: Arial, sans-serif; }
         .dice.shake { animation: subtleShake 0.2s infinite; color: var(--warning); text-shadow: 0 0 40px var(--warning);}
         
-        @keyframes subtleShake { 
-            0% { transform: translate(1px, 1px) rotate(0deg); } 
-            25% { transform: translate(-1px, -2px) rotate(-1deg); } 
-            50% { transform: translate(-2px, 1px) rotate(1deg); } 
-            75% { transform: translate(2px, 1px) rotate(-1deg); } 
-            100% { transform: translate(1px, -1px) rotate(1deg); } 
-        }
+        @keyframes subtleShake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-1deg); } 50% { transform: translate(-2px, 1px) rotate(1deg); } 75% { transform: translate(2px, 1px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(1deg); } }
 
         .arcade-bet-area { padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6); }
-        .master-bet-row { display:flex; justify-content: center; margin-bottom: 15px; }
+        .master-bet-row { display:flex; justify-content: center; margin-bottom: 15px; align-items: center; gap: 10px;}
         .arcade-grid { display: flex; justify-content: center; gap: 20px; }
         
         .arcade-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; width: 250px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; cursor: pointer; transition: 0.1s; position: relative; height: 160px;}
@@ -188,7 +182,7 @@
         .coin-3d.flipping { animation: flipCoin 0.3s infinite linear; }
         @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
 
-        /* PERYA COLOR GAME & HISTORY LISTS */
+        /* PERYA COLOR GAME */
         .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 650px; margin: 0 auto; }
         .color-die-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1;}
         .color-die { width: 90px; height: 90px; border: 5px solid var(--border-std); border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5); transition: background-color 0.1s;}
@@ -220,6 +214,25 @@
         .msg-bubble { background: #0f172a; border: 2px solid var(--border-std); padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: left; }
         .msg-bubble.admin { border-left: 6px solid var(--danger); background: #1a0f14;}
         .msg-bubble.player { border-right: 6px solid var(--success); background: #0f1a14; text-align: right;}
+
+        /* --- PVP DUELS --- */
+        .duel-arena-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 20px 0; }
+        .duel-arena { display: flex; justify-content: center; align-items: stretch; gap: 40px; width: 100%; max-width: 800px; height: 250px;}
+        .duel-seat { flex: 1; background: #1e293b; border: 4px solid var(--border-std); border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); position: relative; }
+        .duel-seat.my-seat { border-color: var(--accent-glow-2); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
+        .duel-seat-empty { flex: 1; border: 4px dashed rgba(255,255,255,0.2); border-radius: 12px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); cursor: pointer; transition: 0.2s;}
+        .duel-seat-empty:hover { background: rgba(255,255,255,0.1); border-color: #fff;}
+        .duel-seat-name { font-size: 32px; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 0 #000; }
+        .duel-seat-score { font-size: 60px; font-weight: bold; color: var(--warning); text-shadow: 4px 4px 0 #000; line-height: 1;}
+        .duel-seat-choice { font-size: 24px; color: #94a3b8; background: #0f172a; padding: 4px 12px; border-radius: 4px; border: 2px solid var(--border-std); margin-top: 10px;}
+        .duel-seat-ready { position: absolute; top: -15px; background: var(--success); color: #000; padding: 4px 15px; border-radius: 8px; font-size: 20px; font-weight: bold; border: 2px solid #fff; box-shadow: 2px 2px 0 #000;}
+        
+        .duel-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 200px;}
+        .duel-center-vs { font-size: 40px; font-weight: bold; color: #ef4444; text-shadow: 2px 2px 0 #000; margin-bottom: 20px;}
+        .duel-coin { width: 120px; height: 120px; background: #fbbf24; border-radius: 50%; border: 8px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 60px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 30px #fbbf24; font-family: Arial; }
+        .duel-coin.flipping { animation: flipCoin 0.3s infinite linear; }
+        
+        .duel-status-box { background: rgba(0,0,0,0.8); border: 2px solid var(--accent-glow-2); padding: 10px 20px; border-radius: 8px; font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; margin-top: 20px; text-align: center; width: 100%; max-width: 600px;}
 
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
@@ -261,6 +274,13 @@
             .seat-empty-box { height: 120px; }
             .btn-sit-empty { font-size: 20px; padding: 4px 15px; }
             .global-timer { font-size: 24px; padding: 5px 15px; white-space: normal; }
+
+            /* Duel Room Adjustments */
+            .duel-arena { flex-direction: column; height: auto; gap: 20px; padding: 10px;}
+            .duel-seat, .duel-seat-empty { height: 150px; }
+            .duel-center { min-width: auto; flex-direction: row; gap: 20px;}
+            .duel-center-vs { margin-bottom: 0; }
+            .duel-coin { width: 80px; height: 80px; font-size: 40px; border-width: 4px;}
             
             /* Modals and Inputs */
             .input-group { flex-direction: column; }
@@ -288,7 +308,7 @@
                 <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME" style="color:#fff; width:100%; margin-bottom:15px; display:block; box-sizing:border-box;">
                 <input type="password" id="login-pass" class="retro-input pixel-text" placeholder="PASSWORD" style="color:#fff; width:100%; margin-bottom:15px; display:block; box-sizing:border-box;">
                 <div style="display: flex; justify-content: center; margin-top: 10px;"><button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="login()">LOGIN</button></div>
-                <p id="login-error" class="pixel-text" style="color: var(--danger); font-size: 24px;"></p>
+                <p id="login-error" class="pixel-text" style="color: var(--danger); font-size: 24px; margin-top:10px;"></p>
                 <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('signup')">New Player? Request Access Here</div>
             </div>
 
@@ -303,7 +323,7 @@
                 </label>
 
                 <div style="display: flex; justify-content: center; margin-top: 10px;"><button class="wood-btn pixel-text" style="background: var(--success);" onclick="signup()">SUBMIT REQUEST</button></div>
-                <p id="signup-msg" class="pixel-text" style="font-size: 24px;"></p>
+                <p id="signup-msg" class="pixel-text" style="font-size: 24px; margin-top:10px;"></p>
                 <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('login')">Back to Login</div>
             </div>
         </div>
@@ -323,8 +343,7 @@
                 <button class="wood-btn" style="background: #10b981; color:#000;" onclick="showProfile()">PROFILE</button>
                 <button class="wood-btn" style="background: #0f766e;" onclick="showRewards()">DAILY REWARDS</button>
                 <button class="wood-btn" style="background: #d946ef;" onclick="showModal('redeem-modal')">REDEEM CODE</button>
-                <button class="wood-btn" style="background: #64748b;" onclick="showModal('settings-modal')">SYSTEM SETTINGS</button>
-                <button class="wood-btn" style="background: var(--danger); grid-column: span 2;" onclick="showModal('logout-modal')">LOGOUT</button>
+                <button class="wood-btn" style="background: var(--danger); grid-column: span 2;" onclick="logout()">LOGOUT</button>
             </div>
         </div>
 
@@ -349,7 +368,7 @@
         </div>
 
         <div id="notify-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box" style="width: 750px; height: 750px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-box custom-scroll" style="width: 750px; height: 750px; max-height: 90vh; display: flex; flex-direction: column;">
                 <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 15px; font-size: 50px;">SYSTEM INBOX</h2>
                 
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0;">
@@ -599,16 +618,6 @@
             </div>
         </div>
 
-        <div id="logout-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll">
-                <h2 class="pixel-text" style="color: var(--danger); font-size: 50px;">CONFIRM LOGOUT?</h2>
-                <div style="display: flex; gap: 10px; margin-top: 30px;">
-                    <button class="wood-btn" style="flex: 1; background: var(--danger);" onclick="logout()">YES</button>
-                    <button class="wood-btn" style="flex: 1;" onclick="hideModal('logout-modal')">NO</button>
-                </div>
-            </div>
-        </div>
-
         <div id="game-interface" class="game-interface hidden">
             <div class="game-area">
                 <div class="top-hud">
@@ -638,7 +647,7 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <input type="text" id="blackjack-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('blackjack')">
                         <button class="pixel-text" onclick="actSendChat('blackjack')">SEND</button>
                     </div>
                 </div>
@@ -698,7 +707,7 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="dice-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="dice-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <input type="text" id="dice-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('dice')">
                         <button class="pixel-text" onclick="actSendChat('dice')">SEND</button>
                     </div>
                 </div>
@@ -712,37 +721,116 @@
                     <div class="hud-center"><div style="font-size: 36px; color: var(--warning);" id="coin-phase-display" class="pixel-text">BETS OPEN</div></div>
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="coin-credits"></span></div></div>
                 </div>
-                <div style="display: flex; justify-content: center; align-items: center; flex: 1;"><div id="global-coin-visual" class="coin-3d">?</div></div>
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <div id="coin-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">FLIPPING...</div>
-                    <div id="coin-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
+                
+                <div style="display:flex; border-bottom:2px solid var(--border-std);">
+                    <button class="wood-btn" style="flex:1; border:none; border-radius:0; box-shadow:none; background:var(--accent-glow-2)" id="tab-coin-global" onclick="switchCoinTab('global')">GLOBAL FLIP</button>
+                    <button class="wood-btn" style="flex:1; border:none; border-radius:0; box-shadow:none; background:#1e293b" id="tab-coin-pvp" onclick="switchCoinTab('pvp')">PVP DUEL ROOM</button>
                 </div>
-                <div class="arcade-bet-area">
-                    <div class="master-bet-row">
-                        <select id="coin-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
-                            <option value="1000" selected>1,000</option>
-                            <option value="5000">5,000</option>
-                            <option value="20000">20,000</option>
-                            <option value="50000">50,000</option>
-                        </select>
+
+                <div id="coin-global-container" style="display:flex; flex-direction:column; flex:1;">
+                    <div style="display: flex; justify-content: center; align-items: center; flex: 1; margin-top:20px;">
+                        <div id="global-coin-visual" class="coin-3d">?</div>
                     </div>
-                    <div class="arcade-grid">
-                        <div id="coin-btn-heads" class="arcade-bet-box color-bet-btn" onclick="placeCoinBet('heads')" style="width:300px;">
-                            <div class="bet-badge pixel-text hidden" id="badge-heads">0</div><div class="payout-overlay hidden" id="payout-heads"></div>
-                            <div class="arcade-bet-title pixel-text" style="color:var(--accent-glow-2);">HEADS</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div id="coin-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">FLIPPING...</div>
+                        <div id="coin-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
+                    </div>
+                    <div class="arcade-bet-area">
+                        <div class="master-bet-row">
+                            <select id="coin-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px; margin:0;">
+                                <option value="1000" selected>1,000</option>
+                                <option value="5000">5,000</option>
+                                <option value="20000">20,000</option>
+                                <option value="50000">50,000</option>
+                            </select>
                         </div>
-                        <div id="coin-btn-tails" class="arcade-bet-box color-bet-btn" onclick="placeCoinBet('tails')" style="width:300px;">
-                            <div class="bet-badge pixel-text hidden" id="badge-tails">0</div><div class="payout-overlay hidden" id="payout-tails"></div>
-                            <div class="arcade-bet-title pixel-text" style="color:#ea580c;">TAILS</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                        <div class="arcade-grid" style="margin-top:10px;">
+                            <div id="coin-btn-heads" class="arcade-bet-box color-bet-btn" onclick="placeCoinBet('heads')" style="width:300px;">
+                                <div class="bet-badge pixel-text hidden" id="badge-heads">0</div><div class="payout-overlay hidden" id="payout-heads"></div>
+                                <div class="arcade-bet-title pixel-text" style="color:var(--accent-glow-2);">HEADS</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                            </div>
+                            <div id="coin-btn-tails" class="arcade-bet-box color-bet-btn" onclick="placeCoinBet('tails')" style="width:300px;">
+                                <div class="bet-badge pixel-text hidden" id="badge-tails">0</div><div class="payout-overlay hidden" id="payout-tails"></div>
+                                <div class="arcade-bet-title pixel-text" style="color:#ea580c;">TAILS</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <div id="coin-pvp-container" class="hidden custom-scroll" style="flex:1; display:flex; flex-direction:column; padding: 20px; overflow-y:auto; align-items:center;">
+                    
+                    <div class="duel-status-box" id="duel-status-box">WAITING FOR PLAYERS</div>
+
+                    <div class="duel-arena-wrapper">
+                        <div class="duel-arena">
+                            
+                            <div class="duel-seat" id="duel-seat-0">
+                                <div class="duel-seat-empty" id="duel-empty-0" onclick="joinDuelSeat(0)">
+                                    <div class="pixel-text" style="font-size:32px; color:#94a3b8;">CLICK TO SIT</div>
+                                </div>
+                                <div id="duel-occupied-0" class="hidden" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
+                                    <div class="duel-seat-ready hidden" id="duel-ready-0">READY</div>
+                                    <div class="duel-seat-name" id="duel-name-0">PLAYER 1</div>
+                                    <div class="duel-seat-choice" id="duel-choice-0">HEADS</div>
+                                    <div class="duel-seat-score" id="duel-score-0">0</div>
+                                </div>
+                            </div>
+
+                            <div class="duel-center">
+                                <div class="duel-center-vs">VS</div>
+                                <div id="duel-match-coin" class="duel-coin">?</div>
+                            </div>
+
+                            <div class="duel-seat" id="duel-seat-1">
+                                <div class="duel-seat-empty" id="duel-empty-1" onclick="joinDuelSeat(1)">
+                                    <div class="pixel-text" style="font-size:32px; color:#94a3b8;">CLICK TO SIT</div>
+                                </div>
+                                <div id="duel-occupied-1" class="hidden" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
+                                    <div class="duel-seat-ready hidden" id="duel-ready-1">READY</div>
+                                    <div class="duel-seat-name" id="duel-name-1">PLAYER 2</div>
+                                    <div class="duel-seat-choice" id="duel-choice-1">TAILS</div>
+                                    <div class="duel-seat-score" id="duel-score-1">0</div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div id="duel-host-controls" class="hidden" style="margin-top: 30px; background: rgba(0,0,0,0.6); padding: 15px; border: 2px solid var(--border-std); border-radius: 8px; width: 100%; max-width: 800px;">
+                            <div style="font-size: 24px; color: var(--warning); margin-bottom: 10px;">HOST MATCH SETTINGS</div>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="duel-format" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px;" onchange="updateDuelSettings()">
+                                    <option value="1">1 ROUND (SUDDEN DEATH)</option>
+                                    <option value="3">FIRST TO 3 WINS</option>
+                                    <option value="5">FIRST TO 5 WINS</option>
+                                </select>
+                                <select id="duel-bet" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px;" onchange="updateDuelSettings()">
+                                    <option value="0">0 CREDITS (ITEM WAGER)</option>
+                                    <option value="1000">1,000 CREDITS</option>
+                                    <option value="5000">5,000 CREDITS</option>
+                                    <option value="20000">20,000 CREDITS</option>
+                                    <option value="50000">50,000 CREDITS</option>
+                                    <option value="100000">100,000 CREDITS</option>
+                                </select>
+                                <select id="duel-host-choice" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px;" onchange="updateDuelSettings()">
+                                    <option value="heads">I TAKE HEADS</option>
+                                    <option value="tails">I TAKE TAILS</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="duel-action-row" class="hidden" style="margin-top: 20px; width: 100%; max-width: 800px; display: flex; gap: 10px;">
+                            <div id="duel-terms-display" style="flex: 1; background: #0f172a; border: 2px solid var(--border-std); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 24px; color: #fff;"></div>
+                            <button id="duel-btn-ready" class="wood-btn" style="flex: 1; background: var(--success); color: #000;" onclick="readyDuel()">LOCK IN & READY</button>
+                            <button class="wood-btn" style="flex: 1; background: var(--danger);" onclick="leaveDuelSeat()">STAND UP (LEAVE)</button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
             <div class="sidebar-col">
                 <div style="position: relative; z-index: 50; flex-shrink: 0;">
-                    <div id="coin-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('coin-players-list', 'coin-dropdown-header')">
-                        <span>PLAYERS</span>
-                        <span><span id="coin-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
+                    <div id="coin-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('coin-players-list')">
+                        <span>PLAYERS</span><span><span id="coin-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
                     </div>
                     <div id="coin-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
@@ -754,7 +842,7 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="coin-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="coin-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <input type="text" id="coin-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('coin')">
                         <button class="pixel-text" onclick="actSendChat('coin')">SEND</button>
                     </div>
                 </div>
@@ -818,9 +906,8 @@
             
             <div class="sidebar-col">
                 <div style="position: relative; z-index: 50; flex-shrink: 0;">
-                    <div id="color-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('color-players-list', 'color-dropdown-header')">
-                        <span>PLAYERS</span>
-                        <span><span id="color-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
+                    <div id="color-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('color-players-list')">
+                        <span>PLAYERS</span><span><span id="color-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
                     </div>
                     <div id="color-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
@@ -832,7 +919,7 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="color-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="color-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <input type="text" id="color-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('color')">
                         <button class="pixel-text" onclick="actSendChat('color')">SEND</button>
                     </div>
                 </div>
@@ -860,6 +947,8 @@
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
         let myCoinBets = { heads: 0, tails: 0 }; 
         let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
+        let currentCoinDuelState = null; let myDuelSeatIndex = -1;
+        
         let isBetting = false; let betThrottleTimeout = null;
 
         const audioNodes = { bgm: document.getElementById('sfx-bgm'), deal: document.getElementById('sfx-deal'), bet: document.getElementById('sfx-bet'), win: document.getElementById('sfx-win'), lose: document.getElementById('sfx-lose') };
@@ -1005,8 +1094,6 @@
 
         function renderInboxList() {
             const list = document.getElementById('inbox-content');
-            
-            // Filter based on active tab
             let filtered = allMyTickets.filter(t => t.type === currentInboxTab);
 
             if(filtered.length === 0) {
@@ -1019,12 +1106,7 @@
                 const time = new Date(t.updatedAt).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
                 
                 let isUnread = false;
-                if(t.username === 'GLOBAL') {
-                    isUnread = !t.readBy.includes(currentUser.username);
-                } else {
-                    isUnread = t.unreadPlayer;
-                }
-                
+                if(t.username === 'GLOBAL') { isUnread = !t.readBy.includes(currentUser.username); } else { isUnread = t.unreadPlayer; }
                 const borderClass = isUnread ? 'ticket-unread' : 'ticket-read';
                 const newTag = isUnread ? `<span style="color:var(--danger); font-weight:bold;">[ NEW ]</span> ` : '';
                 const lastMsg = t.messages[t.messages.length - 1].text.substring(0, 40) + '...';
@@ -1050,59 +1132,37 @@
 
         socket.on('inbox_data', (tickets) => {
             allMyTickets = tickets;
-            
-            // Calculate global unread count
             unreadNotifs = tickets.filter(t => {
                 if(t.username === 'GLOBAL') return !t.readBy.includes(currentUser.username);
                 return t.unreadPlayer;
             }).length;
             
             const badge = document.getElementById('notif-badge');
-            if (unreadNotifs > 0) {
-                badge.innerText = unreadNotifs;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-
+            if (unreadNotifs > 0) { badge.innerText = unreadNotifs; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
             renderInboxList();
         });
 
-        socket.on('ticket_updated', (t) => {
-            if(currentOpenTicketId === t._id) {
-                renderThread(t.messages, t.status, t.type);
-            }
-        });
+        socket.on('ticket_updated', (t) => { if(currentOpenTicketId === t._id) renderThread(t.messages, t.status, t.type); });
 
-        // GLOBAL BROADCAST LISTENER
         socket.on('system_notification', (data) => {
             if (!currentUser) return;
             const { target, type } = data;
             let shouldShow = false;
             if (target === 'all' || target === 'active') shouldShow = true;
-            
-            if (shouldShow) {
-                playSfx('win');
-                socket.emit('req_inbox', { username: currentUser.username }); // fetch silently to update badge
-            }
+            if (shouldShow) { playSfx('win'); socket.emit('req_inbox', { username: currentUser.username }); }
         });
 
-        // DIRECT TICKET LISTENER
         socket.on('new_mail', (data) => {
-            if (currentUser && (data.username.toLowerCase() === currentUser.username.toLowerCase() || data.username === 'GLOBAL' || data.target === 'all' || data.target === 'active')) {
-                playSfx('win');
-                socket.emit('req_inbox', { username: currentUser.username });
+            if (currentUser && (data.username?.toLowerCase() === currentUser.username.toLowerCase() || data.username === 'GLOBAL' || data.target === 'all' || data.target === 'active')) {
+                playSfx('win'); socket.emit('req_inbox', { username: currentUser.username });
             }
         });
         
-        function togglePlayerList(id, headerId) { 
-            const list = document.getElementById(id); 
-            if(list) list.classList.toggle('hidden'); 
-        }
+        function togglePlayerList(id) { const list = document.getElementById(id); if(list) list.classList.toggle('hidden'); }
 
         function toggleAuth(panel) { 
-            if(panel === 'login') { document.getElementById('panel-signup').classList.add('hidden'); document.getElementById('panel-login').classList.remove('hidden'); } 
-            else { document.getElementById('panel-login').classList.add('hidden'); document.getElementById('panel-signup').classList.remove('hidden'); } 
+            document.getElementById('panel-login').classList.toggle('hidden', panel !== 'login');
+            document.getElementById('panel-signup').classList.toggle('hidden', panel !== 'signup');
         }
 
         async function signup() {
@@ -1124,21 +1184,14 @@
                 document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
                 updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; 
                 const userPreview = document.getElementById('profile-username-preview'); if(userPreview) userPreview.innerText = currentUser.username;
-                playSfx('deal');
-                socket.emit('req_inbox', { username: currentUser.username }); 
+                playSfx('deal'); socket.emit('req_inbox', { username: currentUser.username }); 
             } else document.getElementById('login-error').innerText = data.error;
         }
 
         window.onload = () => { const savedU = localStorage.getItem('cr_user'); const savedP = localStorage.getItem('cr_pass'); if(savedU && savedP) { document.getElementById('login-user').value = savedU; document.getElementById('login-pass').value = savedP; login(); } };
         
-        socket.on('credit_update', (data) => { 
-            if(currentUser && currentUser.username.toLowerCase() === data.username.toLowerCase()) { 
-                currentUser.credits = data.credits; 
-                updateAllCredits(); 
-            } 
-        });
+        socket.on('credit_update', (data) => { if(currentUser && currentUser.username.toLowerCase() === data.username.toLowerCase()) { currentUser.credits = data.credits; updateAllCredits(); } });
 
-        // GAME LOCKS LISTENER
         socket.on('game_lock_state', (locks) => {
             gameLocks = locks;
             ['under', 'seven', 'over'].forEach(c => { const b = document.getElementById(`dice-btn-${c}`); if(b) locks.dice ? b.classList.add('locked') : b.classList.remove('locked'); });
@@ -1146,10 +1199,7 @@
             ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { const b = document.getElementById(`color-btn-${c}`); if(b) locks.color ? b.classList.add('locked') : b.classList.remove('locked'); });
         });
 
-        socket.on('force_disconnect', () => {
-            alert("Your connection was severed by the Administrator.");
-            logout();
-        });
+        socket.on('force_disconnect', () => { alert("Your connection was severed by the Administrator."); logout(); });
 
         function updateAllCredits() {
             if(!currentUser) return; const creds = formatNumber(currentUser.credits);
@@ -1165,7 +1215,7 @@
             } else if (game === 'dice') {
                 if (myDiceBets.under > 0 || myDiceBets.seven > 0 || myDiceBets.over > 0) return alert("You cannot leave while you have active bets!");
             } else if (game === 'coin') {
-                if (myCoinBets.heads > 0 || myCoinBets.tails > 0) return alert("You cannot leave while you have active bets!");
+                if (myCoinBets.heads > 0 || myCoinBets.tails > 0 || myDuelSeatIndex !== -1) return alert("You cannot leave while you have active bets or are in a duel!");
             } else if (game === 'color') {
                 let totalColorBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
                 if (totalColorBet > 0) return alert("You cannot leave while you have active bets!");
@@ -1186,7 +1236,7 @@
 
         function joinRoom(roomId) { currentRoomId = roomId; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
         function joinDice() { currentRoomId = 'dice'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
-        function joinCoinFlip() { currentRoomId = 'coin'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('coin-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'coin' }); socket.emit('get_coin_state'); playSfx('deal'); }
+        function joinCoinFlip() { currentRoomId = 'coin'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('coin-interface').classList.remove('hidden'); switchCoinTab('global'); socket.emit('enter_arcade', { username: currentUser.username, game: 'coin' }); socket.emit('get_coin_state'); playSfx('deal'); }
         function joinColorGame() { currentRoomId = 'color'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
 
         // --- BLACKJACK ENGINE ---
@@ -1441,6 +1491,130 @@
             applyThrottle(); myCoinBets[choice] += amt; socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); 
         };
 
+        // --- PVP DUEL LOGIC ---
+        function switchCoinTab(tab) {
+            document.getElementById('coin-global-container').classList.toggle('hidden', tab !== 'global');
+            document.getElementById('coin-pvp-container').classList.toggle('hidden', tab !== 'pvp');
+            document.getElementById('tab-coin-global').style.background = tab === 'global' ? 'var(--accent-glow-2)' : '#1e293b';
+            document.getElementById('tab-coin-pvp').style.background = tab === 'pvp' ? 'var(--accent-glow-2)' : '#1e293b';
+            if(tab === 'pvp') socket.emit('get_coin_duels');
+        }
+
+        function joinDuelSeat(index) {
+            if(gameLocks.coin) return alert('Coin Flip is currently offline.');
+            if(!currentUser) return;
+            socket.emit('join_coin_duel_seat', { username: currentUser.username, seatIndex: index });
+        }
+
+        function leaveDuelSeat() {
+            if(myDuelSeatIndex !== -1 && currentUser) {
+                socket.emit('leave_coin_duel_seat', { username: currentUser.username, seatIndex: myDuelSeatIndex });
+            }
+        }
+
+        function updateDuelSettings() {
+            if(myDuelSeatIndex !== currentCoinDuelState?.hostIndex) return;
+            const format = parseInt(document.getElementById('duel-format').value);
+            const betAmount = parseInt(document.getElementById('duel-bet').value);
+            const choice = document.getElementById('duel-host-choice').value;
+            socket.emit('update_coin_duel_settings', { username: currentUser.username, format, betAmount, choice });
+        }
+
+        function readyDuel() {
+            if(!currentUser || myDuelSeatIndex === -1) return;
+            socket.emit('ready_coin_duel', { username: currentUser.username });
+        }
+
+        socket.on('coin_duel_state_update', (state) => {
+            currentCoinDuelState = state;
+            const statusBox = document.getElementById('duel-status-box');
+            statusBox.innerText = state.message;
+
+            const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
+            myDuelSeatIndex = mySeatData ? state.seats.indexOf(mySeatData) : -1;
+
+            for(let i=0; i<2; i++) {
+                const seat = state.seats[i];
+                const emptyUI = document.getElementById(`duel-empty-${i}`);
+                const occUI = document.getElementById(`duel-occupied-${i}`);
+                const seatCard = document.getElementById(`duel-seat-${i}`);
+
+                if(seat) {
+                    emptyUI.classList.add('hidden');
+                    occUI.classList.remove('hidden');
+                    document.getElementById(`duel-name-${i}`).innerText = seat.username.toUpperCase();
+                    document.getElementById(`duel-name-${i}`).style.color = seat.color || '#fff';
+                    document.getElementById(`duel-score-${i}`).innerText = seat.score;
+                    document.getElementById(`duel-choice-${i}`).innerText = seat.choice.toUpperCase();
+                    
+                    const readyBadge = document.getElementById(`duel-ready-${i}`);
+                    if(seat.ready) readyBadge.classList.remove('hidden');
+                    else readyBadge.classList.add('hidden');
+
+                    if(myDuelSeatIndex === i) seatCard.classList.add('my-seat');
+                    else seatCard.classList.remove('my-seat');
+                } else {
+                    emptyUI.classList.remove('hidden');
+                    occUI.classList.add('hidden');
+                    seatCard.classList.remove('my-seat');
+                    document.getElementById(`duel-ready-${i}`).classList.add('hidden');
+                }
+            }
+
+            const isHost = myDuelSeatIndex !== -1 && myDuelSeatIndex === state.hostIndex;
+            const hostControls = document.getElementById('duel-host-controls');
+            const actionRow = document.getElementById('duel-action-row');
+            const termsDisplay = document.getElementById('duel-terms-display');
+
+            if(state.status === 'waiting') {
+                if(isHost) {
+                    hostControls.classList.remove('hidden');
+                    document.getElementById('duel-format').value = state.format;
+                    document.getElementById('duel-bet').value = state.betAmount;
+                    document.getElementById('duel-host-choice').value = state.seats[myDuelSeatIndex].choice;
+                } else {
+                    hostControls.classList.add('hidden');
+                }
+
+                if(myDuelSeatIndex !== -1) {
+                    actionRow.classList.remove('hidden');
+                    let formatText = state.format === 1 ? '1 ROUND' : `FIRST TO ${state.format}`;
+                    let betText = state.betAmount === 0 ? 'ITEM WAGER (0 CR)' : `${formatNumber(state.betAmount)} CR`;
+                    termsDisplay.innerHTML = `<span style="color:var(--warning); margin-right:10px;">${formatText}</span> | <span style="color:var(--success); margin-left:10px;">${betText}</span>`;
+                    
+                    const readyBtn = document.getElementById('duel-btn-ready');
+                    if(state.seats[myDuelSeatIndex].ready) {
+                        readyBtn.style.background = '#475569';
+                        readyBtn.innerText = 'WAITING FOR OPPONENT...';
+                    } else {
+                        readyBtn.style.background = 'var(--success)';
+                        readyBtn.innerText = 'LOCK IN & READY';
+                    }
+                } else {
+                    actionRow.classList.add('hidden');
+                }
+            } else {
+                hostControls.classList.add('hidden');
+                actionRow.classList.add('hidden');
+            }
+
+            const coinVisual = document.getElementById('duel-match-coin');
+            if(state.status === 'flipping') {
+                coinVisual.classList.add('flipping');
+                coinVisual.innerText = '?';
+            } else if (state.status === 'resolving' || state.status === 'finished') {
+                coinVisual.classList.remove('flipping');
+                coinVisual.innerText = state.result ? state.result.charAt(0).toUpperCase() : '?';
+                if(state.status === 'finished') {
+                    if(mySeatData && mySeatData.score >= state.format) playSfx('win');
+                    else if (mySeatData) playSfx('lose');
+                }
+            } else {
+                coinVisual.classList.remove('flipping');
+                coinVisual.innerText = '?';
+            }
+        });
+
         // --- CLASSIC COLOR GAME LOGIC ---
         let colorInterval = null; let colorAnimInterval = null; const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
         socket.on('color_state_update', (data) => {
@@ -1512,23 +1686,19 @@
 
         // --- UTILITY & CHAT ---
         function actSendChat(gameType) {
-            let inputId = 'chat-input'; if (gameType === 'dice') inputId = 'dice-chat-input'; if (gameType === 'coin') inputId = 'coin-chat-input'; if (gameType === 'color') inputId = 'color-chat-input';
+            let inputId = `${gameType}-chat-input`;
             const input = document.getElementById(inputId);
-            if (input.value.trim() && currentUser && currentRoomId) { socket.emit('send_chat', { roomId: currentRoomId, username: currentUser.username, message: input.value.trim() }); input.value = ''; } 
+            if (input && input.value.trim() && currentUser && currentRoomId) { socket.emit('send_chat', { roomId: currentRoomId, username: currentUser.username, message: input.value.trim() }); input.value = ''; } 
         }
-        document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat('blackjack'); });
-        document.getElementById('dice-chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat('dice'); });
-        document.getElementById('coin-chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat('coin'); });
-        document.getElementById('color-chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') actSendChat('color'); });
 
         socket.on('receive_chat', data => { 
-            let boxId = 'chat-messages'; if (data.roomId === 'dice') boxId = 'dice-chat-messages'; if (data.roomId === 'coin') boxId = 'coin-chat-messages'; if (data.roomId === 'color') boxId = 'color-chat-messages';
+            let boxId = `${data.roomId}-chat-messages`;
             const msgs = document.getElementById(boxId);
-            if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2);">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
+            if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2); font-weight:bold;">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
         });
 
         socket.on('chat_wiped', (data) => {
-            let boxId = 'chat-messages'; if (data.room === 'dice') boxId = 'dice-chat-messages'; if (data.room === 'coin') boxId = 'coin-chat-messages'; if (data.room === 'color') boxId = 'color-chat-messages';
+            let boxId = `${data.room}-chat-messages`;
             const msgs = document.getElementById(boxId);
             if(msgs) msgs.innerHTML = `<div style="color:var(--danger); text-align:center; margin-top:20px;">[CHAT CLEARED BY ADMIN]</div>`;
         });
