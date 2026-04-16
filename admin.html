@@ -132,6 +132,35 @@
             </div>
         </div>
 
+        <div id="round-modal" class="overlay-modal hidden">
+            <div class="modal-content" style="width: 900px; max-height: 85vh;">
+                <div class="modal-header">
+                    <span>ROUND: <span id="rm-id" style="color:#fff;">-</span></span>
+                    <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('round-modal')">CLOSE</button>
+                </div>
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">GAME</div>
+                        <div id="rm-game" style="font-size:28px; color:var(--accent-glow-2); text-transform: uppercase;">-</div>
+                    </div>
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">WINNING RESULT</div>
+                        <div id="rm-result" style="font-size:28px; color:var(--success); font-weight: bold; text-transform: uppercase;">-</div>
+                    </div>
+                    <div style="flex:1; background:#1e293b; padding:15px; border:2px solid var(--border-std); text-align:center;">
+                        <div style="color:#94a3b8; font-size:22px;">HOUSE NET</div>
+                        <div id="rm-net" style="font-size:28px; font-weight: bold;">-</div>
+                    </div>
+                </div>
+                <div class="table-wrapper custom-scroll" style="display:block; max-height: 400px;">
+                    <table class="admin-table">
+                        <thead><tr><th>PLAYER</th><th>BET ON</th><th>WAGER</th><th>WIN/LOSS</th></tr></thead>
+                        <tbody id="rm-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div id="player-modal" class="overlay-modal hidden">
             <div class="modal-content" style="max-height: 85vh; display: flex; flex-direction: column;">
                 <div class="modal-header" style="flex-shrink: 0;">
@@ -206,32 +235,12 @@
             </div>
         </div>
 
-        <div id="ticket-modal" class="overlay-modal hidden">
-            <div class="modal-content" style="height: 750px;">
-                <div class="modal-header">
-                    <span>TICKET: <span id="tm-name" style="color:var(--accent-glow-2);"></span></span>
-                    <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('ticket-modal')">CLOSE WINDOW</button>
-                </div>
-                <div style="font-size: 24px; color: var(--warning); margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px; flex-shrink: 0;">
-                    SUBJECT: <span id="tm-subject" style="color: #fff;"></span>
-                </div>
-                
-                <div id="tm-messages" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left; margin-bottom: 10px;"></div>
-                
-                <div id="tm-reply-box" style="display: flex; gap: 10px; flex-shrink: 0;">
-                    <input type="text" id="tm-input" class="retro-input" placeholder="Type reply..." style="flex: 1;">
-                    <button class="wood-btn" style="background: var(--success); color: #000; width: 120px;" onclick="adminSendReply()">REPLY</button>
-                </div>
-                
-                <button id="tm-close-btn" class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 10px; flex-shrink: 0;" onclick="adminCloseTicket()">CLOSE CONVO (MARK RESOLVED)</button>
-            </div>
-        </div>
-
         <div class="admin-sidebar">
             <div class="sidebar-title">CASINO ROYALE<br><span style="font-size: 24px; color:#fff;">DIRECTOR PANEL</span></div>
             <button class="nav-btn active" onclick="switchView('dashboard', this)">FLOOR CONTROL</button>
             <button class="nav-btn admin-only" onclick="switchView('cashier', this)">CASHIER</button>
             <button class="nav-btn" onclick="switchView('players', this)">PLAYER DB</button>
+            <button class="nav-btn" onclick="switchView('history', this)">GAME HISTORY</button>
             <button class="nav-btn admin-only" onclick="switchView('promo', this)">PROMO ENGINE</button>
             <button class="nav-btn" onclick="switchView('eye', this)">EYE IN THE SKY</button>
             
@@ -311,6 +320,26 @@
                     <table class="admin-table">
                         <thead><tr><th>USERNAME</th><th>BALANCE</th><th>IP ADDRESS</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
                         <tbody id="player-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-history" class="view-panel" style="display: flex; flex-direction: column; max-height: 100%;">
+                <h2 class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    GLOBAL GAME HISTORY
+                    <button class="wood-btn small" onclick="fetchGameHistory()">REFRESH LOGS</button>
+                </h2>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0;">
+                    <button id="hist-tab-dice" class="wood-btn small active" onclick="setHistoryTab('dice')">HIGH-LOW DICE</button>
+                    <button id="hist-tab-derby" class="wood-btn small" onclick="setHistoryTab('derby')">8-BIT DERBY</button>
+                    <button id="hist-tab-color" class="wood-btn small" onclick="setHistoryTab('color')">COLOR GAME</button>
+                </div>
+                
+                <div class="table-wrapper custom-scroll">
+                    <table class="admin-table">
+                        <thead><tr><th>DATE (PHT)</th><th>ROUND ID</th><th>WINNING RESULT</th><th>TOTAL BETS</th><th>HOUSE NET</th><th>ACTION</th></tr></thead>
+                        <tbody id="history-list"></tbody>
                     </table>
                 </div>
             </div>
@@ -435,10 +464,13 @@
         let allAdminTickets = [];
         let currentAdminInboxTab = 'announcement';
 
-        // Variables for Player DB Tabs
+        // Player DB & History Globals
         let globalAllUsers = [];
         let globalOnlineUsers = [];
-        let currentPlayerDbTab = 'active'; // 'active' or 'pending'
+        let currentPlayerDbTab = 'active';
+        
+        let globalGameHistory = [];
+        let currentHistoryTab = 'dice';
 
         function formatNumber(num) { return num.toLocaleString(); }
         function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -463,6 +495,7 @@
                 socket.emit('admin_join');
                 fetchData();
                 fetchAdminInbox();
+                fetchGameHistory();
                 setInterval(fetchData, 5000); 
             } else {
                 document.getElementById('login-error').innerText = "INVALID PASSWORD";
@@ -501,6 +534,7 @@
             btnEl.classList.add('active');
             
             if(view === 'notify') fetchAdminInbox();
+            else if (view === 'history') fetchGameHistory();
             else if(view !== 'eye') fetchData();
         }
 
@@ -585,7 +619,6 @@
         function renderAdminInbox() {
             const list = document.getElementById('admin-inbox-list');
             
-            // Global Unread Badge Logic
             const unreadCount = allAdminTickets.filter(t => t.unreadAdmin).length;
             const badge = document.getElementById('admin-notif-badge');
             if (unreadCount > 0) {
@@ -595,7 +628,6 @@
                 badge.classList.add('hidden');
             }
 
-            // Filter for current tab
             let filtered = allAdminTickets.filter(t => t.type === currentAdminInboxTab);
 
             if(filtered.length === 0) {
@@ -726,6 +758,109 @@
                 `;
             }
             showModal('math-modal');
+        }
+
+        // --- GAME HISTORY ---
+        async function fetchGameHistory() {
+            if(!adminPass) return;
+            const res = await fetch('/api/admin/game_rounds', { headers: { 'x-admin-pass': adminPass }});
+            if(res.ok) {
+                globalGameHistory = await res.json();
+                renderGameHistory();
+            }
+        }
+
+        function setHistoryTab(tab) {
+            currentHistoryTab = tab;
+            document.getElementById('hist-tab-dice').classList.remove('active');
+            document.getElementById('hist-tab-derby').classList.remove('active');
+            document.getElementById('hist-tab-color').classList.remove('active');
+            document.getElementById(`hist-tab-${tab}`).classList.add('active');
+            renderGameHistory();
+        }
+
+        function renderGameHistory() {
+            const list = document.getElementById('history-list');
+            const filteredRounds = globalGameHistory.filter(r => r.game === currentHistoryTab);
+
+            if (filteredRounds.length === 0) {
+                list.innerHTML = `<tr><td colspan="6" style="color:#64748b; padding:20px;">NO ROUNDS LOGGED</td></tr>`;
+                return;
+            }
+
+            list.innerHTML = filteredRounds.map(r => {
+                let totalBets = 0;
+                let totalWins = 0;
+                r.players.forEach(p => {
+                    totalBets += p.bet;
+                    totalWins += p.win;
+                });
+                
+                let houseNet = totalBets - totalWins;
+                let netColor = houseNet > 0 ? 'var(--success)' : (houseNet < 0 ? 'var(--danger)' : '#fff');
+                
+                let displayResult = '';
+                if(r.game === 'dice') displayResult = r.result;
+                else if (r.game === 'derby') displayResult = `LANE ${r.result + 1}`;
+                else if (r.game === 'color') displayResult = r.result.map(c => c.charAt(0).toUpperCase()).join('-');
+
+                return `
+                <tr>
+                    <td>${getPHTTime(r.timestamp)}</td>
+                    <td style="color:#94a3b8; letter-spacing:2px;">${r.roundId}</td>
+                    <td style="color:var(--warning); font-weight:bold;">${displayResult}</td>
+                    <td style="color:#fff;">${formatNumber(totalBets)}</td>
+                    <td style="color:${netColor}; font-weight:bold;">${formatNumber(houseNet)}</td>
+                    <td><button class="wood-btn small" style="background:var(--accent-glow-2);" onclick="openRoundDetails('${r.roundId}')">VIEW</button></td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function openRoundDetails(roundId) {
+            const round = globalGameHistory.find(r => r.roundId === roundId);
+            if(!round) return;
+
+            document.getElementById('rm-id').innerText = round.roundId;
+            document.getElementById('rm-game').innerText = round.game;
+            
+            let displayResult = '';
+            if(round.game === 'dice') displayResult = round.result;
+            else if (round.game === 'derby') displayResult = `LANE ${round.result + 1}`;
+            else if (round.game === 'color') displayResult = round.result.map(c => c.toUpperCase()).join(', ');
+            document.getElementById('rm-result').innerText = displayResult;
+
+            let totalBets = 0;
+            let totalWins = 0;
+            const list = document.getElementById('rm-list');
+            
+            if(round.players.length === 0) {
+                list.innerHTML = `<tr><td colspan="4" style="color:#64748b; padding:20px;">NO BETS THIS ROUND</td></tr>`;
+            } else {
+                list.innerHTML = round.players.map(p => {
+                    totalBets += p.bet;
+                    totalWins += p.win;
+                    let pNet = p.win - p.bet;
+                    let pColor = pNet > 0 ? 'var(--success)' : (pNet < 0 ? 'var(--danger)' : '#fff');
+                    
+                    return `
+                    <tr>
+                        <td style="color:#fff;">${p.username}</td>
+                        <td style="color:#94a3b8;">${p.choice.toUpperCase()}</td>
+                        <td style="color:var(--warning);">${formatNumber(p.bet)}</td>
+                        <td style="color:${pColor}; font-weight:bold;">${pNet > 0 ? '+' : ''}${formatNumber(pNet)}</td>
+                    </tr>
+                    `;
+                }).join('');
+            }
+
+            let houseNet = totalBets - totalWins;
+            let netColor = houseNet > 0 ? 'var(--success)' : (houseNet < 0 ? 'var(--danger)' : '#fff');
+            const netEl = document.getElementById('rm-net');
+            netEl.innerText = `${houseNet > 0 ? '+' : ''}${formatNumber(houseNet)}`;
+            netEl.style.color = netColor;
+
+            showModal('round-modal');
         }
 
         // --- PLAYER DB TABS & RENDERING ---
@@ -936,7 +1071,6 @@
                         <td style="color:${statusColor}; font-size:20px;">${tx.status.toUpperCase()}</td>
                     </tr>`;
 
-                    // Calculate backwards to show precise balance BEFORE this transaction occurred
                     if (tx.status === 'completed') {
                         if (isWithdrawal) currentBal += tx.amount;
                         else if (isDeposit) currentBal -= tx.amount;
