@@ -87,10 +87,17 @@ function createRoom(numSeats) {
 
 const diceGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: [1, 1], bets: [], history: [] };
 
-// DERBY GLOBALS
-const derbyGame = { status: 'betting', betEndTime: Date.now() + 15000, distances: [0,0,0,0,0,0], bets: [], history: [] };
-const DERBY_MULT = [2, 3, 3, 5, 7, 10];
-const DERBY_SPD = [2.0, 1.4, 1.4, 1.0, 0.7, 0.4];
+// --- DERBY GLOBALS ---
+const DERBY_PROFILES = [
+    { m: 2, s: 1.8 }, { m: 3, s: 1.5 }, { m: 3, s: 1.5 }, 
+    { m: 5, s: 1.2 }, { m: 7, s: 0.9 }, { m: 10, s: 0.6 }
+];
+const derbyGame = { status: 'betting', betEndTime: Date.now() + 15000, distances: [0,0,0,0,0,0], bets: [], history: [], laneProfiles: [] };
+
+function shuffleDerby() {
+    derbyGame.laneProfiles = [...DERBY_PROFILES].sort(() => Math.random() - 0.5);
+}
+shuffleDerby(); // Initialize first shuffle
 
 const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
 const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
@@ -191,11 +198,10 @@ setInterval(() => {
     if (derbyGame.status === 'betting' && now >= derbyGame.betEndTime) {
         derbyGame.status = 'racing'; 
         derbyGame.distances = [0,0,0,0,0,0];
-        io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, timeLeft: 0, distances: derbyGame.distances, history: derbyGame.history });
+        io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, timeLeft: 0, distances: derbyGame.distances, history: derbyGame.history, laneProfiles: derbyGame.laneProfiles });
         
         let raceInterval = setInterval(async () => {
             let finished = false;
-            let winnerIndex = -1;
 
             let laneBets = [0,0,0,0,0,0];
             derbyGame.bets.forEach(b => laneBets[b.choice] += b.amount);
@@ -204,10 +210,14 @@ setInterval(() => {
                 let speedMod = 1;
                 if(strictHouseEdge && laneBets[i] > 0) speedMod = 0.75; 
                 
-                derbyGame.distances[i] += Math.random() * DERBY_SPD[i] * speedMod * 4; 
+                let baseSpd = derbyGame.laneProfiles[i].s;
+                // Base speed + random variance + 5% Nitro Boost chance
+                let step = (Math.random() * 2.5 + baseSpd) * speedMod * 1.5;
+                if(Math.random() < 0.05) step += 2.5; 
+
+                derbyGame.distances[i] += step; 
                 if (derbyGame.distances[i] >= 100) {
-                    derbyGame.distances[i] = 100;
-                    if(!finished) { finished = true; winnerIndex = i; }
+                    finished = true;
                 }
             }
 
@@ -216,6 +226,19 @@ setInterval(() => {
             if (finished) {
                 clearInterval(raceInterval);
                 derbyGame.status = 'resolving';
+
+                // BUG FIX: Tie-breaker calculates who went furthest past 100%
+                let winnerIndex = 0;
+                let maxDist = -1;
+                for(let i=0; i<6; i++) {
+                    if (derbyGame.distances[i] > maxDist) {
+                        maxDist = derbyGame.distances[i];
+                        winnerIndex = i;
+                    }
+                    if (derbyGame.distances[i] > 100) derbyGame.distances[i] = 100;
+                }
+                io.to('arcade_derby').emit('derby_race_tick', { distances: derbyGame.distances }); // Snap to finish line
+
                 derbyGame.history.unshift(winnerIndex);
                 if(derbyGame.history.length > 20) derbyGame.history.pop();
 
@@ -223,7 +246,8 @@ setInterval(() => {
                 let roundRecord = new GameRound({ game: 'derby', roundId: Math.random().toString(36).substring(2, 8).toUpperCase(), result: winnerIndex, players: [] });
 
                 for (let b of derbyGame.bets) {
-                    let wonAmount = (b.choice === winnerIndex) ? (b.amount * DERBY_MULT[winnerIndex]) : 0;
+                    let mult = derbyGame.laneProfiles[winnerIndex].m;
+                    let wonAmount = (b.choice === winnerIndex) ? (b.amount * mult) : 0;
                     roundRecord.players.push({ username: b.username, choice: `LANE ${b.choice + 1}`, bet: b.amount, win: wonAmount });
 
                     if (b.choice === winnerIndex) {
@@ -239,14 +263,15 @@ setInterval(() => {
                 }
                 await roundRecord.save();
                 
-                io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, winner: winnerIndex, winners, bets: derbyGame.bets, history: derbyGame.history, distances: derbyGame.distances });
+                io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, winner: winnerIndex, winners, bets: derbyGame.bets, history: derbyGame.history, distances: derbyGame.distances, laneProfiles: derbyGame.laneProfiles });
                 
                 setTimeout(() => { 
                     derbyGame.bets = []; 
                     derbyGame.status = 'betting'; 
                     derbyGame.distances = [0,0,0,0,0,0];
+                    shuffleDerby(); // SHUFFLE THE LANES FOR THE NEXT ROUND
                     derbyGame.betEndTime = Date.now() + 15000; 
-                    io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, betEndTime: derbyGame.betEndTime, history: derbyGame.history, distances: derbyGame.distances }); 
+                    io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, betEndTime: derbyGame.betEndTime, history: derbyGame.history, distances: derbyGame.distances, laneProfiles: derbyGame.laneProfiles }); 
                 }, 5000);
             }
         }, 150); 
