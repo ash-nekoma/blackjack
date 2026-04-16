@@ -185,6 +185,10 @@
         
         .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 30;}
 
+        /* --- FONT SIZE FIX FOR HISTORY RESULTS --- */
+        .history-content { flex: 1; overflow-y: auto; padding: 0 5px; margin-bottom: 2px; }
+        .history-list-item { font-size: 32px; border-bottom: 1px dashed #333; padding: 10px; text-align: center; font-weight: bold; text-shadow: 2px 2px 0 #000; }
+
         /* --- 8-BIT DERBY UI --- */
         .derby-track-container { flex: 1; background: #111; border-bottom: 4px solid var(--border-std); display: flex; flex-direction: column; position: relative; overflow: hidden; margin-top: 10px; border-radius: 8px; box-shadow: inset 0 0 20px #000;}
         .derby-lane { flex: 1; border-bottom: 2px dashed #333; position: relative; display: flex; align-items: center; padding: 0 10px;}
@@ -204,7 +208,6 @@
         .derby-bet-box:active:not(.locked) { transform: scale(0.95); }
         .derby-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
         
-        /* Lane colors */
         .lane-1-color { color: #ef4444 !important; border-top-color: #ef4444; }
         .lane-2-color { color: #3b82f6 !important; border-top-color: #3b82f6; }
         .lane-3-color { color: #10b981 !important; border-top-color: #10b981; }
@@ -265,7 +268,6 @@
             .wood-btn { grid-column: span 1 !important; font-size: 20px; padding: 10px; }
             .modal-box { width: 95%; padding: 15px; }
             
-            /* Arcade Adjustments */
             .arcade-grid { flex-wrap: wrap; gap: 10px; }
             .arcade-bet-box { width: 48%; height: 120px; padding: 10px; }
             .arcade-bet-title { font-size: 26px; }
@@ -273,13 +275,11 @@
             .dice { font-size: 80px; }
             .coin-3d { width: 100px; height: 100px; font-size: 50px; }
             
-            /* Color Game */
             .color-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
             .color-die { width: 60px; height: 60px; }
             .color-bet-box { height: 80px; }
             .color-bet-title { font-size: 20px; }
             
-            /* Blackjack Overlap Fixes */
             .table-surface { flex-direction: column; overflow-y: auto; justify-content: flex-start; padding-top: 10px; }
             .banker-station { position: relative; top: auto; left: auto; transform: none; margin-bottom: 15px; }
             #timers-container { position: relative; top: auto; left: auto; transform: none; margin-bottom: 15px; }
@@ -294,7 +294,6 @@
             .btn-sit-empty { font-size: 20px; padding: 4px 15px; }
             .global-timer { font-size: 24px; padding: 5px 15px; white-space: normal; }
 
-            /* Duel Room Adjustments */
             .duel-arena { flex-direction: column; height: auto; gap: 20px; padding: 10px;}
             .duel-seat, .duel-seat-empty { width: 100%; height: 150px; }
             .duel-center { width: 100%; flex-direction: row; gap: 20px;}
@@ -366,7 +365,7 @@
                 <button class="wood-btn" style="background: var(--danger); grid-column: span 2;" onclick="logout()">LOGOUT</button>
             </div>
         </div>
-
+        
         <div id="play-modal" class="overlay-menu hidden" style="z-index: 400;">
             <div class="modal-box custom-scroll" style="width: 600px;">
                 <h2 class="pixel-text" style="margin-bottom: 20px; font-size: 40px;">SELECT GAME</h2>
@@ -379,8 +378,12 @@
                     <div style="width: 100%; border-bottom: 2px dashed #333; margin-bottom: 10px; padding-bottom: 10px;">
                         <h3 class="pixel-text" style="color: var(--warning); font-size: 30px; margin-bottom: 10px;">ARCADE CASINO</h3>
                         <button class="wood-btn" style="background: #a855f7; margin-bottom: 10px;" onclick="joinDice()">HIGH-LOW DICE</button>
-                        <button class="wood-btn" style="background: #ea580c; margin-bottom: 10px;" onclick="joinDerby()">8-BIT DERBY & COIN PVP</button>
+                        <button class="wood-btn" style="background: #ea580c; margin-bottom: 10px;" onclick="joinDerby()">8-BIT DERBY SPRINT</button>
                         <button class="wood-btn" style="background: #ef4444;" onclick="joinColorGame()">CLASSIC COLOR GAME</button>
+                    </div>
+                    <div style="width: 100%; border-bottom: 2px dashed #333; margin-bottom: 10px; padding-bottom: 10px;">
+                        <h3 class="pixel-text" style="color: #ec4899; font-size: 30px; margin-bottom: 10px;">PLAYER VS PLAYER</h3>
+                        <button class="wood-btn" style="background: #1e293b; color: var(--accent-glow-2); border-color: var(--accent-glow-2);" onclick="joinPVP()">ENTER PVP ARENA</button>
                     </div>
                     <button class="wood-btn" style="background: var(--danger); margin-top: 10px;" onclick="hideModal('play-modal')">BACK TO DASHBOARD</button>
                 </div>
@@ -449,8 +452,9 @@
                     <select class="retro-input pixel-text" style="width: 100%; max-width: 350px; background: #1e293b; color: #fff; cursor: pointer; border-color: var(--accent-glow-2);" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');">
                         <option value="rule-bj">BLACKJACK</option>
                         <option value="rule-dice">HIGH-LOW DICE</option>
-                        <option value="rule-derby">8-BIT DERBY & COIN PVP</option>
+                        <option value="rule-derby">8-BIT DERBY SPRINT</option>
                         <option value="rule-color">CLASSIC COLOR GAME</option>
+                        <option value="rule-pvp">PVP ARENA (WHEEL & COIN)</option>
                         <option value="rule-sys">SYSTEM RULES</option>
                     </select>
                 </div>
@@ -477,12 +481,11 @@
                     </div>
                     
                     <div id="rule-derby" class="rule-content hidden">
-                        <strong style="color: var(--warning); font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">8-BIT DERBY & COIN PVP</strong>
-                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">Derby: Bet on the winning horse. Coin PVP: 1v1 Item/Credit duels.</p>
+                        <strong style="color: var(--warning); font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">8-BIT DERBY SPRINT</strong>
+                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">Bet on the winning pixel horse across a 6-lane sprint.</p>
                         <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Derby Limits:</strong> Max bet 50,000 per lane.</li>
-                            <li style="margin-bottom: 10px;"><strong>Derby Payouts:</strong> Varies by lane probability (2x up to 10x).</li>
-                            <li style="margin-bottom: 10px;"><strong>PVP Duels:</strong> Host creates room. Winner takes all.</li>
+                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 per lane.</li>
+                            <li style="margin-bottom: 10px;"><strong>Payouts:</strong> Varies strictly by lane probability (2x up to 10x).</li>
                         </ul>
                     </div>
                     
@@ -492,6 +495,15 @@
                         <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
                             <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per color.</li>
                             <li style="margin-bottom: 10px;"><strong>Payouts:</strong> 1 Match = 1:1 | 2 Matches = 2:1 | 3 Matches = 3:1</li>
+                        </ul>
+                    </div>
+
+                    <div id="rule-pvp" class="rule-content hidden">
+                        <strong style="color: #ec4899; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">PVP ARENA (WHEEL & COIN)</strong>
+                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">1v1 duels against other players for credits or items.</p>
+                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
+                            <li style="margin-bottom: 10px;"><strong>Host Powers:</strong> Host chooses Coin Flip or Custom Wheel Spin, wager amount, and formats (Best of 1, 3, or 5).</li>
+                            <li style="margin-bottom: 10px;"><strong>Custom Wheel:</strong> Host types names/options into the config box. Opponent selects their slice from the remaining pool.</li>
                         </ul>
                     </div>
 
@@ -746,14 +758,8 @@
                     <div class="hud-center"><div style="font-size: 36px; color: var(--warning);" id="derby-phase-display" class="pixel-text">BETS OPEN</div></div>
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="derby-credits"></span></div></div>
                 </div>
-                
-                <div style="display:flex; border-bottom:2px solid var(--border-std);">
-                    <button class="wood-btn" style="flex:1; border:none; border-radius:0; box-shadow:none; background:var(--accent-glow-2)" id="tab-derby-race" onclick="switchDerbyTab('race')">8-BIT DERBY</button>
-                    <button class="wood-btn" style="flex:1; border:none; border-radius:0; box-shadow:none; background:#1e293b" id="tab-derby-pvp" onclick="switchDerbyTab('pvp')">PVP DUEL ROOM</button>
-                </div>
 
                 <div id="derby-race-container" style="display:flex; flex-direction:column; flex:1;">
-                    
                     <div class="derby-track-container" id="derby-track">
                         <div class="derby-finish-line"></div>
                         <div class="derby-lane"><div class="racer-sprite lane-1-color" id="racer-0" style="left:0%">🏇</div></div>
@@ -806,76 +812,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div id="derby-pvp-container" class="hidden custom-scroll" style="flex:1; display:flex; flex-direction:column; padding: 20px; overflow-y:auto; align-items:center;">
-                    
-                    <div class="duel-status-box" id="duel-status-box">WAITING FOR PLAYERS</div>
-
-                    <div class="duel-arena-wrapper">
-                        <div class="duel-arena">
-                            
-                            <div class="duel-seat" id="duel-seat-0">
-                                <div class="duel-seat-empty" id="duel-empty-0" onclick="joinDuelSeat(0)">
-                                    <div class="pixel-text" style="font-size:32px; color:#94a3b8;">CLICK TO SIT</div>
-                                </div>
-                                <div id="duel-occupied-0" class="hidden" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
-                                    <div class="duel-seat-ready hidden" id="duel-ready-0">READY</div>
-                                    <div class="duel-seat-name" id="duel-name-0">PLAYER 1</div>
-                                    <div class="duel-seat-choice" id="duel-choice-0">HEADS</div>
-                                    <div class="duel-seat-score" id="duel-score-0">0</div>
-                                </div>
-                            </div>
-
-                            <div class="duel-center">
-                                <div class="duel-center-vs">VS</div>
-                                <div id="duel-match-coin" class="duel-coin">?</div>
-                            </div>
-
-                            <div class="duel-seat" id="duel-seat-1">
-                                <div class="duel-seat-empty" id="duel-empty-1" onclick="joinDuelSeat(1)">
-                                    <div class="pixel-text" style="font-size:32px; color:#94a3b8;">CLICK TO SIT</div>
-                                </div>
-                                <div id="duel-occupied-1" class="hidden" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
-                                    <div class="duel-seat-ready hidden" id="duel-ready-1">READY</div>
-                                    <div class="duel-seat-name" id="duel-name-1">PLAYER 2</div>
-                                    <div class="duel-seat-choice" id="duel-choice-1">TAILS</div>
-                                    <div class="duel-seat-score" id="duel-score-1">0</div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div id="duel-host-controls" class="hidden" style="margin-top: 20px; background: rgba(0,0,0,0.6); padding: 15px; border: 2px solid var(--border-std); border-radius: 8px; width: 100%; max-width: 800px; box-sizing: border-box;">
-                            <div style="font-size: 24px; color: var(--warning); margin-bottom: 10px;">HOST MATCH SETTINGS</div>
-                            <div style="display: flex; gap: 10px; height: 50px;">
-                                <select id="duel-format" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
-                                    <option value="1">1 ROUND (SUDDEN DEATH)</option>
-                                    <option value="3">FIRST TO 3 WINS</option>
-                                    <option value="5">FIRST TO 5 WINS</option>
-                                </select>
-                                <select id="duel-bet" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
-                                    <option value="0">0 CREDITS (ITEM WAGER)</option>
-                                    <option value="1000">1,000 CREDITS</option>
-                                    <option value="5000">5,000 CREDITS</option>
-                                    <option value="20000">20,000 CREDITS</option>
-                                    <option value="50000">50,000 CREDITS</option>
-                                    <option value="100000">100,000 CREDITS</option>
-                                </select>
-                                <select id="duel-host-choice" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
-                                    <option value="heads">I TAKE HEADS</option>
-                                    <option value="tails">I TAKE TAILS</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div id="duel-action-row" class="hidden" style="margin-top: 20px; width: 100%; max-width: 800px; display: flex; gap: 10px; height: 60px; box-sizing: border-box;">
-                            <div id="duel-terms-display" style="flex: 1; background: #0f172a; border: 2px solid var(--border-std); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 24px; color: #fff; height: 100%;"></div>
-                            <button id="duel-btn-ready" class="wood-btn" style="flex: 1; background: var(--success); color: #000; height: 100%; margin: 0;" onclick="readyDuel()">LOCK IN & READY</button>
-                            <button class="wood-btn" style="flex: 1; background: var(--danger); height: 100%; margin: 0;" onclick="leaveDuelSeat()">STAND UP (LEAVE)</button>
-                        </div>
-                    </div>
-                </div>
-
             </div>
             <div class="sidebar-col">
                 <div style="position: relative; z-index: 50; flex-shrink: 0;">
@@ -894,6 +830,114 @@
                     <div class="chat-input-area">
                         <input type="text" id="derby-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
                         <button class="pixel-text" onclick="actSendChat('derby')">SEND</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pvp-interface" class="game-interface hidden">
+            <div class="game-area coin-bg">
+                <div class="top-hud">
+                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('pvp')">◄ DASHBOARD</button></div>
+                    <div class="hud-center"><div style="font-size: 36px; color: var(--warning);" id="pvp-phase-display" class="pixel-text">PVP ARENA</div></div>
+                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="pvp-credits"></span></div></div>
+                </div>
+                
+                <div id="pvp-container" class="custom-scroll" style="flex:1; display:flex; flex-direction:column; padding: 20px; overflow-y:auto; align-items:center;">
+                    
+                    <div class="duel-status-box" id="duel-status-box">WAITING FOR PLAYERS</div>
+
+                    <div class="duel-arena-wrapper">
+                        <div class="duel-arena">
+                            
+                            <div class="duel-seat" id="duel-seat-0">
+                                <div class="duel-seat-empty" id="duel-empty-0" onclick="joinPvpSeat(0)">
+                                    <div class="pixel-text" style="font-size:32px; color:#94a3b8;">CLICK TO SIT</div>
+                                </div>
+                                <div id="duel-occupied-0" class="hidden" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
+                                    <div class="duel-seat-ready hidden" id="duel-ready-0">READY</div>
+                                    <div class="duel-seat-name" id="duel-name-0">PLAYER 1</div>
+                                    <div class="duel-seat-choice" id="duel-choice-0">WAITING...</div>
+                                    <div class="duel-seat-score" id="duel-score-0">0</div>
+                                </div>
+                            </div>
+
+                            <div class="duel-center">
+                                <div class="duel-center-vs">VS</div>
+                                <div id="duel-match-visual" class="duel-coin">?</div>
+                            </div>
+
+                            <div class="duel-seat" id="duel-seat-1">
+                                <div class="duel-seat-empty" id="duel-empty-1" onclick="joinPvpSeat(1)">
+                                    <div class="pixel-text" style="font-size:32px; color:#94a3b8;">CLICK TO SIT</div>
+                                </div>
+                                <div id="duel-occupied-1" class="hidden" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
+                                    <div class="duel-seat-ready hidden" id="duel-ready-1">READY</div>
+                                    <div class="duel-seat-name" id="duel-name-1">PLAYER 2</div>
+                                    <div class="duel-seat-choice" id="duel-choice-1" style="color:var(--danger);">WAITING...</div>
+                                    <div class="duel-seat-score" id="duel-score-1">0</div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div id="duel-host-controls" class="hidden" style="margin-top: 20px; background: rgba(0,0,0,0.6); padding: 15px; border: 2px solid var(--border-std); border-radius: 8px; width: 100%; max-width: 800px; box-sizing: border-box;">
+                            <div style="font-size: 24px; color: var(--warning); margin-bottom: 10px;">HOST MATCH SETTINGS</div>
+                            <div style="display: flex; gap: 10px; height: 50px; margin-bottom: 10px;">
+                                <select id="duel-type" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="toggleWheelConfig()">
+                                    <option value="coin">COIN FLIP (Heads/Tails)</option>
+                                    <option value="wheel">CUSTOM WHEEL SPIN</option>
+                                </select>
+                                <select id="duel-format" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
+                                    <option value="1">1 ROUND</option>
+                                    <option value="3">FIRST TO 3 WINS</option>
+                                    <option value="5">FIRST TO 5 WINS</option>
+                                </select>
+                                <select id="duel-bet" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
+                                    <option value="0">0 CREDITS (ITEM WAGER)</option>
+                                    <option value="1000">1,000 CR</option>
+                                    <option value="5000">5,000 CR</option>
+                                    <option value="20000">20,000 CR</option>
+                                    <option value="50000">50,000 CR</option>
+                                    <option value="100000">100,000 CR</option>
+                                </select>
+                            </div>
+
+                            <div id="wheel-config-row" class="hidden" style="display: flex; gap: 10px; height: 50px;">
+                                <input type="text" id="duel-wheel-names" class="retro-input pixel-text" placeholder="Enter wheel slices (e.g. Sword, Shield, Gold)" style="flex: 2; margin: 0; font-size: 20px;" onblur="updateDuelSettings()">
+                                <select id="duel-host-choice" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
+                                    <option value="">(Enter names first)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="duel-action-row" class="hidden" style="margin-top: 20px; width: 100%; max-width: 800px; display: flex; gap: 10px; height: 60px; box-sizing: border-box;">
+                            <div id="duel-terms-display" style="flex: 1; background: #0f172a; border: 2px solid var(--border-std); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 24px; color: #fff; height: 100%;"></div>
+                            
+                            <select id="duel-challenger-choice" class="retro-input hidden pixel-text" style="flex: 1; height: 100%; margin: 0;" onchange="submitChallengerChoice()">
+                                <option value="">SELECT YOUR PICK</option>
+                            </select>
+
+                            <button id="duel-btn-ready" class="wood-btn" style="flex: 1; background: var(--success); color: #000; height: 100%; margin: 0;" onclick="readyDuel()">LOCK IN & READY</button>
+                            <button class="wood-btn" style="flex: 1; background: var(--danger); height: 100%; margin: 0;" onclick="leavePvpSeat()">STAND UP</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-col">
+                <div style="position: relative; z-index: 50; flex-shrink: 0;">
+                    <div id="pvp-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('pvp-players-list')">
+                        <span>ARENA PLAYERS</span><span><span id="pvp-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
+                    </div>
+                    <div id="pvp-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                </div>
+                <div class="sidebar-box">
+                    <div class="sidebar-header pixel-text" style="justify-content: center;">ARENA CHAT</div>
+                    <div id="pvp-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="pvp-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <button class="pixel-text" onclick="actSendChat('pvp')">SEND</button>
                     </div>
                 </div>
             </div>
@@ -997,7 +1041,9 @@
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
         let myDerbyBets = [0, 0, 0, 0, 0, 0];
         let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
-        let currentCoinDuelState = null; let myDuelSeatIndex = -1;
+        
+        let currentPvpDuelState = null; 
+        let myDuelSeatIndex = -1;
         
         let isBetting = false; let betThrottleTimeout = null;
 
@@ -1013,6 +1059,7 @@
                 else if (document.activeElement.id === 'dice-chat-input') actSendChat('dice');
                 else if (document.activeElement.id === 'derby-chat-input') actSendChat('derby');
                 else if (document.activeElement.id === 'color-chat-input') actSendChat('color');
+                else if (document.activeElement.id === 'pvp-chat-input') actSendChat('pvp');
             }
         });
 
@@ -1263,7 +1310,7 @@
 
         function updateAllCredits() {
             if(!currentUser) return; const creds = formatNumber(currentUser.credits);
-            ['hud-credits', 'dice-credits', 'derby-credits', 'color-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
+            ['hud-credits', 'dice-credits', 'derby-credits', 'color-credits', 'pvp-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
         }
         function logout() { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); location.reload(); }
 
@@ -1276,7 +1323,9 @@
                 if (myDiceBets.under > 0 || myDiceBets.seven > 0 || myDiceBets.over > 0) return alert("You cannot leave while you have active bets!");
             } else if (game === 'derby') {
                 let totalDerbyBet = myDerbyBets.reduce((a,b)=>a+b, 0);
-                if (totalDerbyBet > 0 || myDuelSeatIndex !== -1) return alert("You cannot leave while you have active bets or are in a duel!");
+                if (totalDerbyBet > 0) return alert("You cannot leave while you have active bets!");
+            } else if (game === 'pvp') {
+                if (myDuelSeatIndex !== -1) return alert("You must stand up from the PVP duel before leaving!");
             } else if (game === 'color') {
                 let totalColorBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
                 if (totalColorBet > 0) return alert("You cannot leave while you have active bets!");
@@ -1289,7 +1338,7 @@
                 if (currentGameState) { const seatIdx = currentGameState.seats.findIndex(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if (seatIdx !== -1) window.actEjectSeat(seatIdx); } 
                 socket.emit('leave_room', { username: currentUser.username, roomId: currentRoomId }); currentRoomId = null; 
             }
-            if(['dice', 'derby', 'color'].includes(game)) { 
+            if(['dice', 'derby', 'color', 'pvp'].includes(game)) { 
                 document.getElementById(game+'-interface').classList.add('hidden'); 
                 socket.emit('leave_arcade', { username: currentUser.username, game }); currentRoomId = null; 
             }
@@ -1297,8 +1346,19 @@
 
         function joinRoom(roomId) { currentRoomId = roomId; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
         function joinDice() { currentRoomId = 'dice'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
-        function joinDerby() { currentRoomId = 'derby'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); switchDerbyTab('race'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); }
+        function joinDerby() { currentRoomId = 'derby'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); }
         function joinColorGame() { currentRoomId = 'color'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
+        
+        function joinPVP() { 
+            currentRoomId = 'pvp'; 
+            hideModal('play-modal'); 
+            document.getElementById('main-menu-view').classList.add('hidden'); 
+            document.querySelectorAll('.game-interface').forEach(el => el.classList.add('hidden'));
+            document.getElementById('pvp-interface').classList.remove('hidden'); 
+            socket.emit('enter_arcade', { username: currentUser.username, game: 'pvp' }); 
+            socket.emit('get_pvp_state'); 
+            playSfx('deal'); 
+        }
 
         // --- BLACKJACK ENGINE ---
         window.actSitDown = function(idx) { if(gameLocks[currentRoomId]) return alert('Table is currently offline for maintenance.'); if(actionLocked) return; actionLocked = true; socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
@@ -1450,8 +1510,8 @@
 
         // --- ARCADE LOBBIES ---
         socket.on('arcade_lobby_update', (data) => {
-            const countId = data.game === 'dice' ? 'dice-player-count' : (data.game === 'color' ? 'color-player-count' : 'derby-player-count');
-            const popId = data.game === 'dice' ? 'dice-players-list' : (data.game === 'color' ? 'color-players-list' : 'derby-players-list');
+            const countId = data.game === 'dice' ? 'dice-player-count' : (data.game === 'color' ? 'color-player-count' : (data.game === 'derby' ? 'derby-player-count' : 'pvp-player-count'));
+            const popId = data.game === 'dice' ? 'dice-players-list' : (data.game === 'color' ? 'color-players-list' : (data.game === 'derby' ? 'derby-players-list' : 'pvp-players-list'));
             const countEl = document.getElementById(countId); const popEl = document.getElementById(popId);
             if(countEl) countEl.innerText = data.lobby.length;
             if(popEl) popEl.innerHTML = data.lobby.map(p => `<div class="lobby-player" style="color:${p.color};">▶ ${p.username}</div>`).join('');
@@ -1506,15 +1566,7 @@
             applyThrottle(); myDiceBets[choice] += amt; socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt });
         };
 
-        // --- NEW 8-BIT DERBY LOGIC ---
-        function switchDerbyTab(tab) {
-            document.getElementById('derby-race-container').classList.toggle('hidden', tab !== 'race');
-            document.getElementById('derby-pvp-container').classList.toggle('hidden', tab !== 'pvp');
-            document.getElementById('tab-derby-race').style.background = tab === 'race' ? 'var(--accent-glow-2)' : '#1e293b';
-            document.getElementById('tab-derby-pvp').style.background = tab === 'pvp' ? 'var(--accent-glow-2)' : '#1e293b';
-            if(tab === 'pvp') socket.emit('get_coin_duels');
-        }
-
+        // --- 8-BIT DERBY SPRINT LOGIC ---
         let derbyInterval = null;
         socket.on('derby_state_update', (data) => {
             const statusText = document.getElementById('derby-result-text'); const timerText = document.getElementById('derby-timer');
@@ -1589,46 +1641,86 @@
             applyThrottle(); myDerbyBets[choice] += amt; socket.emit('place_derby_bet', { username: currentUser.username, choice, amount: amt }); 
         };
 
-        // --- PVP DUEL LOGIC ---
-        function joinDuelSeat(index) {
-            if(gameLocks.derby) return alert('Coin Flip is currently offline.');
+        // --- NEW PVP ARENA (COIN & WHEEL) LOGIC ---
+        function joinPvpSeat(index) {
             if(!currentUser) return;
-            socket.emit('join_coin_duel_seat', { username: currentUser.username, seatIndex: index });
+            socket.emit('join_pvp_seat', { username: currentUser.username, seatIndex: index });
         }
 
-        function leaveDuelSeat() {
+        function leavePvpSeat() {
             if(myDuelSeatIndex !== -1 && currentUser) {
-                socket.emit('leave_coin_duel_seat', { username: currentUser.username, seatIndex: myDuelSeatIndex });
+                socket.emit('leave_pvp_seat', { username: currentUser.username, seatIndex: myDuelSeatIndex });
             }
+        }
+
+        function toggleWheelConfig() {
+            const type = document.getElementById('duel-type').value;
+            const configRow = document.getElementById('wheel-config-row');
+            if(type === 'wheel') {
+                configRow.classList.remove('hidden');
+            } else {
+                configRow.classList.add('hidden');
+            }
+            updateDuelSettings();
         }
 
         function updateDuelSettings() {
-            if(myDuelSeatIndex !== currentCoinDuelState?.hostIndex) return;
+            if(myDuelSeatIndex !== currentPvpDuelState?.hostIndex) return;
+            const type = document.getElementById('duel-type').value;
             const format = parseInt(document.getElementById('duel-format').value);
             const betAmount = parseInt(document.getElementById('duel-bet').value);
-            const choice = document.getElementById('duel-host-choice').value;
-            
+            let options = [];
+            let hostChoice = '';
+
             if (betAmount > currentUser.credits) {
                 alert("You have insufficient credits for this wager.");
-                document.getElementById('duel-bet').value = currentCoinDuelState.betAmount || 0;
+                document.getElementById('duel-bet').value = currentPvpDuelState.betAmount || 0;
                 return;
             }
+
+            if(type === 'coin') {
+                options = ['heads', 'tails'];
+                hostChoice = 'heads'; // default for coin
+            } else {
+                const rawNames = document.getElementById('duel-wheel-names').value;
+                options = rawNames.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                
+                // Update dropdown options
+                const choiceSelect = document.getElementById('duel-host-choice');
+                const currentChoice = choiceSelect.value;
+                choiceSelect.innerHTML = options.length > 0 
+                    ? options.map(o => `<option value="${o}">${o}</option>`).join('')
+                    : '<option value="">(Enter names first)</option>';
+                
+                if(options.includes(currentChoice)) choiceSelect.value = currentChoice;
+                hostChoice = choiceSelect.value;
+            }
             
-            socket.emit('update_coin_duel_settings', { username: currentUser.username, format, betAmount, choice });
+            socket.emit('update_pvp_settings', { username: currentUser.username, type, format, betAmount, options, hostChoice });
+        }
+
+        function submitChallengerChoice() {
+            if(myDuelSeatIndex === -1 || myDuelSeatIndex === currentPvpDuelState?.hostIndex) return;
+            const choice = document.getElementById('duel-challenger-choice').value;
+            if(!choice) return;
+            socket.emit('pvp_challenger_choice', { username: currentUser.username, choice });
         }
 
         function readyDuel() {
             if(!currentUser || myDuelSeatIndex === -1) return;
-            socket.emit('ready_coin_duel', { username: currentUser.username });
+            socket.emit('ready_pvp_duel', { username: currentUser.username });
         }
 
-        socket.on('coin_duel_state_update', (state) => {
-            currentCoinDuelState = state;
+        socket.on('pvp_duel_state_update', (state) => {
+            currentPvpDuelState = state;
             const statusBox = document.getElementById('duel-status-box');
             statusBox.innerText = state.message;
 
             const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
             myDuelSeatIndex = mySeatData ? state.seats.indexOf(mySeatData) : -1;
+
+            const isHost = myDuelSeatIndex !== -1 && myDuelSeatIndex === state.hostIndex;
+            const isChallenger = myDuelSeatIndex !== -1 && myDuelSeatIndex !== state.hostIndex;
 
             for(let i=0; i<2; i++) {
                 const seat = state.seats[i];
@@ -1642,7 +1734,7 @@
                     document.getElementById(`duel-name-${i}`).innerText = seat.username.toUpperCase();
                     document.getElementById(`duel-name-${i}`).style.color = seat.color || '#fff';
                     document.getElementById(`duel-score-${i}`).innerText = seat.score;
-                    document.getElementById(`duel-choice-${i}`).innerText = seat.choice.toUpperCase();
+                    document.getElementById(`duel-choice-${i}`).innerText = seat.choice ? seat.choice.toUpperCase() : 'WAITING...';
                     
                     const readyBadge = document.getElementById(`duel-ready-${i}`);
                     if(seat.ready) readyBadge.classList.remove('hidden');
@@ -1658,17 +1750,27 @@
                 }
             }
 
-            const isHost = myDuelSeatIndex !== -1 && myDuelSeatIndex === state.hostIndex;
             const hostControls = document.getElementById('duel-host-controls');
             const actionRow = document.getElementById('duel-action-row');
             const termsDisplay = document.getElementById('duel-terms-display');
+            const challengerSelect = document.getElementById('duel-challenger-choice');
+            const readyBtn = document.getElementById('duel-btn-ready');
 
             if(state.status === 'waiting') {
                 if(isHost) {
                     hostControls.classList.remove('hidden');
+                    document.getElementById('duel-type').value = state.type;
                     document.getElementById('duel-format').value = state.format;
                     document.getElementById('duel-bet').value = state.betAmount;
-                    document.getElementById('duel-host-choice').value = state.seats[myDuelSeatIndex].choice;
+                    
+                    if(state.type === 'wheel') {
+                        document.getElementById('wheel-config-row').classList.remove('hidden');
+                        if (document.activeElement.id !== 'duel-wheel-names') {
+                            document.getElementById('duel-wheel-names').value = state.options.join(', ');
+                        }
+                    } else {
+                        document.getElementById('wheel-config-row').classList.add('hidden');
+                    }
                 } else {
                     hostControls.classList.add('hidden');
                 }
@@ -1677,15 +1779,34 @@
                     actionRow.classList.remove('hidden');
                     let formatText = state.format === 1 ? '1 ROUND' : `FIRST TO ${state.format}`;
                     let betText = state.betAmount === 0 ? 'ITEM WAGER (0 CR)' : `${formatNumber(state.betAmount)} CR`;
-                    termsDisplay.innerHTML = `<span style="color:var(--warning); margin-right:10px;">${formatText}</span> | <span style="color:var(--success); margin-left:10px;">${betText}</span>`;
+                    let gameType = state.type === 'wheel' ? 'WHEEL SPIN' : 'COIN FLIP';
+                    termsDisplay.innerHTML = `<span style="color:var(--accent-glow-2); margin-right:10px;">${gameType}</span> | <span style="color:var(--warning); margin:0 10px;">${formatText}</span> | <span style="color:var(--success); margin-left:10px;">${betText}</span>`;
                     
-                    const readyBtn = document.getElementById('duel-btn-ready');
+                    // Logic for Challenger selection if it's a wheel
+                    if(isChallenger && state.type === 'wheel' && state.options.length >= 2) {
+                        challengerSelect.classList.remove('hidden');
+                        const currentChoice = challengerSelect.value;
+                        const availableOptions = state.options.filter(o => o !== state.seats[state.hostIndex].choice);
+                        
+                        challengerSelect.innerHTML = '<option value="">SELECT YOUR PICK</option>' + availableOptions.map(o => `<option value="${o}">${o}</option>`).join('');
+                        if(availableOptions.includes(currentChoice)) challengerSelect.value = currentChoice;
+                    } else {
+                        challengerSelect.classList.add('hidden');
+                    }
+
+                    // Ready Button States
                     if(state.seats[myDuelSeatIndex].ready) {
                         readyBtn.style.background = '#475569';
                         readyBtn.innerText = 'WAITING FOR OPPONENT...';
                     } else {
-                        readyBtn.style.background = 'var(--success)';
-                        readyBtn.innerText = 'LOCK IN & READY';
+                        // Prevent challenger from readying up if they haven't picked a wheel slice
+                        if (isChallenger && state.type === 'wheel' && !state.seats[myDuelSeatIndex].choice) {
+                            readyBtn.style.background = '#333';
+                            readyBtn.innerText = 'PICK SLICE TO READY';
+                        } else {
+                            readyBtn.style.background = 'var(--success)';
+                            readyBtn.innerText = 'LOCK IN & READY';
+                        }
                     }
                 } else {
                     actionRow.classList.add('hidden');
@@ -1695,20 +1816,28 @@
                 actionRow.classList.add('hidden');
             }
 
-            const coinVisual = document.getElementById('duel-match-coin');
-            if(state.status === 'flipping') {
-                coinVisual.classList.add('flipping');
-                coinVisual.innerText = '?';
+            const matchVisual = document.getElementById('duel-match-visual');
+            if(state.status === 'flipping' || state.status === 'spinning') {
+                matchVisual.classList.add('flipping');
+                matchVisual.innerText = state.type === 'wheel' ? '🎡' : '?';
             } else if (state.status === 'resolving' || state.status === 'finished') {
-                coinVisual.classList.remove('flipping');
-                coinVisual.innerText = state.result ? state.result.charAt(0).toUpperCase() : '?';
+                matchVisual.classList.remove('flipping');
+                if (state.type === 'wheel') {
+                    matchVisual.style.fontSize = '30px'; // shrink font for names
+                    matchVisual.innerText = state.result ? state.result.toUpperCase().substring(0, 8) : '🎡';
+                } else {
+                    matchVisual.style.fontSize = '60px';
+                    matchVisual.innerText = state.result ? state.result.charAt(0).toUpperCase() : '?';
+                }
+                
                 if(state.status === 'finished') {
                     if(mySeatData && mySeatData.score >= state.format) playSfx('win');
                     else if (mySeatData) playSfx('lose');
                 }
             } else {
-                coinVisual.classList.remove('flipping');
-                coinVisual.innerText = '?';
+                matchVisual.classList.remove('flipping');
+                matchVisual.style.fontSize = '60px';
+                matchVisual.innerText = '?';
             }
         });
 
@@ -1791,12 +1920,16 @@
 
         socket.on('receive_chat', data => { 
             let boxId = `${data.roomId}-chat-messages`;
+            // Route 3seat and 5seat to the master blackjack chat box
+            if (data.roomId === '3seat' || data.roomId === '5seat') boxId = 'blackjack-chat-messages';
+            
             const msgs = document.getElementById(boxId);
             if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2); font-weight:bold;">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
         });
 
         socket.on('chat_wiped', (data) => {
             let boxId = `${data.room}-chat-messages`;
+            if (data.room === 'blackjack') boxId = 'blackjack-chat-messages';
             const msgs = document.getElementById(boxId);
             if(msgs) msgs.innerHTML = `<div style="color:var(--danger); text-align:center; margin-top:20px;">[CHAT CLEARED BY ADMIN]</div>`;
         });
