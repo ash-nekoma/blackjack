@@ -7,7 +7,7 @@
     <title>Casino Royale: Arcade Casino</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
-   <style>
+    <style>
         :root {
             color-scheme: light dark;
             --bg-dark: #0f172a; --bg-darker: #020617;
@@ -731,7 +731,7 @@
                     <div class="sidebar-header pixel-text">TABLE CHAT</div>
                     <div id="dice-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="dice-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('dice')">
+                        <input type="text" id="dice-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
                         <button class="pixel-text" onclick="actSendChat('dice')">SEND</button>
                     </div>
                 </div>
@@ -859,14 +859,14 @@
                     <div id="coin-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text">FLIP HISTORY</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center;">FLIP HISTORY</div>
                     <div class="history-content custom-scroll pixel-text" id="coin-history"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text">TABLE CHAT</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center;">TABLE CHAT</div>
                     <div id="coin-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="coin-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('coin')">
+                        <input type="text" id="coin-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
                         <button class="pixel-text" onclick="actSendChat('coin')">SEND</button>
                     </div>
                 </div>
@@ -936,14 +936,14 @@
                     <div id="color-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text">ROLL HISTORY</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center;">ROLL HISTORY</div>
                     <div class="history-content custom-scroll pixel-text" id="color-history"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text">TABLE CHAT</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center;">TABLE CHAT</div>
                     <div id="color-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="color-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100" onkeypress="if(event.key === 'Enter') actSendChat('color')">
+                        <input type="text" id="color-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
                         <button class="pixel-text" onclick="actSendChat('color')">SEND</button>
                     </div>
                 </div>
@@ -1551,6 +1551,13 @@
             const format = parseInt(document.getElementById('duel-format').value);
             const betAmount = parseInt(document.getElementById('duel-bet').value);
             const choice = document.getElementById('duel-host-choice').value;
+            
+            if (betAmount > currentUser.credits) {
+                alert("You have insufficient credits for this wager.");
+                document.getElementById('duel-bet').value = currentCoinDuelState.betAmount || 0;
+                return;
+            }
+            
             socket.emit('update_coin_duel_settings', { username: currentUser.username, format, betAmount, choice });
         }
 
@@ -1664,6 +1671,7 @@
             }
             else if (data.status === 'rolling') { 
                 statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); d3.classList.add('shake'); playSfx('deal'); 
+                clearInterval(colorAnimInterval);
                 colorAnimInterval = setInterval(()=>{
                     d1.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`; d2.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`; d3.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`;
                 }, 100);
