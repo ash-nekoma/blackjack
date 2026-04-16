@@ -95,19 +95,21 @@ const DERBY_SPD = [2.0, 1.4, 1.4, 1.0, 0.7, 0.4];
 const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
 const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
 
-// --- COIN DUEL GLOBALS ---
-let coinDuel = {
+// --- PVP ARENA GLOBALS ---
+let pvpDuel = {
     seats: [null, null], 
     status: 'waiting', 
+    type: 'coin', 
     format: 1, 
     betAmount: 0,
+    options: ['heads', 'tails'],
     hostIndex: -1,
     result: null,
     message: 'WAITING FOR CHALLENGER',
-    flipInterval: null
+    timerInterval: null
 };
 
-const socketUserMap = {}; let diceLobby = []; let derbyLobby = []; let colorLobby = [];
+const socketUserMap = {}; let diceLobby = []; let derbyLobby = []; let colorLobby = []; let pvpLobby = [];
 let strictHouseEdge = false; 
 let gameLocks = { blackjack: false, dice: false, derby: false, color: false };
 
@@ -679,27 +681,32 @@ io.on('connection', (socket) => {
         try {
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return;
             socket.join('arcade_' + game); socketUserMap[socket.id] = { username: user.username, arcadeGame: game, roomId: game };
-            let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : derbyLobby);
-            if (!lobby.find(p => p.username === user.username)) lobby.push({ username: user.username, color: user.nameColor });
+            
+            let lobby;
+            if(game === 'dice') lobby = diceLobby;
+            else if(game === 'color') lobby = colorLobby;
+            else if(game === 'derby') lobby = derbyLobby;
+            else if(game === 'pvp') lobby = pvpLobby;
+
+            if (lobby && !lobby.find(p => p.username === user.username)) lobby.push({ username: user.username, color: user.nameColor });
             io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
             adminLog(`[SPECTATOR] ${user.username} entered the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
             
-            if(game === 'derby') {
-                socket.emit('coin_duel_state_update', coinDuel);
-            }
         } catch(e) {}
     });
 
     socket.on('leave_arcade', ({ username, game }) => {
         socket.leave('arcade_' + game);
         const searchUser = new RegExp('^' + username + '$', 'i');
-        let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : derbyLobby);
-        lobby = lobby.filter(p => !searchUser.test(p.username));
-        if(game === 'dice') diceLobby = lobby; else if (game === 'color') colorLobby = lobby; else derbyLobby = lobby;
         
-        if(game === 'derby') {
-            const seatIdx = coinDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
-            if(seatIdx !== -1) handleCoinDuelLeave(seatIdx);
+        let lobby;
+        if(game === 'dice') { diceLobby = diceLobby.filter(p => !searchUser.test(p.username)); lobby = diceLobby; }
+        else if(game === 'color') { colorLobby = colorLobby.filter(p => !searchUser.test(p.username)); lobby = colorLobby; }
+        else if(game === 'derby') { derbyLobby = derbyLobby.filter(p => !searchUser.test(p.username)); lobby = derbyLobby; }
+        else if(game === 'pvp') { 
+            pvpLobby = pvpLobby.filter(p => !searchUser.test(p.username)); lobby = pvpLobby; 
+            const seatIdx = pvpDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
+            if(seatIdx !== -1) handlePvpLeave(seatIdx);
         }
 
         if(socketUserMap[socket.id]) { delete socketUserMap[socket.id].arcadeGame; delete socketUserMap[socket.id].roomId; }
@@ -710,7 +717,7 @@ io.on('connection', (socket) => {
     socket.on('send_chat', ({ roomId, username, message }) => { 
         if(roomId && username && message) {
             adminLog(`[CHAT] (${roomId}) ${username}: ${message}`); 
-            if (['dice', 'derby', 'color'].includes(roomId)) io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
+            if (['dice', 'derby', 'color', 'pvp'].includes(roomId)) io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
             else io.to(roomId).emit('receive_chat', { roomId, username, message }); 
         }
     });
@@ -790,42 +797,51 @@ io.on('connection', (socket) => {
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
 
-    // --- COIN DUEL PVP ROOM ---
-    socket.on('join_coin_duel_seat', async ({ username, seatIndex }) => {
+    // --- PVP ARENA (COIN & WHEEL) LOGIC ---
+    socket.on('get_pvp_state', () => {
+        socket.emit('pvp_duel_state_update', pvpDuel);
+    });
+
+    socket.on('join_pvp_seat', async ({ username, seatIndex }) => {
         try {
             if(seatIndex < 0 || seatIndex > 1) return;
-            if(coinDuel.seats.some(s => s && s.username.toLowerCase() === username.toLowerCase())) return socket.emit('arcade_error', 'You are already seated.');
-            if(coinDuel.seats[seatIndex]) return socket.emit('arcade_error', 'Seat taken.');
+            if(pvpDuel.seats.some(s => s && s.username.toLowerCase() === username.toLowerCase())) return socket.emit('arcade_error', 'You are already seated.');
+            if(pvpDuel.seats[seatIndex]) return socket.emit('arcade_error', 'Seat taken.');
             
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
             if(!user) return;
 
-            coinDuel.seats[seatIndex] = { username: user.username, color: user.nameColor, score: 0, choice: 'heads', ready: false };
+            pvpDuel.seats[seatIndex] = { username: user.username, color: user.nameColor, score: 0, choice: '', ready: false };
             
-            if(coinDuel.hostIndex === -1) {
-                coinDuel.hostIndex = seatIndex;
-                coinDuel.message = 'HOST CONFIGURING MATCH';
+            if(pvpDuel.hostIndex === -1) {
+                pvpDuel.hostIndex = seatIndex;
+                pvpDuel.message = 'HOST CONFIGURING MATCH';
+                pvpDuel.seats[seatIndex].choice = 'heads'; // default
             } else {
-                coinDuel.message = 'WAITING FOR READY';
-                const hostChoice = coinDuel.seats[coinDuel.hostIndex].choice;
-                coinDuel.seats[seatIndex].choice = hostChoice === 'heads' ? 'tails' : 'heads';
+                pvpDuel.message = 'WAITING FOR READY';
+                if(pvpDuel.type === 'coin') {
+                    const hostChoice = pvpDuel.seats[pvpDuel.hostIndex].choice;
+                    pvpDuel.seats[seatIndex].choice = hostChoice === 'heads' ? 'tails' : 'heads';
+                } else {
+                    pvpDuel.seats[seatIndex].choice = '';
+                }
             }
             
-            adminLog(`[DUEL] ${user.username} sat at duel seat ${seatIndex+1}`);
-            io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
+            adminLog(`[PVP] ${user.username} sat at PVP seat ${seatIndex+1}`);
+            io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
         } catch(e) {}
     });
 
-    socket.on('leave_coin_duel_seat', ({ username, seatIndex }) => {
-        const seat = coinDuel.seats[seatIndex];
+    socket.on('leave_pvp_seat', ({ username, seatIndex }) => {
+        const seat = pvpDuel.seats[seatIndex];
         if (seat && seat.username.toLowerCase() === username.toLowerCase()) {
-            handleCoinDuelLeave(seatIndex);
+            handlePvpLeave(seatIndex);
         }
     });
 
-    socket.on('update_coin_duel_settings', async ({ username, format, betAmount, choice }) => {
-        const seatIndex = coinDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
-        if(seatIndex === -1 || seatIndex !== coinDuel.hostIndex || coinDuel.status !== 'waiting') return;
+    socket.on('update_pvp_settings', async ({ username, type, format, betAmount, options, hostChoice }) => {
+        const seatIndex = pvpDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
+        if(seatIndex === -1 || seatIndex !== pvpDuel.hostIndex || pvpDuel.status !== 'waiting') return;
         
         if(betAmount < 0 || betAmount > 100000) return socket.emit('arcade_error', 'Invalid bet limits (0-100k).');
         if(![1, 3, 5].includes(format)) return;
@@ -835,154 +851,232 @@ io.on('connection', (socket) => {
             return socket.emit('arcade_error', 'You have insufficient credits to wager this amount.');
         }
 
-        coinDuel.format = format;
-        coinDuel.betAmount = betAmount;
-        coinDuel.seats[seatIndex].choice = choice;
+        pvpDuel.type = type;
+        pvpDuel.format = format;
+        pvpDuel.betAmount = betAmount;
+        pvpDuel.options = options;
+        pvpDuel.seats[seatIndex].choice = hostChoice;
         
         const otherIndex = seatIndex === 0 ? 1 : 0;
-        if(coinDuel.seats[otherIndex]) {
-            coinDuel.seats[otherIndex].choice = choice === 'heads' ? 'tails' : 'heads';
-            coinDuel.seats[otherIndex].ready = false; 
+        if(pvpDuel.seats[otherIndex]) {
+            if(type === 'coin') {
+                pvpDuel.seats[otherIndex].choice = hostChoice === 'heads' ? 'tails' : 'heads';
+            } else {
+                // If wheel changes, reset challenger's pick
+                pvpDuel.seats[otherIndex].choice = '';
+            }
+            pvpDuel.seats[otherIndex].ready = false; 
         }
         
-        io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
+        io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
     });
 
-    socket.on('ready_coin_duel', async ({ username }) => {
-        const seatIndex = coinDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
-        if(seatIndex === -1 || coinDuel.status !== 'waiting') return;
+    socket.on('pvp_challenger_choice', ({ username, choice }) => {
+        const seatIndex = pvpDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
+        if(seatIndex === -1 || seatIndex === pvpDuel.hostIndex || pvpDuel.status !== 'waiting') return;
+        
+        if(pvpDuel.type !== 'wheel') return;
+        
+        pvpDuel.seats[seatIndex].choice = choice;
+        pvpDuel.seats[seatIndex].ready = false; 
+        io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+    });
 
-        coinDuel.seats[seatIndex].ready = !coinDuel.seats[seatIndex].ready;
-        io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
+    socket.on('ready_pvp_duel', async ({ username }) => {
+        const seatIndex = pvpDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
+        if(seatIndex === -1 || pvpDuel.status !== 'waiting') return;
 
-        if(coinDuel.seats[0] && coinDuel.seats[0].ready && coinDuel.seats[1] && coinDuel.seats[1].ready) {
-            coinDuel.status = 'readying';
-            coinDuel.message = 'LOCKING IN BETS...';
-            io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
+        if (pvpDuel.type === 'wheel' && !pvpDuel.seats[seatIndex].choice) {
+            return socket.emit('arcade_error', 'You must select a choice first!');
+        }
 
-            if(coinDuel.betAmount > 0) {
-                const u1 = await User.findOne({ username: new RegExp('^' + coinDuel.seats[0].username + '$', 'i') });
-                const u2 = await User.findOne({ username: new RegExp('^' + coinDuel.seats[1].username + '$', 'i') });
+        pvpDuel.seats[seatIndex].ready = !pvpDuel.seats[seatIndex].ready;
+        io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
 
-                if(!u1 || u1.credits < coinDuel.betAmount) {
-                    coinDuel.message = `${coinDuel.seats[0].username.toUpperCase()} HAS INSUFFICIENT CREDITS.`;
-                    coinDuel.status = 'waiting'; coinDuel.seats[0].ready = false; coinDuel.seats[1].ready = false;
-                    return io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
+        if(pvpDuel.seats[0] && pvpDuel.seats[0].ready && pvpDuel.seats[1] && pvpDuel.seats[1].ready) {
+            pvpDuel.status = 'readying';
+            pvpDuel.message = 'LOCKING IN BETS...';
+            io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+
+            if(pvpDuel.betAmount > 0) {
+                const u1 = await User.findOne({ username: new RegExp('^' + pvpDuel.seats[0].username + '$', 'i') });
+                const u2 = await User.findOne({ username: new RegExp('^' + pvpDuel.seats[1].username + '$', 'i') });
+
+                if(!u1 || u1.credits < pvpDuel.betAmount) {
+                    pvpDuel.message = `${pvpDuel.seats[0].username.toUpperCase()} HAS INSUFFICIENT CREDITS.`;
+                    pvpDuel.status = 'waiting'; pvpDuel.seats[0].ready = false; pvpDuel.seats[1].ready = false;
+                    return io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
                 }
-                if(!u2 || u2.credits < coinDuel.betAmount) {
-                    coinDuel.message = `${coinDuel.seats[1].username.toUpperCase()} HAS INSUFFICIENT CREDITS.`;
-                    coinDuel.status = 'waiting'; coinDuel.seats[0].ready = false; coinDuel.seats[1].ready = false;
-                    return io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
+                if(!u2 || u2.credits < pvpDuel.betAmount) {
+                    pvpDuel.message = `${pvpDuel.seats[1].username.toUpperCase()} HAS INSUFFICIENT CREDITS.`;
+                    pvpDuel.status = 'waiting'; pvpDuel.seats[0].ready = false; pvpDuel.seats[1].ready = false;
+                    return io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
                 }
 
-                await User.updateOne({ username: u1.username }, { $inc: { credits: -coinDuel.betAmount } });
-                await User.updateOne({ username: u2.username }, { $inc: { credits: -coinDuel.betAmount } });
-                await new Transaction({ username: u1.username, type: 'DUEL ROOM BET', amount: -coinDuel.betAmount }).save();
-                await new Transaction({ username: u2.username, type: 'DUEL ROOM BET', amount: -coinDuel.betAmount }).save();
-                io.emit('credit_update', { username: u1.username, credits: u1.credits - coinDuel.betAmount });
-                io.emit('credit_update', { username: u2.username, credits: u2.credits - coinDuel.betAmount });
-                adminLog(`[DUEL] ${u1.username} vs ${u2.username} match started. Pot: ${coinDuel.betAmount * 2}`);
+                await User.updateOne({ username: u1.username }, { $inc: { credits: -pvpDuel.betAmount } });
+                await User.updateOne({ username: u2.username }, { $inc: { credits: -pvpDuel.betAmount } });
+                await new Transaction({ username: u1.username, type: 'PVP ARENA WAGER', amount: -pvpDuel.betAmount }).save();
+                await new Transaction({ username: u2.username, type: 'PVP ARENA WAGER', amount: -pvpDuel.betAmount }).save();
+                io.emit('credit_update', { username: u1.username, credits: u1.credits - pvpDuel.betAmount });
+                io.emit('credit_update', { username: u2.username, credits: u2.credits - pvpDuel.betAmount });
+                adminLog(`[PVP] ${u1.username} vs ${u2.username} match started. Pot: ${pvpDuel.betAmount * 2}`);
             }
 
-            coinDuel.status = 'flipping';
-            runDuelFlipSequence();
+            pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping';
+            runPvpSequence();
         }
     });
 
-    // --- BLACKJACK SOCKETS ---
-    socket.on('enter_room', async ({ username, roomId }) => {
-        try {
-            if (!rooms[roomId]) return; socket.join(roomId); 
-            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); 
-            if (user) {
-                socketUserMap[socket.id] = { username: user.username, roomId };
-                if(!rooms[roomId].lobby.find(p => p.username === user.username)) { rooms[roomId].lobby.push({ username: user.username, color: user.nameColor }); }
-                adminLog(`[SPECTATOR] ${user.username} entered ${getGameTitle(roomId)}.`);
+    async function handlePvpLeave(seatIndex) {
+        const seat = pvpDuel.seats[seatIndex];
+        if(!seat) return;
+
+        if((pvpDuel.status === 'flipping' || pvpDuel.status === 'spinning') && pvpDuel.betAmount > 0) {
+            const otherIndex = seatIndex === 0 ? 1 : 0;
+            const otherSeat = pvpDuel.seats[otherIndex];
+            
+            await refundPvpSeat(seat.username, pvpDuel.betAmount);
+            if(otherSeat) await refundPvpSeat(otherSeat.username, pvpDuel.betAmount);
+            
+            adminLog(`[PVP ABORTED] ${seat.username} left mid-game. Bets refunded.`);
+        }
+
+        pvpDuel.seats[seatIndex] = null;
+        if(pvpDuel.seats.every(s => s === null)) {
+            pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, options: ['heads', 'tails'], hostIndex: -1, result: null, message: 'WAITING FOR CHALLENGER', timerInterval: null };
+        } else {
+            pvpDuel.hostIndex = seatIndex === 0 ? 1 : 0;
+            pvpDuel.status = 'waiting';
+            pvpDuel.message = 'CHALLENGER ABANDONED.';
+            pvpDuel.seats[pvpDuel.hostIndex].ready = false;
+            pvpDuel.seats[pvpDuel.hostIndex].score = 0;
+            if (pvpDuel.type === 'wheel') {
+                pvpDuel.seats[pvpDuel.hostIndex].choice = ''; 
             }
-            emitGameState(roomId);
-        } catch(e) {}
-    });
+        }
+        io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+    }
 
-    socket.on('leave_room', ({ username, roomId }) => {
-        let room = rooms[roomId]; if (!room) return; socket.leave(roomId); room.lobby = room.lobby.filter(p => p.username.toLowerCase() !== username.toLowerCase());
-        const seatIndex = room.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
-        if (seatIndex !== -1) { room.seats[seatIndex] = null; if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } }
-        if(socketUserMap[socket.id]) delete socketUserMap[socket.id]; 
-        adminLog(`[SPECTATOR] ${username} left ${getGameTitle(roomId)}.`);
-        emitGameState(roomId);
-    });
+    async function refundPvpSeat(username, amount) {
+        const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i') }, { $inc: { credits: amount } }, { new: true });
+        if(user) {
+            await new Transaction({ username: user.username, type: 'PVP REFUND', amount: amount }).save();
+            io.emit('credit_update', { username: user.username, credits: user.credits });
+        }
+    }
 
-    socket.on('join_seat', async ({ roomId, username, seatIndex }) => {
-        try {
-            let room = rooms[roomId]; if (!room || room.seats.some(s => s && s.username.toLowerCase() === username.toLowerCase()) || seatIndex < 0 || seatIndex >= room.seats.length || room.seats[seatIndex]) return;
-            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return;
-            room.seats[seatIndex] = { username: user.username, color: user.nameColor, socketId: socket.id, credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0, kickAt: Date.now() + 7000 };
-            if (room.status === 'waiting') room.status = 'betting'; 
-            adminLog(`[TABLE] ${user.username} sat down at ${getGameTitle(roomId)}.`);
-            emitGameState(roomId);
-        } catch(e) {}
-    });
+    function runPvpSequence() {
+        pvpDuel.timer = 3;
+        const actionVerb = pvpDuel.type === 'wheel' ? 'SPINNING' : 'FLIPPING';
+        pvpDuel.message = `${actionVerb} IN 3...`;
+        io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
 
-    socket.on('leave_seat', ({ roomId, username, seatIndex }) => {
-        let room = rooms[roomId]; if (!room) return;
-        if (room.seats[seatIndex] && room.seats[seatIndex].username.toLowerCase() === username.toLowerCase()) { room.seats[seatIndex] = null; if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } emitGameState(roomId); }
-    });
+        let countdown = setInterval(() => {
+            pvpDuel.timer--;
+            if(pvpDuel.timer > 0) {
+                pvpDuel.message = `${actionVerb} IN ${pvpDuel.timer}...`;
+                io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+            } else {
+                clearInterval(countdown);
+                pvpDuel.message = `${actionVerb}...`;
+                io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
 
-    socket.on('place_bet', async ({ roomId, username, seatIndex, betAmount }) => {
-        try {
-            if(gameLocks[roomId]) return socket.emit('arcade_error', 'Table is currently offline for maintenance.');
-            let room = rooms[roomId]; if (!room) return; const seat = room.seats[seatIndex]; if (!seat || seat.username.toLowerCase() !== username.toLowerCase() || room.status !== 'betting') return;
-            if (betAmount >= 1000 && betAmount <= 100000) {
-                const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i'), credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
-                if (!updatedUser) return; 
-                
-                seat.credits = updatedUser.credits; seat.hands[0].bet = betAmount; seat.kickAt = null; 
-                await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId), amount: -betAmount }).save();
-                adminLog(`[BET] ${updatedUser.username} bet ${betAmount} at ${getGameTitle(roomId)}.`);
-                
-                io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
-                room.betEndTime = Date.now() + 15000; clearInterval(room.betTimerInterval);
-                
-                if (room.seats.every(s => s !== null && s.hands[0].bet > 0)) { clearInterval(room.betTimerInterval); startGame(roomId); } 
-                else { room.betTimerInterval = setInterval(() => { if (Date.now() >= room.betEndTime) { clearInterval(room.betTimerInterval); startGame(roomId); } }, 1000); emitGameState(roomId); }
+                setTimeout(async () => {
+                    let res;
+                    if(pvpDuel.type === 'coin') {
+                        res = Math.random() < 0.5 ? 'heads' : 'tails';
+                    } else {
+                        const randomIndex = Math.floor(Math.random() * pvpDuel.options.length);
+                        res = pvpDuel.options[randomIndex];
+                    }
+                    
+                    pvpDuel.result = res;
+                    pvpDuel.status = 'resolving';
+
+                    let roundWinnerIndex = -1;
+                    if(pvpDuel.seats[0].choice === res) roundWinnerIndex = 0;
+                    if(pvpDuel.seats[1].choice === res) roundWinnerIndex = 1;
+
+                    if(roundWinnerIndex !== -1) {
+                        pvpDuel.seats[roundWinnerIndex].score++;
+                        pvpDuel.message = `${pvpDuel.seats[roundWinnerIndex].username.toUpperCase()} SCORES!`;
+                    } else {
+                        pvpDuel.message = `NOBODY PICKED ${res.toUpperCase()}!`;
+                    }
+
+                    io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+
+                    // Check if match won
+                    let matchWinner = null;
+                    if(pvpDuel.seats[0].score >= pvpDuel.format) matchWinner = 0;
+                    if(pvpDuel.seats[1].score >= pvpDuel.format) matchWinner = 1;
+
+                    setTimeout(async () => {
+                        if(matchWinner !== null) {
+                            pvpDuel.status = 'finished';
+                            const winner = pvpDuel.seats[matchWinner];
+                            pvpDuel.message = `${winner.username.toUpperCase()} WINS THE MATCH!`;
+                            
+                            if(pvpDuel.betAmount > 0) {
+                                const winAmount = pvpDuel.betAmount * 2;
+                                try {
+                                    const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + winner.username + '$', 'i') }, { $inc: { credits: winAmount } }, {new: true}); 
+                                    if(updatedUser) {
+                                        await new Transaction({ username: updatedUser.username, type: 'PVP ARENA WIN', amount: winAmount }).save();
+                                        io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
+                                    }
+                                } catch(e){}
+                            }
+                            io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+
+                            setTimeout(() => {
+                                if(pvpDuel.status === 'finished') {
+                                    pvpDuel.status = 'waiting';
+                                    pvpDuel.result = null;
+                                    pvpDuel.message = 'WAITING FOR READY';
+                                    if(pvpDuel.seats[0]) { pvpDuel.seats[0].ready = false; pvpDuel.seats[0].score = 0; }
+                                    if(pvpDuel.seats[1]) { pvpDuel.seats[1].ready = false; pvpDuel.seats[1].score = 0; }
+                                    
+                                    if(pvpDuel.type === 'wheel') {
+                                        if(pvpDuel.seats[0]) pvpDuel.seats[0].choice = '';
+                                        if(pvpDuel.seats[1]) pvpDuel.seats[1].choice = '';
+                                    }
+
+                                    io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+                                }
+                            }, 5000);
+
+                        } else {
+                            if(pvpDuel.status !== 'finished') {
+                                pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping';
+                                pvpDuel.result = null;
+                                runPvpSequence();
+                            }
+                        }
+                    }, 3000);
+
+                }, 2000);
             }
-        } catch(e) {}
-    });
+        }, 1000);
+    }
 
-    socket.on('player_action_hit', ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username.toLowerCase() !== username.toLowerCase() || hand.status !== 'waiting') return; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; moveToNextTurn(roomId); } else if (hand.value === 21) { hand.status = 'stand'; moveToNextTurn(roomId); } else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } });
-    socket.on('player_action_stand', ({ roomId, username, seatIndex }) => { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username.toLowerCase() !== username.toLowerCase() || hand.status !== 'waiting') return; hand.status = 'stand'; moveToNextTurn(roomId); });
-    socket.on('player_action_double', async ({ roomId, username, seatIndex }) => { try { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username.toLowerCase() !== username.toLowerCase() || hand.status !== 'waiting' || hand.cards.length !== 2) return; const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i'), credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); hand.bet *= 2; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; } else { hand.status = 'stand'; } moveToNextTurn(roomId); } catch(e){} });
-    socket.on('player_action_split', async ({ roomId, username, seatIndex }) => { try { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; if (seat.username.toLowerCase() !== username.toLowerCase() || seat.hands.length >= 2) return; const hand = seat.hands[seat.currentHand]; if (hand.status !== 'waiting' || hand.cards.length !== 2) return; if (hand.cards[0].weight === hand.cards[1].weight) { const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i'), credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); const splitCard = hand.cards.pop(); const newHand = { cards: [splitCard], bet: hand.bet, status: 'waiting', value: 0 }; hand.cards.push(room.deck.pop()); newHand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); newHand.value = calculateValue(newHand.cards); if(hand.value === 21) hand.status = 'stand'; if(newHand.value === 21) newHand.status = 'stand'; seat.hands.push(newHand); if(hand.status === 'stand') moveToNextTurn(roomId); else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } } } catch(e){} });
-
-    socket.on('claim_daily_reward_box', async ({ username, boxIndex }) => {
-        try {
-            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return; const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); const msIn24Hours = 24 * 60 * 60 * 1000;
-            if (now.getTime() - lastClaim.getTime() >= msIn24Hours) {
-                let prizes = [1000, 0, 0, 0, 5000, 10000]; prizes = prizes.sort(() => Math.random() - 0.5); 
-                let wonAmount = prizes[boxIndex]; if(typeof wonAmount !== 'number' || isNaN(wonAmount)) wonAmount = 0;
-                user.lastRewardClaim = now;
-                
-                if (wonAmount > 0) { user.credits += wonAmount; await new Transaction({ username: user.username, type: 'DAILY REWARD', amount: wonAmount, status: 'completed' }).save(); adminLog(`${user.username} claimed ${wonAmount} Daily Reward.`); } await user.save();
-                const msLeft = new Date(now.getTime() + msIn24Hours).getTime() - now.getTime(); const cooldownSeconds = Math.floor(msLeft / 1000);
-                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, cooldownSeconds });
-                io.emit('credit_update', { username: user.username, credits: user.credits }); 
-                Object.keys(rooms).forEach(rId => { const seat = rooms[rId].seats.find(s => s && s.username === user.username); if(seat) { seat.credits = user.credits; emitGameState(rId); } });
-            } else { socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); }
-        } catch (e) { socket.emit('reward_box_opened', { success: false, message: 'Server sync error' }); }
-    });
-
+    // --- BLACKJACK RESOLUTION LOGIC ---
     socket.on('disconnect', () => {
         const data = socketUserMap[socket.id];
         if (data) {
             if (data.arcadeGame) {
-                let g = data.arcadeGame; let lobby = g === 'dice' ? diceLobby : (g === 'color' ? colorLobby : derbyLobby);
-                lobby = lobby.filter(p => p.username !== data.username);
-                if(g === 'dice') diceLobby = lobby; else if(g === 'color') colorLobby = lobby; else derbyLobby = lobby;
+                let g = data.arcadeGame; 
+                let lobby;
+                if(g === 'dice') { diceLobby = diceLobby.filter(p => p.username !== data.username); lobby = diceLobby; }
+                else if(g === 'color') { colorLobby = colorLobby.filter(p => p.username !== data.username); lobby = colorLobby; }
+                else if(g === 'derby') { derbyLobby = derbyLobby.filter(p => p.username !== data.username); lobby = derbyLobby; }
+                else if(g === 'pvp') { pvpLobby = pvpLobby.filter(p => p.username !== data.username); lobby = pvpLobby; }
+                
                 io.to('arcade_' + g).emit('arcade_lobby_update', { game: g, lobby });
 
-                if(g === 'derby') {
-                    const seatIdx = coinDuel.seats.findIndex(s => s && s.username.toLowerCase() === data.username.toLowerCase());
-                    if(seatIdx !== -1) handleCoinDuelLeave(seatIdx);
+                if(g === 'pvp') {
+                    const seatIdx = pvpDuel.seats.findIndex(s => s && s.username.toLowerCase() === data.username.toLowerCase());
+                    if(seatIdx !== -1) handlePvpLeave(seatIdx);
                 }
             }
             if (data.roomId && rooms[data.roomId]) {
@@ -994,181 +1088,65 @@ io.on('connection', (socket) => {
             delete socketUserMap[socket.id];
         }
     });
-});
 
-// --- COIN DUEL LOGIC ---
-async function handleCoinDuelLeave(seatIndex) {
-    const seat = coinDuel.seats[seatIndex];
-    if(!seat) return;
-
-    if(coinDuel.status === 'flipping' && coinDuel.betAmount > 0) {
-        const otherIndex = seatIndex === 0 ? 1 : 0;
-        const otherSeat = coinDuel.seats[otherIndex];
-        
-        await refundDuelSeat(seat.username, coinDuel.betAmount);
-        if(otherSeat) await refundDuelSeat(otherSeat.username, coinDuel.betAmount);
-        
-        adminLog(`[DUEL ABORTED] ${seat.username} left mid-game. Bets refunded.`);
+    function startGame(roomId) {
+        let room = rooms[roomId]; if (!room) return; room.status = 'playing'; room.deck = getNewDeck(); room.dealerCards = []; room.seats = room.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
+        for (let i = 0; i < 2; i++) { room.seats.forEach(seat => { if (seat) seat.hands[0].cards.push(room.deck.pop()); }); room.dealerCards.push(room.deck.pop()); }
+        room.seats.forEach(seat => { if (seat) { seat.hands[0].value = calculateValue(seat.hands[0].cards); if(seat.hands[0].value === 21) { seat.hands[0].status = 'blackjack'; } }});
+        let dealerInitialValue = calculateValue(room.dealerCards); if (dealerInitialValue === 21) { room.dealerCards[1].hidden = false; resolveBets(roomId, 21); return; }
+        room.activeSeatIndex = room.seats.findIndex(s => s && s.hands[0].status === 'waiting');
+        if (room.activeSeatIndex === -1) { processDealerTurn(roomId); } else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); }
     }
-
-    coinDuel.seats[seatIndex] = null;
-    if(coinDuel.seats.every(s => s === null)) {
-        coinDuel = { seats: [null, null], status: 'waiting', format: 1, betAmount: 0, hostIndex: -1, result: null, message: 'WAITING FOR CHALLENGER', flipInterval: null };
-    } else {
-        coinDuel.hostIndex = seatIndex === 0 ? 1 : 0;
-        coinDuel.status = 'waiting';
-        coinDuel.message = 'CHALLENGER ABANDONED.';
-        coinDuel.seats[coinDuel.hostIndex].ready = false;
-        coinDuel.seats[coinDuel.hostIndex].score = 0;
+    function moveToNextTurn(roomId) {
+        let room = rooms[roomId]; if (!room) return; clearInterval(room.turnTimerInterval);  const seat = room.seats[room.activeSeatIndex];
+        if (seat && seat.currentHand < seat.hands.length - 1) { seat.currentHand++; if (seat.hands[seat.currentHand].status !== 'waiting') return moveToNextTurn(roomId); room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); return; }
+        let nextIndex = room.activeSeatIndex + 1; while (nextIndex < room.seats.length) { if (room.seats[nextIndex] && room.seats[nextIndex].hands[0].status === 'waiting') break; nextIndex++; }
+        if (nextIndex >= room.seats.length) { processDealerTurn(roomId); } else { room.activeSeatIndex = nextIndex; room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); }
     }
-    io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
-}
-
-async function refundDuelSeat(username, amount) {
-    const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i') }, { $inc: { credits: amount } }, { new: true });
-    if(user) {
-        await new Transaction({ username: user.username, type: 'DUEL REFUND', amount: amount }).save();
-        io.emit('credit_update', { username: user.username, credits: user.credits });
+    async function processDealerTurn(roomId) {
+        let room = rooms[roomId]; if (!room) return; room.status = 'dealerTurn'; room.activeSeatIndex = -1; clearInterval(room.turnTimerInterval);
+        if(room.dealerCards.length > 1) room.dealerCards[1].hidden = false; emitGameState(roomId);
+        setTimeout(() => {
+            let dealerValue = calculateValue(room.dealerCards); if (dealerValue >= 17) { resolveBets(roomId, dealerValue); return; }
+            room.dealerInterval = setInterval(() => { if (dealerValue < 17) { room.dealerCards.push(room.deck.pop()); dealerValue = calculateValue(room.dealerCards); emitGameState(roomId); } else { clearInterval(room.dealerInterval); resolveBets(roomId, dealerValue); } }, 1000);
+        }, 1500); 
     }
-}
-
-function runDuelFlipSequence() {
-    coinDuel.timer = 3;
-    coinDuel.message = 'FLIPPING IN 3...';
-    io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
-
-    let countdown = setInterval(() => {
-        coinDuel.timer--;
-        if(coinDuel.timer > 0) {
-            coinDuel.message = `FLIPPING IN ${coinDuel.timer}...`;
-            io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
-        } else {
-            clearInterval(countdown);
-            coinDuel.message = 'FLIPPING...';
-            io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
-
-            setTimeout(async () => {
-                let res = Math.random() < 0.5 ? 'heads' : 'tails';
-                coinDuel.result = res;
-                coinDuel.status = 'resolving';
-
-                let roundWinnerIndex = -1;
-                if(coinDuel.seats[0].choice === res) roundWinnerIndex = 0;
-                if(coinDuel.seats[1].choice === res) roundWinnerIndex = 1;
-
-                if(roundWinnerIndex !== -1) {
-                    coinDuel.seats[roundWinnerIndex].score++;
-                    coinDuel.message = `${coinDuel.seats[roundWinnerIndex].username.toUpperCase()} SCORES!`;
-                }
-
-                io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
-
-                // Check if match won
-                let matchWinner = null;
-                if(coinDuel.seats[0].score >= coinDuel.format) matchWinner = 0;
-                if(coinDuel.seats[1].score >= coinDuel.format) matchWinner = 1;
-
-                setTimeout(async () => {
-                    if(matchWinner !== null) {
-                        coinDuel.status = 'finished';
-                        const winner = coinDuel.seats[matchWinner];
-                        coinDuel.message = `${winner.username.toUpperCase()} WINS THE DUEL!`;
-                        
-                        if(coinDuel.betAmount > 0) {
-                            const winAmount = coinDuel.betAmount * 2;
+    async function resolveBets(roomId, dealerValue) {
+        let room = rooms[roomId]; if (!room) return; room.status = 'resolving'; room.nextRoundTime = Date.now() + 5000; 
+        for (const seat of room.seats) {
+            if (seat) {
+                for (const hand of seat.hands) {
+                    if (hand.bet > 0) {
+                        let payout = 0;
+                        if (hand.status === 'blackjack' && dealerValue !== 21) { payout = hand.bet * 2.5; hand.result = 'win-bj'; } 
+                        else if (hand.status !== 'bust' && (dealerValue > 21 || hand.value > dealerValue)) { payout = hand.bet * 2; hand.result = 'win'; } 
+                        else if (hand.status !== 'bust' && hand.value === dealerValue) { payout = hand.bet; hand.result = 'push'; } 
+                        else if (hand.status === 'bust') { hand.result = 'bust'; } 
+                        else { hand.result = 'lose'; }
+                        if (payout > 0) { 
+                            seat.credits += payout; 
                             try {
-                                const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + winner.username + '$', 'i') }, { $inc: { credits: winAmount } }, {new: true}); 
+                                const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i') }, { $inc: { credits: payout } }, {new: true}); 
                                 if(updatedUser) {
-                                    await new Transaction({ username: updatedUser.username, type: 'DUEL ROOM WIN', amount: winAmount }).save();
-                                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
+                                    await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId)+" WIN", amount: payout }).save(); 
+                                    io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
                                 }
                             } catch(e){}
                         }
-                        io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
-
-                        setTimeout(() => {
-                            if(coinDuel.status === 'finished') {
-                                coinDuel.status = 'waiting';
-                                coinDuel.result = null;
-                                coinDuel.message = 'WAITING FOR READY';
-                                if(coinDuel.seats[0]) { coinDuel.seats[0].ready = false; coinDuel.seats[0].score = 0; }
-                                if(coinDuel.seats[1]) { coinDuel.seats[1].ready = false; coinDuel.seats[1].score = 0; }
-                                io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
-                            }
-                        }, 5000);
-
-                    } else {
-                        if(coinDuel.status !== 'finished') {
-                            coinDuel.status = 'flipping';
-                            coinDuel.result = null;
-                            runDuelFlipSequence();
-                        }
-                    }
-                }, 3000);
-
-            }, 2000);
-        }
-    }, 1000);
-}
-
-// --- BLACKJACK RESOLUTION LOGIC ---
-function startGame(roomId) {
-    let room = rooms[roomId]; if (!room) return; room.status = 'playing'; room.deck = getNewDeck(); room.dealerCards = []; room.seats = room.seats.map(s => (s && s.hands[0].bet === 0) ? null : s);
-    for (let i = 0; i < 2; i++) { room.seats.forEach(seat => { if (seat) seat.hands[0].cards.push(room.deck.pop()); }); room.dealerCards.push(room.deck.pop()); }
-    room.seats.forEach(seat => { if (seat) { seat.hands[0].value = calculateValue(seat.hands[0].cards); if(seat.hands[0].value === 21) { seat.hands[0].status = 'blackjack'; } }});
-    let dealerInitialValue = calculateValue(room.dealerCards); if (dealerInitialValue === 21) { room.dealerCards[1].hidden = false; resolveBets(roomId, 21); return; }
-    room.activeSeatIndex = room.seats.findIndex(s => s && s.hands[0].status === 'waiting');
-    if (room.activeSeatIndex === -1) { processDealerTurn(roomId); } else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); }
-}
-function moveToNextTurn(roomId) {
-    let room = rooms[roomId]; if (!room) return; clearInterval(room.turnTimerInterval);  const seat = room.seats[room.activeSeatIndex];
-    if (seat && seat.currentHand < seat.hands.length - 1) { seat.currentHand++; if (seat.hands[seat.currentHand].status !== 'waiting') return moveToNextTurn(roomId); room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); return; }
-    let nextIndex = room.activeSeatIndex + 1; while (nextIndex < room.seats.length) { if (room.seats[nextIndex] && room.seats[nextIndex].hands[0].status === 'waiting') break; nextIndex++; }
-    if (nextIndex >= room.seats.length) { processDealerTurn(roomId); } else { room.activeSeatIndex = nextIndex; room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); }
-}
-async function processDealerTurn(roomId) {
-    let room = rooms[roomId]; if (!room) return; room.status = 'dealerTurn'; room.activeSeatIndex = -1; clearInterval(room.turnTimerInterval);
-    if(room.dealerCards.length > 1) room.dealerCards[1].hidden = false; emitGameState(roomId);
-    setTimeout(() => {
-        let dealerValue = calculateValue(room.dealerCards); if (dealerValue >= 17) { resolveBets(roomId, dealerValue); return; }
-        room.dealerInterval = setInterval(() => { if (dealerValue < 17) { room.dealerCards.push(room.deck.pop()); dealerValue = calculateValue(room.dealerCards); emitGameState(roomId); } else { clearInterval(room.dealerInterval); resolveBets(roomId, dealerValue); } }, 1000);
-    }, 1500); 
-}
-async function resolveBets(roomId, dealerValue) {
-    let room = rooms[roomId]; if (!room) return; room.status = 'resolving'; room.nextRoundTime = Date.now() + 5000; 
-    for (const seat of room.seats) {
-        if (seat) {
-            for (const hand of seat.hands) {
-                if (hand.bet > 0) {
-                    let payout = 0;
-                    if (hand.status === 'blackjack' && dealerValue !== 21) { payout = hand.bet * 2.5; hand.result = 'win-bj'; } 
-                    else if (hand.status !== 'bust' && (dealerValue > 21 || hand.value > dealerValue)) { payout = hand.bet * 2; hand.result = 'win'; } 
-                    else if (hand.status !== 'bust' && hand.value === dealerValue) { payout = hand.bet; hand.result = 'push'; } 
-                    else if (hand.status === 'bust') { hand.result = 'bust'; } 
-                    else { hand.result = 'lose'; }
-                    if (payout > 0) { 
-                        seat.credits += payout; 
-                        try {
-                            const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i') }, { $inc: { credits: payout } }, {new: true}); 
-                            if(updatedUser) {
-                                await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId)+" WIN", amount: payout }).save(); 
-                                io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
-                            }
-                        } catch(e){}
                     }
                 }
             }
         }
+        emitGameState(roomId); clearInterval(room.nextRoundInterval);
+        room.nextRoundInterval = setInterval(() => {
+            if (Date.now() >= room.nextRoundTime) {
+                clearInterval(room.nextRoundInterval); room.dealerCards = [];
+                room.seats.forEach(seat => { if(seat) { seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; seat.currentHand = 0; seat.kickAt = Date.now() + 7000; } });
+                const anyoneSeated = room.seats.some(s => s !== null); room.status = anyoneSeated ? 'betting' : 'waiting'; emitGameState(roomId);
+            }
+        }, 1000);
     }
-    emitGameState(roomId); clearInterval(room.nextRoundInterval);
-    room.nextRoundInterval = setInterval(() => {
-        if (Date.now() >= room.nextRoundTime) {
-            clearInterval(room.nextRoundInterval); room.dealerCards = [];
-            room.seats.forEach(seat => { if(seat) { seat.hands = [{ cards: [], bet: 0, status: 'waiting', value: 0 }]; seat.currentHand = 0; seat.kickAt = Date.now() + 7000; } });
-            const anyoneSeated = room.seats.some(s => s !== null); room.status = anyoneSeated ? 'betting' : 'waiting'; emitGameState(roomId);
-        }
-    }, 1000);
-}
+});
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Casino Server Live on ${PORT}`));
