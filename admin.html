@@ -169,7 +169,7 @@
                     <div class="table-wrapper custom-scroll" style="display:block; max-height: 200px;">
                         <table class="admin-table">
                             <thead>
-                                <tr><th>DATE (PHT)</th><th>TYPE</th><th>AMOUNT</th><th>STATUS</th></tr>
+                                <tr><th>DATE (PHT)</th><th>TYPE</th><th>AMOUNT</th><th>BALANCE</th><th>STATUS</th></tr>
                             </thead>
                             <tbody id="pm-ledger"></tbody>
                         </table>
@@ -273,7 +273,7 @@
                             <div class="toggle-switch"><span class="switch-label">3-Seat Blackjack</span><button id="ks-3seat" class="wood-btn btn-toggle on" onclick="toggleGame('3seat', this)">ON</button></div>
                             <div class="toggle-switch"><span class="switch-label">5-Seat Blackjack</span><button id="ks-5seat" class="wood-btn btn-toggle on" onclick="toggleGame('5seat', this)">ON</button></div>
                             <div class="toggle-switch"><span class="switch-label">High-Low Dice</span><button id="ks-dice" class="wood-btn btn-toggle on" onclick="toggleGame('dice', this)">ON</button></div>
-                            <div class="toggle-switch"><span class="switch-label">Global Coin Flip</span><button id="ks-coin" class="wood-btn btn-toggle on" onclick="toggleGame('coin', this)">ON</button></div>
+                            <div class="toggle-switch"><span class="switch-label">8-Bit Derby & Coin</span><button id="ks-derby" class="wood-btn btn-toggle on" onclick="toggleGame('derby', this)">ON</button></div>
                             <div class="toggle-switch"><span class="switch-label">Classic Color Game</span><button id="ks-color" class="wood-btn btn-toggle on" onclick="toggleGame('color', this)">ON</button></div>
                         </div>
 
@@ -337,7 +337,7 @@
                     <div style="display: flex; gap: 10px;">
                         <button class="wood-btn small" onclick="wipeChat('blackjack')">WIPE BJ CHAT</button>
                         <button class="wood-btn small" onclick="wipeChat('dice')">WIPE DICE CHAT</button>
-                        <button class="wood-btn small" onclick="wipeChat('coin')">WIPE COIN CHAT</button>
+                        <button class="wood-btn small" onclick="wipeChat('derby')">WIPE DERBY CHAT</button>
                         <button class="wood-btn small" onclick="wipeChat('color')">WIPE COLOR CHAT</button>
                     </div>
                 </h2>
@@ -826,7 +826,7 @@
                     : '<option value="">NO PLAYERS FOUND</option>';
 
                 // Sync Game Kill Switches
-                ['3seat', '5seat', 'dice', 'coin', 'color'].forEach(g => {
+                ['3seat', '5seat', 'dice', 'derby', 'color'].forEach(g => {
                     const btn = document.getElementById(`ks-${g}`);
                     if(btn) {
                         if(data.gameLocks[g]) { btn.className = 'wood-btn btn-toggle off'; btn.innerText = 'OFF'; }
@@ -898,6 +898,7 @@
                 
                 let totalWager = 0; let totalWon = 0; let totalPromo = 0;
                 let ledgerHTML = '';
+                let currentBal = data.user.credits;
                 
                 data.txs.forEach(tx => {
                     if(tx.status === 'completed') {
@@ -906,16 +907,43 @@
                         else if(tx.amount > 0 && !tx.type.includes('BANK')) totalWon += tx.amount;
                     }
                     
-                    let amtColor = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff');
+                    let isWithdrawal = tx.type === 'BANK WITHDRAWAL';
+                    let isDeposit = tx.type === 'BANK DEPOSIT';
+                    
+                    let displayAmt = Math.abs(tx.amount);
+                    let prefix = '';
+                    let amtColor = '#fff';
+                    
+                    if (isWithdrawal) {
+                        prefix = '-';
+                        amtColor = 'var(--danger)';
+                    } else if (isDeposit) {
+                        prefix = '+';
+                        amtColor = 'var(--success)';
+                    } else {
+                        prefix = tx.amount > 0 ? '+' : (tx.amount < 0 ? '-' : '');
+                        amtColor = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff');
+                    }
+                    
                     let statusColor = tx.status === 'pending' ? 'var(--warning)' : (tx.status === 'completed' ? 'var(--success)' : 'var(--danger)');
                     
                     ledgerHTML += `
                     <tr>
                         <td style="font-size:22px;">${getPHTTime(tx.date)}</td>
                         <td style="color:#94a3b8;">${tx.type}</td>
-                        <td style="color:${amtColor}; font-weight:bold;">${tx.amount > 0 ? '+' : ''}${formatNumber(tx.amount)}</td>
+                        <td style="color:${amtColor}; font-weight:bold;">${prefix}${formatNumber(displayAmt)}</td>
+                        <td style="color:var(--warning); font-weight:bold;">${formatNumber(currentBal)}</td>
                         <td style="color:${statusColor}; font-size:20px;">${tx.status.toUpperCase()}</td>
                     </tr>`;
+
+                    // Calculate backwards to show precise balance BEFORE this transaction occurred
+                    if (tx.status === 'completed') {
+                        if (isWithdrawal) currentBal += tx.amount;
+                        else if (isDeposit) currentBal -= tx.amount;
+                        else currentBal -= tx.amount; 
+                    } else if (tx.status === 'pending') {
+                        if (isWithdrawal) currentBal += tx.amount;
+                    }
                 });
 
                 document.getElementById('pm-wager').innerText = formatNumber(totalWager);
@@ -927,7 +955,7 @@
                 netEl.style.color = net > 0 ? 'var(--success)' : (net < 0 ? 'var(--danger)' : '#fff');
 
                 document.getElementById('pm-promo').innerText = formatNumber(totalPromo);
-                document.getElementById('pm-ledger').innerHTML = ledgerHTML || '<tr><td colspan="4" style="color:#475569;">NO TRANSACTIONS FOUND</td></tr>';
+                document.getElementById('pm-ledger').innerHTML = ledgerHTML || '<tr><td colspan="5" style="color:#475569;">NO TRANSACTIONS FOUND</td></tr>';
                 
                 showModal('player-modal');
             }
@@ -1007,7 +1035,7 @@
         }
 
         socket.on('game_lock_state', (locks) => {
-            ['3seat', '5seat', 'dice', 'coin', 'color'].forEach(g => {
+            ['3seat', '5seat', 'dice', 'derby', 'color'].forEach(g => {
                 const btn = document.getElementById(`ks-${g}`);
                 if(btn) {
                     if(locks[g]) { btn.className = 'wood-btn btn-toggle off'; btn.innerText = 'OFF'; }
