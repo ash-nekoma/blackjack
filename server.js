@@ -89,8 +89,8 @@ const diceGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: [1, 
 
 // --- DERBY GLOBALS ---
 const DERBY_PROFILES = [
-    { m: 2, s: 2.0 }, { m: 3, s: 1.6 }, { m: 3, s: 1.6 }, 
-    { m: 5, s: 1.2 }, { m: 7, s: 0.9 }, { m: 10, s: 0.5 }
+    { m: 2, s: 1.5 }, { m: 3, s: 1.2 }, { m: 3, s: 1.2 }, 
+    { m: 5, s: 0.9 }, { m: 7, s: 0.7 }, { m: 10, s: 0.4 }
 ];
 const derbyGame = { status: 'betting', betEndTime: Date.now() + 15000, distances: [0,0,0,0,0,0], speeds: [0,0,0,0,0,0], bets: [], history: [], laneProfiles: [] };
 
@@ -192,7 +192,7 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // DERBY LOOP
+    // DERBY LOOP (10 SECOND RACE MODIFIER)
     if (derbyGame.status === 'betting' && now >= derbyGame.betEndTime) {
         derbyGame.status = 'racing'; 
         derbyGame.distances = [0,0,0,0,0,0];
@@ -209,11 +209,11 @@ setInterval(() => {
                 if(strictHouseEdge && laneBets[i] > 0) speedMod = 0.8; 
                 
                 // Dynamic Momentum Physics
-                if (Math.random() < 0.2) { derbyGame.speeds[i] = derbyGame.laneProfiles[i].s + (Math.random() * 1.5 - 0.5); }
-                let step = derbyGame.speeds[i] * speedMod * 1.2;
+                if (Math.random() < 0.2) { derbyGame.speeds[i] = derbyGame.laneProfiles[i].s + (Math.random() * 1.0 - 0.5); }
+                let step = derbyGame.speeds[i] * speedMod * 0.8; // 0.8 average step over 100 ticks = ~8-10 second race
                 
                 // Bursts & Stumbles
-                if (Math.random() < 0.05) step *= 2.0; 
+                if (Math.random() < 0.05) step *= 2.5; 
                 else if (Math.random() < 0.05) step *= 0.3; 
 
                 derbyGame.distances[i] += step; 
@@ -266,7 +266,7 @@ setInterval(() => {
                     io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, betEndTime: derbyGame.betEndTime, history: derbyGame.history, distances: derbyGame.distances, laneProfiles: derbyGame.laneProfiles }); 
                 }, 5000);
             }
-        }, 150); 
+        }, 100); 
     }
 
     // COLOR GAME LOOP
@@ -554,7 +554,6 @@ io.on('connection', (socket) => {
         } catch (e) {}
     });
 
-    // --- NOTIFICATION / TICKET SYSTEM ---
     socket.on('req_inbox', async ({ username }) => {
         try {
             const tickets = await Ticket.find({ $or: [{ username: new RegExp('^' + username + '$', 'i') }, { username: 'GLOBAL' }] }).sort({ updatedAt: -1 });
@@ -614,7 +613,6 @@ io.on('connection', (socket) => {
         } catch(e){}
     });
 
-    // Admin Ticket Controls
     socket.on('req_admin_inbox', async () => {
         try {
             const tickets = await Ticket.find().sort({ updatedAt: -1 });
@@ -693,7 +691,6 @@ io.on('connection', (socket) => {
         } catch(e){}
     });
 
-    // ARCADE LOBBIES
     socket.on('enter_arcade', async ({ username, game }) => {
         try {
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return;
@@ -739,7 +736,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // --- ARCADE BETS ---
     socket.on('get_dice_state', () => { socket.emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); });
     socket.on('place_dice_bet', async ({ username, choice, amount }) => {
         try {
@@ -814,7 +810,6 @@ io.on('connection', (socket) => {
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
 
-    // --- PVP ARENA (COIN & WHEEL) LOGIC ---
     socket.on('get_pvp_state', () => {
         socket.emit('pvp_duel_state_update', pvpDuel);
     });
@@ -1039,7 +1034,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// --- SCOPED GAME ENGINE LOGIC ---
+// --- PVP ENGINE LOGIC ---
 
 async function handlePvpLeave(seatIndex) {
     const seat = pvpDuel.seats[seatIndex];
