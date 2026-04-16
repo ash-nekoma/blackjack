@@ -78,7 +78,12 @@ function createRoom(numSeats) {
 }
 
 const diceGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: [1, 1], bets: [], history: [] };
-const coinGame = { status: 'betting', betEndTime: Date.now() + 15000, result: 'heads', bets: [], history: [] };
+
+// THE NEW DERBY GLOBALS
+const derbyGame = { status: 'betting', betEndTime: Date.now() + 15000, distances: [0,0,0,0,0,0], bets: [], history: [] };
+const DERBY_MULT = [2, 3, 3, 5, 7, 10];
+const DERBY_SPD = [2.0, 1.4, 1.4, 1.0, 0.7, 0.4];
+
 const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
 const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
 
@@ -94,9 +99,9 @@ let coinDuel = {
     flipInterval: null
 };
 
-const socketUserMap = {}; let diceLobby = []; let coinLobby = []; let colorLobby = [];
+const socketUserMap = {}; let diceLobby = []; let derbyLobby = []; let colorLobby = [];
 let strictHouseEdge = false; 
-let gameLocks = { blackjack: false, dice: false, coin: false, color: false };
+let gameLocks = { blackjack: false, dice: false, derby: false, color: false };
 
 // --- ADMIN LOGGER ---
 function getPHTTime() { 
@@ -165,37 +170,65 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // GLOBAL COIN LOOP
-    if (coinGame.status === 'betting' && now >= coinGame.betEndTime) {
-        coinGame.status = 'flipping'; 
-        io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, timeLeft: 0, history: coinGame.history });
+    // NEW DERBY LOOP
+    if (derbyGame.status === 'betting' && now >= derbyGame.betEndTime) {
+        derbyGame.status = 'racing'; 
+        derbyGame.distances = [0,0,0,0,0,0];
+        io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, timeLeft: 0, distances: derbyGame.distances, history: derbyGame.history });
         
-        setTimeout(async () => {
-            let totalHeads = 0; let totalTails = 0;
-            coinGame.bets.forEach(b => { if(b.choice==='heads') totalHeads+=b.amount; if(b.choice==='tails') totalTails+=b.amount; });
-            
-            let res = Math.random() < 0.5 ? 'heads' : 'tails';
-            if (strictHouseEdge && (totalHeads > 0 || totalTails > 0)) { res = totalHeads > totalTails ? 'tails' : 'heads'; }
+        let raceInterval = setInterval(async () => {
+            let finished = false;
+            let winnerIndex = -1;
 
-            coinGame.result = res; coinGame.status = 'resolving'; coinGame.history.unshift(coinGame.result); if(coinGame.history.length > 20) coinGame.history.pop();
-            
-            let winners = [];
-            for (let b of coinGame.bets) {
-                if (b.choice === coinGame.result) {
-                    const payout = b.amount * 2;
-                    try {
-                        const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: payout } }, {new: true}); 
-                        if(updatedUser) {
-                            await new Transaction({ username: updatedUser.username, type: 'COIN FLIP WIN', amount: payout }).save();
-                            winners.push({ username: updatedUser.username, choice: b.choice, amount: payout });
-                            io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
-                        }
-                    } catch(e) {}
+            let laneBets = [0,0,0,0,0,0];
+            derbyGame.bets.forEach(b => laneBets[b.choice] += b.amount);
+
+            for(let i=0; i<6; i++) {
+                let speedMod = 1;
+                // House Edge: Slightly slow down heavy-bet lanes to protect vault
+                if(strictHouseEdge && laneBets[i] > 0) speedMod = 0.75; 
+                
+                // Add randomness plus a base speed weight
+                derbyGame.distances[i] += Math.random() * DERBY_SPD[i] * speedMod * 4; 
+                if (derbyGame.distances[i] >= 100) {
+                    derbyGame.distances[i] = 100;
+                    if(!finished) { finished = true; winnerIndex = i; }
                 }
             }
-            io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, result: coinGame.result, winners, bets: coinGame.bets, history: coinGame.history });
-            setTimeout(() => { coinGame.bets = []; coinGame.status = 'betting'; coinGame.betEndTime = Date.now() + 15000; io.to('arcade_coin').emit('coin_state_update', { status: coinGame.status, betEndTime: coinGame.betEndTime, history: coinGame.history }); }, 5000);
-        }, 3000); 
+
+            io.to('arcade_derby').emit('derby_race_tick', { distances: derbyGame.distances });
+
+            if (finished) {
+                clearInterval(raceInterval);
+                derbyGame.status = 'resolving';
+                derbyGame.history.unshift(winnerIndex);
+                if(derbyGame.history.length > 20) derbyGame.history.pop();
+
+                let winners = [];
+                for (let b of derbyGame.bets) {
+                    if (b.choice === winnerIndex) {
+                        const payout = b.amount * DERBY_MULT[winnerIndex];
+                        try {
+                            const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: payout } }, {new: true}); 
+                            if(updatedUser) {
+                                await new Transaction({ username: updatedUser.username, type: 'DERBY WIN', amount: payout }).save();
+                                winners.push({ username: updatedUser.username, choice: b.choice, amount: payout });
+                                io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits });
+                            }
+                        } catch(e) {}
+                    }
+                }
+                io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, winner: winnerIndex, winners, bets: derbyGame.bets, history: derbyGame.history, distances: derbyGame.distances });
+                
+                setTimeout(() => { 
+                    derbyGame.bets = []; 
+                    derbyGame.status = 'betting'; 
+                    derbyGame.distances = [0,0,0,0,0,0];
+                    derbyGame.betEndTime = Date.now() + 15000; 
+                    io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, betEndTime: derbyGame.betEndTime, history: derbyGame.history, distances: derbyGame.distances }); 
+                }, 5000);
+            }
+        }, 150); // Engine ticks fast to give chunky pixel movement
     }
 
     // COLOR GAME LOOP
@@ -613,13 +646,13 @@ io.on('connection', (socket) => {
         try {
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return;
             socket.join('arcade_' + game); socketUserMap[socket.id] = { username: user.username, arcadeGame: game, roomId: game };
-            let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : coinLobby);
+            let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : derbyLobby);
             if (!lobby.find(p => p.username === user.username)) lobby.push({ username: user.username, color: user.nameColor });
             io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
             adminLog(`[SPECTATOR] ${user.username} entered the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
             
-            // Auto-emit coin duels if entering coin room
-            if(game === 'coin') {
+            // Auto-emit coin duels if entering derby room (which shares UI with coin duel)
+            if(game === 'derby') {
                 socket.emit('coin_duel_state_update', coinDuel);
             }
         } catch(e) {}
@@ -628,11 +661,11 @@ io.on('connection', (socket) => {
     socket.on('leave_arcade', ({ username, game }) => {
         socket.leave('arcade_' + game);
         const searchUser = new RegExp('^' + username + '$', 'i');
-        let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : coinLobby);
+        let lobby = game === 'dice' ? diceLobby : (game === 'color' ? colorLobby : derbyLobby);
         lobby = lobby.filter(p => !searchUser.test(p.username));
-        if(game === 'dice') diceLobby = lobby; else if (game === 'color') colorLobby = lobby; else coinLobby = lobby;
+        if(game === 'dice') diceLobby = lobby; else if (game === 'color') colorLobby = lobby; else derbyLobby = lobby;
         
-        if(game === 'coin') {
+        if(game === 'derby') {
             // Eject from duel room if seated
             const seatIdx = coinDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
             if(seatIdx !== -1) handleCoinDuelLeave(seatIdx);
@@ -646,49 +679,60 @@ io.on('connection', (socket) => {
     socket.on('send_chat', ({ roomId, username, message }) => { 
         if(roomId && username && message) {
             adminLog(`[CHAT] (${roomId}) ${username}: ${message}`); 
-            if (['dice', 'coin', 'color'].includes(roomId)) io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
+            if (['dice', 'derby', 'color'].includes(roomId)) io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
             else io.to(roomId).emit('receive_chat', { roomId, username, message }); 
         }
     });
 
-    // --- ARCADE BETS (DICE, COIN, COLOR) ---
+    // --- ARCADE BETS (DICE, COLOR) ---
     socket.on('get_dice_state', () => { socket.emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); });
     socket.on('place_dice_bet', async ({ username, choice, amount }) => {
         try {
             if(gameLocks.dice) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
             if (diceGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
             if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
-            let existingBet = diceGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
-            if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+            let existingBetAmt = diceGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+            if(existingBetAmt + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
 
             const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
             if (!user) return socket.emit('arcade_error', 'Insufficient credits');
             
             await new Transaction({ username: user.username, type: 'HIGH-LOW DICE', amount: -amount }).save();
-            diceGame.bets.push({ username: user.username, choice, amount }); 
+            
+            let existingBetObj = diceGame.bets.find(b => b.username.toLowerCase() === user.username.toLowerCase() && b.choice === choice);
+            if (existingBetObj) existingBetObj.amount += amount;
+            else diceGame.bets.push({ username: user.username, choice, amount }); 
+            
             adminLog(`[BET] ${user.username} bet ${amount} on DICE (${choice})`);
             io.emit('credit_update', { username: user.username, credits: user.credits }); 
-            socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
+            socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits, choice, totalChoiceBet: existingBetAmt + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
 
-    socket.on('get_coin_state', () => { socket.emit('coin_state_update', { status: coinGame.status, betEndTime: coinGame.betEndTime, history: coinGame.history }); });
-    socket.on('place_coin_bet', async ({ username, choice, amount }) => {
+    // --- NEW DERBY LOGIC ---
+    socket.on('get_derby_state', () => { socket.emit('derby_state_update', { status: derbyGame.status, betEndTime: derbyGame.betEndTime, distances: derbyGame.distances, history: derbyGame.history }); });
+    socket.on('place_derby_bet', async ({ username, choice, amount }) => {
         try {
-            if(gameLocks.coin) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
-            if (coinGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
-            if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
-            let existingBet = coinGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
-            if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+            if(gameLocks.derby) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
+            if (derbyGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
+            if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per lane!');
+            
+            let choiceIdx = parseInt(choice);
+            let existingBetAmt = derbyGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choiceIdx).reduce((sum,b)=>sum+b.amount,0);
+            if(existingBetAmt + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per lane!');
 
             const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
             if (!user) return socket.emit('arcade_error', 'Insufficient credits');
             
-            await new Transaction({ username: user.username, type: 'COIN FLIP', amount: -amount }).save();
-            coinGame.bets.push({ username: user.username, choice, amount }); 
-            adminLog(`[BET] ${user.username} bet ${amount} on COIN (${choice})`);
+            await new Transaction({ username: user.username, type: '8-BIT DERBY', amount: -amount }).save();
+            
+            let existingBetObj = derbyGame.bets.find(b => b.username.toLowerCase() === user.username.toLowerCase() && b.choice === choiceIdx);
+            if (existingBetObj) existingBetObj.amount += amount;
+            else derbyGame.bets.push({ username: user.username, choice: choiceIdx, amount }); 
+            
+            adminLog(`[BET] ${user.username} bet ${amount} on DERBY LANE ${choiceIdx + 1}`);
             io.emit('credit_update', { username: user.username, credits: user.credits });
-            socket.emit('arcade_bet_placed', { game: 'coin', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
+            socket.emit('arcade_bet_placed', { game: 'derby', credits: user.credits, choice: choiceIdx, totalChoiceBet: existingBetAmt + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
 
@@ -698,17 +742,21 @@ io.on('connection', (socket) => {
             if(gameLocks.color) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
             if (colorGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
             if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
-            let existingBet = colorGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
-            if(existingBet + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
+            let existingBetAmt = colorGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+            if(existingBetAmt + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per color!');
 
             const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
             if (!user) return socket.emit('arcade_error', 'Insufficient credits');
             
             await new Transaction({ username: user.username, type: 'COLOR GAME', amount: -amount }).save();
-            colorGame.bets.push({ username: user.username, choice, amount }); 
+            
+            let existingBetObj = colorGame.bets.find(b => b.username.toLowerCase() === user.username.toLowerCase() && b.choice === choice);
+            if (existingBetObj) existingBetObj.amount += amount;
+            else colorGame.bets.push({ username: user.username, choice, amount }); 
+            
             adminLog(`[BET] ${user.username} bet ${amount} on COLOR (${choice})`);
             io.emit('credit_update', { username: user.username, credits: user.credits }); 
-            socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBet + amount });
+            socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBetAmt + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
 
@@ -729,13 +777,12 @@ io.on('connection', (socket) => {
                 coinDuel.message = 'HOST CONFIGURING MATCH';
             } else {
                 coinDuel.message = 'WAITING FOR READY';
-                // Auto assign opposite choice
                 const hostChoice = coinDuel.seats[coinDuel.hostIndex].choice;
                 coinDuel.seats[seatIndex].choice = hostChoice === 'heads' ? 'tails' : 'heads';
             }
             
             adminLog(`[DUEL] ${user.username} sat at duel seat ${seatIndex+1}`);
-            io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+            io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
         } catch(e) {}
     });
 
@@ -753,7 +800,6 @@ io.on('connection', (socket) => {
         if(betAmount < 0 || betAmount > 100000) return socket.emit('arcade_error', 'Invalid bet limits (0-100k).');
         if(![1, 3, 5].includes(format)) return;
 
-        // NEW SECURITY: Prevent host from setting a wager they can't afford
         const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
         if (!user || user.credits < betAmount) {
             return socket.emit('arcade_error', 'You have insufficient credits to wager this amount.');
@@ -766,10 +812,10 @@ io.on('connection', (socket) => {
         const otherIndex = seatIndex === 0 ? 1 : 0;
         if(coinDuel.seats[otherIndex]) {
             coinDuel.seats[otherIndex].choice = choice === 'heads' ? 'tails' : 'heads';
-            coinDuel.seats[otherIndex].ready = false; // Reset ready if host changes settings
+            coinDuel.seats[otherIndex].ready = false; 
         }
         
-        io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+        io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
     });
 
     socket.on('ready_coin_duel', async ({ username }) => {
@@ -777,14 +823,13 @@ io.on('connection', (socket) => {
         if(seatIndex === -1 || coinDuel.status !== 'waiting') return;
 
         coinDuel.seats[seatIndex].ready = !coinDuel.seats[seatIndex].ready;
-        io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+        io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
 
         if(coinDuel.seats[0] && coinDuel.seats[0].ready && coinDuel.seats[1] && coinDuel.seats[1].ready) {
             coinDuel.status = 'readying';
             coinDuel.message = 'LOCKING IN BETS...';
-            io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+            io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
 
-            // Verify credits
             if(coinDuel.betAmount > 0) {
                 const u1 = await User.findOne({ username: new RegExp('^' + coinDuel.seats[0].username + '$', 'i') });
                 const u2 = await User.findOne({ username: new RegExp('^' + coinDuel.seats[1].username + '$', 'i') });
@@ -792,15 +837,14 @@ io.on('connection', (socket) => {
                 if(!u1 || u1.credits < coinDuel.betAmount) {
                     coinDuel.message = `${coinDuel.seats[0].username.toUpperCase()} HAS INSUFFICIENT CREDITS.`;
                     coinDuel.status = 'waiting'; coinDuel.seats[0].ready = false; coinDuel.seats[1].ready = false;
-                    return io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+                    return io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
                 }
                 if(!u2 || u2.credits < coinDuel.betAmount) {
                     coinDuel.message = `${coinDuel.seats[1].username.toUpperCase()} HAS INSUFFICIENT CREDITS.`;
                     coinDuel.status = 'waiting'; coinDuel.seats[0].ready = false; coinDuel.seats[1].ready = false;
-                    return io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+                    return io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
                 }
 
-                // Deduct bets
                 await User.updateOne({ username: u1.username }, { $inc: { credits: -coinDuel.betAmount } });
                 await User.updateOne({ username: u2.username }, { $inc: { credits: -coinDuel.betAmount } });
                 await new Transaction({ username: u1.username, type: 'DUEL ROOM BET', amount: -coinDuel.betAmount }).save();
@@ -901,12 +945,12 @@ io.on('connection', (socket) => {
         const data = socketUserMap[socket.id];
         if (data) {
             if (data.arcadeGame) {
-                let g = data.arcadeGame; let lobby = g === 'dice' ? diceLobby : (g === 'color' ? colorLobby : coinLobby);
+                let g = data.arcadeGame; let lobby = g === 'dice' ? diceLobby : (g === 'color' ? colorLobby : derbyLobby);
                 lobby = lobby.filter(p => p.username !== data.username);
-                if(g === 'dice') diceLobby = lobby; else if(g === 'color') colorLobby = lobby; else coinLobby = lobby;
+                if(g === 'dice') diceLobby = lobby; else if(g === 'color') colorLobby = lobby; else derbyLobby = lobby;
                 io.to('arcade_' + g).emit('arcade_lobby_update', { game: g, lobby });
 
-                if(g === 'coin') {
+                if(g === 'derby') {
                     const seatIdx = coinDuel.seats.findIndex(s => s && s.username.toLowerCase() === data.username.toLowerCase());
                     if(seatIdx !== -1) handleCoinDuelLeave(seatIdx);
                 }
@@ -928,7 +972,6 @@ async function handleCoinDuelLeave(seatIndex) {
     if(!seat) return;
 
     if(coinDuel.status === 'flipping' && coinDuel.betAmount > 0) {
-        // Player abandoned during flip. Refund both sides to be safe and fair.
         const otherIndex = seatIndex === 0 ? 1 : 0;
         const otherSeat = coinDuel.seats[otherIndex];
         
@@ -948,7 +991,7 @@ async function handleCoinDuelLeave(seatIndex) {
         coinDuel.seats[coinDuel.hostIndex].ready = false;
         coinDuel.seats[coinDuel.hostIndex].score = 0;
     }
-    io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+    io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
 }
 
 async function refundDuelSeat(username, amount) {
@@ -962,17 +1005,17 @@ async function refundDuelSeat(username, amount) {
 function runDuelFlipSequence() {
     coinDuel.timer = 3;
     coinDuel.message = 'FLIPPING IN 3...';
-    io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+    io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
 
     let countdown = setInterval(() => {
         coinDuel.timer--;
         if(coinDuel.timer > 0) {
             coinDuel.message = `FLIPPING IN ${coinDuel.timer}...`;
-            io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+            io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
         } else {
             clearInterval(countdown);
             coinDuel.message = 'FLIPPING...';
-            io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+            io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
 
             setTimeout(async () => {
                 let res = Math.random() < 0.5 ? 'heads' : 'tails';
@@ -988,7 +1031,7 @@ function runDuelFlipSequence() {
                     coinDuel.message = `${coinDuel.seats[roundWinnerIndex].username.toUpperCase()} SCORES!`;
                 }
 
-                io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+                io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
 
                 // Check if match won
                 let matchWinner = null;
@@ -1011,9 +1054,8 @@ function runDuelFlipSequence() {
                                 }
                             } catch(e){}
                         }
-                        io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+                        io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
 
-                        // Reset for rematch after 5s
                         setTimeout(() => {
                             if(coinDuel.status === 'finished') {
                                 coinDuel.status = 'waiting';
@@ -1021,12 +1063,11 @@ function runDuelFlipSequence() {
                                 coinDuel.message = 'WAITING FOR READY';
                                 if(coinDuel.seats[0]) { coinDuel.seats[0].ready = false; coinDuel.seats[0].score = 0; }
                                 if(coinDuel.seats[1]) { coinDuel.seats[1].ready = false; coinDuel.seats[1].score = 0; }
-                                io.to('arcade_coin').emit('coin_duel_state_update', coinDuel);
+                                io.to('arcade_derby').emit('coin_duel_state_update', coinDuel);
                             }
                         }, 5000);
 
                     } else {
-                        // Next round
                         if(coinDuel.status !== 'finished') {
                             coinDuel.status = 'flipping';
                             coinDuel.result = null;
