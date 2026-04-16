@@ -80,7 +80,7 @@
         .game-interface { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; width: 100%; height: 100%; min-height: 0; background: #000; box-sizing: border-box; overflow: hidden;}
         .game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px; min-height: 0;}
         .game-area.dice-bg { background: radial-gradient(circle at center, #7e22ce 0%, #4c1d95 100%); }
-        .game-area.coin-bg { background: radial-gradient(circle at center, #9a3412 0%, #7c2d12 100%); }
+        .game-area.coin-bg { background: radial-gradient(circle at center, #111827 0%, #000 100%); }
         .game-area.color-bg { background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
         
         .sidebar-col { display: flex; flex-direction: column; gap: 20px; height: 100%; flex-shrink: 0; min-height: 0; position: relative;}
@@ -185,9 +185,54 @@
         
         .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 30;}
 
-        .coin-3d { width: 150px; height: 150px; background: #fbbf24; border-radius: 50%; border: 10px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 80px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 50px #fbbf24; font-family: Arial; }
-        .coin-3d.flipping { animation: flipCoin 0.3s infinite linear; }
+        /* --- 8-BIT DERBY UI --- */
+        .derby-track-container { flex: 1; background: #111; border-bottom: 4px solid var(--border-std); display: flex; flex-direction: column; position: relative; overflow: hidden; margin-top: 10px; border-radius: 8px; box-shadow: inset 0 0 20px #000;}
+        .derby-lane { flex: 1; border-bottom: 2px dashed #333; position: relative; display: flex; align-items: center; padding: 0 10px;}
+        .derby-lane:last-child { border-bottom: none; }
+        .derby-finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8;}
+        
+        .racer-sprite { font-size: 40px; position: absolute; left: 0; transition: left 0.2s linear; z-index: 20; text-shadow: 2px 2px 0 #000; transform-origin: center;}
+        
+        @keyframes gallop {
+            0% { transform: translateY(0px) rotate(-5deg); }
+            50% { transform: translateY(-4px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(-5deg); }
+        }
+        .racer-running { animation: gallop 0.2s infinite; }
+
+        .derby-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 8px; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
+        .derby-bet-box:active:not(.locked) { transform: scale(0.95); }
+        .derby-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
+        
+        /* Lane colors */
+        .lane-1-color { color: #ef4444 !important; border-top-color: #ef4444; }
+        .lane-2-color { color: #3b82f6 !important; border-top-color: #3b82f6; }
+        .lane-3-color { color: #10b981 !important; border-top-color: #10b981; }
+        .lane-4-color { color: #a855f7 !important; border-top-color: #a855f7; }
+        .lane-5-color { color: #ec4899 !important; border-top-color: #ec4899; }
+        .lane-6-color { color: #fbbf24 !important; border-top-color: #fbbf24; }
+
+        .derby-bet-title { font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; margin: 0; font-weight: bold; text-transform: uppercase;}
+
+        /* --- PVP DUELS --- */
+        .duel-arena-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 20px 0; }
+        .duel-arena { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 800px; height: 280px;}
+        .duel-seat { width: 280px; height: 100%; flex-shrink: 0; background: #1e293b; border: 4px solid var(--border-std); border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); position: relative; box-sizing: border-box; }
+        .duel-seat.my-seat { border-color: var(--accent-glow-2); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
+        .duel-seat-empty { width: 100%; height: 100%; border: 4px dashed rgba(255,255,255,0.2); border-radius: 12px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); cursor: pointer; transition: 0.2s;}
+        .duel-seat-empty:hover { background: rgba(255,255,255,0.1); border-color: #fff;}
+        .duel-seat-name { font-size: 32px; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 0 #000; }
+        .duel-seat-score { font-size: 60px; font-weight: bold; color: var(--warning); text-shadow: 4px 4px 0 #000; line-height: 1;}
+        .duel-seat-choice { font-size: 24px; color: #94a3b8; background: #0f172a; padding: 4px 12px; border-radius: 4px; border: 2px solid var(--border-std); margin-top: 10px;}
+        .duel-seat-ready { position: absolute; top: -15px; background: var(--success); color: #000; padding: 4px 15px; border-radius: 8px; font-size: 20px; font-weight: bold; border: 2px solid #fff; box-shadow: 2px 2px 0 #000;}
+        
+        .duel-center { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 160px; flex-shrink: 0;}
+        .duel-center-vs { font-size: 40px; font-weight: bold; color: #ef4444; text-shadow: 2px 2px 0 #000; margin-bottom: 20px;}
+        .duel-coin { width: 120px; height: 120px; background: #fbbf24; border-radius: 50%; border: 8px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 60px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 30px #fbbf24; font-family: Arial; }
+        .duel-coin.flipping { animation: flipCoin 0.3s infinite linear; }
         @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+        
+        .duel-status-box { background: rgba(0,0,0,0.8); border: 2px solid var(--accent-glow-2); padding: 10px 20px; border-radius: 8px; font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 20px; text-align: center; width: 100%; max-width: 800px; height: 60px; display: flex; justify-content: center; align-items: center; box-sizing: border-box;}
 
         /* PERYA COLOR GAME */
         .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 650px; margin: 0 auto; }
@@ -208,39 +253,6 @@
         .color-bet-title { font-size: 34px; color: #fff; text-shadow: 2px 2px 0 #000; margin: 0; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;}
         .color-bet-box.br-white .color-bet-title { color: #f8fafc !important; text-shadow: 2px 2px 0 #555 !important; }
         
-        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 8px; padding: 2px 10px; font-size: 20px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; box-shadow: 2px 2px 0 #000; z-index: 20; pointer-events:none;}
-        
-        .history-content { flex: 1; overflow-y: auto; padding: 0 5px; margin-bottom: 2px; }
-        .history-list-item { font-size: 26px; border-bottom: 1px dashed #333; padding: 6px 10px; text-align: center; }
-        
-        /* INBOX TICKET STYLING */
-        .ticket-item { background: #1e293b; border: 2px solid var(--border-std); padding: 15px; margin-bottom: 10px; border-radius: 6px; cursor: pointer; transition: filter 0.1s;}
-        .ticket-item:hover { filter: brightness(1.2); }
-        .ticket-unread { border-left: 6px solid var(--danger); }
-        .ticket-read { border-left: 6px solid #475569; }
-        .msg-bubble { background: #0f172a; border: 2px solid var(--border-std); padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: left; }
-        .msg-bubble.admin { border-left: 6px solid var(--danger); background: #1a0f14;}
-        .msg-bubble.player { border-right: 6px solid var(--success); background: #0f1a14; text-align: right;}
-
-        /* --- PVP DUELS --- */
-        .duel-arena-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 20px 0; }
-        .duel-arena { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 800px; height: 280px;}
-        .duel-seat { width: 280px; height: 100%; flex-shrink: 0; background: #1e293b; border: 4px solid var(--border-std); border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); position: relative; box-sizing: border-box; }
-        .duel-seat.my-seat { border-color: var(--accent-glow-2); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
-        .duel-seat-empty { width: 100%; height: 100%; border: 4px dashed rgba(255,255,255,0.2); border-radius: 12px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); cursor: pointer; transition: 0.2s;}
-        .duel-seat-empty:hover { background: rgba(255,255,255,0.1); border-color: #fff;}
-        .duel-seat-name { font-size: 32px; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 0 #000; }
-        .duel-seat-score { font-size: 60px; font-weight: bold; color: var(--warning); text-shadow: 4px 4px 0 #000; line-height: 1;}
-        .duel-seat-choice { font-size: 24px; color: #94a3b8; background: #0f172a; padding: 4px 12px; border-radius: 4px; border: 2px solid var(--border-std); margin-top: 10px;}
-        .duel-seat-ready { position: absolute; top: -15px; background: var(--success); color: #000; padding: 4px 15px; border-radius: 8px; font-size: 20px; font-weight: bold; border: 2px solid #fff; box-shadow: 2px 2px 0 #000;}
-        
-        .duel-center { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 160px; flex-shrink: 0;}
-        .duel-center-vs { font-size: 40px; font-weight: bold; color: #ef4444; text-shadow: 2px 2px 0 #000; margin-bottom: 20px;}
-        .duel-coin { width: 120px; height: 120px; background: #fbbf24; border-radius: 50%; border: 8px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 60px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 30px #fbbf24; font-family: Arial; }
-        .duel-coin.flipping { animation: flipCoin 0.3s infinite linear; }
-        
-        .duel-status-box { background: rgba(0,0,0,0.8); border: 2px solid var(--accent-glow-2); padding: 10px 20px; border-radius: 8px; font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 20px; text-align: center; width: 100%; max-width: 800px; height: 60px; display: flex; justify-content: center; align-items: center; box-sizing: border-box;}
-
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
             #arcade-cabinet { width: 100vw; height: 100vh; border: none; border-radius: 0; flex-direction: column; }
@@ -292,12 +304,6 @@
             #duel-action-row > * { height: 50px !important; }
             #duel-host-controls > div:last-child { flex-direction: column; height: auto !important; gap: 10px; }
             #duel-host-controls select { height: 50px !important; }
-            
-            /* Modals and Inputs */
-            .input-group { flex-direction: column; }
-            .rewards-grid { grid-template-columns: 1fr 1fr; }
-            #inbox-thread-view { padding: 5px; }
-            .msg-bubble { font-size: 20px; }
         }
     </style>
 </head>
@@ -373,7 +379,7 @@
                     <div style="width: 100%; border-bottom: 2px dashed #333; margin-bottom: 10px; padding-bottom: 10px;">
                         <h3 class="pixel-text" style="color: var(--warning); font-size: 30px; margin-bottom: 10px;">ARCADE CASINO</h3>
                         <button class="wood-btn" style="background: #a855f7; margin-bottom: 10px;" onclick="joinDice()">HIGH-LOW DICE</button>
-                        <button class="wood-btn" style="background: #ea580c; margin-bottom: 10px;" onclick="joinCoinFlip()">GLOBAL COIN FLIP & PVP</button>
+                        <button class="wood-btn" style="background: #ea580c; margin-bottom: 10px;" onclick="joinDerby()">8-BIT DERBY & COIN PVP</button>
                         <button class="wood-btn" style="background: #ef4444;" onclick="joinColorGame()">CLASSIC COLOR GAME</button>
                     </div>
                     <button class="wood-btn" style="background: var(--danger); margin-top: 10px;" onclick="hideModal('play-modal')">BACK TO DASHBOARD</button>
@@ -443,7 +449,7 @@
                     <select class="retro-input pixel-text" style="width: 100%; max-width: 350px; background: #1e293b; color: #fff; cursor: pointer; border-color: var(--accent-glow-2);" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');">
                         <option value="rule-bj">BLACKJACK</option>
                         <option value="rule-dice">HIGH-LOW DICE</option>
-                        <option value="rule-coin">GLOBAL COIN FLIP</option>
+                        <option value="rule-derby">8-BIT DERBY & COIN PVP</option>
                         <option value="rule-color">CLASSIC COLOR GAME</option>
                         <option value="rule-sys">SYSTEM RULES</option>
                     </select>
@@ -454,10 +460,9 @@
                         <strong style="color: var(--success); font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">BLACKJACK</strong>
                         <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">Beat the Dealer's hand without exceeding 21. Face cards are 10, Aces are 1 or 11.</p>
                         <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max 1 seat. Max bet 50,000 credits (Splitting doubles this to 100k).</li>
+                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max 1 seat. Max bet 100,000 credits.</li>
                             <li style="margin-bottom: 10px;"><strong>Timer:</strong> Exactly 15s to Hit, Stand, Double, or Split.</li>
                             <li style="margin-bottom: 10px;"><strong>Payouts:</strong> Wins pay 1:1. Blackjack pays 3:2. Push refunds bet.</li>
-                            <li style="margin-bottom: 10px;"><strong>Dealer:</strong> Must draw to 16 and stand on all 17s.</li>
                         </ul>
                     </div>
                     
@@ -466,40 +471,36 @@
                         <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">Two 6-sided dice are rolled globally. Select your bet amount and click a tile.</p>
                         <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
                             <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per tile.</li>
-                            <li style="margin-bottom: 10px;"><strong>Under 7:</strong> Pays 1:1 (Rolls 2, 3, 4, 5, 6).</li>
-                            <li style="margin-bottom: 10px;"><strong>Over 7:</strong> Pays 1:1 (Rolls 8, 9, 10, 11, 12).</li>
+                            <li style="margin-bottom: 10px;"><strong>Under 7 / Over 7:</strong> Pays 1:1.</li>
                             <li style="margin-bottom: 10px;"><strong>Exactly 7:</strong> Jackpot! Pays massive 4:1 odds.</li>
                         </ul>
                     </div>
                     
-                    <div id="rule-coin" class="rule-content hidden">
-                        <strong style="color: var(--warning); font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">GLOBAL COIN FLIP</strong>
-                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">A single global coin is flipped. Bet on Heads or Tails before the 15s timer runs out.</p>
+                    <div id="rule-derby" class="rule-content hidden">
+                        <strong style="color: var(--warning); font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">8-BIT DERBY & COIN PVP</strong>
+                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">Derby: Bet on the winning horse. Coin PVP: 1v1 Item/Credit duels.</p>
                         <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per tile.</li>
-                            <li style="margin-bottom: 10px;"><strong>Payouts:</strong> Correct guesses double your money (Pays 1:1).</li>
+                            <li style="margin-bottom: 10px;"><strong>Derby Limits:</strong> Max bet 50,000 per lane.</li>
+                            <li style="margin-bottom: 10px;"><strong>Derby Payouts:</strong> Varies by lane probability (2x up to 10x).</li>
+                            <li style="margin-bottom: 10px;"><strong>PVP Duels:</strong> Host creates room. Winner takes all.</li>
                         </ul>
                     </div>
                     
                     <div id="rule-color" class="rule-content hidden">
                         <strong style="color: #ef4444; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">CLASSIC COLOR GAME</strong>
-                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">3 colored dice are rolled. Pick your bet amount at the top, then tap colors to place chips.</p>
+                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">3 colored dice are rolled. Tap colors to place chips.</p>
                         <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
                             <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per color.</li>
-                            <li style="margin-bottom: 10px;"><strong>1 Match:</strong> Pays 1:1</li>
-                            <li style="margin-bottom: 10px;"><strong>2 Matches:</strong> Pays 2:1</li>
-                            <li style="margin-bottom: 10px;"><strong>3 Matches:</strong> Pays 3:1</li>
+                            <li style="margin-bottom: 10px;"><strong>Payouts:</strong> 1 Match = 1:1 | 2 Matches = 2:1 | 3 Matches = 3:1</li>
                         </ul>
                     </div>
 
                     <div id="rule-sys" class="rule-content hidden">
                         <strong style="color: #10b981; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">SYSTEM RULES</strong>
                         <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Deposits:</strong> 10k - 100k limits.</li>
-                            <li style="margin-bottom: 10px;"><strong>Withdrawals:</strong> 50k - 100k limits.</li>
+                            <li style="margin-bottom: 10px;"><strong>Deposits/Withdrawals:</strong> Max limit should be 100,000 per transaction.</li>
                             <li style="margin-bottom: 10px;"><strong>Daily Rewards:</strong> Mystery boxes respawn exactly every 24 hours.</li>
                             <li style="margin-bottom: 10px;"><strong>Spam Protection:</strong> Arcade buttons lock for 250ms after clicking.</li>
-                            <li style="margin-bottom: 10px;"><strong>Global Locks:</strong> All bets freeze precisely at 0s.</li>
                         </ul>
                     </div>
                 </div>
@@ -669,7 +670,7 @@
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">TABLE CHAT</div>
-                    <div id="chat-messages" class="chat-messages custom-scroll pixel-text"></div>
+                    <div id="blackjack-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
                         <input type="text" id="blackjack-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
                         <button class="pixel-text" onclick="actSendChat('blackjack')">SEND</button>
@@ -738,50 +739,75 @@
             </div>
         </div>
 
-        <div id="coin-interface" class="game-interface hidden">
+        <div id="derby-interface" class="game-interface hidden">
             <div class="game-area coin-bg">
                 <div class="top-hud">
-                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('coin')">◄ DASHBOARD</button></div>
-                    <div class="hud-center"><div style="font-size: 36px; color: var(--warning);" id="coin-phase-display" class="pixel-text">BETS OPEN</div></div>
-                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="coin-credits"></span></div></div>
+                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('derby')">◄ DASHBOARD</button></div>
+                    <div class="hud-center"><div style="font-size: 36px; color: var(--warning);" id="derby-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="derby-credits"></span></div></div>
                 </div>
                 
                 <div style="display:flex; border-bottom:2px solid var(--border-std);">
-                    <button class="wood-btn" style="flex:1; border:none; border-radius:0; box-shadow:none; background:var(--accent-glow-2)" id="tab-coin-global" onclick="switchCoinTab('global')">GLOBAL FLIP</button>
-                    <button class="wood-btn" style="flex:1; border:none; border-radius:0; box-shadow:none; background:#1e293b" id="tab-coin-pvp" onclick="switchCoinTab('pvp')">PVP DUEL ROOM</button>
+                    <button class="wood-btn" style="flex:1; border:none; border-radius:0; box-shadow:none; background:var(--accent-glow-2)" id="tab-derby-race" onclick="switchDerbyTab('race')">8-BIT DERBY</button>
+                    <button class="wood-btn" style="flex:1; border:none; border-radius:0; box-shadow:none; background:#1e293b" id="tab-derby-pvp" onclick="switchDerbyTab('pvp')">PVP DUEL ROOM</button>
                 </div>
 
-                <div id="coin-global-container" style="display:flex; flex-direction:column; flex:1;">
-                    <div style="display: flex; justify-content: center; align-items: center; flex: 1; margin-top:20px;">
-                        <div id="global-coin-visual" class="coin-3d">?</div>
+                <div id="derby-race-container" style="display:flex; flex-direction:column; flex:1;">
+                    
+                    <div class="derby-track-container" id="derby-track">
+                        <div class="derby-finish-line"></div>
+                        <div class="derby-lane"><div class="racer-sprite lane-1-color" id="racer-0" style="left:0%">🏇</div></div>
+                        <div class="derby-lane"><div class="racer-sprite lane-2-color" id="racer-1" style="left:0%">🏇</div></div>
+                        <div class="derby-lane"><div class="racer-sprite lane-3-color" id="racer-2" style="left:0%">🏇</div></div>
+                        <div class="derby-lane"><div class="racer-sprite lane-4-color" id="racer-3" style="left:0%">🏇</div></div>
+                        <div class="derby-lane"><div class="racer-sprite lane-5-color" id="racer-4" style="left:0%">🏇</div></div>
+                        <div class="derby-lane"><div class="racer-sprite lane-6-color" id="racer-5" style="left:0%">🏇</div></div>
                     </div>
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <div id="coin-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">FLIPPING...</div>
-                        <div id="coin-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
+                    
+                    <div style="text-align: center; margin: 10px 0;">
+                        <div id="derby-result-text" class="pixel-text" style="font-size: 40px; color: #fff; text-shadow: 2px 2px 0 #000;">NEXT SPRINT SOON</div>
+                        <div id="derby-timer" class="pixel-text" style="font-size: 24px; color: var(--accent-glow-2);">15s REMAINING</div>
                     </div>
-                    <div class="arcade-bet-area">
-                        <div class="master-bet-row">
-                            <select id="coin-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px; margin:0;">
+                    
+                    <div class="arcade-bet-area" style="padding-top: 0;">
+                        <div class="master-bet-row" style="margin-bottom: 10px;">
+                            <select id="derby-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 20px; padding: 4px;">
                                 <option value="1000" selected>1,000</option>
                                 <option value="5000">5,000</option>
                                 <option value="20000">20,000</option>
                                 <option value="50000">50,000</option>
                             </select>
                         </div>
-                        <div class="arcade-grid" style="margin-top:10px;">
-                            <div id="coin-btn-heads" class="arcade-bet-box color-bet-btn" onclick="placeCoinBet('heads')" style="width:300px;">
-                                <div class="bet-badge pixel-text hidden" id="badge-heads">0</div><div class="payout-overlay hidden" id="payout-heads"></div>
-                                <div class="arcade-bet-title pixel-text" style="color:var(--accent-glow-2);">HEADS</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 10px;">
+                            <div id="derby-btn-0" class="derby-bet-box lane-1-color" onclick="placeDerbyBet(0)">
+                                <div class="bet-badge pixel-text hidden" id="badge-derby-0">0</div>
+                                <div class="derby-bet-title pixel-text">LANE 1</div><div class="pixel-text" style="font-size: 20px;">PAYS 2x</div>
                             </div>
-                            <div id="coin-btn-tails" class="arcade-bet-box color-bet-btn" onclick="placeCoinBet('tails')" style="width:300px;">
-                                <div class="bet-badge pixel-text hidden" id="badge-tails">0</div><div class="payout-overlay hidden" id="payout-tails"></div>
-                                <div class="arcade-bet-title pixel-text" style="color:#ea580c;">TAILS</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
+                            <div id="derby-btn-1" class="derby-bet-box lane-2-color" onclick="placeDerbyBet(1)">
+                                <div class="bet-badge pixel-text hidden" id="badge-derby-1">0</div>
+                                <div class="derby-bet-title pixel-text">LANE 2</div><div class="pixel-text" style="font-size: 20px;">PAYS 3x</div>
+                            </div>
+                            <div id="derby-btn-2" class="derby-bet-box lane-3-color" onclick="placeDerbyBet(2)">
+                                <div class="bet-badge pixel-text hidden" id="badge-derby-2">0</div>
+                                <div class="derby-bet-title pixel-text">LANE 3</div><div class="pixel-text" style="font-size: 20px;">PAYS 3x</div>
+                            </div>
+                            <div id="derby-btn-3" class="derby-bet-box lane-4-color" onclick="placeDerbyBet(3)">
+                                <div class="bet-badge pixel-text hidden" id="badge-derby-3">0</div>
+                                <div class="derby-bet-title pixel-text">LANE 4</div><div class="pixel-text" style="font-size: 20px;">PAYS 5x</div>
+                            </div>
+                            <div id="derby-btn-4" class="derby-bet-box lane-5-color" onclick="placeDerbyBet(4)">
+                                <div class="bet-badge pixel-text hidden" id="badge-derby-4">0</div>
+                                <div class="derby-bet-title pixel-text">LANE 5</div><div class="pixel-text" style="font-size: 20px;">PAYS 7x</div>
+                            </div>
+                            <div id="derby-btn-5" class="derby-bet-box lane-6-color" onclick="placeDerbyBet(5)">
+                                <div class="bet-badge pixel-text hidden" id="badge-derby-5">0</div>
+                                <div class="derby-bet-title pixel-text">LANE 6</div><div class="pixel-text" style="font-size: 20px;">PAYS 10x</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="coin-pvp-container" class="hidden custom-scroll" style="flex:1; display:flex; flex-direction:column; padding: 20px; overflow-y:auto; align-items:center;">
+                <div id="derby-pvp-container" class="hidden custom-scroll" style="flex:1; display:flex; flex-direction:column; padding: 20px; overflow-y:auto; align-items:center;">
                     
                     <div class="duel-status-box" id="duel-status-box">WAITING FOR PLAYERS</div>
 
@@ -853,21 +879,21 @@
             </div>
             <div class="sidebar-col">
                 <div style="position: relative; z-index: 50; flex-shrink: 0;">
-                    <div id="coin-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('coin-players-list')">
-                        <span>PLAYERS</span><span><span id="coin-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
+                    <div id="derby-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('derby-players-list')">
+                        <span>PLAYERS</span><span><span id="derby-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
                     </div>
-                    <div id="coin-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                    <div id="derby-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">FLIP HISTORY</div>
-                    <div class="history-content custom-scroll pixel-text" id="coin-history"></div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center;">DERBY HISTORY</div>
+                    <div class="history-content custom-scroll pixel-text" id="derby-history"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">TABLE CHAT</div>
-                    <div id="coin-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center;">TABLE CHAT</div>
+                    <div id="derby-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="coin-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
-                        <button class="pixel-text" onclick="actSendChat('coin')">SEND</button>
+                        <input type="text" id="derby-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <button class="pixel-text" onclick="actSendChat('derby')">SEND</button>
                     </div>
                 </div>
             </div>
@@ -936,11 +962,11 @@
                     <div id="color-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">ROLL HISTORY</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center;">ROLL HISTORY</div>
                     <div class="history-content custom-scroll pixel-text" id="color-history"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">TABLE CHAT</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center;">TABLE CHAT</div>
                     <div id="color-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
                         <input type="text" id="color-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
@@ -969,7 +995,7 @@
         let allMyTickets = [];
 
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
-        let myCoinBets = { heads: 0, tails: 0 }; 
+        let myDerbyBets = [0, 0, 0, 0, 0, 0];
         let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
         let currentCoinDuelState = null; let myDuelSeatIndex = -1;
         
@@ -980,12 +1006,12 @@
         function updateVol(type, val) { if (type === 'bgm') { audioNodes.bgm.volume = val; if(val > 0 && audioNodes.bgm.paused) audioNodes.bgm.play().catch(()=>{}); } else { ['deal', 'bet', 'win', 'lose'].forEach(id => { if(audioNodes[id]) audioNodes[id].volume = val; }); } }
         function playSfx(id) { if(audioNodes[id] && audioNodes[id].volume > 0) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } }
 
-        // --- CHAT KEYPRESS BINDING FIX ---
+        // --- CHAT KEYPRESS BINDING ---
         document.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 if (document.activeElement.id === 'blackjack-chat-input') actSendChat('blackjack');
                 else if (document.activeElement.id === 'dice-chat-input') actSendChat('dice');
-                else if (document.activeElement.id === 'coin-chat-input') actSendChat('coin');
+                else if (document.activeElement.id === 'derby-chat-input') actSendChat('derby');
                 else if (document.activeElement.id === 'color-chat-input') actSendChat('color');
             }
         });
@@ -1229,7 +1255,7 @@
         socket.on('game_lock_state', (locks) => {
             gameLocks = locks;
             ['under', 'seven', 'over'].forEach(c => { const b = document.getElementById(`dice-btn-${c}`); if(b) locks.dice ? b.classList.add('locked') : b.classList.remove('locked'); });
-            ['heads', 'tails'].forEach(c => { const b = document.getElementById(`coin-btn-${c}`); if(b) locks.coin ? b.classList.add('locked') : b.classList.remove('locked'); });
+            for(let i=0; i<6; i++) { const b = document.getElementById(`derby-btn-${i}`); if(b) locks.derby ? b.classList.add('locked') : b.classList.remove('locked'); }
             ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { const b = document.getElementById(`color-btn-${c}`); if(b) locks.color ? b.classList.add('locked') : b.classList.remove('locked'); });
         });
 
@@ -1237,7 +1263,7 @@
 
         function updateAllCredits() {
             if(!currentUser) return; const creds = formatNumber(currentUser.credits);
-            ['hud-credits', 'dice-credits', 'coin-credits', 'color-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
+            ['hud-credits', 'dice-credits', 'derby-credits', 'color-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
         }
         function logout() { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); location.reload(); }
 
@@ -1248,8 +1274,9 @@
                 }
             } else if (game === 'dice') {
                 if (myDiceBets.under > 0 || myDiceBets.seven > 0 || myDiceBets.over > 0) return alert("You cannot leave while you have active bets!");
-            } else if (game === 'coin') {
-                if (myCoinBets.heads > 0 || myCoinBets.tails > 0 || myDuelSeatIndex !== -1) return alert("You cannot leave while you have active bets or are in a duel!");
+            } else if (game === 'derby') {
+                let totalDerbyBet = myDerbyBets.reduce((a,b)=>a+b, 0);
+                if (totalDerbyBet > 0 || myDuelSeatIndex !== -1) return alert("You cannot leave while you have active bets or are in a duel!");
             } else if (game === 'color') {
                 let totalColorBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
                 if (totalColorBet > 0) return alert("You cannot leave while you have active bets!");
@@ -1262,7 +1289,7 @@
                 if (currentGameState) { const seatIdx = currentGameState.seats.findIndex(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if (seatIdx !== -1) window.actEjectSeat(seatIdx); } 
                 socket.emit('leave_room', { username: currentUser.username, roomId: currentRoomId }); currentRoomId = null; 
             }
-            if(['dice', 'coin', 'color'].includes(game)) { 
+            if(['dice', 'derby', 'color'].includes(game)) { 
                 document.getElementById(game+'-interface').classList.add('hidden'); 
                 socket.emit('leave_arcade', { username: currentUser.username, game }); currentRoomId = null; 
             }
@@ -1270,7 +1297,7 @@
 
         function joinRoom(roomId) { currentRoomId = roomId; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
         function joinDice() { currentRoomId = 'dice'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
-        function joinCoinFlip() { currentRoomId = 'coin'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('coin-interface').classList.remove('hidden'); switchCoinTab('global'); socket.emit('enter_arcade', { username: currentUser.username, game: 'coin' }); socket.emit('get_coin_state'); socket.emit('get_coin_duels'); playSfx('deal'); }
+        function joinDerby() { currentRoomId = 'derby'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); switchDerbyTab('race'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); }
         function joinColorGame() { currentRoomId = 'color'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
 
         // --- BLACKJACK ENGINE ---
@@ -1423,8 +1450,8 @@
 
         // --- ARCADE LOBBIES ---
         socket.on('arcade_lobby_update', (data) => {
-            const countId = data.game === 'dice' ? 'dice-player-count' : (data.game === 'color' ? 'color-player-count' : 'coin-player-count');
-            const popId = data.game === 'dice' ? 'dice-players-list' : (data.game === 'color' ? 'color-players-list' : 'coin-players-list');
+            const countId = data.game === 'dice' ? 'dice-player-count' : (data.game === 'color' ? 'color-player-count' : 'derby-player-count');
+            const popId = data.game === 'dice' ? 'dice-players-list' : (data.game === 'color' ? 'color-players-list' : 'derby-players-list');
             const countEl = document.getElementById(countId); const popEl = document.getElementById(popId);
             if(countEl) countEl.innerText = data.lobby.length;
             if(popEl) popEl.innerHTML = data.lobby.map(p => `<div class="lobby-player" style="color:${p.color};">▶ ${p.username}</div>`).join('');
@@ -1433,11 +1460,6 @@
         // --- ARCADE UTILS ---
         function applyThrottle() {
             isBetting = true; clearTimeout(betThrottleTimeout); betThrottleTimeout = setTimeout(() => { isBetting = false; }, 250);
-        }
-        function showPayoutAnim(choiceId, amount, isWin) {
-            const c = document.getElementById(`payout-${choiceId}`); if(!c) return;
-            c.innerHTML = `<span style="color:${isWin?'var(--success)':'var(--danger)'}">${isWin ? '+' : ''}${formatNumber(amount)}</span>`;
-            c.classList.remove('hidden'); setTimeout(() => { c.classList.add('hidden'); }, 4500);
         }
 
         // --- DICE LOGIC ---
@@ -1484,58 +1506,92 @@
             applyThrottle(); myDiceBets[choice] += amt; socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt });
         };
 
-        // --- GLOBAL COIN FLIP LOGIC ---
-        let coinInterval = null;
-        socket.on('coin_state_update', (data) => {
-            const statusText = document.getElementById('coin-result-text'); const timerText = document.getElementById('coin-timer'); const coinVis = document.getElementById('global-coin-visual');
-            if(data.history) { document.getElementById('coin-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${r==='heads'?'var(--accent-glow-2)':'#ea580c'}">${r.toUpperCase()}</span></div>`).join(''); }
+        // --- NEW 8-BIT DERBY LOGIC ---
+        function switchDerbyTab(tab) {
+            document.getElementById('derby-race-container').classList.toggle('hidden', tab !== 'race');
+            document.getElementById('derby-pvp-container').classList.toggle('hidden', tab !== 'pvp');
+            document.getElementById('tab-derby-race').style.background = tab === 'race' ? 'var(--accent-glow-2)' : '#1e293b';
+            document.getElementById('tab-derby-pvp').style.background = tab === 'pvp' ? 'var(--accent-glow-2)' : '#1e293b';
+            if(tab === 'pvp') socket.emit('get_coin_duels');
+        }
+
+        let derbyInterval = null;
+        socket.on('derby_state_update', (data) => {
+            const statusText = document.getElementById('derby-result-text'); const timerText = document.getElementById('derby-timer');
+            
+            if(data.history) { 
+                document.getElementById('derby-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="font-weight:bold;" class="lane-${r+1}-color">LANE ${r+1}</span></div>`).join(''); 
+            }
+
+            if(data.distances) {
+                for(let i=0; i<6; i++) {
+                    const racer = document.getElementById(`racer-${i}`);
+                    if(racer) racer.style.left = `${data.distances[i]}%`;
+                }
+            }
 
             if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; coinVis.classList.remove('flipping'); coinVis.innerText = '?'; myCoinBets = { heads: 0, tails: 0 }; clearInterval(coinInterval);
-                document.querySelectorAll('.bet-badge').forEach(b => { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; });
-                coinInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(coinInterval); }, 1000);
+                statusText.innerText = "PLACE YOUR BETS"; 
+                myDerbyBets = [0, 0, 0, 0, 0, 0]; 
+                clearInterval(derbyInterval);
+                document.querySelectorAll('.racer-sprite').forEach(r => r.classList.remove('racer-running'));
+                for(let i=0; i<6; i++) {
+                    const badge = document.getElementById(`badge-derby-${i}`);
+                    if(badge) { badge.classList.add('hidden'); badge.style.backgroundColor = 'var(--accent-glow-2)'; }
+                }
+                derbyInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(derbyInterval); }, 1000);
             }
-            else if (data.status === 'flipping') { statusText.innerText = "FLIPPING..."; timerText.innerText = "NO MORE BETS"; coinVis.classList.add('flipping'); playSfx('deal'); }
+            else if (data.status === 'racing') { 
+                statusText.innerText = "RACING..."; timerText.innerText = "NO MORE BETS"; 
+                document.querySelectorAll('.racer-sprite').forEach(r => r.classList.add('racer-running'));
+                playSfx('deal'); 
+            }
             else if (data.status === 'resolving') {
-                coinVis.classList.remove('flipping'); coinVis.innerText = data.result === 'heads' ? 'H' : 'T'; statusText.innerText = `RESULT: ${data.result.toUpperCase()}`;
-                let totalCoinBet = Object.values(myCoinBets).reduce((a,b)=>a+b, 0);
-                if (totalCoinBet > 0) {
+                document.querySelectorAll('.racer-sprite').forEach(r => r.classList.remove('racer-running'));
+                statusText.innerText = `LANE ${data.winner + 1} WINS!`;
+                
+                let totalDerbyBet = myDerbyBets.reduce((a,b)=>a+b, 0);
+                if (totalDerbyBet > 0) {
                     let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
                     if (myWins.length > 0) { 
                         let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
                         timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
                     } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
-                    ['heads', 'tails'].forEach(c => { 
-                        if(myCoinBets[c] > 0) {
-                            const badge = document.getElementById(`badge-${c}`); let winData = myWins.find(w=>w.choice===c);
+                    
+                    for(let i=0; i<6; i++) {
+                        if(myDerbyBets[i] > 0) {
+                            const badge = document.getElementById(`badge-derby-${i}`); 
+                            let winData = myWins.find(w=>w.choice===i);
                             if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
                             else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
                         }
-                    });
+                    }
                 }
             }
         });
-        window.placeCoinBet = function(choice) {
-            if(gameLocks.coin) return alert('This game is currently offline for maintenance.');
-            if(isBetting) return; const box = document.getElementById(`coin-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`coin-master-bet`).value);
+
+        socket.on('derby_race_tick', (data) => {
+            if(data.distances) {
+                for(let i=0; i<6; i++) {
+                    const racer = document.getElementById(`racer-${i}`);
+                    if(racer) racer.style.left = `${data.distances[i]}%`;
+                }
+            }
+        });
+
+        window.placeDerbyBet = function(choice) {
+            if(gameLocks.derby) return alert('This game is currently offline for maintenance.');
+            if(isBetting) return; const box = document.getElementById(`derby-btn-${choice}`); if(box && box.classList.contains('locked')) return;
+            const amt = parseInt(document.getElementById(`derby-master-bet`).value);
             if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-            if (myCoinBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
+            if (myDerbyBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per lane!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
             
-            applyThrottle(); myCoinBets[choice] += amt; socket.emit('place_coin_bet', { username: currentUser.username, choice, amount: amt }); 
+            applyThrottle(); myDerbyBets[choice] += amt; socket.emit('place_derby_bet', { username: currentUser.username, choice, amount: amt }); 
         };
 
         // --- PVP DUEL LOGIC ---
-        function switchCoinTab(tab) {
-            document.getElementById('coin-global-container').classList.toggle('hidden', tab !== 'global');
-            document.getElementById('coin-pvp-container').classList.toggle('hidden', tab !== 'pvp');
-            document.getElementById('tab-coin-global').style.background = tab === 'global' ? 'var(--accent-glow-2)' : '#1e293b';
-            document.getElementById('tab-coin-pvp').style.background = tab === 'pvp' ? 'var(--accent-glow-2)' : '#1e293b';
-            if(tab === 'pvp') socket.emit('get_coin_duels');
-        }
-
         function joinDuelSeat(index) {
-            if(gameLocks.coin) return alert('Coin Flip is currently offline.');
+            if(gameLocks.derby) return alert('Coin Flip is currently offline.');
             if(!currentUser) return;
             socket.emit('join_coin_duel_seat', { username: currentUser.username, seatIndex: index });
         }
