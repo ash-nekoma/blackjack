@@ -193,6 +193,7 @@
         .derby-track-container { flex: 1; background: #111; border-bottom: 4px solid var(--border-std); display: flex; flex-direction: column; position: relative; overflow: hidden; margin-top: 10px; border-radius: 8px; box-shadow: inset 0 0 20px #000;}
         .derby-lane { flex: 1; border-bottom: 2px dashed #333; position: relative; display: flex; align-items: center; padding: 0 10px;}
         .derby-lane:last-child { border-bottom: none; }
+        .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 26px; color: rgba(255,255,255,0.3); font-weight: bold; z-index: 5; pointer-events: none; text-shadow: 1px 1px 0 #000; }
         .derby-finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8;}
         
         .racer-sprite { font-size: 40px; position: absolute; left: 0; transition: left 0.2s linear; z-index: 20; text-shadow: 2px 2px 0 #000; transform-origin: center;}
