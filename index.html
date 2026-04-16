@@ -19,7 +19,8 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body, input, button, table, th, td, textarea, select { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
-        body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        /* FIXED MOBILE VIEWPORT ISSUE WITH 100dvh */
+        body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100dvh; overflow: hidden; }
         
         .hidden { display: none !important; }
 
@@ -41,13 +42,13 @@
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 14px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 2px; cursor: pointer; }
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; }
 
-        #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100vh; background: var(--bg-dark); border-radius: 12px; border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
+        #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100dvh; background: var(--bg-dark); border-radius: 12px; border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
 
         .full-menu, .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
         .full-menu { background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); }
         .overlay-menu { background: rgba(0,0,0,0.9); z-index: 300; padding: 20px;}
         
-        .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; max-width: 100%; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 85vh; display: flex; flex-direction: column; overflow-y: auto;}
+        .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; max-width: 100%; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 90dvh; display: flex; flex-direction: column; overflow-y: auto;}
         
         .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; flex-shrink: 0;}
         
@@ -55,7 +56,7 @@
         input.retro-input:focus, select.retro-input:focus, textarea.retro-input:focus { border-color: var(--accent-glow-2); box-shadow: 0 0 12px rgba(59,130,246,0.6), inset 0 2px 8px rgba(0,0,0,0.8); }
         input.retro-input::placeholder, textarea.retro-input::placeholder { color: #64748b; }
         
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px; flex-shrink: 0;}
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px; flex-shrink: 0; max-width: 100%;}
         .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; transition: 0.1s; font-family: 'VT323', monospace; letter-spacing: 1px; display: flex; justify-content: center; align-items: center;}
         .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
         .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
@@ -95,7 +96,8 @@
         .lobby-player { padding: 5px 10px; margin: 0; border-bottom: 1px dashed #333; text-align: left; font-size: 28px; }
         .lobby-player:last-child { border-bottom: none; }
 
-        .top-hud { width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 60; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--border-std); box-sizing: border-box; flex-shrink: 0;}
+        /* STICKY TOP HUD FOR MOBILE SCROLLING */
+        .top-hud { position: sticky; top: 0; z-index: 100; width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; background: rgba(0,0,0,0.8); border-bottom: 2px solid var(--border-std); box-sizing: border-box; flex-shrink: 0; backdrop-filter: blur(5px);}
         .hud-left { justify-self: start; } .hud-center { justify-self: center; text-align: center; } .hud-right { justify-self: end; }
         .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
         .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
@@ -163,15 +165,9 @@
         .dice { font-size: 120px; color: #fff; text-shadow: 0 0 30px var(--accent-glow); line-height: 1; font-family: Arial, sans-serif; }
         .dice.shake { animation: subtleShake 0.2s infinite; color: var(--warning); text-shadow: 0 0 40px var(--warning);}
         
-        @keyframes subtleShake { 
-            0% { transform: translate(1px, 1px) rotate(0deg); } 
-            25% { transform: translate(-1px, -2px) rotate(-1deg); } 
-            50% { transform: translate(-2px, 1px) rotate(1deg); } 
-            75% { transform: translate(2px, 1px) rotate(-1deg); } 
-            100% { transform: translate(1px, -1px) rotate(1deg); } 
-        }
+        @keyframes subtleShake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-1deg); } 50% { transform: translate(-2px, 1px) rotate(1deg); } 75% { transform: translate(2px, 1px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(1deg); } }
 
-        .arcade-bet-area { padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6); }
+        .arcade-bet-area { padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6); flex-shrink: 0;}
         .master-bet-row { display:flex; justify-content: center; margin-bottom: 15px; align-items: center; gap: 10px;}
         .arcade-grid { display: flex; justify-content: center; gap: 20px; }
         
@@ -193,9 +189,7 @@
         .derby-track-container { flex: 1; background: #111; border-bottom: 4px solid var(--border-std); display: flex; flex-direction: column; position: relative; overflow: hidden; margin-top: 10px; border-radius: 8px; box-shadow: inset 0 0 20px #000;}
         .derby-lane { flex: 1; border-bottom: 2px dashed #333; position: relative; display: flex; align-items: center; padding: 0 10px; background-image: linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 50px 100%; }
         .derby-lane.scrolling { animation: trackScroll 0.5s linear infinite; }
-        
         .derby-finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8;}
-        
         .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 26px; color: rgba(255,255,255,0.3); font-weight: bold; z-index: 5; pointer-events: none; text-shadow: 1px 1px 0 #000; }
         .racer-sprite { font-size: 40px; position: absolute; left: 0; transition: left 0.15s linear; z-index: 20; text-shadow: 2px 2px 0 #000; transform-origin: center;}
         
@@ -206,18 +200,12 @@
         .derby-bet-box:active:not(.locked) { transform: scale(0.95); }
         .derby-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
         
-        .lane-1-color { color: #ef4444 !important; border-top-color: #ef4444; }
-        .lane-2-color { color: #3b82f6 !important; border-top-color: #3b82f6; }
-        .lane-3-color { color: #10b981 !important; border-top-color: #10b981; }
-        .lane-4-color { color: #a855f7 !important; border-top-color: #a855f7; }
-        .lane-5-color { color: #ec4899 !important; border-top-color: #ec4899; }
-        .lane-6-color { color: #fbbf24 !important; border-top-color: #fbbf24; }
-
+        .lane-1-color { color: #ef4444 !important; border-top-color: #ef4444; } .lane-2-color { color: #3b82f6 !important; border-top-color: #3b82f6; } .lane-3-color { color: #10b981 !important; border-top-color: #10b981; } .lane-4-color { color: #a855f7 !important; border-top-color: #a855f7; } .lane-5-color { color: #ec4899 !important; border-top-color: #ec4899; } .lane-6-color { color: #fbbf24 !important; border-top-color: #fbbf24; }
         .derby-bet-title { font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; margin: 0; font-weight: bold; text-transform: uppercase;}
 
         /* --- PVP DUELS (WHEEL & COIN) --- */
         .duel-arena-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 20px 0; }
-        .duel-arena { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 800px; height: 280px;}
+        .duel-arena { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 800px; height: 280px; margin-bottom: 20px;}
         .duel-seat { width: 280px; height: 100%; flex-shrink: 0; background: #1e293b; border: 4px solid var(--border-std); border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); position: relative; box-sizing: border-box; }
         .duel-seat.my-seat { border-color: var(--accent-glow-2); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
         .duel-seat-empty { width: 100%; height: 100%; border: 4px dashed rgba(255,255,255,0.2); border-radius: 12px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); cursor: pointer; transition: 0.2s;}
@@ -259,25 +247,41 @@
         
         .color-bet-title { font-size: 34px; color: #fff; text-shadow: 2px 2px 0 #000; margin: 0; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;}
         .color-bet-box.br-white .color-bet-title { color: #f8fafc !important; text-shadow: 2px 2px 0 #555 !important; }
+
+        /* 3 CUPS GAME */
+        .cups-container { display: flex; justify-content: center; align-items: center; gap: 40px; flex: 1; perspective: 1000px; padding: 20px;}
+        .cup-wrapper { position: relative; width: 120px; height: 160px; display: flex; justify-content: center; align-items: flex-end; transition: transform 0.3s ease; }
+        .cup { font-size: 140px; line-height: 1; z-index: 10; position: absolute; bottom: 0; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 10px 20px rgba(0,0,0,0.5);}
+        .cup-ball { font-size: 50px; position: absolute; bottom: 10px; z-index: 5; opacity: 0; transition: opacity 0.2s; }
+        .cup-wrapper.reveal .cup { transform: translateY(-80px) rotate(-15deg); }
+        .cup-wrapper.reveal .cup-ball { opacity: 1; }
+        @keyframes shuffleSwap { 0% { transform: translateX(0); } 50% { transform: translateX(160px) scale(1.1); z-index: 20; } 100% { transform: translateX(0); } }
+        @keyframes shuffleSwapBack { 0% { transform: translateX(0); } 50% { transform: translateX(-160px) scale(0.9); z-index: 5; } 100% { transform: translateX(0); } }
+        .shuffling-1 { animation: shuffleSwap 0.3s ease-in-out infinite alternate; }
+        .shuffling-2 { animation: shuffleSwapBack 0.3s ease-in-out infinite alternate; }
         
+        .cup-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; width: 200px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; border-top-color: var(--accent-glow); cursor: pointer; transition: 0.1s; position: relative; height: 160px;}
+        .cup-bet-box:active:not(.locked) { transform: scale(0.95); }
+        .cup-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
+
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
-            #arcade-cabinet { width: 100vw; height: 100vh; border: none; border-radius: 0; flex-direction: column; }
-            .game-interface { display: flex; flex-direction: column; overflow-y: auto; padding: 10px; }
-            .game-area { min-width: 100%; min-height: 65vh; flex-shrink: 0; }
-            .sidebar-col { min-height: 50vh; flex-shrink: 0; }
+            #arcade-cabinet { width: 100vw; height: 100dvh; border: none; border-radius: 0; flex-direction: column; }
+            .game-interface { display: flex; flex-direction: column; overflow-y: auto; padding: 0; padding-bottom: 20px; gap: 10px;}
+            .game-area { min-width: 100%; min-height: 65dvh; flex-shrink: 0; border-radius: 0; border-left: none; border-right: none;}
+            .sidebar-col { min-height: 50dvh; flex-shrink: 0; padding: 0 10px;}
             .top-hud { padding: 10px; grid-template-columns: 1fr; gap: 10px; text-align: center; }
             .hud-left, .hud-right { justify-self: center; }
             .menu-grid { width: 100%; grid-template-columns: 1fr; padding: 0 15px; }
             .wood-btn { grid-column: span 1 !important; font-size: 20px; padding: 10px; }
-            .modal-box { width: 95%; padding: 15px; }
+            .modal-box { width: 95%; padding: 15px; max-height: 85dvh;}
             
             .arcade-grid { flex-wrap: wrap; gap: 10px; }
-            .arcade-bet-box { width: 48%; height: 120px; padding: 10px; }
+            .arcade-bet-box, .cup-bet-box { width: 48%; height: 120px; padding: 10px; }
             .arcade-bet-title { font-size: 26px; }
             .arcade-bet-payout { font-size: 18px; }
             .dice { font-size: 80px; }
-            .coin-3d { width: 100px; height: 100px; font-size: 50px; }
+            .cup-wrapper { width: 80px; height: 120px; } .cup { font-size: 100px; } .cup-ball { font-size: 40px; }
             
             .color-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
             .color-die { width: 60px; height: 60px; }
@@ -303,10 +307,7 @@
             .duel-center { width: 100%; flex-direction: row; gap: 20px;}
             .duel-center-vs { margin-bottom: 0; }
             .duel-coin { width: 80px; height: 80px; font-size: 40px; border-width: 4px;}
-            #duel-action-row { flex-direction: column; height: auto !important; }
-            #duel-action-row > * { height: 50px !important; }
-            #duel-host-controls > div:last-child { flex-direction: column; height: auto !important; gap: 10px; }
-            #duel-host-controls select { height: 50px !important; }
+            .duel-wheel { width: 100px; height: 100px; }
         }
     </style>
 </head>
@@ -383,6 +384,7 @@
                         <h3 class="pixel-text" style="color: var(--warning); font-size: 30px; margin-bottom: 10px;">ARCADE CASINO</h3>
                         <button class="wood-btn" style="background: #a855f7; margin-bottom: 10px;" onclick="joinDice()">HIGH-LOW DICE</button>
                         <button class="wood-btn" style="background: #ea580c; margin-bottom: 10px;" onclick="joinDerby()">8-BIT DERBY SPRINT</button>
+                        <button class="wood-btn" style="background: #f59e0b; color:#000; margin-bottom: 10px;" onclick="joinCups()">3 CUPS & A BALL</button>
                         <button class="wood-btn" style="background: #ef4444;" onclick="joinColorGame()">CLASSIC COLOR GAME</button>
                     </div>
                     <div style="width: 100%; border-bottom: 2px dashed #333; margin-bottom: 10px; padding-bottom: 10px;">
@@ -394,8 +396,79 @@
             </div>
         </div>
 
+        <div id="pvp-host-modal" class="overlay-menu hidden" style="z-index: 500;">
+            <div class="modal-box custom-scroll" style="width: 600px; border-color: var(--warning);">
+                <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 20px; font-size: 45px;">CONFIGURE MATCH</h2>
+                
+                <div style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
+                    <div>
+                        <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">GAME TYPE:</span>
+                        <select id="modal-duel-type" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;" onchange="toggleModalWheelConfig()">
+                            <option value="coin">COIN FLIP (Heads/Tails)</option>
+                            <option value="wheel">CUSTOM WHEEL SPIN</option>
+                        </select>
+                    </div>
+                    
+                    <div id="modal-wheel-config-row" class="hidden">
+                        <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">WHEEL SLICES (Populates Names):</span>
+                        <select id="modal-duel-wheel-slices" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;">
+                            <option value="2">2 SLICES</option>
+                            <option value="4" selected>4 SLICES</option>
+                            <option value="8">8 SLICES</option>
+                            <option value="10">10 SLICES</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">FORMAT:</span>
+                            <select id="modal-duel-format" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;">
+                                <option value="1">1 ROUND</option>
+                                <option value="3">FIRST TO 3</option>
+                                <option value="5">FIRST TO 5</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">WAGER:</span>
+                            <select id="modal-duel-bet" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;">
+                                <option value="0">0 (ITEM WAGER)</option>
+                                <option value="1000">1,000 CR</option>
+                                <option value="5000">5,000 CR</option>
+                                <option value="20000">20,000 CR</option>
+                                <option value="50000">50,000 CR</option>
+                                <option value="100000">100,000 CR</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button class="wood-btn pixel-text" style="flex:2; background: var(--success); color:#000;" onclick="submitPvpHostConfig()">POST CHALLENGE</button>
+                    <button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('pvp-host-modal'); leavePvpSeat();">CANCEL</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="pvp-accept-modal" class="overlay-menu hidden" style="z-index: 500;">
+            <div class="modal-box custom-scroll" style="width: 500px; border-color: var(--danger);">
+                <h2 class="pixel-text" style="color: var(--danger); margin-bottom: 10px; font-size: 45px;">CHALLENGE RECEIVED!</h2>
+                
+                <div class="info-box" style="margin: 15px 0; text-align: center; border-color: var(--danger); background: rgba(239, 68, 68, 0.1);">
+                    <div style="font-size: 28px; color: #fff; margin-bottom: 10px;"><span id="accept-host-name" style="color:var(--accent-glow-2); font-weight:bold;"></span> has challenged you!</div>
+                    <div style="font-size: 24px; color: var(--warning); margin-bottom: 5px;">GAME: <span id="accept-game-type"></span></div>
+                    <div style="font-size: 24px; color: var(--warning); margin-bottom: 5px;">FORMAT: <span id="accept-format"></span></div>
+                    <div style="font-size: 24px; color: var(--success); font-weight:bold;">WAGER: <span id="accept-wager"></span></div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="acceptPvpDuel()">ACCEPT DUEL</button>
+                    <button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="declinePvpDuel()">DECLINE</button>
+                </div>
+            </div>
+        </div>
+
         <div id="notify-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 750px; height: 750px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-box custom-scroll" style="width: 750px; height: 750px; max-height: 90dvh; display: flex; flex-direction: column;">
                 <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 15px; font-size: 50px;">SYSTEM INBOX</h2>
                 
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0;">
@@ -457,6 +530,7 @@
                         <option value="rule-bj">BLACKJACK</option>
                         <option value="rule-dice">HIGH-LOW DICE</option>
                         <option value="rule-derby">8-BIT DERBY SPRINT</option>
+                        <option value="rule-cups">3 CUPS & A BALL</option>
                         <option value="rule-color">CLASSIC COLOR GAME</option>
                         <option value="rule-pvp">PVP ARENA (WHEEL & COIN)</option>
                         <option value="rule-sys">SYSTEM RULES</option>
@@ -490,6 +564,15 @@
                         <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
                             <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 per lane.</li>
                             <li style="margin-bottom: 10px;"><strong>Payouts:</strong> Varies strictly by lane probability (2x up to 10x).</li>
+                        </ul>
+                    </div>
+
+                    <div id="rule-cups" class="rule-content hidden">
+                        <strong style="color: #f59e0b; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">3 CUPS & A BALL</strong>
+                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">A golden ball is hidden under one of three cups. The cups shuffle rapidly. Pick the correct cup!</p>
+                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
+                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per cup.</li>
+                            <li style="margin-bottom: 10px;"><strong>Payout:</strong> Guessing correctly pays a massive <strong>2.5x</strong> multiplier!</li>
                         </ul>
                     </div>
                     
@@ -839,6 +922,72 @@
             </div>
         </div>
 
+        <div id="cups-interface" class="game-interface hidden">
+            <div class="game-area coin-bg">
+                <div class="top-hud">
+                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('cups')">◄ DASHBOARD</button></div>
+                    <div class="hud-center"><div style="font-size: 36px; color: #f59e0b;" id="cups-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="cups-credits"></span></div></div>
+                </div>
+                
+                <div class="cups-container" id="cups-anim-container">
+                    <div class="cup-wrapper" id="cup-wrap-0"><div class="cup-ball">🟡</div><div class="cup" id="cup-0">🏺</div></div>
+                    <div class="cup-wrapper" id="cup-wrap-1"><div class="cup-ball">🟡</div><div class="cup" id="cup-1">🏺</div></div>
+                    <div class="cup-wrapper" id="cup-wrap-2"><div class="cup-ball">🟡</div><div class="cup" id="cup-2">🏺</div></div>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div id="cups-result-text" class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 4px 4px 0 #000;">WHERE IS THE BALL?</div>
+                    <div id="cups-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
+                </div>
+                
+                <div class="arcade-bet-area">
+                    <div class="master-bet-row">
+                        <select id="cups-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
+                            <option value="1000" selected>1,000</option>
+                            <option value="5000">5,000</option>
+                            <option value="20000">20,000</option>
+                            <option value="50000">50,000</option>
+                        </select>
+                    </div>
+                    <div class="arcade-grid">
+                        <div id="cups-btn-0" class="cup-bet-box" onclick="placeCupsBet(0)">
+                            <div class="bet-badge pixel-text hidden" id="badge-cups-0">0</div>
+                            <div class="arcade-bet-title pixel-text" style="color:#f59e0b;">CUP 1</div><div class="arcade-bet-payout pixel-text">PAYS 2.5x</div>
+                        </div>
+                        <div id="cups-btn-1" class="cup-bet-box" onclick="placeCupsBet(1)">
+                            <div class="bet-badge pixel-text hidden" id="badge-cups-1">0</div>
+                            <div class="arcade-bet-title pixel-text" style="color:#f59e0b;">CUP 2</div><div class="arcade-bet-payout pixel-text">PAYS 2.5x</div>
+                        </div>
+                        <div id="cups-btn-2" class="cup-bet-box" onclick="placeCupsBet(2)">
+                            <div class="bet-badge pixel-text hidden" id="badge-cups-2">0</div>
+                            <div class="arcade-bet-title pixel-text" style="color:#f59e0b;">CUP 3</div><div class="arcade-bet-payout pixel-text">PAYS 2.5x</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar-col">
+                <div style="position: relative; z-index: 50; flex-shrink: 0;">
+                    <div id="cups-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('cups-players-list')">
+                        <span>PLAYERS</span><span><span id="cups-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
+                    </div>
+                    <div id="cups-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                </div>
+                <div class="sidebar-box">
+                    <div class="sidebar-header pixel-text" style="justify-content: center;">HISTORY</div>
+                    <div class="history-content custom-scroll pixel-text" id="cups-history"></div>
+                </div>
+                <div class="sidebar-box">
+                    <div class="sidebar-header pixel-text" style="justify-content: center;">TABLE CHAT</div>
+                    <div id="cups-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="cups-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
+                        <button class="pixel-text" onclick="actSendChat('cups')">SEND</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="pvp-interface" class="game-interface hidden">
             <div class="game-area coin-bg">
                 <div class="top-hud">
@@ -888,52 +1037,8 @@
 
                         </div>
 
-                        <div id="duel-host-controls" class="hidden" style="margin-top: 20px; background: rgba(0,0,0,0.6); padding: 15px; border: 2px solid var(--border-std); border-radius: 8px; width: 100%; max-width: 800px; box-sizing: border-box;">
-                            <div style="font-size: 24px; color: var(--warning); margin-bottom: 10px;">HOST MATCH SETTINGS</div>
-                            <div style="display: flex; gap: 10px; height: 50px; margin-bottom: 10px;">
-                                <select id="duel-type" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="toggleWheelConfig()">
-                                    <option value="coin">COIN FLIP (Heads/Tails)</option>
-                                    <option value="wheel">CUSTOM WHEEL SPIN</option>
-                                </select>
-                                <select id="duel-format" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
-                                    <option value="1">1 ROUND</option>
-                                    <option value="3">FIRST TO 3 WINS</option>
-                                    <option value="5">FIRST TO 5 WINS</option>
-                                </select>
-                                <select id="duel-bet" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
-                                    <option value="0">0 CREDITS (ITEM WAGER)</option>
-                                    <option value="1000">1,000 CR</option>
-                                    <option value="5000">5,000 CR</option>
-                                    <option value="20000">20,000 CR</option>
-                                    <option value="50000">50,000 CR</option>
-                                    <option value="100000">100,000 CR</option>
-                                </select>
-                            </div>
-
-                            <div id="wheel-config-row" class="hidden" style="display: flex; gap: 10px; height: 50px;">
-                                <div style="flex:2; display:flex; align-items:center; background:#000; border:2px solid #64748b; border-radius:4px; padding:0 15px; font-size:24px; color:#cbd5e1;">WHEEL SLICES:</div>
-                                <select id="duel-wheel-slices" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
-                                    <option value="2">2 SLICES</option>
-                                    <option value="4">4 SLICES</option>
-                                    <option value="8">8 SLICES</option>
-                                    <option value="10">10 SLICES</option>
-                                </select>
-                            </div>
-                            
-                            <div id="coin-config-row" style="display: flex; gap: 10px; height: 50px;">
-                                <div style="flex:2; display:flex; align-items:center; background:#000; border:2px solid #64748b; border-radius:4px; padding:0 15px; font-size:24px; color:#cbd5e1;">YOUR COIN PICK:</div>
-                                <select id="duel-host-choice" class="retro-input pixel-text" style="margin: 0; flex: 1; padding: 8px; height: 100%;" onchange="updateDuelSettings()">
-                                    <option value="heads">TAKE HEADS</option>
-                                    <option value="tails">TAKE TAILS</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div id="duel-action-row" class="hidden" style="margin-top: 20px; width: 100%; max-width: 800px; display: flex; gap: 10px; height: 60px; box-sizing: border-box;">
-                            <div id="duel-terms-display" style="flex: 2; background: #0f172a; border: 2px solid var(--border-std); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 24px; color: #fff; height: 100%;"></div>
-                            
-                            <button id="duel-btn-ready" class="wood-btn" style="flex: 1; background: var(--success); color: #000; height: 100%; margin: 0;" onclick="readyDuel()">LOCK IN & READY</button>
-                            <button class="wood-btn" style="flex: 1; background: var(--danger); height: 100%; margin: 0;" onclick="leavePvpSeat()">STAND UP</button>
+                        <div style="margin-top: 20px;">
+                            <button class="wood-btn" style="background: var(--danger); width: 300px;" onclick="leavePvpSeat()">STAND UP FROM ARENA</button>
                         </div>
                     </div>
                 </div>
@@ -979,7 +1084,7 @@
                         <select id="color-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
                             <option value="1000" selected>1,000</option>
                             <option value="5000">5,000</option>
-                            <option value="20000">20,000</option>
+                            <option value="20000">20000</option>
                             <option value="50000">50,000</option>
                         </select>
                     </div>
@@ -1055,6 +1160,7 @@
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
         let myDerbyBets = [0, 0, 0, 0, 0, 0];
         let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
+        let myCupsBets = [0, 0, 0];
         
         let currentPvpDuelState = null; 
         let myDuelSeatIndex = -1;
@@ -1074,6 +1180,7 @@
                 else if (document.activeElement.id === 'derby-chat-input') actSendChat('derby');
                 else if (document.activeElement.id === 'color-chat-input') actSendChat('color');
                 else if (document.activeElement.id === 'pvp-chat-input') actSendChat('pvp');
+                else if (document.activeElement.id === 'cups-chat-input') actSendChat('cups');
             }
         });
 
@@ -1318,13 +1425,14 @@
             ['under', 'seven', 'over'].forEach(c => { const b = document.getElementById(`dice-btn-${c}`); if(b) locks.dice ? b.classList.add('locked') : b.classList.remove('locked'); });
             for(let i=0; i<6; i++) { const b = document.getElementById(`derby-btn-${i}`); if(b) locks.derby ? b.classList.add('locked') : b.classList.remove('locked'); }
             ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { const b = document.getElementById(`color-btn-${c}`); if(b) locks.color ? b.classList.add('locked') : b.classList.remove('locked'); });
+            for(let i=0; i<3; i++) { const b = document.getElementById(`cups-btn-${i}`); if(b) locks.cups ? b.classList.add('locked') : b.classList.remove('locked'); }
         });
 
         socket.on('force_disconnect', () => { alert("Your connection was severed by the Administrator."); logout(); });
 
         function updateAllCredits() {
             if(!currentUser) return; const creds = formatNumber(currentUser.credits);
-            ['hud-credits', 'dice-credits', 'derby-credits', 'color-credits', 'pvp-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
+            ['hud-credits', 'dice-credits', 'derby-credits', 'color-credits', 'pvp-credits', 'cups-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
         }
         function logout() { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); location.reload(); }
 
@@ -1340,6 +1448,9 @@
                 if (totalDerbyBet > 0) return alert("You cannot leave while you have active bets!");
             } else if (game === 'pvp') {
                 if (myDuelSeatIndex !== -1) return alert("You must stand up from the PVP duel before leaving!");
+            } else if (game === 'cups') {
+                let totalCupsBet = myCupsBets.reduce((a,b)=>a+b, 0);
+                if (totalCupsBet > 0) return alert("You cannot leave while you have active bets!");
             } else if (game === 'color') {
                 let totalColorBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
                 if (totalColorBet > 0) return alert("You cannot leave while you have active bets!");
@@ -1352,7 +1463,7 @@
                 if (currentGameState) { const seatIdx = currentGameState.seats.findIndex(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if (seatIdx !== -1) window.actEjectSeat(seatIdx); } 
                 socket.emit('leave_room', { username: currentUser.username, roomId: currentRoomId }); currentRoomId = null; 
             }
-            if(['dice', 'derby', 'color', 'pvp'].includes(game)) { 
+            if(['dice', 'derby', 'color', 'pvp', 'cups'].includes(game)) { 
                 document.getElementById(game+'-interface').classList.add('hidden'); 
                 socket.emit('leave_arcade', { username: currentUser.username, game }); currentRoomId = null; 
             }
@@ -1362,7 +1473,8 @@
         function joinDice() { currentRoomId = 'dice'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
         function joinDerby() { currentRoomId = 'derby'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); }
         function joinColorGame() { currentRoomId = 'color'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
-        
+        function joinCups() { currentRoomId = 'cups'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('cups-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'cups' }); socket.emit('get_cups_state'); playSfx('deal'); }
+
         function joinPVP() { 
             currentRoomId = 'pvp'; 
             hideModal('play-modal'); 
@@ -1524,8 +1636,8 @@
 
         // --- ARCADE LOBBIES ---
         socket.on('arcade_lobby_update', (data) => {
-            const countId = data.game === 'dice' ? 'dice-player-count' : (data.game === 'color' ? 'color-player-count' : (data.game === 'derby' ? 'derby-player-count' : 'pvp-player-count'));
-            const popId = data.game === 'dice' ? 'dice-players-list' : (data.game === 'color' ? 'color-players-list' : (data.game === 'derby' ? 'derby-players-list' : 'pvp-players-list'));
+            const countId = data.game === 'dice' ? 'dice-player-count' : (data.game === 'color' ? 'color-player-count' : (data.game === 'derby' ? 'derby-player-count' : (data.game === 'cups' ? 'cups-player-count' : 'pvp-player-count')));
+            const popId = data.game === 'dice' ? 'dice-players-list' : (data.game === 'color' ? 'color-players-list' : (data.game === 'derby' ? 'derby-players-list' : (data.game === 'cups' ? 'cups-players-list' : 'pvp-players-list')));
             const countEl = document.getElementById(countId); const popEl = document.getElementById(popId);
             if(countEl) countEl.innerText = data.lobby.length;
             if(popEl) popEl.innerHTML = data.lobby.map(p => `<div class="lobby-player" style="color:${p.color};">▶ ${p.username}</div>`).join('');
@@ -1668,7 +1780,64 @@
             applyThrottle(); myDerbyBets[choice] += amt; socket.emit('place_derby_bet', { username: currentUser.username, choice, amount: amt }); 
         };
 
-        // --- NEW PVP ARENA (COIN & WHEEL) LOGIC ---
+        // --- 3 CUPS GAME LOGIC ---
+        let cupsInterval = null; 
+        socket.on('cups_state_update', (data) => {
+            const statusText = document.getElementById('cups-result-text'); const timerText = document.getElementById('cups-timer');
+            
+            if(data.history) { document.getElementById('cups-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:#f59e0b;">CUP ${r + 1}</span></div>`).join(''); }
+
+            if (data.status === 'betting') {
+                statusText.innerText = "WHERE IS THE BALL?"; myCupsBets = [0,0,0]; clearInterval(cupsInterval);
+                document.querySelectorAll('.cup-wrapper').forEach(w => w.classList.remove('reveal', 'shuffling-1', 'shuffling-2'));
+                document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('cups')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
+                cupsInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(cupsInterval); }, 1000);
+            }
+            else if (data.status === 'shuffling') { 
+                statusText.innerText = "SHUFFLING..."; timerText.innerText = "NO MORE BETS"; playSfx('deal'); 
+                document.getElementById('cup-wrap-0').classList.add('shuffling-1');
+                document.getElementById('cup-wrap-1').classList.add('shuffling-2');
+                document.getElementById('cup-wrap-2').classList.add('shuffling-1');
+            }
+            else if (data.status === 'resolving') {
+                document.querySelectorAll('.cup-wrapper').forEach(w => w.classList.remove('shuffling-1', 'shuffling-2'));
+                
+                setTimeout(() => {
+                    const winCupWrap = document.getElementById(`cup-wrap-${data.winningCup}`);
+                    if(winCupWrap) winCupWrap.classList.add('reveal');
+                    statusText.innerText = `CUP ${data.winningCup + 1} HAS THE BALL!`;
+                    
+                    let totalCupsBet = myCupsBets.reduce((a,b)=>a+b, 0);
+                    if (totalCupsBet > 0) {
+                        let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
+                        if (myWins.length > 0) { 
+                            let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
+                            timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
+                        } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
+                        
+                        for(let i=0; i<3; i++) {
+                            if(myCupsBets[i] > 0) {
+                                const badge = document.getElementById(`badge-cups-${i}`); let winData = myWins.find(w=>w.choice===i);
+                                if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
+                                else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
+                            }
+                        }
+                    }
+                }, 500);
+            }
+        });
+
+        window.placeCupsBet = function(choice) {
+            if(gameLocks.cups) return alert('This game is currently offline for maintenance.');
+            if(isBetting) return; const box = document.getElementById(`cups-btn-${choice}`); if(box && box.classList.contains('locked')) return;
+            const amt = parseInt(document.getElementById(`cups-master-bet`).value);
+            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
+            if (myCupsBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per cup!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
+            
+            applyThrottle(); myCupsBets[choice] += amt; socket.emit('place_cups_bet', { username: currentUser.username, choice, amount: amt }); 
+        };
+
+        // --- NEW PVP ARENA (MODALS + COIN & WHEEL) LOGIC ---
         function joinPvpSeat(index) {
             if(!currentUser) return;
             socket.emit('join_pvp_seat', { username: currentUser.username, seatIndex: index });
@@ -1680,50 +1849,48 @@
             }
         }
 
-        function toggleWheelConfig() {
-            const type = document.getElementById('duel-type').value;
-            const configRow = document.getElementById('wheel-config-row');
-            if(type === 'wheel') {
-                configRow.classList.remove('hidden');
-                document.getElementById('coin-config-row').classList.add('hidden');
-            } else {
-                configRow.classList.add('hidden');
-                document.getElementById('coin-config-row').classList.remove('hidden');
-            }
-            updateDuelSettings();
+        // HOST FLOW
+        socket.on('open_pvp_host_modal', () => {
+            showModal('pvp-host-modal');
+        });
+
+        function toggleModalWheelConfig() {
+            const type = document.getElementById('modal-duel-type').value;
+            if(type === 'wheel') document.getElementById('modal-wheel-config-row').classList.remove('hidden');
+            else document.getElementById('modal-wheel-config-row').classList.add('hidden');
         }
 
-        function updateDuelSettings() {
-            if(myDuelSeatIndex !== currentPvpDuelState?.hostIndex) return;
-            const type = document.getElementById('duel-type').value;
-            const format = parseInt(document.getElementById('duel-format').value);
-            const betAmount = parseInt(document.getElementById('duel-bet').value);
+        function submitPvpHostConfig() {
+            const type = document.getElementById('modal-duel-type').value;
+            const format = parseInt(document.getElementById('modal-duel-format').value);
+            const betAmount = parseInt(document.getElementById('modal-duel-bet').value);
+            const slices = type === 'wheel' ? parseInt(document.getElementById('modal-duel-wheel-slices').value) : 2;
+
+            if (betAmount > currentUser.credits) { return alert("You have insufficient credits for this wager."); }
+
+            socket.emit('host_pvp_match', { username: currentUser.username, type, format, betAmount, slices });
+            hideModal('pvp-host-modal');
+        }
+
+        // CHALLENGER FLOW
+        socket.on('open_pvp_accept_modal', (data) => {
+            document.getElementById('accept-host-name').innerText = data.hostName.toUpperCase();
+            document.getElementById('accept-game-type').innerText = data.type === 'wheel' ? `WHEEL SPIN (${data.slices} Slices)` : 'COIN FLIP';
+            document.getElementById('accept-format').innerText = data.format === 1 ? '1 ROUND' : `FIRST TO ${data.format}`;
+            document.getElementById('accept-wager').innerText = data.betAmount === 0 ? 'ITEM WAGER (0 CR)' : `${formatNumber(data.betAmount)} CR`;
             
-            if (betAmount > currentUser.credits) {
-                alert("You have insufficient credits for this wager.");
-                document.getElementById('duel-bet').value = currentPvpDuelState.betAmount || 0;
-                return;
-            }
+            showModal('pvp-accept-modal');
+        });
 
-            if(type === 'coin') {
-                const hostChoice = document.getElementById('duel-host-choice').value;
-                socket.emit('update_pvp_settings', { username: currentUser.username, type, format, betAmount, slices: 2, hostChoice });
-            } else {
-                const slices = parseInt(document.getElementById('duel-wheel-slices').value) || 2;
-                socket.emit('update_pvp_settings', { username: currentUser.username, type, format, betAmount, slices, hostChoice: currentUser.username });
-            }
+        function acceptPvpDuel() {
+            // Choice logic is automatic now (P1 vs P2, or Tails if Coin)
+            socket.emit('accept_pvp_duel', { username: currentUser.username, choice: currentUser.username });
+            hideModal('pvp-accept-modal');
         }
 
-        function submitChallengerChoice() {
-            if(myDuelSeatIndex === -1 || myDuelSeatIndex === currentPvpDuelState?.hostIndex) return;
-            const choice = document.getElementById('duel-challenger-choice').value;
-            if(!choice) return;
-            socket.emit('pvp_challenger_choice', { username: currentUser.username, choice });
-        }
-
-        function readyDuel() {
-            if(!currentUser || myDuelSeatIndex === -1) return;
-            socket.emit('ready_pvp_duel', { username: currentUser.username });
+        function declinePvpDuel() {
+            hideModal('pvp-accept-modal');
+            leavePvpSeat();
         }
 
         socket.on('pvp_duel_state_update', (state) => {
@@ -1733,9 +1900,6 @@
 
             const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
             myDuelSeatIndex = mySeatData ? state.seats.indexOf(mySeatData) : -1;
-
-            const isHost = myDuelSeatIndex !== -1 && myDuelSeatIndex === state.hostIndex;
-            const isChallenger = myDuelSeatIndex !== -1 && myDuelSeatIndex !== state.hostIndex;
 
             for(let i=0; i<2; i++) {
                 const seat = state.seats[i];
@@ -1763,55 +1927,6 @@
                     seatCard.classList.remove('my-seat');
                     document.getElementById(`duel-ready-${i}`).classList.add('hidden');
                 }
-            }
-
-            const hostControls = document.getElementById('duel-host-controls');
-            const actionRow = document.getElementById('duel-action-row');
-            const termsDisplay = document.getElementById('duel-terms-display');
-            const challengerSelect = document.getElementById('duel-challenger-choice');
-            const readyBtn = document.getElementById('duel-btn-ready');
-
-            if(state.status === 'waiting') {
-                if(isHost) {
-                    hostControls.classList.remove('hidden');
-                    document.getElementById('duel-type').value = state.type;
-                    document.getElementById('duel-format').value = state.format;
-                    document.getElementById('duel-bet').value = state.betAmount;
-                    
-                    if(state.type === 'wheel') {
-                        document.getElementById('wheel-config-row').classList.remove('hidden');
-                        document.getElementById('coin-config-row').classList.add('hidden');
-                        document.getElementById('duel-wheel-slices').value = state.slices;
-                    } else {
-                        document.getElementById('wheel-config-row').classList.add('hidden');
-                        document.getElementById('coin-config-row').classList.remove('hidden');
-                    }
-                } else {
-                    hostControls.classList.add('hidden');
-                }
-
-                if(myDuelSeatIndex !== -1) {
-                    actionRow.classList.remove('hidden');
-                    let formatText = state.format === 1 ? '1 ROUND' : `FIRST TO ${state.format}`;
-                    let betText = state.betAmount === 0 ? 'ITEM WAGER (0 CR)' : `${formatNumber(state.betAmount)} CR`;
-                    let gameType = state.type === 'wheel' ? 'WHEEL SPIN' : 'COIN FLIP';
-                    termsDisplay.innerHTML = `<span style="color:var(--accent-glow-2); margin-right:10px;">${gameType}</span> | <span style="color:var(--warning); margin:0 10px;">${formatText}</span> | <span style="color:var(--success); margin-left:10px;">${betText}</span>`;
-                    
-                    challengerSelect.classList.add('hidden'); // Wheel choices are automatic now
-
-                    if(state.seats[myDuelSeatIndex].ready) {
-                        readyBtn.style.background = '#475569';
-                        readyBtn.innerText = 'WAITING FOR OPPONENT...';
-                    } else {
-                        readyBtn.style.background = 'var(--success)';
-                        readyBtn.innerText = 'LOCK IN & READY';
-                    }
-                } else {
-                    actionRow.classList.add('hidden');
-                }
-            } else {
-                hostControls.classList.add('hidden');
-                actionRow.classList.add('hidden');
             }
 
             const matchVisual = document.getElementById('duel-match-visual');
@@ -1876,7 +1991,7 @@
 
             if (data.status === 'betting') {
                 statusText.innerText = "PLACE YOUR BETS"; myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 }; d1.classList.remove('shake'); d2.classList.remove('shake'); d3.classList.remove('shake'); clearInterval(colorInterval);
-                document.querySelectorAll('.bet-badge').forEach(b => { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; });
+                document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('color')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
                 colorInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(colorInterval); }, 1000);
             }
             else if (data.status === 'rolling') { 
@@ -1924,7 +2039,7 @@
         };
 
         socket.on('arcade_bet_placed', (data) => { 
-            const badge = document.getElementById(`badge-${data.choice}`); 
+            const badge = document.getElementById(`badge-${data.game === 'color' ? data.choice : data.game + '-' + data.choice}`); 
             if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); badge.classList.remove('hidden'); }
             playSfx('bet'); 
         });
