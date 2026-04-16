@@ -193,9 +193,9 @@
         .derby-track-container { flex: 1; background: #111; border-bottom: 4px solid var(--border-std); display: flex; flex-direction: column; position: relative; overflow: hidden; margin-top: 10px; border-radius: 8px; box-shadow: inset 0 0 20px #000;}
         .derby-lane { flex: 1; border-bottom: 2px dashed #333; position: relative; display: flex; align-items: center; padding: 0 10px;}
         .derby-lane:last-child { border-bottom: none; }
-        .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 26px; color: rgba(255,255,255,0.3); font-weight: bold; z-index: 5; pointer-events: none; text-shadow: 1px 1px 0 #000; }
         .derby-finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8;}
         
+        .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 26px; color: rgba(255,255,255,0.3); font-weight: bold; z-index: 5; pointer-events: none; text-shadow: 1px 1px 0 #000; }
         .racer-sprite { font-size: 40px; position: absolute; left: 0; transition: left 0.2s linear; z-index: 20; text-shadow: 2px 2px 0 #000; transform-origin: center;}
         
         @keyframes gallop {
@@ -763,12 +763,12 @@
                 <div id="derby-race-container" style="display:flex; flex-direction:column; flex:1;">
                     <div class="derby-track-container" id="derby-track">
                         <div class="derby-finish-line"></div>
-                        <div class="derby-lane"><div class="racer-sprite lane-1-color" id="racer-0" style="left:0%">🏇</div></div>
-                        <div class="derby-lane"><div class="racer-sprite lane-2-color" id="racer-1" style="left:0%">🏇</div></div>
-                        <div class="derby-lane"><div class="racer-sprite lane-3-color" id="racer-2" style="left:0%">🏇</div></div>
-                        <div class="derby-lane"><div class="racer-sprite lane-4-color" id="racer-3" style="left:0%">🏇</div></div>
-                        <div class="derby-lane"><div class="racer-sprite lane-5-color" id="racer-4" style="left:0%">🏇</div></div>
-                        <div class="derby-lane"><div class="racer-sprite lane-6-color" id="racer-5" style="left:0%">🏇</div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-0">L1 | ?x</div><div class="racer-sprite lane-1-color" id="racer-0" style="left:0%">🏇</div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-1">L2 | ?x</div><div class="racer-sprite lane-2-color" id="racer-1" style="left:0%">🏇</div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-2">L3 | ?x</div><div class="racer-sprite lane-3-color" id="racer-2" style="left:0%">🏇</div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-3">L4 | ?x</div><div class="racer-sprite lane-4-color" id="racer-3" style="left:0%">🏇</div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-4">L5 | ?x</div><div class="racer-sprite lane-5-color" id="racer-4" style="left:0%">🏇</div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-5">L6 | ?x</div><div class="racer-sprite lane-6-color" id="racer-5" style="left:0%">🏇</div></div>
                     </div>
                     
                     <div style="text-align: center; margin: 10px 0;">
@@ -788,27 +788,27 @@
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 10px;">
                             <div id="derby-btn-0" class="derby-bet-box lane-1-color" onclick="placeDerbyBet(0)">
                                 <div class="bet-badge pixel-text hidden" id="badge-derby-0">0</div>
-                                <div class="derby-bet-title pixel-text">LANE 1</div><div class="pixel-text" style="font-size: 20px;">PAYS 2x</div>
+                                <div class="derby-bet-title pixel-text">LANE 1</div><div id="bet-mult-0" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
                             </div>
                             <div id="derby-btn-1" class="derby-bet-box lane-2-color" onclick="placeDerbyBet(1)">
                                 <div class="bet-badge pixel-text hidden" id="badge-derby-1">0</div>
-                                <div class="derby-bet-title pixel-text">LANE 2</div><div class="pixel-text" style="font-size: 20px;">PAYS 3x</div>
+                                <div class="derby-bet-title pixel-text">LANE 2</div><div id="bet-mult-1" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
                             </div>
                             <div id="derby-btn-2" class="derby-bet-box lane-3-color" onclick="placeDerbyBet(2)">
                                 <div class="bet-badge pixel-text hidden" id="badge-derby-2">0</div>
-                                <div class="derby-bet-title pixel-text">LANE 3</div><div class="pixel-text" style="font-size: 20px;">PAYS 3x</div>
+                                <div class="derby-bet-title pixel-text">LANE 3</div><div id="bet-mult-2" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
                             </div>
                             <div id="derby-btn-3" class="derby-bet-box lane-4-color" onclick="placeDerbyBet(3)">
                                 <div class="bet-badge pixel-text hidden" id="badge-derby-3">0</div>
-                                <div class="derby-bet-title pixel-text">LANE 4</div><div class="pixel-text" style="font-size: 20px;">PAYS 5x</div>
+                                <div class="derby-bet-title pixel-text">LANE 4</div><div id="bet-mult-3" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
                             </div>
                             <div id="derby-btn-4" class="derby-bet-box lane-5-color" onclick="placeDerbyBet(4)">
                                 <div class="bet-badge pixel-text hidden" id="badge-derby-4">0</div>
-                                <div class="derby-bet-title pixel-text">LANE 5</div><div class="pixel-text" style="font-size: 20px;">PAYS 7x</div>
+                                <div class="derby-bet-title pixel-text">LANE 5</div><div id="bet-mult-4" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
                             </div>
                             <div id="derby-btn-5" class="derby-bet-box lane-6-color" onclick="placeDerbyBet(5)">
                                 <div class="bet-badge pixel-text hidden" id="badge-derby-5">0</div>
-                                <div class="derby-bet-title pixel-text">LANE 6</div><div class="pixel-text" style="font-size: 20px;">PAYS 10x</div>
+                                <div class="derby-bet-title pixel-text">LANE 6</div><div id="bet-mult-5" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
                             </div>
                         </div>
                     </div>
@@ -1366,7 +1366,7 @@
         window.actPlaceBet = function(idx) { 
             if(gameLocks[currentRoomId]) return alert('Table is currently offline for maintenance.');
             if(actionLocked) return; const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value.replace(/,/g, '')) : 0;
-            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount."); if (amt > 100000) return alert("Maximum initial bet is 100,000 credits."); if (amt > currentUser.credits) return alert("Insufficient credits!");
+            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount."); if (amt > 100000) return alert("Maximum limit is 100,000 credits."); if (amt > currentUser.credits) return alert("Insufficient credits!");
             actionLocked = true; window.lastBetAmount = amt; socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet');
         }
         window.actEjectSeat = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
@@ -1583,6 +1583,16 @@
                 }
             }
 
+            if (data.laneProfiles) {
+                for(let i=0; i<6; i++) {
+                    const mult = data.laneProfiles[i].m;
+                    const trackInd = document.getElementById(`track-ind-${i}`);
+                    const betMult = document.getElementById(`bet-mult-${i}`);
+                    if(trackInd) trackInd.innerText = `L${i+1} | ${mult}x`;
+                    if(betMult) betMult.innerText = `PAYS ${mult}x`;
+                }
+            }
+
             if (data.status === 'betting') {
                 statusText.innerText = "PLACE YOUR BETS"; 
                 myDerbyBets = [0, 0, 0, 0, 0, 0]; 
@@ -1681,12 +1691,11 @@
 
             if(type === 'coin') {
                 options = ['heads', 'tails'];
-                hostChoice = 'heads'; // default for coin
+                hostChoice = 'heads'; 
             } else {
                 const rawNames = document.getElementById('duel-wheel-names').value;
                 options = rawNames.split(',').map(s => s.trim()).filter(s => s.length > 0);
                 
-                // Update dropdown options
                 const choiceSelect = document.getElementById('duel-host-choice');
                 const currentChoice = choiceSelect.value;
                 choiceSelect.innerHTML = options.length > 0 
@@ -1783,7 +1792,6 @@
                     let gameType = state.type === 'wheel' ? 'WHEEL SPIN' : 'COIN FLIP';
                     termsDisplay.innerHTML = `<span style="color:var(--accent-glow-2); margin-right:10px;">${gameType}</span> | <span style="color:var(--warning); margin:0 10px;">${formatText}</span> | <span style="color:var(--success); margin-left:10px;">${betText}</span>`;
                     
-                    // Logic for Challenger selection if it's a wheel
                     if(isChallenger && state.type === 'wheel' && state.options.length >= 2) {
                         challengerSelect.classList.remove('hidden');
                         const currentChoice = challengerSelect.value;
@@ -1795,12 +1803,10 @@
                         challengerSelect.classList.add('hidden');
                     }
 
-                    // Ready Button States
                     if(state.seats[myDuelSeatIndex].ready) {
                         readyBtn.style.background = '#475569';
                         readyBtn.innerText = 'WAITING FOR OPPONENT...';
                     } else {
-                        // Prevent challenger from readying up if they haven't picked a wheel slice
                         if (isChallenger && state.type === 'wheel' && !state.seats[myDuelSeatIndex].choice) {
                             readyBtn.style.background = '#333';
                             readyBtn.innerText = 'PICK SLICE TO READY';
@@ -1824,7 +1830,7 @@
             } else if (state.status === 'resolving' || state.status === 'finished') {
                 matchVisual.classList.remove('flipping');
                 if (state.type === 'wheel') {
-                    matchVisual.style.fontSize = '30px'; // shrink font for names
+                    matchVisual.style.fontSize = '30px'; 
                     matchVisual.innerText = state.result ? state.result.toUpperCase().substring(0, 8) : '🎡';
                 } else {
                     matchVisual.style.fontSize = '60px';
@@ -1921,7 +1927,6 @@
 
         socket.on('receive_chat', data => { 
             let boxId = `${data.roomId}-chat-messages`;
-            // Route 3seat and 5seat to the master blackjack chat box
             if (data.roomId === '3seat' || data.roomId === '5seat') boxId = 'blackjack-chat-messages';
             
             const msgs = document.getElementById(boxId);
@@ -1930,7 +1935,7 @@
 
         socket.on('chat_wiped', (data) => {
             let boxId = `${data.room}-chat-messages`;
-            if (data.room === 'blackjack') boxId = 'blackjack-chat-messages';
+            if (data.room === '3seat' || data.room === '5seat' || data.room === 'blackjack') boxId = 'blackjack-chat-messages';
             const msgs = document.getElementById(boxId);
             if(msgs) msgs.innerHTML = `<div style="color:var(--danger); text-align:center; margin-top:20px;">[CHAT CLEARED BY ADMIN]</div>`;
         });
