@@ -668,7 +668,7 @@
                     <div id="lobby-list" style="flex: 1; padding: 10px; overflow-y: auto;" class="pixel-text custom-scroll"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text">TABLE CHAT</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">TABLE CHAT</div>
                     <div id="chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
                         <input type="text" id="blackjack-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
@@ -724,11 +724,11 @@
                     <div id="dice-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text">ROLL HISTORY</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">ROLL HISTORY</div>
                     <div class="history-content custom-scroll pixel-text" id="dice-history"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text">TABLE CHAT</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">TABLE CHAT</div>
                     <div id="dice-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
                         <input type="text" id="dice-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
@@ -859,11 +859,11 @@
                     <div id="coin-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center;">FLIP HISTORY</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">FLIP HISTORY</div>
                     <div class="history-content custom-scroll pixel-text" id="coin-history"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center;">TABLE CHAT</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">TABLE CHAT</div>
                     <div id="coin-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
                         <input type="text" id="coin-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
@@ -936,11 +936,11 @@
                     <div id="color-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center;">ROLL HISTORY</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">ROLL HISTORY</div>
                     <div class="history-content custom-scroll pixel-text" id="color-history"></div>
                 </div>
                 <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center;">TABLE CHAT</div>
+                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">TABLE CHAT</div>
                     <div id="color-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
                     <div class="chat-input-area">
                         <input type="text" id="color-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
@@ -1278,7 +1278,7 @@
         window.actPlaceBet = function(idx) { 
             if(gameLocks[currentRoomId]) return alert('Table is currently offline for maintenance.');
             if(actionLocked) return; const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value.replace(/,/g, '')) : 0;
-            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount."); if (amt > 50000) return alert("Maximum initial bet is 50,000 credits."); if (amt > currentUser.credits) return alert("Insufficient credits!");
+            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount."); if (amt > 100000) return alert("Maximum initial bet is 100,000 credits."); if (amt > currentUser.credits) return alert("Insufficient credits!");
             actionLocked = true; window.lastBetAmount = amt; socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet');
         }
         window.actEjectSeat = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
