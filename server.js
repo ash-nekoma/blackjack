@@ -746,12 +746,18 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('update_coin_duel_settings', ({ username, format, betAmount, choice }) => {
+    socket.on('update_coin_duel_settings', async ({ username, format, betAmount, choice }) => {
         const seatIndex = coinDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
         if(seatIndex === -1 || seatIndex !== coinDuel.hostIndex || coinDuel.status !== 'waiting') return;
         
         if(betAmount < 0 || betAmount > 100000) return socket.emit('arcade_error', 'Invalid bet limits (0-100k).');
         if(![1, 3, 5].includes(format)) return;
+
+        // NEW SECURITY: Prevent host from setting a wager they can't afford
+        const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
+        if (!user || user.credits < betAmount) {
+            return socket.emit('arcade_error', 'You have insufficient credits to wager this amount.');
+        }
 
         coinDuel.format = format;
         coinDuel.betAmount = betAmount;
