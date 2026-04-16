@@ -60,6 +60,7 @@ function createRoom(numSeats) {
 }
 
 const diceGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: [1, 1], bets: [], history: [] };
+
 const DERBY_PROFILES = [ { m: 2, s: 1.5 }, { m: 3, s: 1.2 }, { m: 3, s: 1.2 }, { m: 5, s: 0.9 }, { m: 7, s: 0.7 }, { m: 10, s: 0.4 } ];
 const derbyGame = { status: 'betting', betEndTime: Date.now() + 15000, distances: [0,0,0,0,0,0], speeds: [0,0,0,0,0,0], bets: [], history: [], laneProfiles: [] };
 function shuffleDerby() { derbyGame.laneProfiles = [...DERBY_PROFILES].sort(() => Math.random() - 0.5); } shuffleDerby(); 
@@ -67,11 +68,10 @@ function shuffleDerby() { derbyGame.laneProfiles = [...DERBY_PROFILES].sort(() =
 const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
 const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
 
-// NEW 3 CUPS GAME
 const cupsGame = { status: 'betting', betEndTime: Date.now() + 15000, winningCup: 0, bets: [], history: [] };
 
 // --- PVP ARENA GLOBALS ---
-let pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, message: 'WAITING FOR CHALLENGER', timerInterval: null };
+let pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, message: 'WAITING FOR PLAYERS', timerInterval: null };
 
 const socketUserMap = {}; let diceLobby = []; let derbyLobby = []; let colorLobby = []; let pvpLobby = []; let cupsLobby = [];
 let strictHouseEdge = false; let gameLocks = { blackjack: false, dice: false, derby: false, color: false, cups: false };
@@ -183,7 +183,7 @@ setInterval(() => {
     if (cupsGame.status === 'betting' && now >= cupsGame.betEndTime) {
         cupsGame.status = 'shuffling'; io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, timeLeft: 0, history: cupsGame.history });
         setTimeout(async () => {
-            cupsGame.winningCup = Math.floor(Math.random() * 3); // 0, 1, or 2
+            cupsGame.winningCup = Math.floor(Math.random() * 3); 
             cupsGame.status = 'resolving'; cupsGame.history.unshift(cupsGame.winningCup); if(cupsGame.history.length > 20) cupsGame.history.pop();
             let winners = []; let roundRecord = new GameRound({ game: 'cups', roundId: Math.random().toString(36).substring(2, 8).toUpperCase(), result: cupsGame.winningCup, players: [] });
             for (let b of cupsGame.bets) {
@@ -542,7 +542,7 @@ io.on('connection', (socket) => {
             if(pvpDuel.hostIndex === -1) {
                 pvpDuel.hostIndex = seatIndex;
                 pvpDuel.message = 'HOST CONFIGURING MATCH';
-                socket.emit('open_pvp_host_modal'); // Trigger modal for Host
+                socket.emit('open_pvp_host_modal'); 
             } else {
                 pvpDuel.message = 'WAITING FOR CHALLENGER TO ACCEPT';
                 socket.emit('open_pvp_accept_modal', { 
@@ -570,8 +570,8 @@ io.on('connection', (socket) => {
         if (!user || user.credits < betAmount) { return socket.emit('arcade_error', 'You have insufficient credits to wager this amount.'); }
 
         pvpDuel.type = type; pvpDuel.format = format; pvpDuel.betAmount = betAmount; pvpDuel.slices = slices;
-        pvpDuel.seats[seatIndex].choice = type === 'coin' ? 'heads' : pvpDuel.seats[seatIndex].username; // Default host to Heads if coin
-        pvpDuel.seats[seatIndex].ready = true; // Host is automatically ready after configuring
+        pvpDuel.seats[seatIndex].choice = type === 'coin' ? 'heads' : pvpDuel.seats[seatIndex].username; 
+        pvpDuel.seats[seatIndex].ready = true; 
         pvpDuel.message = 'WAITING FOR CHALLENGER...';
         
         io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
@@ -584,10 +584,10 @@ io.on('connection', (socket) => {
         const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
         if (!user || user.credits < pvpDuel.betAmount) { 
             socket.emit('arcade_error', 'You have insufficient credits.'); 
-            return handlePvpLeave(seatIndex); // Eject if they try to accept without funds
+            return handlePvpLeave(seatIndex); 
         }
 
-        if (pvpDuel.type === 'coin') pvpDuel.seats[seatIndex].choice = 'tails'; // Auto tail for challenger
+        if (pvpDuel.type === 'coin') pvpDuel.seats[seatIndex].choice = 'tails'; 
         else pvpDuel.seats[seatIndex].choice = choice || pvpDuel.seats[seatIndex].username;
 
         pvpDuel.seats[seatIndex].ready = true;
@@ -713,7 +713,7 @@ async function handlePvpLeave(seatIndex) {
     }
     pvpDuel.seats[seatIndex] = null;
     if(pvpDuel.seats.every(s => s === null)) {
-        pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, message: 'WAITING FOR CHALLENGER', timerInterval: null };
+        pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, message: 'WAITING FOR PLAYERS', timerInterval: null };
     } else {
         pvpDuel.hostIndex = seatIndex === 0 ? 1 : 0; pvpDuel.status = 'waiting'; pvpDuel.message = 'CHALLENGER ABANDONED.'; pvpDuel.seats[pvpDuel.hostIndex].ready = false; pvpDuel.seats[pvpDuel.hostIndex].score = 0;
         if (pvpDuel.type === 'wheel') { pvpDuel.seats[pvpDuel.hostIndex].choice = pvpDuel.seats[pvpDuel.hostIndex].username; }
@@ -750,14 +750,14 @@ function runPvpSequence() {
                             } catch(e){}
                         }
                         io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+                        
                         setTimeout(() => {
                             if(pvpDuel.status === 'finished') {
-                                pvpDuel.status = 'waiting'; pvpDuel.result = null; pvpDuel.message = 'WAITING FOR READY';
-                                if(pvpDuel.seats[0]) { pvpDuel.seats[0].ready = false; pvpDuel.seats[0].score = 0; } if(pvpDuel.seats[1]) { pvpDuel.seats[1].ready = false; pvpDuel.seats[1].score = 0; }
-                                if(pvpDuel.type === 'wheel') { if(pvpDuel.seats[0]) pvpDuel.seats[0].choice = pvpDuel.seats[0].username; if(pvpDuel.seats[1]) pvpDuel.seats[1].choice = pvpDuel.seats[1].username; }
+                                pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, message: 'WAITING FOR PLAYERS', timerInterval: null };
                                 io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
                             }
-                        }, 5000);
+                        }, 3000);
+
                     } else { if(pvpDuel.status !== 'finished') { pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping'; pvpDuel.result = null; runPvpSequence(); } }
                 }, 3000);
             }, 2000);
