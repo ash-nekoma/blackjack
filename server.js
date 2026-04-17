@@ -120,30 +120,51 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // DERBY LOOP
+    // DERBY LOOP (15 SECOND HIGH-VOLATILITY RACE)
     if (derbyGame.status === 'betting' && now >= derbyGame.betEndTime) {
         derbyGame.status = 'racing'; derbyGame.distances = [0,0,0,0,0,0]; derbyGame.speeds = derbyGame.laneProfiles.map(p => p.s);
         io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, timeLeft: 0, distances: derbyGame.distances, history: derbyGame.history, laneProfiles: derbyGame.laneProfiles });
+        
         let raceInterval = setInterval(async () => {
             let finished = false; let laneBets = [0,0,0,0,0,0]; derbyGame.bets.forEach(b => laneBets[b.choice] += b.amount);
+            
             for(let i=0; i<6; i++) {
-                let speedMod = 1; if(strictHouseEdge && laneBets[i] > 0) speedMod = 0.8; 
-                if (Math.random() < 0.2) { derbyGame.speeds[i] = derbyGame.laneProfiles[i].s + (Math.random() * 1.0 - 0.5); }
-                let step = derbyGame.speeds[i] * speedMod * 0.8; 
-                if (Math.random() < 0.05) step *= 2.5; else if (Math.random() < 0.05) step *= 0.3; 
-                derbyGame.distances[i] += step; if (derbyGame.distances[i] >= 100) { finished = true; }
+                let speedMod = 1; if(strictHouseEdge && laneBets[i] > 0) speedMod = 0.85; 
+                
+                // Volatile physics: base progression is slow, relies heavily on RNG bursts
+                let volatileRNG = Math.random();
+                let step = 0.4; // Slow base gallop
+                
+                if (volatileRNG > 0.96) step = 3.5; // Massive Nitro Burst
+                else if (volatileRNG > 0.85) step = 1.8; // Hard Sprint
+                else if (volatileRNG < 0.10) step = 0.05; // Stumble / Stall
+                else step += Math.random() * 0.6; // Normal variance
+                
+                // Multiply by the lane's specific odds profile
+                step *= (derbyGame.speeds[i] * speedMod * 0.7); 
+
+                derbyGame.distances[i] += step; 
+                if (derbyGame.distances[i] >= 100) { finished = true; }
             }
+            
             io.to('arcade_derby').emit('derby_race_tick', { distances: derbyGame.distances });
+            
             if (finished) {
                 clearInterval(raceInterval); derbyGame.status = 'resolving';
                 let winnerIndex = 0; let maxDist = -1;
                 for(let i=0; i<6; i++) { if (derbyGame.distances[i] > maxDist) { maxDist = derbyGame.distances[i]; winnerIndex = i; } if (derbyGame.distances[i] > 100) derbyGame.distances[i] = 100; }
                 io.to('arcade_derby').emit('derby_race_tick', { distances: derbyGame.distances });
+                
                 derbyGame.history.unshift(winnerIndex); if(derbyGame.history.length > 20) derbyGame.history.pop();
                 let winners = []; let roundRecord = new GameRound({ game: 'derby', roundId: Math.random().toString(36).substring(2, 8).toUpperCase(), result: winnerIndex, players: [] });
+                
                 for (let b of derbyGame.bets) {
                     let wonAmount = (b.choice === winnerIndex) ? (b.amount * derbyGame.laneProfiles[winnerIndex].m) : 0;
-                    roundRecord.players.push({ username: b.username, choice: `LANE ${b.choice + 1}`, bet: b.amount, win: wonAmount });
+                    
+                    // Translate choice index to color for DB logging
+                    let colorNames = ['RED', 'BLUE', 'GREEN', 'PURPLE', 'PINK', 'GOLD'];
+                    roundRecord.players.push({ username: b.username, choice: `${colorNames[b.choice]} HORSE`, bet: b.amount, win: wonAmount });
+                    
                     if (b.choice === winnerIndex) {
                         try { const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: wonAmount } }, {new: true}); 
                             if(updatedUser) { await new Transaction({ username: updatedUser.username, type: 'DERBY WIN', amount: wonAmount }).save(); winners.push({ username: updatedUser.username, choice: b.choice, amount: wonAmount }); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); }
@@ -152,9 +173,14 @@ setInterval(() => {
                 }
                 await roundRecord.save();
                 io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, winner: winnerIndex, winners, bets: derbyGame.bets, history: derbyGame.history, distances: derbyGame.distances, laneProfiles: derbyGame.laneProfiles });
-                setTimeout(() => { derbyGame.bets = []; derbyGame.status = 'betting'; derbyGame.distances = [0,0,0,0,0,0]; shuffleDerby(); derbyGame.betEndTime = Date.now() + 15000; io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, betEndTime: derbyGame.betEndTime, history: derbyGame.history, distances: derbyGame.distances, laneProfiles: derbyGame.laneProfiles }); }, 5000);
+                
+                setTimeout(() => { 
+                    derbyGame.bets = []; derbyGame.status = 'betting'; derbyGame.distances = [0,0,0,0,0,0]; 
+                    shuffleDerby(); derbyGame.betEndTime = Date.now() + 15000; 
+                    io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, betEndTime: derbyGame.betEndTime, history: derbyGame.history, distances: derbyGame.distances, laneProfiles: derbyGame.laneProfiles }); 
+                }, 5000);
             }
-        }, 100); 
+        }, 150); // Slightly slower tick interval to stretch out the race time
     }
 
     // COLOR GAME LOOP
