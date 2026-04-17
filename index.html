@@ -352,7 +352,9 @@
         <div id="main-menu-view" class="full-menu hidden">
             <h1 class="pixel-text" style="font-size: 80px; margin-bottom: 10px; text-shadow: 4px 4px 0px #000; text-align: center;">ARCADE DASHBOARD</h1>
             <div class="menu-grid">
-                <button class="wood-btn" style="background: var(--success);" onclick="showModal('play-modal')">PLAY GAMES</button>
+                <button class="wood-btn" style="background: var(--success); color:#000;" onclick="showModal('table-modal')">♠ TABLE GAMES</button>
+                <button class="wood-btn" style="background: #ea580c; color:#fff;" onclick="showModal('arcade-modal')">🎲 ARCADE CASINO</button>
+                <button class="wood-btn" style="background: #ec4899; color:#fff;" onclick="joinPVP()">⚔️ PVP ARENA</button>
                 <button class="wood-btn" style="background: #3b82f6;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
                 
                 <button class="wood-btn" style="background: #8b5cf6; position:relative;" onclick="openInbox()">
@@ -365,33 +367,32 @@
                 <button class="wood-btn" style="background: #0f766e;" onclick="showRewards()">DAILY REWARDS</button>
                 <button class="wood-btn" style="background: #d946ef;" onclick="showModal('redeem-modal')">REDEEM CODE</button>
                 
-                <button class="wood-btn locked" disabled style="background: #3f3f46; color: #a1a1aa; border-color: #52525b; box-shadow: none; font-size: 22px;">MARKET/AUCTION (SOON)</button>
+                <button class="wood-btn locked" disabled style="background: #3f3f46; color: #a1a1aa; border-color: #52525b; box-shadow: none; font-size: 22px;">MARKET (SOON)</button>
 
                 <button class="wood-btn" style="background: var(--danger); grid-column: span 2;" onclick="logout()">LOGOUT</button>
             </div>
         </div>
         
-        <div id="play-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 600px;">
-                <h2 class="pixel-text" style="margin-bottom: 20px; font-size: 40px;">SELECT GAME</h2>
+        <div id="table-modal" class="overlay-menu hidden" style="z-index: 400;">
+            <div class="modal-box custom-scroll" style="width: 500px;">
+                <h2 class="pixel-text" style="margin-bottom: 20px; font-size: 45px; color: var(--success);">♠ TABLE GAMES</h2>
                 <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-                    <div style="width: 100%; border-bottom: 2px dashed #333; margin-bottom: 10px; padding-bottom: 10px;">
-                        <h3 class="pixel-text" style="color: var(--success); font-size: 30px; margin-bottom: 10px;">BLACKJACK</h3>
-                        <button class="wood-btn" style="background: var(--accent-glow); margin-bottom: 10px;" onclick="joinRoom('3seat')">3-SEAT VIP TABLE</button>
-                        <button class="wood-btn" style="background: var(--success); color:#000;" onclick="joinRoom('5seat')">5-SEAT CLASSIC TABLE</button>
-                    </div>
-                    <div style="width: 100%; border-bottom: 2px dashed #333; margin-bottom: 10px; padding-bottom: 10px;">
-                        <h3 class="pixel-text" style="color: var(--warning); font-size: 30px; margin-bottom: 10px;">ARCADE CASINO</h3>
-                        <button class="wood-btn" style="background: #a855f7; margin-bottom: 10px;" onclick="joinDice()">HIGH-LOW DICE</button>
-                        <button class="wood-btn" style="background: #ea580c; margin-bottom: 10px;" onclick="joinDerby()">8-BIT DERBY SPRINT</button>
-                        <button class="wood-btn" style="background: #f59e0b; color:#000; margin-bottom: 10px;" onclick="joinCups()">3 CUPS & A BALL</button>
-                        <button class="wood-btn" style="background: #ef4444;" onclick="joinColorGame()">CLASSIC COLOR GAME</button>
-                    </div>
-                    <div style="width: 100%; border-bottom: 2px dashed #333; margin-bottom: 10px; padding-bottom: 10px;">
-                        <h3 class="pixel-text" style="color: #ec4899; font-size: 30px; margin-bottom: 10px;">PLAYER VS PLAYER</h3>
-                        <button class="wood-btn" style="background: #1e293b; color: var(--accent-glow-2); border-color: var(--accent-glow-2);" onclick="joinPVP()">ENTER PVP ARENA</button>
-                    </div>
-                    <button class="wood-btn" style="background: var(--danger); margin-top: 10px;" onclick="hideModal('play-modal')">BACK TO DASHBOARD</button>
+                    <button class="wood-btn" style="background: var(--accent-glow); margin-bottom: 5px;" onclick="joinRoom('3seat'); hideModal('table-modal');">3-SEAT VIP BLACKJACK</button>
+                    <button class="wood-btn" style="background: var(--success); color:#000; margin-bottom: 10px;" onclick="joinRoom('5seat'); hideModal('table-modal');">5-SEAT CLASSIC BLACKJACK</button>
+                    <button class="wood-btn" style="background: #475569; margin-top: 10px;" onclick="hideModal('table-modal')">◄ BACK TO DASHBOARD</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="arcade-modal" class="overlay-menu hidden" style="z-index: 400;">
+            <div class="modal-box custom-scroll" style="width: 500px;">
+                <h2 class="pixel-text" style="margin-bottom: 20px; font-size: 45px; color: #ea580c;">🎲 ARCADE CASINO</h2>
+                <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+                    <button class="wood-btn" style="background: #a855f7; margin-bottom: 5px;" onclick="joinDice(); hideModal('arcade-modal');">HIGH-LOW DICE</button>
+                    <button class="wood-btn" style="background: #ea580c; margin-bottom: 5px;" onclick="joinDerby(); hideModal('arcade-modal');">8-BIT DERBY SPRINT</button>
+                    <button class="wood-btn" style="background: #f59e0b; color:#000; margin-bottom: 5px;" onclick="joinCups(); hideModal('arcade-modal');">3 CUPS & A BALL</button>
+                    <button class="wood-btn" style="background: #ef4444; margin-bottom: 10px;" onclick="joinColorGame(); hideModal('arcade-modal');">CLASSIC COLOR GAME</button>
+                    <button class="wood-btn" style="background: #475569; margin-top: 10px;" onclick="hideModal('arcade-modal')">◄ BACK TO DASHBOARD</button>
                 </div>
             </div>
         </div>
@@ -410,7 +411,7 @@
                     </div>
                     
                     <div id="modal-wheel-config-row" class="hidden">
-                        <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">WHEEL SLICES (Populates Names):</span>
+                        <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">WHEEL SLICES:</span>
                         <select id="modal-duel-wheel-slices" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;">
                             <option value="2">2 SLICES</option>
                             <option value="4" selected>4 SLICES</option>
@@ -1084,7 +1085,7 @@
                         <select id="color-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
                             <option value="1000" selected>1,000</option>
                             <option value="5000">5,000</option>
-                            <option value="20000">20000</option>
+                            <option value="20000">20,000</option>
                             <option value="50000">50,000</option>
                         </select>
                     </div>
@@ -1883,7 +1884,6 @@
         });
 
         function acceptPvpDuel() {
-            // Choice logic is automatic now (P1 vs P2, or Tails if Coin)
             socket.emit('accept_pvp_duel', { username: currentUser.username, choice: currentUser.username });
             hideModal('pvp-accept-modal');
         }
