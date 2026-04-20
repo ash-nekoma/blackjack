@@ -191,9 +191,9 @@
         .derby-lane.scrolling { animation: trackScroll 0.5s linear infinite; }
         .derby-finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8;}
         .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 26px; color: rgba(255,255,255,0.3); font-weight: bold; z-index: 5; pointer-events: none; text-shadow: 1px 1px 0 #000; }
-        .racer-sprite { height: 45px; position: absolute; left: 0; bottom: 5px; transition: left 0.15s linear; z-index: 20; transform: scaleX(-1); }
+        .racer-sprite { height: 45px; position: absolute; left: 0; bottom: 5px; transition: left 0.15s linear; z-index: 20; transform-origin: center bottom; transform: scaleX(-1); }
         .racer-running { filter: brightness(1.2); }
-
+        
         .derby-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 8px; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
         .derby-bet-box:active:not(.locked) { transform: scale(0.95); }
         .derby-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
@@ -301,6 +301,7 @@
             .duel-center { width: 100%; flex-direction: row; gap: 20px;}
             .duel-center-vs { margin-bottom: 0; }
             .duel-coin { width: 80px; height: 80px; font-size: 40px; border-width: 4px;}
+            .duel-wheel { width: 100px; height: 100px; }
         }
     </style>
 </head>
@@ -410,6 +411,14 @@
                             <option value="4" selected>4 SLICES</option>
                             <option value="8">8 SLICES</option>
                             <option value="10">10 SLICES</option>
+                        </select>
+                    </div>
+
+                    <div id="coin-config-row">
+                        <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">YOUR COIN PICK:</span>
+                        <select id="duel-host-choice" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;">
+                            <option value="heads">TAKE HEADS</option>
+                            <option value="tails">TAKE TAILS</option>
                         </select>
                     </div>
                     
@@ -524,7 +533,7 @@
                         <option value="rule-bj">BLACKJACK</option>
                         <option value="rule-dice">HIGH-LOW DICE</option>
                         <option value="rule-derby">8-BIT DERBY SPRINT</option>
-                        <option value="rule-cups">3 CUPS & A BALL</option>
+                        <option value="rule-cups">3 CUPS AND A BALL</option>
                         <option value="rule-color">CLASSIC COLOR GAME</option>
                         <option value="rule-pvp">PVP ARENA (WHEEL & COIN)</option>
                         <option value="rule-sys">SYSTEM RULES</option>
@@ -562,7 +571,7 @@
                     </div>
 
                     <div id="rule-cups" class="rule-content hidden">
-                        <strong style="color: #f59e0b; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">3 CUPS & A BALL</strong>
+                        <strong style="color: #f59e0b; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">3 CUPS AND A BALL</strong>
                         <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">A golden ball is hidden under one of three cups. The cups shuffle rapidly. Pick the correct cup!</p>
                         <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
                             <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per cup.</li>
@@ -843,12 +852,12 @@
                 <div id="derby-race-container" style="display:flex; flex-direction:column; flex:1;">
                     <div class="derby-track-container" id="derby-track">
                         <div class="derby-finish-line"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-0" style="color:#ef4444;">RED | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-0" style="left:0%; filter: drop-shadow(0 0 5px #ef4444);"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-1" style="color:#3b82f6;">BLU | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-1" style="left:0%; filter: drop-shadow(0 0 5px #3b82f6);"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-2" style="color:#10b981;">GRN | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-2" style="left:0%; filter: drop-shadow(0 0 5px #10b981);"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-3" style="color:#a855f7;">PUR | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-3" style="left:0%; filter: drop-shadow(0 0 5px #a855f7);"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-4" style="color:#ec4899;">PNK | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-4" style="left:0%; filter: drop-shadow(0 0 5px #ec4899);"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-5" style="color:#fbbf24;">GLD | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-5" style="left:0%; filter: drop-shadow(0 0 5px #fbbf24);"></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-0" style="color:#ef4444;">RED | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-0" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(350deg);"></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-1" style="color:#3b82f6;">BLU | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-1" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(200deg);"></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-2" style="color:#10b981;">GRN | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-2" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(100deg);"></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-3" style="color:#a855f7;">PUR | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-3" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(260deg);"></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-4" style="color:#ec4899;">PNK | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-4" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(300deg);"></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-5" style="color:#fbbf24;">GLD | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-5" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(40deg);"></div>
                     </div>
                     
                     <div style="text-align: center; margin: 10px 0;">
@@ -1970,7 +1979,11 @@
                     canvas.classList.remove('hidden', 'wheel-spinning');
                     pointer.classList.remove('hidden');
                     
+                    // Calculate final rotation based on the winning slice index
+                    // Slice 0 is top-right, index goes clockwise. Pointer is at TOP (270 deg / -90 deg from 0)
                     const sliceAngle = 360 / state.slices;
+                    // Stop the wheel so the winning slice is exactly at the top
+                    // We add 360 * 5 to ensure it spins a few times before stopping via CSS transition
                     const stopAngle = (360 * 5) - (state.winSliceIndex * sliceAngle) - (sliceAngle / 2);
                     
                     canvas.style.transition = 'transform 3s cubic-bezier(0.2, 0.8, 0.2, 1)';
