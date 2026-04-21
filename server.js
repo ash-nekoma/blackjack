@@ -69,7 +69,8 @@ function shuffleDerby() { derbyGame.laneProfiles = [...DERBY_PROFILES].sort(() =
 const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
 const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
 
-const cupsGame = { status: 'betting', betEndTime: Date.now() + 15000, winningCup: 0, bets: [], history: [] };
+// CUPS FLOW: Shuffling (3s) -> Betting (7s) -> Resolving (5s)
+const cupsGame = { status: 'shuffling', stateEndTime: Date.now() + 3000, betEndTime: 0, winningCup: 0, bets: [], history: [] };
 
 // --- PVP ARENA GLOBALS ---
 let pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null };
@@ -224,26 +225,43 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // 3 CUPS GAME LOOP
-    if (cupsGame.status === 'betting' && now >= cupsGame.betEndTime) {
-        cupsGame.status = 'shuffling'; io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, timeLeft: 0, history: cupsGame.history });
-        setTimeout(async () => {
-            cupsGame.winningCup = Math.floor(Math.random() * 3); 
-            cupsGame.status = 'resolving'; cupsGame.history.unshift(cupsGame.winningCup); if(cupsGame.history.length > 20) cupsGame.history.pop();
-            let winners = []; let roundRecord = new GameRound({ game: 'cups', roundId: Math.random().toString(36).substring(2, 8).toUpperCase(), result: cupsGame.winningCup, players: [] });
-            for (let b of cupsGame.bets) {
-                let won = (b.choice === cupsGame.winningCup); let wonAmount = won ? (b.amount * 2.5) : 0;
-                roundRecord.players.push({ username: b.username, choice: `CUP ${b.choice + 1}`, bet: b.amount, win: wonAmount });
-                if (won) {
-                    try { const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: wonAmount } }, {new: true}); 
-                        if(updatedUser) { await new Transaction({ username: updatedUser.username, type: 'CUPS WIN', amount: wonAmount }).save(); winners.push({ username: updatedUser.username, choice: b.choice, amount: wonAmount }); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); }
-                    } catch(e) {}
-                }
+    // 3 CUPS GAME LOOP (Shuffling -> Betting -> Resolving)
+    if (cupsGame.status === 'shuffling' && now >= cupsGame.stateEndTime) {
+        cupsGame.status = 'betting';
+        cupsGame.betEndTime = now + 7000; // 7 seconds betting window
+        cupsGame.stateEndTime = cupsGame.betEndTime;
+        io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, betEndTime: cupsGame.betEndTime, history: cupsGame.history });
+    }
+    else if (cupsGame.status === 'betting' && now >= cupsGame.stateEndTime) {
+        cupsGame.winningCup = Math.floor(Math.random() * 3); 
+        cupsGame.status = 'resolving'; 
+        cupsGame.stateEndTime = now + 5000; // 5 seconds resolving phase
+        cupsGame.history.unshift(cupsGame.winningCup); if(cupsGame.history.length > 20) cupsGame.history.pop();
+        
+        let winners = []; let roundRecord = new GameRound({ game: 'cups', roundId: Math.random().toString(36).substring(2, 8).toUpperCase(), result: cupsGame.winningCup, players: [] });
+        for (let b of cupsGame.bets) {
+            let won = (b.choice === cupsGame.winningCup); let wonAmount = won ? (b.amount * 2.5) : 0;
+            roundRecord.players.push({ username: b.username, choice: `CUP ${b.choice + 1}`, bet: b.amount, win: wonAmount });
+            if (won) {
+                try { 
+                    const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: wonAmount } }, {new: true}); 
+                    if(updatedUser) { 
+                        await new Transaction({ username: updatedUser.username, type: 'CUPS WIN', amount: wonAmount }).save(); 
+                        winners.push({ username: updatedUser.username, choice: b.choice, amount: wonAmount }); 
+                        io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
+                    }
+                } catch(e) {}
             }
-            await roundRecord.save();
-            io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, winningCup: cupsGame.winningCup, winners, bets: cupsGame.bets, history: cupsGame.history });
-            setTimeout(() => { cupsGame.bets = []; cupsGame.status = 'betting'; cupsGame.betEndTime = Date.now() + 15000; io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, betEndTime: cupsGame.betEndTime, history: cupsGame.history }); }, 5000);
-        }, 3000); 
+        }
+        await roundRecord.save();
+        io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, winningCup: cupsGame.winningCup, winners, bets: cupsGame.bets, history: cupsGame.history });
+        
+        setTimeout(() => { 
+            cupsGame.bets = []; 
+            cupsGame.status = 'shuffling'; 
+            cupsGame.stateEndTime = Date.now() + 3000; // 3 seconds fast shuffle
+            io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, history: cupsGame.history }); 
+        }, 5000);
     }
 
 }, 1000);
