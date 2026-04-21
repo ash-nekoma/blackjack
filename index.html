@@ -179,6 +179,9 @@
         .arcade-bet-payout { font-size: 24px; color: var(--success); font-weight: bold;}
         
         .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 30;}
+        
+        /* BADGE POSITION FIX */
+        .bet-badge { position: absolute; top: -10px; right: -10px; background: var(--accent-glow-2); color: #fff; padding: 2px 8px; border-radius: 8px; border: 2px solid #fff; font-size: 18px; z-index: 40; font-weight: bold; box-shadow: 2px 2px 0 #000; text-shadow: 1px 1px 0 #000;}
 
         /* --- FONT SIZE FIX FOR HISTORY RESULTS --- */
         .history-content { flex: 1; overflow-y: auto; padding: 0 5px; margin-bottom: 2px; }
@@ -189,15 +192,18 @@
         .derby-track-container { flex: 1; background: #111; border-bottom: 4px solid var(--border-std); display: flex; flex-direction: column; position: relative; overflow: hidden; margin-top: 10px; border-radius: 8px; box-shadow: inset 0 0 20px #000;}
         .derby-lane { flex: 1; border-bottom: 2px dashed #333; position: relative; display: flex; align-items: center; padding: 0 10px; background-image: linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 50px 100%; }
         .derby-lane.scrolling { animation: trackScroll 0.5s linear infinite; }
-        .derby-finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8;}
+        .derby-finish-line { position: absolute; right: -50px; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8; transition: right 0.1s linear;}
         .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 26px; color: rgba(255,255,255,0.3); font-weight: bold; z-index: 5; pointer-events: none; text-shadow: 1px 1px 0 #000; }
-        .racer-sprite { height: 45px; position: absolute; left: 0; bottom: 5px; transition: left 0.15s linear; z-index: 20; transform-origin: center bottom; transform: scaleX(-1); }
+        
+        /* HORSE MASK TRICK: Perfect Coloring */
+        .racer-sprite { width: 60px; height: 45px; position: absolute; bottom: 5px; transition: left 0.1s linear; z-index: 20; -webkit-mask: url('horse.gif') no-repeat center / contain; mask: url('horse.gif') no-repeat center / contain; transform: scaleX(-1); }
         .racer-running { filter: brightness(1.2); }
         
         .derby-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 8px; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
         .derby-bet-box:active:not(.locked) { transform: scale(0.95); }
         .derby-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
         
+        .bg-red { background-color: #ef4444 !important; } .bg-blue { background-color: #3b82f6 !important; } .bg-green { background-color: #10b981 !important; } .bg-purple { background-color: #a855f7 !important; } .bg-pink { background-color: #ec4899 !important; } .bg-gold { background-color: #fbbf24 !important; }
         .lane-1-color { color: #ef4444 !important; border-top-color: #ef4444; } .lane-2-color { color: #3b82f6 !important; border-top-color: #3b82f6; } .lane-3-color { color: #10b981 !important; border-top-color: #10b981; } .lane-4-color { color: #a855f7 !important; border-top-color: #a855f7; } .lane-5-color { color: #ec4899 !important; border-top-color: #ec4899; } .lane-6-color { color: #fbbf24 !important; border-top-color: #fbbf24; }
         .derby-bet-title { font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; margin: 0; font-weight: bold; text-transform: uppercase;}
 
@@ -232,10 +238,7 @@
         .color-die-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1;}
         .color-die { width: 90px; height: 90px; border: 5px solid var(--border-std); border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5); transition: background-color 0.1s;}
         .color-die.shake { animation: subtleShake 0.2s infinite; }
-        
-        .bg-red { background-color: #ef4444; } .bg-blue { background-color: #3b82f6; } .bg-yellow { background-color: #eab308; } 
-        .bg-green { background-color: #10b981; } .bg-pink { background-color: #ec4899; } 
-        .bg-white { background-color: #f8fafc !important; color: #000 !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.5) !important; }
+        .color-die.bg-white { background-color: #f8fafc !important; color: #000 !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.5) !important; }
         
         .color-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 8px; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
         .color-bet-box:active:not(.locked) { transform: scale(0.95); }
@@ -246,12 +249,12 @@
         .color-bet-title { font-size: 34px; color: #fff; text-shadow: 2px 2px 0 #000; margin: 0; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;}
         .color-bet-box.br-white .color-bet-title { color: #f8fafc !important; text-shadow: 2px 2px 0 #555 !important; }
 
-        /* 3 CUPS GAME - FLIPPED CUPS */
-        .cups-container { position: relative; width: 480px; height: 160px; margin: 0 auto; display: flex; justify-content: center;}
-        .cup-wrapper { position: absolute; width: 120px; height: 160px; transition: left 0.3s ease-in-out; display: flex; justify-content: center; align-items: flex-end;}
-        .cup-shape { width: 80px; height: 100px; background: #dc2626; border-radius: 20px 20px 5px 5px; border: 4px solid #991b1b; border-bottom: 10px solid #f87171; box-shadow: 0 10px 15px rgba(0,0,0,0.6); position: absolute; bottom: 0; z-index: 10; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .cup-ball { font-size: 50px; position: absolute; bottom: 10px; z-index: 5; opacity: 0; transition: opacity 0.2s; }
-        .cup-wrapper.reveal .cup-shape { transform: translateY(-80px) rotate(15deg); }
+        /* 3 CUPS GAME - FLIPPED CUPS AND CENTERED */
+        .cups-container { position: relative; width: 480px; height: 100%; min-height: 200px; margin: 0 auto; display: flex; justify-content: center; align-items: center;}
+        .cup-wrapper { position: absolute; width: 120px; height: 120px; transition: left 0.1s ease-in-out; display: flex; justify-content: center; align-items: flex-end;}
+        .cup-shape { width: 80px; height: 100px; background: #dc2626; border-radius: 5px 5px 20px 20px; border: 4px solid #991b1b; border-bottom: 10px solid #f87171; border-top: none; box-shadow: 0 10px 15px rgba(0,0,0,0.6); position: absolute; bottom: 0; z-index: 10; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .cup-ball { font-size: 50px; position: absolute; bottom: -5px; z-index: 5; opacity: 0; transition: opacity 0.2s; }
+        .cup-wrapper.reveal .cup-shape { transform: translateY(-60px); }
         .cup-wrapper.reveal .cup-ball { opacity: 1; }
         
         .cup-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; width: 200px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; border-top-color: #f59e0b; cursor: pointer; transition: 0.1s; position: relative; height: 160px;}
@@ -275,7 +278,7 @@
             .arcade-bet-title { font-size: 26px; }
             .arcade-bet-payout { font-size: 18px; }
             .dice { font-size: 80px; }
-            .cups-container { width: 100%; } .cup-wrapper { width: 80px; height: 120px; } .cup-shape { width: 60px; height: 80px; } .cup-ball { font-size: 40px; }
+            .cups-container { width: 100%; } .cup-wrapper { width: 80px; height: 100px; } .cup-shape { width: 60px; height: 80px; } .cup-ball { font-size: 40px; }
             
             .color-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
             .color-die { width: 60px; height: 60px; }
@@ -405,7 +408,7 @@
                     </div>
                     
                     <div id="modal-wheel-config-row" class="hidden">
-                        <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">WHEEL SLICES:</span>
+                        <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">WHEEL SLICES (Populates Names):</span>
                         <select id="modal-duel-wheel-slices" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;">
                             <option value="2">2 SLICES</option>
                             <option value="4" selected>4 SLICES</option>
@@ -852,12 +855,12 @@
                 <div id="derby-race-container" style="display:flex; flex-direction:column; flex:1;">
                     <div class="derby-track-container" id="derby-track">
                         <div class="derby-finish-line"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-0" style="color:#ef4444;">RED | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-0" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(350deg);"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-1" style="color:#3b82f6;">BLU | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-1" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(200deg);"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-2" style="color:#10b981;">GRN | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-2" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(100deg);"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-3" style="color:#a855f7;">PUR | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-3" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(260deg);"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-4" style="color:#ec4899;">PNK | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-4" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(300deg);"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-5" style="color:#fbbf24;">GLD | ?x</div><img src="horse.gif" class="racer-sprite" id="racer-5" style="left:0%; filter: sepia(1) saturate(5) hue-rotate(40deg);"></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-0" style="color:#ef4444;">RED | ?x</div><div class="racer-sprite" id="racer-0" style="left:0%; background-color:#ef4444;"></div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-1" style="color:#3b82f6;">BLU | ?x</div><div class="racer-sprite" id="racer-1" style="left:0%; background-color:#3b82f6;"></div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-2" style="color:#10b981;">GRN | ?x</div><div class="racer-sprite" id="racer-2" style="left:0%; background-color:#10b981;"></div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-3" style="color:#a855f7;">PUR | ?x</div><div class="racer-sprite" id="racer-3" style="left:0%; background-color:#a855f7;"></div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-4" style="color:#ec4899;">PNK | ?x</div><div class="racer-sprite" id="racer-4" style="left:0%; background-color:#ec4899;"></div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-5" style="color:#fbbf24;">GLD | ?x</div><div class="racer-sprite" id="racer-5" style="left:0%; background-color:#fbbf24;"></div></div>
                     </div>
                     
                     <div style="text-align: center; margin: 10px 0;">
@@ -929,7 +932,7 @@
             <div class="game-area coin-bg">
                 <div class="top-hud">
                     <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('cups')">◄ DASHBOARD</button></div>
-                    <div class="hud-center"><div style="font-size: 36px; color: #f59e0b;" id="cups-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    <div class="hud-center"><div style="font-size: 36px; color: #f59e0b;" id="cups-phase-display" class="pixel-text">WAITING</div></div>
                     <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="cups-credits"></span></div></div>
                 </div>
                 
@@ -941,7 +944,7 @@
                 
                 <div style="text-align: center; margin-bottom: 20px;">
                     <div id="cups-result-text" class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 4px 4px 0 #000;">WHERE IS THE BALL?</div>
-                    <div id="cups-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
+                    <div id="cups-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">WAITING FOR NEXT SHUFFLE</div>
                 </div>
                 
                 <div class="arcade-bet-area">
@@ -1707,9 +1710,24 @@
             }
 
             if(data.distances) {
-                for(let i=0; i<6; i++) {
-                    const racer = document.getElementById(`racer-${i}`);
-                    if(racer) racer.style.left = `${data.distances[i]}%`;
+                let maxDist = Math.max(...data.distances);
+                let finishLine = document.querySelector('.derby-finish-line');
+
+                if (maxDist < 80) {
+                    for(let i=0; i<6; i++) {
+                        let relative = data.distances[i] - maxDist;
+                        let basePos = (maxDist / 80) * 50;
+                        const racer = document.getElementById(`racer-${i}`);
+                        if(racer) racer.style.left = `${Math.max(0, basePos + relative)}%`;
+                    }
+                    if(finishLine) finishLine.style.right = '-50px';
+                } else {
+                    for(let i=0; i<6; i++) {
+                        let sprintPos = 50 + ((data.distances[i] - 80) / 20) * 40;
+                        const racer = document.getElementById(`racer-${i}`);
+                        if(racer) racer.style.left = `${Math.max(0, sprintPos)}%`;
+                    }
+                    if(finishLine) finishLine.style.right = `${((100 - maxDist) / 20) * 10}%`;
                 }
             }
 
@@ -1771,9 +1789,24 @@
 
         socket.on('derby_race_tick', (data) => {
             if(data.distances) {
-                for(let i=0; i<6; i++) {
-                    const racer = document.getElementById(`racer-${i}`);
-                    if(racer) racer.style.left = `${data.distances[i]}%`;
+                let maxDist = Math.max(...data.distances);
+                let finishLine = document.querySelector('.derby-finish-line');
+
+                if (maxDist < 80) {
+                    for(let i=0; i<6; i++) {
+                        let relative = data.distances[i] - maxDist;
+                        let basePos = (maxDist / 80) * 50;
+                        const racer = document.getElementById(`racer-${i}`);
+                        if(racer) racer.style.left = `${Math.max(0, basePos + relative)}%`;
+                    }
+                    if(finishLine) finishLine.style.right = '-50px';
+                } else {
+                    for(let i=0; i<6; i++) {
+                        let sprintPos = 50 + ((data.distances[i] - 80) / 20) * 40;
+                        const racer = document.getElementById(`racer-${i}`);
+                        if(racer) racer.style.left = `${Math.max(0, sprintPos)}%`;
+                    }
+                    if(finishLine) finishLine.style.right = `${((100 - maxDist) / 20) * 10}%`;
                 }
             }
         });
@@ -1790,38 +1823,34 @@
 
         // --- 3 CUPS GAME LOGIC ---
         let cupsInterval = null; 
+        let shuffleAnim = null;
         socket.on('cups_state_update', (data) => {
             const statusText = document.getElementById('cups-result-text'); const timerText = document.getElementById('cups-timer');
             
             if(data.history) { document.getElementById('cups-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:#f59e0b;">CUP ${r + 1}</span></div>`).join(''); }
 
-            if (data.status === 'betting') {
-                statusText.innerText = "WHERE IS THE BALL?"; myCupsBets = [0,0,0]; clearInterval(cupsInterval);
+            if (data.status === 'shuffling') { 
+                statusText.innerText = "SHUFFLING..."; timerText.innerText = "NO MORE BETS"; myCupsBets = [0,0,0]; playSfx('deal'); 
                 document.querySelectorAll('.cup-wrapper').forEach(w => w.classList.remove('reveal'));
-                
-                // Reset positions
-                document.getElementById('cup-wrap-0').style.left = '0%';
-                document.getElementById('cup-wrap-1').style.left = '33.33%';
-                document.getElementById('cup-wrap-2').style.left = '66.66%';
-
                 document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('cups')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
-                cupsInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(cupsInterval); }, 1000);
-            }
-            else if (data.status === 'shuffling') { 
-                statusText.innerText = "SHUFFLING..."; timerText.innerText = "NO MORE BETS"; playSfx('deal'); 
                 
                 let shuffleCount = 0;
-                let shuffleAnim = setInterval(() => {
+                clearInterval(shuffleAnim);
+                shuffleAnim = setInterval(() => {
                     let pos = ['0%', '33.33%', '66.66%'].sort(() => Math.random() - 0.5);
                     document.getElementById('cup-wrap-0').style.left = pos[0];
                     document.getElementById('cup-wrap-1').style.left = pos[1];
                     document.getElementById('cup-wrap-2').style.left = pos[2];
                     shuffleCount++;
-                    if(shuffleCount >= 8) clearInterval(shuffleAnim);
-                }, 350);
+                }, 200);
+            }
+            else if (data.status === 'betting') {
+                clearInterval(shuffleAnim);
+                statusText.innerText = "WHERE IS THE BALL?"; clearInterval(cupsInterval);
+                cupsInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(cupsInterval); }, 1000);
             }
             else if (data.status === 'resolving') {
-                
+                clearInterval(shuffleAnim);
                 setTimeout(() => {
                     const winCupWrap = document.getElementById(`cup-wrap-${data.winningCup}`);
                     if(winCupWrap) winCupWrap.classList.add('reveal');
@@ -1979,11 +2008,7 @@
                     canvas.classList.remove('hidden', 'wheel-spinning');
                     pointer.classList.remove('hidden');
                     
-                    // Calculate final rotation based on the winning slice index
-                    // Slice 0 is top-right, index goes clockwise. Pointer is at TOP (270 deg / -90 deg from 0)
                     const sliceAngle = 360 / state.slices;
-                    // Stop the wheel so the winning slice is exactly at the top
-                    // We add 360 * 5 to ensure it spins a few times before stopping via CSS transition
                     const stopAngle = (360 * 5) - (state.winSliceIndex * sliceAngle) - (sliceAngle / 2);
                     
                     canvas.style.transition = 'transform 3s cubic-bezier(0.2, 0.8, 0.2, 1)';
