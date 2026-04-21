@@ -69,7 +69,7 @@ function shuffleDerby() { derbyGame.laneProfiles = [...DERBY_PROFILES].sort(() =
 const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
 const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
 
-const cupsGame = { status: 'betting', betEndTime: Date.now() + 15000, winningCup: 0, bets: [], history: [] };
+const cupsGame = { status: 'shuffling', stateEndTime: Date.now() + 3000, betEndTime: 0, winningCup: 0, bets: [], history: [] };
 
 // --- PVP ARENA GLOBALS ---
 let pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null };
@@ -121,7 +121,7 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // DERBY LOOP (15 SECOND HIGH-VOLATILITY RACE)
+    // DERBY LOOP
     if (derbyGame.status === 'betting' && now >= derbyGame.betEndTime) {
         derbyGame.status = 'racing'; 
         derbyGame.distances = [0,0,0,0,0,0]; 
@@ -224,7 +224,7 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // 3 CUPS GAME LOOP (Shuffling -> Betting -> Resolving)
+    // 3 CUPS GAME LOOP
     if (cupsGame.status === 'shuffling' && now >= cupsGame.stateEndTime) {
         cupsGame.status = 'betting';
         cupsGame.betEndTime = now + 7000; 
@@ -667,13 +667,15 @@ io.on('connection', (socket) => {
                 const u1 = await User.findOne({ username: new RegExp('^' + pvpDuel.seats[0].username + '$', 'i') });
                 const u2 = await User.findOne({ username: new RegExp('^' + pvpDuel.seats[1].username + '$', 'i') });
 
-                await User.updateOne({ username: u1.username }, { $inc: { credits: -pvpDuel.betAmount } });
-                await User.updateOne({ username: u2.username }, { $inc: { credits: -pvpDuel.betAmount } });
-                await new Transaction({ username: u1.username, type: 'PVP ARENA WAGER', amount: -pvpDuel.betAmount }).save();
-                await new Transaction({ username: u2.username, type: 'PVP ARENA WAGER', amount: -pvpDuel.betAmount }).save();
-                io.emit('credit_update', { username: u1.username, credits: u1.credits - pvpDuel.betAmount });
-                io.emit('credit_update', { username: u2.username, credits: u2.credits - pvpDuel.betAmount });
-                adminLog(`[PVP] ${u1.username} vs ${u2.username} match started. Pot: ${pvpDuel.betAmount * 2}`);
+                if(u1 && u2) {
+                    await User.updateOne({ username: u1.username }, { $inc: { credits: -pvpDuel.betAmount } });
+                    await User.updateOne({ username: u2.username }, { $inc: { credits: -pvpDuel.betAmount } });
+                    await new Transaction({ username: u1.username, type: 'PVP ARENA WAGER', amount: -pvpDuel.betAmount }).save();
+                    await new Transaction({ username: u2.username, type: 'PVP ARENA WAGER', amount: -pvpDuel.betAmount }).save();
+                    io.emit('credit_update', { username: u1.username, credits: u1.credits - pvpDuel.betAmount });
+                    io.emit('credit_update', { username: u2.username, credits: u2.credits - pvpDuel.betAmount });
+                    adminLog(`[PVP] ${u1.username} vs ${u2.username} match started. Pot: ${pvpDuel.betAmount * 2}`);
+                }
             }
 
             pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping';
@@ -772,12 +774,16 @@ io.on('connection', (socket) => {
 // --- PVP ENGINE LOGIC ---
 async function handlePvpLeave(seatIndex) {
     const seat = pvpDuel.seats[seatIndex]; if(!seat) return;
-    if((pvpDuel.status === 'flipping' || pvpDuel.status === 'spinning') && pvpDuel.betAmount > 0) {
+    
+    // SAFEGUARD 0: Only refund if the match hasn't finished yet
+    if(['readying', 'flipping', 'spinning', 'resolving'].includes(pvpDuel.status) && pvpDuel.betAmount > 0) {
         const otherIndex = seatIndex === 0 ? 1 : 0; const otherSeat = pvpDuel.seats[otherIndex];
         await refundPvpSeat(seat.username, pvpDuel.betAmount); if(otherSeat) await refundPvpSeat(otherSeat.username, pvpDuel.betAmount);
         adminLog(`[PVP ABORTED] ${seat.username} left mid-game. Bets refunded.`);
     }
+    
     pvpDuel.seats[seatIndex] = null;
+    
     if(pvpDuel.seats.every(s => s === null)) {
         pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null };
     } else {
@@ -793,19 +799,27 @@ async function refundPvpSeat(username, amount) {
 }
 
 function runPvpSequence() {
-    pvpDuel.timer = 3; const actionVerb = pvpDuel.type === 'wheel' ? 'SPINNING' : 'FLIPPING'; pvpDuel.message = `${actionVerb} IN 3...`; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+    pvpDuel.timer = 3; 
+    const actionVerb = pvpDuel.type === 'wheel' ? 'SPINNING' : 'FLIPPING'; 
+    pvpDuel.message = `${actionVerb} IN 3...`; 
+    io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+
     let countdown = setInterval(() => {
         // SAFEGUARD 1: Stop countdown if someone fled the match
-        if (pvpDuel.status === 'waiting') { clearInterval(countdown); return; }
+        if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) { clearInterval(countdown); return; }
 
         pvpDuel.timer--;
         if(pvpDuel.timer > 0) { 
-            pvpDuel.message = `${actionVerb} IN ${pvpDuel.timer}...`; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel); 
+            pvpDuel.message = `${actionVerb} IN ${pvpDuel.timer}...`; 
+            io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel); 
         } 
         else {
-            clearInterval(countdown); pvpDuel.message = `${actionVerb}...`; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+            clearInterval(countdown); 
+            pvpDuel.message = `${actionVerb}...`; 
+            io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+
             setTimeout(async () => {
-                // SAFEGUARD 2: Prevent crash if someone disconnected during the spinning animation
+                // SAFEGUARD 2: Prevent crash if someone disconnected during the animation
                 if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
 
                 let res; 
@@ -815,48 +829,58 @@ function runPvpSequence() {
                     pvpDuel.winSliceIndex = Math.floor(Math.random() * pvpDuel.slices);
                     res = pvpDuel.winSliceIndex % 2 === 0 ? pvpDuel.seats[0].username : pvpDuel.seats[1].username;
                 }
-                pvpDuel.result = res; pvpDuel.status = 'resolving';
+                pvpDuel.result = res; 
+                pvpDuel.status = 'resolving';
                 
                 let roundWinnerIndex = -1; 
-                if(pvpDuel.seats[0] && pvpDuel.seats[0].choice === res) roundWinnerIndex = 0; 
-                if(pvpDuel.seats[1] && pvpDuel.seats[1].choice === res) roundWinnerIndex = 1;
+                if(pvpDuel.seats[0].choice === res) roundWinnerIndex = 0; 
+                if(pvpDuel.seats[1].choice === res) roundWinnerIndex = 1;
                 
-                if(roundWinnerIndex !== -1) { pvpDuel.seats[roundWinnerIndex].score++; pvpDuel.message = `${pvpDuel.seats[roundWinnerIndex].username.toUpperCase()} SCORES!`; }
+                if(roundWinnerIndex !== -1) { 
+                    pvpDuel.seats[roundWinnerIndex].score++; 
+                    pvpDuel.message = `${pvpDuel.seats[roundWinnerIndex].username.toUpperCase()} SCORES!`; 
+                }
                 io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
                 
                 let matchWinner = null; 
                 if(pvpDuel.seats[0].score >= pvpDuel.format) matchWinner = 0; 
                 if(pvpDuel.seats[1].score >= pvpDuel.format) matchWinner = 1;
                 
-                setTimeout(async () => {
-                    // SAFEGUARD 3: Prevent crash before dispensing winnings
-                    if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
+                // CRASH FIX: Payout MUST happen before any UI delay to prevent voided winnings on disconnect
+                if(matchWinner !== null) {
+                    pvpDuel.status = 'finished'; 
+                    const winner = pvpDuel.seats[matchWinner]; 
+                    pvpDuel.message = `${winner.username.toUpperCase()} WINS THE MATCH!`;
 
-                    if(matchWinner !== null) {
-                        pvpDuel.status = 'finished'; const winner = pvpDuel.seats[matchWinner]; pvpDuel.message = `${winner.username.toUpperCase()} WINS THE MATCH!`;
-                        if(pvpDuel.betAmount > 0) {
-                            const winAmount = pvpDuel.betAmount * 2;
-                            try { const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + winner.username + '$', 'i') }, { $inc: { credits: winAmount } }, {new: true}); 
-                                if(updatedUser) { await new Transaction({ username: updatedUser.username, type: 'PVP ARENA WIN', amount: winAmount }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); }
-                            } catch(e){}
-                        }
-                        io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
-                        
-                        setTimeout(() => {
-                            if(pvpDuel.status === 'finished') {
-                                pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null };
-                                io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+                    if(pvpDuel.betAmount > 0) {
+                        const winAmount = pvpDuel.betAmount * 2;
+                        try { 
+                            const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + winner.username + '$', 'i') }, { $inc: { credits: winAmount } }, {new: true}); 
+                            if(updatedUser) { 
+                                await new Transaction({ username: updatedUser.username, type: 'PVP ARENA WIN', amount: winAmount }).save(); 
+                                io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
                             }
-                        }, 3000);
+                        } catch(e){}
+                    }
+                    io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+                    
+                    setTimeout(() => {
+                        pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null };
+                        io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+                    }, 3000);
 
-                    } else { 
+                } else { 
+                    setTimeout(() => {
+                        // SAFEGUARD 3: Do not continue if a player rage-quit during the result phase
+                        if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
+
                         if(pvpDuel.status !== 'finished') { 
                             pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping'; 
                             pvpDuel.result = null; 
                             runPvpSequence(); 
                         } 
-                    }
-                }, 3000);
+                    }, 3000);
+                }
             }, 2000);
         }
     }, 1000);
