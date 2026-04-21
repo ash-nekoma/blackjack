@@ -69,8 +69,7 @@ function shuffleDerby() { derbyGame.laneProfiles = [...DERBY_PROFILES].sort(() =
 const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
 const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
 
-// CUPS FLOW: Shuffling (3s) -> Betting (7s) -> Resolving (5s)
-const cupsGame = { status: 'shuffling', stateEndTime: Date.now() + 3000, betEndTime: 0, winningCup: 0, bets: [], history: [] };
+const cupsGame = { status: 'betting', betEndTime: Date.now() + 15000, winningCup: 0, bets: [], history: [] };
 
 // --- PVP ARENA GLOBALS ---
 let pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null };
@@ -228,14 +227,14 @@ setInterval(() => {
     // 3 CUPS GAME LOOP (Shuffling -> Betting -> Resolving)
     if (cupsGame.status === 'shuffling' && now >= cupsGame.stateEndTime) {
         cupsGame.status = 'betting';
-        cupsGame.betEndTime = now + 7000; // 7 seconds betting window
+        cupsGame.betEndTime = now + 7000; 
         cupsGame.stateEndTime = cupsGame.betEndTime;
         io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, betEndTime: cupsGame.betEndTime, history: cupsGame.history });
     }
     else if (cupsGame.status === 'betting' && now >= cupsGame.stateEndTime) {
         cupsGame.winningCup = Math.floor(Math.random() * 3); 
         cupsGame.status = 'resolving'; 
-        cupsGame.stateEndTime = now + 5000; // 5 seconds resolving phase
+        cupsGame.stateEndTime = now + 5000; 
         cupsGame.history.unshift(cupsGame.winningCup); if(cupsGame.history.length > 20) cupsGame.history.pop();
         
         let winners = []; let roundRecord = new GameRound({ game: 'cups', roundId: Math.random().toString(36).substring(2, 8).toUpperCase(), result: cupsGame.winningCup, players: [] });
@@ -259,7 +258,7 @@ setInterval(() => {
         setTimeout(() => { 
             cupsGame.bets = []; 
             cupsGame.status = 'shuffling'; 
-            cupsGame.stateEndTime = Date.now() + 3000; // 3 seconds fast shuffle
+            cupsGame.stateEndTime = Date.now() + 3000; 
             io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, history: cupsGame.history }); 
         }, 5000);
     }
@@ -796,11 +795,19 @@ async function refundPvpSeat(username, amount) {
 function runPvpSequence() {
     pvpDuel.timer = 3; const actionVerb = pvpDuel.type === 'wheel' ? 'SPINNING' : 'FLIPPING'; pvpDuel.message = `${actionVerb} IN 3...`; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
     let countdown = setInterval(() => {
+        // SAFEGUARD 1: Stop countdown if someone fled the match
+        if (pvpDuel.status === 'waiting') { clearInterval(countdown); return; }
+
         pvpDuel.timer--;
-        if(pvpDuel.timer > 0) { pvpDuel.message = `${actionVerb} IN ${pvpDuel.timer}...`; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel); } 
+        if(pvpDuel.timer > 0) { 
+            pvpDuel.message = `${actionVerb} IN ${pvpDuel.timer}...`; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel); 
+        } 
         else {
             clearInterval(countdown); pvpDuel.message = `${actionVerb}...`; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
             setTimeout(async () => {
+                // SAFEGUARD 2: Prevent crash if someone disconnected during the spinning animation
+                if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
+
                 let res; 
                 if(pvpDuel.type === 'coin') { 
                     res = Math.random() < 0.5 ? 'heads' : 'tails'; 
@@ -809,11 +816,22 @@ function runPvpSequence() {
                     res = pvpDuel.winSliceIndex % 2 === 0 ? pvpDuel.seats[0].username : pvpDuel.seats[1].username;
                 }
                 pvpDuel.result = res; pvpDuel.status = 'resolving';
-                let roundWinnerIndex = -1; if(pvpDuel.seats[0].choice === res) roundWinnerIndex = 0; if(pvpDuel.seats[1].choice === res) roundWinnerIndex = 1;
+                
+                let roundWinnerIndex = -1; 
+                if(pvpDuel.seats[0] && pvpDuel.seats[0].choice === res) roundWinnerIndex = 0; 
+                if(pvpDuel.seats[1] && pvpDuel.seats[1].choice === res) roundWinnerIndex = 1;
+                
                 if(roundWinnerIndex !== -1) { pvpDuel.seats[roundWinnerIndex].score++; pvpDuel.message = `${pvpDuel.seats[roundWinnerIndex].username.toUpperCase()} SCORES!`; }
                 io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
-                let matchWinner = null; if(pvpDuel.seats[0].score >= pvpDuel.format) matchWinner = 0; if(pvpDuel.seats[1].score >= pvpDuel.format) matchWinner = 1;
+                
+                let matchWinner = null; 
+                if(pvpDuel.seats[0].score >= pvpDuel.format) matchWinner = 0; 
+                if(pvpDuel.seats[1].score >= pvpDuel.format) matchWinner = 1;
+                
                 setTimeout(async () => {
+                    // SAFEGUARD 3: Prevent crash before dispensing winnings
+                    if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
+
                     if(matchWinner !== null) {
                         pvpDuel.status = 'finished'; const winner = pvpDuel.seats[matchWinner]; pvpDuel.message = `${winner.username.toUpperCase()} WINS THE MATCH!`;
                         if(pvpDuel.betAmount > 0) {
@@ -831,7 +849,13 @@ function runPvpSequence() {
                             }
                         }, 3000);
 
-                    } else { if(pvpDuel.status !== 'finished') { pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping'; pvpDuel.result = null; runPvpSequence(); } }
+                    } else { 
+                        if(pvpDuel.status !== 'finished') { 
+                            pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping'; 
+                            pvpDuel.result = null; 
+                            runPvpSequence(); 
+                        } 
+                    }
                 }, 3000);
             }, 2000);
         }
