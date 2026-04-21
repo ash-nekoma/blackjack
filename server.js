@@ -19,6 +19,7 @@ mongoose.connect(process.env.MONGODB_URI).then(async () => {
         if (!adminConfig) await new SystemConfig({ configName: 'admin_password', configValue: 'admin123' }).save();
         const modConfig = await SystemConfig.findOne({ configName: 'mod_password' });
         if (!modConfig) await new SystemConfig({ configName: 'mod_password', configValue: 'mod123' }).save();
+        console.log('SYSTEM LOG: Security Credentials Initialized.');
     } catch(e) { console.error("DB Error:", e); }
 }).catch(err => console.error('MongoDB connection error:', err));
 
@@ -122,65 +123,83 @@ setInterval(() => {
 
     // DERBY LOOP (15 SECOND HIGH-VOLATILITY RACE)
     if (derbyGame.status === 'betting' && now >= derbyGame.betEndTime) {
-        derbyGame.status = 'racing'; derbyGame.distances = [0,0,0,0,0,0]; derbyGame.speeds = derbyGame.laneProfiles.map(p => p.s);
+        derbyGame.status = 'racing'; 
+        derbyGame.distances = [0,0,0,0,0,0]; 
+        derbyGame.speeds = derbyGame.laneProfiles.map(p => p.s);
+        
         io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, timeLeft: 0, distances: derbyGame.distances, history: derbyGame.history, laneProfiles: derbyGame.laneProfiles });
         
         let raceInterval = setInterval(async () => {
-            let finished = false; let laneBets = [0,0,0,0,0,0]; derbyGame.bets.forEach(b => laneBets[b.choice] += b.amount);
-            
-            for(let i=0; i<6; i++) {
-                let speedMod = 1; if(strictHouseEdge && laneBets[i] > 0) speedMod = 0.85; 
-                
-                // Volatile physics: base progression is slow, relies heavily on RNG bursts
-                let volatileRNG = Math.random();
-                let step = 0.4; // Slow base gallop
-                
-                if (volatileRNG > 0.96) step = 3.5; // Massive Nitro Burst
-                else if (volatileRNG > 0.85) step = 1.8; // Hard Sprint
-                else if (volatileRNG < 0.10) step = 0.05; // Stumble / Stall
-                else step += Math.random() * 0.6; // Normal variance
-                
-                // Multiply by the lane's specific odds profile
-                step *= (derbyGame.speeds[i] * speedMod * 0.7); 
+            let finished = false; 
+            let laneBets = [0,0,0,0,0,0]; 
+            derbyGame.bets.forEach(b => laneBets[b.choice] += b.amount);
 
-                derbyGame.distances[i] += step; 
+            for(let i=0; i<6; i++) {
+                let speedMod = 1; 
+                if(strictHouseEdge && laneBets[i] > 0) speedMod = 0.85; 
+                
+                let rng = Math.random();
+                let baseStep = 0.66 * (derbyGame.speeds[i] * 0.8); 
+                let step = baseStep * speedMod;
+                
+                if (rng > 0.96) step *= 4.0; 
+                else if (rng > 0.85) step *= 2.0; 
+                else if (rng < 0.10) step *= 0.1; 
+                else step += (Math.random() * 0.4 - 0.2);
+
+                derbyGame.distances[i] += Math.max(0, step); 
                 if (derbyGame.distances[i] >= 100) { finished = true; }
             }
-            
+
             io.to('arcade_derby').emit('derby_race_tick', { distances: derbyGame.distances });
-            
+
             if (finished) {
-                clearInterval(raceInterval); derbyGame.status = 'resolving';
+                clearInterval(raceInterval); 
+                derbyGame.status = 'resolving';
+
                 let winnerIndex = 0; let maxDist = -1;
-                for(let i=0; i<6; i++) { if (derbyGame.distances[i] > maxDist) { maxDist = derbyGame.distances[i]; winnerIndex = i; } if (derbyGame.distances[i] > 100) derbyGame.distances[i] = 100; }
+                for(let i=0; i<6; i++) { 
+                    if (derbyGame.distances[i] > maxDist) { maxDist = derbyGame.distances[i]; winnerIndex = i; } 
+                    if (derbyGame.distances[i] > 100) derbyGame.distances[i] = 100;
+                }
                 io.to('arcade_derby').emit('derby_race_tick', { distances: derbyGame.distances });
-                
-                derbyGame.history.unshift(winnerIndex); if(derbyGame.history.length > 20) derbyGame.history.pop();
-                let winners = []; let roundRecord = new GameRound({ game: 'derby', roundId: Math.random().toString(36).substring(2, 8).toUpperCase(), result: winnerIndex, players: [] });
-                
+
+                derbyGame.history.unshift(winnerIndex); 
+                if(derbyGame.history.length > 20) derbyGame.history.pop();
+
+                let winners = []; 
+                let roundRecord = new GameRound({ game: 'derby', roundId: Math.random().toString(36).substring(2, 8).toUpperCase(), result: winnerIndex, players: [] });
+
                 for (let b of derbyGame.bets) {
                     let wonAmount = (b.choice === winnerIndex) ? (b.amount * derbyGame.laneProfiles[winnerIndex].m) : 0;
-                    
-                    // Translate choice index to color for DB logging
-                    let colorNames = ['RED', 'BLUE', 'GREEN', 'PURPLE', 'PINK', 'GOLD'];
-                    roundRecord.players.push({ username: b.username, choice: `${colorNames[b.choice]} HORSE`, bet: b.amount, win: wonAmount });
-                    
+                    const colorNames = ['RED HORSE', 'BLUE HORSE', 'GREEN HORSE', 'PURPLE HORSE', 'PINK HORSE', 'GOLD HORSE'];
+                    roundRecord.players.push({ username: b.username, choice: colorNames[b.choice], bet: b.amount, win: wonAmount });
+
                     if (b.choice === winnerIndex) {
-                        try { const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: wonAmount } }, {new: true}); 
-                            if(updatedUser) { await new Transaction({ username: updatedUser.username, type: 'DERBY WIN', amount: wonAmount }).save(); winners.push({ username: updatedUser.username, choice: b.choice, amount: wonAmount }); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); }
+                        try { 
+                            const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: wonAmount } }, {new: true}); 
+                            if(updatedUser) { 
+                                await new Transaction({ username: updatedUser.username, type: 'DERBY WIN', amount: wonAmount }).save(); 
+                                winners.push({ username: updatedUser.username, choice: b.choice, amount: wonAmount }); 
+                                io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
+                            }
                         } catch(e) {}
                     }
                 }
                 await roundRecord.save();
+                
                 io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, winner: winnerIndex, winners, bets: derbyGame.bets, history: derbyGame.history, distances: derbyGame.distances, laneProfiles: derbyGame.laneProfiles });
                 
                 setTimeout(() => { 
-                    derbyGame.bets = []; derbyGame.status = 'betting'; derbyGame.distances = [0,0,0,0,0,0]; 
-                    shuffleDerby(); derbyGame.betEndTime = Date.now() + 15000; 
+                    derbyGame.bets = []; 
+                    derbyGame.status = 'betting'; 
+                    derbyGame.distances = [0,0,0,0,0,0]; 
+                    shuffleDerby(); 
+                    derbyGame.betEndTime = Date.now() + 15000; 
                     io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, betEndTime: derbyGame.betEndTime, history: derbyGame.history, distances: derbyGame.distances, laneProfiles: derbyGame.laneProfiles }); 
                 }, 5000);
             }
-        }, 150); // Slightly slower tick interval to stretch out the race time
+        }, 100); 
     }
 
     // COLOR GAME LOOP
@@ -586,7 +605,7 @@ io.on('connection', (socket) => {
         if (seat && seat.username.toLowerCase() === username.toLowerCase()) { handlePvpLeave(seatIndex); }
     });
 
-    socket.on('host_pvp_match', async ({ username, type, format, betAmount, slices }) => {
+    socket.on('host_pvp_match', async ({ username, type, format, betAmount, slices, hostChoice }) => {
         const seatIndex = pvpDuel.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
         if(seatIndex === -1 || seatIndex !== pvpDuel.hostIndex || pvpDuel.status !== 'waiting') return;
         if(betAmount < 0 || betAmount > 100000) return socket.emit('arcade_error', 'Invalid bet limits (0-100k).');
@@ -596,7 +615,7 @@ io.on('connection', (socket) => {
         if (!user || user.credits < betAmount) { return socket.emit('arcade_error', 'You have insufficient credits to wager this amount.'); }
 
         pvpDuel.type = type; pvpDuel.format = format; pvpDuel.betAmount = betAmount; pvpDuel.slices = slices;
-        pvpDuel.seats[seatIndex].choice = type === 'coin' ? 'heads' : pvpDuel.seats[seatIndex].username; 
+        pvpDuel.seats[seatIndex].choice = type === 'coin' ? hostChoice : pvpDuel.seats[seatIndex].username; 
         pvpDuel.seats[seatIndex].ready = true; 
         pvpDuel.message = 'WAITING FOR CHALLENGER...';
         
@@ -613,8 +632,12 @@ io.on('connection', (socket) => {
             return handlePvpLeave(seatIndex); 
         }
 
-        if (pvpDuel.type === 'coin') pvpDuel.seats[seatIndex].choice = 'tails'; 
-        else pvpDuel.seats[seatIndex].choice = choice || pvpDuel.seats[seatIndex].username;
+        if (pvpDuel.type === 'coin') {
+            const hostChoice = pvpDuel.seats[pvpDuel.hostIndex].choice;
+            pvpDuel.seats[seatIndex].choice = hostChoice === 'heads' ? 'tails' : 'heads';
+        } else {
+            pvpDuel.seats[seatIndex].choice = pvpDuel.seats[seatIndex].username;
+        }
 
         pvpDuel.seats[seatIndex].ready = true;
         io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
