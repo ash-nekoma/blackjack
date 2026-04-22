@@ -180,7 +180,7 @@
         
         .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 30;}
         
-        /* BADGE POSITION FIX */
+        /* PINNED BET BADGE POSITION */
         .bet-badge { position: absolute; top: -10px; right: -10px; background: var(--accent-glow-2); color: #fff; padding: 2px 8px; border-radius: 8px; border: 2px solid #fff; font-size: 18px; z-index: 40; font-weight: bold; box-shadow: 2px 2px 0 #000; text-shadow: 1px 1px 0 #000;}
 
         /* --- FONT SIZE FIX FOR HISTORY RESULTS --- */
@@ -192,12 +192,13 @@
         .derby-track-container { flex: 1; background: #111; border-bottom: 4px solid var(--border-std); display: flex; flex-direction: column; position: relative; overflow: hidden; margin-top: 10px; border-radius: 8px; box-shadow: inset 0 0 20px #000;}
         .derby-lane { flex: 1; border-bottom: 2px dashed #333; position: relative; display: flex; align-items: center; padding: 0 10px; background-image: linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 50px 100%; }
         .derby-lane.scrolling { animation: trackScroll 0.5s linear infinite; }
-        .derby-finish-line { position: absolute; right: -50px; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8; transition: right 0.1s linear;}
+        .derby-finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8; }
         .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 26px; color: rgba(255,255,255,0.3); font-weight: bold; z-index: 5; pointer-events: none; text-shadow: 1px 1px 0 #000; }
         
-        /* HORSE MASK TRICK: Perfect Coloring */
-        .racer-sprite { width: 60px; height: 45px; position: absolute; bottom: 5px; transition: left 0.1s linear; z-index: 20; -webkit-mask: url('horse.gif') no-repeat center / contain; mask: url('horse.gif') no-repeat center / contain; transform: scaleX(-1); }
-        .racer-running { filter: brightness(1.2); }
+        /* HORSE MASK TRICK: Perfect Coloring & Classic Orientation */
+        .racer-sprite { width: 60px; height: 45px; position: absolute; bottom: 5px; transition: left 0.1s linear; z-index: 20; -webkit-mask: url('horse.gif') no-repeat center / contain; mask: url('horse.gif') no-repeat center / contain; transform: scaleX(-1); transform-origin: center bottom; }
+        @keyframes gallop { 0% { transform: scaleX(-1) translateY(0px) rotate(-2deg); } 50% { transform: scaleX(-1) translateY(-3px) rotate(3deg); } 100% { transform: scaleX(-1) translateY(0px) rotate(-2deg); } }
+        .racer-running { animation: gallop 0.3s infinite; filter: brightness(1.2); }
         
         .derby-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 8px; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
         .derby-bet-box:active:not(.locked) { transform: scale(0.95); }
@@ -252,9 +253,9 @@
         /* 3 CUPS GAME - FLIPPED CUPS AND CENTERED */
         .cups-container { position: relative; width: 480px; height: 100%; min-height: 200px; margin: 0 auto; display: flex; justify-content: center; align-items: center;}
         .cup-wrapper { position: absolute; width: 120px; height: 120px; transition: left 0.1s ease-in-out; display: flex; justify-content: center; align-items: flex-end;}
-        .cup-shape { width: 80px; height: 100px; background: #dc2626; border-radius: 5px 5px 20px 20px; border: 4px solid #991b1b; border-bottom: 10px solid #f87171; border-top: none; box-shadow: 0 10px 15px rgba(0,0,0,0.6); position: absolute; bottom: 0; z-index: 10; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .cup-shape { width: 80px; height: 100px; background: #dc2626; border-radius: 40px 40px 5px 5px; border: 4px solid #991b1b; border-bottom: 10px solid #f87171; border-top: none; box-shadow: 0 10px 15px rgba(0,0,0,0.6); position: absolute; bottom: 0; z-index: 10; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .cup-ball { font-size: 50px; position: absolute; bottom: -5px; z-index: 5; opacity: 0; transition: opacity 0.2s; }
-        .cup-wrapper.reveal .cup-shape { transform: translateY(-60px); }
+        .cup-wrapper.reveal .cup-shape { transform: translateY(-80px) rotate(10deg); }
         .cup-wrapper.reveal .cup-ball { opacity: 1; }
         
         .cup-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; width: 200px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; border-top-color: #f59e0b; cursor: pointer; transition: 0.1s; position: relative; height: 160px;}
@@ -349,11 +350,10 @@
         <div id="main-menu-view" class="full-menu hidden">
             <h1 class="pixel-text" style="font-size: 80px; margin-bottom: 10px; text-shadow: 4px 4px 0px #000; text-align: center;">ARCADE DASHBOARD</h1>
             <div class="menu-grid">
-                <button class="wood-btn" style="background: var(--success); color:#000;" onclick="showModal('table-modal')">TABLE GAMES</button>
-                <button class="wood-btn" style="background: #ea580c; color:#fff;" onclick="showModal('arcade-modal')">ARCADE CASINO</button>
-                <button class="wood-btn" style="background: #ec4899; color:#fff;" onclick="joinPVP()">PVP ARENA</button>
-                <button class="wood-btn" style="background: #3b82f6;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
                 
+                <button class="wood-btn" style="background: var(--success); color:#000; grid-column: span 2; font-size: 36px; padding: 20px;" onclick="showModal('play-category-modal')">PLAY GAMES</button>
+                
+                <button class="wood-btn" style="background: #3b82f6;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
                 <button class="wood-btn" style="background: #8b5cf6; position:relative;" onclick="openInbox()">
                     INBOX 
                     <span id="notif-badge" class="hidden" style="position:absolute; top:-10px; right:-10px; background:var(--danger); border:2px solid #fff; border-radius:50%; width:30px; height:30px; display:flex; justify-content:center; align-items:center; font-size:22px; font-weight:bold; box-shadow: 2px 2px 0 #000;">0</span>
@@ -364,9 +364,21 @@
                 <button class="wood-btn" style="background: #0f766e;" onclick="showRewards()">DAILY REWARDS</button>
                 <button class="wood-btn" style="background: #d946ef;" onclick="showModal('redeem-modal')">REDEEM CODE</button>
                 
-                <button class="wood-btn locked" disabled style="background: #3f3f46; color: #a1a1aa; border-color: #52525b; box-shadow: none; font-size: 22px;">MARKET (SOON)</button>
+                <button class="wood-btn locked" disabled style="background: #3f3f46; color: #a1a1aa; border-color: #52525b; box-shadow: none; font-size: 22px; grid-column: span 2;">MARKET (SOON)</button>
 
                 <button class="wood-btn" style="background: var(--danger); grid-column: span 2;" onclick="logout()">LOGOUT</button>
+            </div>
+        </div>
+
+        <div id="play-category-modal" class="overlay-menu hidden" style="z-index: 400;">
+            <div class="modal-box custom-scroll" style="width: 500px;">
+                <h2 class="pixel-text" style="margin-bottom: 20px; font-size: 45px; color: var(--success);">SELECT CATEGORY</h2>
+                <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+                    <button class="wood-btn" style="background: var(--accent-glow); margin-bottom: 5px;" onclick="hideModal('play-category-modal'); showModal('table-modal');">BLACKJACK (TABLE GAMES)</button>
+                    <button class="wood-btn" style="background: #ea580c; margin-bottom: 5px;" onclick="hideModal('play-category-modal'); showModal('arcade-modal');">ARCADE CASINO</button>
+                    <button class="wood-btn" style="background: #ec4899; margin-bottom: 10px;" onclick="hideModal('play-category-modal'); joinPVP();">PVP ARENA</button>
+                    <button class="wood-btn" style="background: #475569; margin-top: 10px;" onclick="hideModal('play-category-modal')">BACK</button>
+                </div>
             </div>
         </div>
         
@@ -376,7 +388,7 @@
                 <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
                     <button class="wood-btn" style="background: var(--accent-glow); margin-bottom: 5px;" onclick="joinRoom('3seat'); hideModal('table-modal');">3-SEAT VIP BLACKJACK</button>
                     <button class="wood-btn" style="background: var(--success); color:#000; margin-bottom: 10px;" onclick="joinRoom('5seat'); hideModal('table-modal');">5-SEAT CLASSIC BLACKJACK</button>
-                    <button class="wood-btn" style="background: #475569; margin-top: 10px;" onclick="hideModal('table-modal')">BACK TO DASHBOARD</button>
+                    <button class="wood-btn" style="background: #475569; margin-top: 10px;" onclick="hideModal('table-modal'); showModal('play-category-modal');">BACK</button>
                 </div>
             </div>
         </div>
@@ -389,7 +401,7 @@
                     <button class="wood-btn" style="background: #ea580c; margin-bottom: 5px;" onclick="joinDerby(); hideModal('arcade-modal');">8-BIT DERBY SPRINT</button>
                     <button class="wood-btn" style="background: #f59e0b; color:#000; margin-bottom: 5px;" onclick="joinCups(); hideModal('arcade-modal');">3 CUPS AND A BALL</button>
                     <button class="wood-btn" style="background: #ef4444; margin-bottom: 10px;" onclick="joinColorGame(); hideModal('arcade-modal');">CLASSIC COLOR GAME</button>
-                    <button class="wood-btn" style="background: #475569; margin-top: 10px;" onclick="hideModal('arcade-modal')">BACK TO DASHBOARD</button>
+                    <button class="wood-btn" style="background: #475569; margin-top: 10px;" onclick="hideModal('arcade-modal'); showModal('play-category-modal');">BACK</button>
                 </div>
             </div>
         </div>
@@ -1194,7 +1206,16 @@
         // --- GLOBAL MENU LOGIC ---
         function showModal(id) { 
             if(!currentUser && id !== 'how-to-play-modal' && id !== 'tos-modal') return alert("Please log in first.");
-            document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden')); 
+            
+            // If opening a new modal, hide others, UNLESS we are going back to play-category-modal
+            if(id !== 'table-modal' && id !== 'arcade-modal') {
+                document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden')); 
+            }
+            // Explicitly handle category logic
+            if(id === 'table-modal' || id === 'arcade-modal') {
+                document.getElementById('play-category-modal').classList.add('hidden');
+            }
+
             const el = document.getElementById(id); 
             if(el) el.classList.remove('hidden'); 
         }
@@ -1476,15 +1497,15 @@
             }
         }
 
-        function joinRoom(roomId) { currentRoomId = roomId; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
-        function joinDice() { currentRoomId = 'dice'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
-        function joinDerby() { currentRoomId = 'derby'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); }
-        function joinColorGame() { currentRoomId = 'color'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
-        function joinCups() { currentRoomId = 'cups'; hideModal('play-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('cups-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'cups' }); socket.emit('get_cups_state'); playSfx('deal'); }
+        function joinRoom(roomId) { currentRoomId = roomId; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
+        function joinDice() { currentRoomId = 'dice'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
+        function joinDerby() { currentRoomId = 'derby'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); }
+        function joinColorGame() { currentRoomId = 'color'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
+        function joinCups() { currentRoomId = 'cups'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('cups-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'cups' }); socket.emit('get_cups_state'); playSfx('deal'); }
 
         function joinPVP() { 
             currentRoomId = 'pvp'; 
-            hideModal('play-modal'); 
+            hideModal('play-category-modal'); 
             document.getElementById('main-menu-view').classList.add('hidden'); 
             document.querySelectorAll('.game-interface').forEach(el => el.classList.add('hidden'));
             document.getElementById('pvp-interface').classList.remove('hidden'); 
@@ -1710,24 +1731,9 @@
             }
 
             if(data.distances) {
-                let maxDist = Math.max(...data.distances);
-                let finishLine = document.querySelector('.derby-finish-line');
-
-                if (maxDist < 80) {
-                    for(let i=0; i<6; i++) {
-                        let relative = data.distances[i] - maxDist;
-                        let basePos = (maxDist / 80) * 50;
-                        const racer = document.getElementById(`racer-${i}`);
-                        if(racer) racer.style.left = `${Math.max(0, basePos + relative)}%`;
-                    }
-                    if(finishLine) finishLine.style.right = '-50px';
-                } else {
-                    for(let i=0; i<6; i++) {
-                        let sprintPos = 50 + ((data.distances[i] - 80) / 20) * 40;
-                        const racer = document.getElementById(`racer-${i}`);
-                        if(racer) racer.style.left = `${Math.max(0, sprintPos)}%`;
-                    }
-                    if(finishLine) finishLine.style.right = `${((100 - maxDist) / 20) * 10}%`;
+                for(let i=0; i<6; i++) {
+                    const racer = document.getElementById(`racer-${i}`);
+                    if(racer) racer.style.left = `calc(${data.distances[i]}% - ${data.distances[i] * 0.6}px)`;
                 }
             }
 
@@ -1789,24 +1795,9 @@
 
         socket.on('derby_race_tick', (data) => {
             if(data.distances) {
-                let maxDist = Math.max(...data.distances);
-                let finishLine = document.querySelector('.derby-finish-line');
-
-                if (maxDist < 80) {
-                    for(let i=0; i<6; i++) {
-                        let relative = data.distances[i] - maxDist;
-                        let basePos = (maxDist / 80) * 50;
-                        const racer = document.getElementById(`racer-${i}`);
-                        if(racer) racer.style.left = `${Math.max(0, basePos + relative)}%`;
-                    }
-                    if(finishLine) finishLine.style.right = '-50px';
-                } else {
-                    for(let i=0; i<6; i++) {
-                        let sprintPos = 50 + ((data.distances[i] - 80) / 20) * 40;
-                        const racer = document.getElementById(`racer-${i}`);
-                        if(racer) racer.style.left = `${Math.max(0, sprintPos)}%`;
-                    }
-                    if(finishLine) finishLine.style.right = `${((100 - maxDist) / 20) * 10}%`;
+                for(let i=0; i<6; i++) {
+                    const racer = document.getElementById(`racer-${i}`);
+                    if(racer) racer.style.left = `calc(${data.distances[i]}% - ${data.distances[i] * 0.6}px)`;
                 }
             }
         });
