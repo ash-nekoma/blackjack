@@ -121,34 +121,57 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // DERBY LOOP (15 SECOND HIGH-VOLATILITY RACE)
+    // DERBY LOOP (15 SECONDS: 11s TREADMILL SCRAMBLE + 4s SPRINT)
     if (derbyGame.status === 'betting' && now >= derbyGame.betEndTime) {
         derbyGame.status = 'racing'; 
         derbyGame.distances = [0,0,0,0,0,0]; 
-        derbyGame.speeds = derbyGame.laneProfiles.map(p => p.s);
         
         io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, timeLeft: 0, distances: derbyGame.distances, history: derbyGame.history, laneProfiles: derbyGame.laneProfiles });
         
+        let raceTick = 0;
+        let currentSpeeds = [0,0,0,0,0,0];
+        
         let raceInterval = setInterval(async () => {
+            raceTick++;
             let finished = false; 
             let laneBets = [0,0,0,0,0,0]; 
             derbyGame.bets.forEach(b => laneBets[b.choice] += b.amount);
 
-            for(let i=0; i<6; i++) {
-                let speedMod = 1; 
-                if(strictHouseEdge && laneBets[i] > 0) speedMod = 0.85; 
+            // Phase 1: Scramble Jostling (Ticks 0-110 = 11 seconds)
+            if (raceTick < 110) {
+                if (raceTick % 12 === 1) { 
+                    // Completely randomize speed every 1.2 seconds so any horse can take the lead
+                    for(let i=0; i<6; i++) currentSpeeds[i] = Math.random() * 1.5 + 0.2; 
+                }
                 
-                let rng = Math.random();
-                let baseStep = 0.66 * (derbyGame.speeds[i] * 0.8); 
-                let step = baseStep * speedMod;
+                for(let i=0; i<6; i++) {
+                    derbyGame.distances[i] += currentSpeeds[i];
+                    let maxD = Math.max(...derbyGame.distances);
+                    
+                    // Rubber-band effect: Pull trailing horses forward so they stay in the pack
+                    if (maxD - derbyGame.distances[i] > 12) derbyGame.distances[i] += 1.0;
+                    
+                    // Cap progress so they don't trigger the sprint early
+                    if (derbyGame.distances[i] > 79) derbyGame.distances[i] = 79; 
+                }
+            } 
+            // Phase 2: The Final Sprint (Ticks 110-150 = 4 seconds)
+            else {
+                if (raceTick === 110) {
+                    for(let i=0; i<6; i++) {
+                        let oddsSpeed = derbyGame.laneProfiles[i].s; 
+                        let mod = (strictHouseEdge && laneBets[i] > 0) ? 0.8 : 1;
+                        
+                        // Underdog Boost: High-payout horses (slow base speed) have a chance to hit massive nitro
+                        let miracle = (oddsSpeed < 1.0 && Math.random() > 0.85) ? (Math.random() * 2 + 1) : 0;
+                        currentSpeeds[i] = (oddsSpeed * mod) + miracle + (Math.random() * 0.5); 
+                    }
+                }
                 
-                if (rng > 0.96) step *= 4.0; 
-                else if (rng > 0.85) step *= 2.0; 
-                else if (rng < 0.10) step *= 0.1; 
-                else step += (Math.random() * 0.4 - 0.2);
-
-                derbyGame.distances[i] += Math.max(0, step); 
-                if (derbyGame.distances[i] >= 100) { finished = true; }
+                for(let i=0; i<6; i++) {
+                    derbyGame.distances[i] += currentSpeeds[i] * 0.6; // Scale down for a 4s sprint to 100
+                    if (derbyGame.distances[i] >= 100) { finished = true; }
+                }
             }
 
             io.to('arcade_derby').emit('derby_race_tick', { distances: derbyGame.distances });
@@ -227,7 +250,7 @@ setInterval(() => {
     // 3 CUPS GAME LOOP (Shuffling -> Betting -> Resolving)
     if (cupsGame.status === 'shuffling' && now >= cupsGame.stateEndTime) {
         cupsGame.status = 'betting';
-        cupsGame.betEndTime = now + 7000; 
+        cupsGame.betEndTime = now + 7000; // 7 seconds betting
         cupsGame.stateEndTime = cupsGame.betEndTime;
         io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, betEndTime: cupsGame.betEndTime, history: cupsGame.history });
     }
@@ -579,6 +602,10 @@ io.on('connection', (socket) => {
             if(gameLocks.cups) return socket.emit('arcade_error', 'Game is currently offline for maintenance.');
             if (cupsGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
             if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per cup!');
+            
+            let existingOtherBet = cupsGame.bets.find(b => b.username.toLowerCase() === username.toLowerCase() && b.choice !== choice);
+            if (existingOtherBet) return socket.emit('arcade_error', 'You can only bet on ONE cup per round!');
+
             let existingBetAmt = cupsGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
             if(existingBetAmt + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per cup!');
 
