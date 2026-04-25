@@ -192,13 +192,14 @@
         .derby-track-container { flex: 1; background: #111; border-bottom: 4px solid var(--border-std); display: flex; flex-direction: column; position: relative; overflow: hidden; margin-top: 10px; border-radius: 8px; box-shadow: inset 0 0 20px #000;}
         .derby-lane { flex: 1; border-bottom: 2px dashed #333; position: relative; display: flex; align-items: center; padding: 0 10px; background-image: linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 50px 100%; }
         .derby-lane.scrolling { animation: trackScroll 0.5s linear infinite; }
-        .derby-finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8; }
+        
+        .derby-finish-line { position: absolute; right: -50px; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8; transition: transform 0.1s linear; transform: translateX(50px); }
         .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 26px; color: rgba(255,255,255,0.3); font-weight: bold; z-index: 5; pointer-events: none; text-shadow: 1px 1px 0 #000; }
         
-        /* HORSE MASK TRICK: Perfect Coloring & Classic Orientation */
-        .racer-sprite { width: 60px; height: 45px; position: absolute; bottom: 5px; transition: left 0.1s linear; z-index: 20; -webkit-mask: url('horse.gif') no-repeat center / contain; mask: url('horse.gif') no-repeat center / contain; transform: scaleX(-1); transform-origin: center bottom; }
+        /* HORSE MASK TRICK & TREADMILL TRANSFORM */
+        .racer-sprite { width: 60px; height: 45px; position: absolute; bottom: 5px; z-index: 20; -webkit-mask: url('horse.gif') no-repeat center / contain; mask: url('horse.gif') no-repeat center / contain; transform: translateX(0) scaleX(-1); transform-origin: center bottom; transition: transform 0.1s linear; will-change: transform; }
         @keyframes gallop { 0% { transform: scaleX(-1) translateY(0px) rotate(-2deg); } 50% { transform: scaleX(-1) translateY(-3px) rotate(3deg); } 100% { transform: scaleX(-1) translateY(0px) rotate(-2deg); } }
-        .racer-running { animation: gallop 0.3s infinite; filter: brightness(1.2); }
+        .racer-running { filter: brightness(1.2); }
         
         .derby-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 8px; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
         .derby-bet-box:active:not(.locked) { transform: scale(0.95); }
@@ -589,7 +590,7 @@
                         <strong style="color: #f59e0b; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">3 CUPS AND A BALL</strong>
                         <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">A golden ball is hidden under one of three cups. The cups shuffle rapidly. Pick the correct cup!</p>
                         <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per cup.</li>
+                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits. <strong>Only ONE cup can be bet on per round.</strong></li>
                             <li style="margin-bottom: 10px;"><strong>Payout:</strong> Guessing correctly pays a massive <strong>2.5x</strong> multiplier!</li>
                         </ul>
                     </div>
@@ -1179,7 +1180,9 @@
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
         let myDerbyBets = [0, 0, 0, 0, 0, 0];
         let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
+        
         let myCupsBets = [0, 0, 0];
+        let currentCupsBetChoice = -1; // Local lock for 3 Cups single-bet rule
         
         let currentPvpDuelState = null; 
         let myDuelSeatIndex = -1;
@@ -1422,860 +1425,896 @@
         }
 
         async function signup() {
-            const u = document.getElementById('signup-user').value; const p = document.getElementById('signup-pass').value; const msgBox = document.getElementById('signup-msg');
-            if(!u || !p) return msgBox.innerText = "Enter credentials."; if(!document.getElementById('tos-checkbox').checked) return msgBox.innerText = "Must accept terms.";
-            msgBox.style.color = '#fff'; msgBox.innerText = "Sending request...";
-            const res = await fetch('/api/signup', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
-            const data = await res.json();
-            if(res.ok) { msgBox.style.color = 'var(--success)'; msgBox.innerText = "REQUEST SENT! PENDING APPROVAL."; setTimeout(() => toggleAuth('login'), 3500); } 
-            else { msgBox.style.color = 'var(--danger)'; msgBox.innerText = data.error; }
-        }
-
-        async function login() {
-            const u = document.getElementById('login-user').value; const p = document.getElementById('login-pass').value;
-            const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
-            const data = await res.json();
-            if(res.ok) {
-                currentUser = data; localStorage.setItem('cr_user', u); localStorage.setItem('cr_pass', p);
-                document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
-                updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; 
-                const userPreview = document.getElementById('profile-username-preview'); if(userPreview) userPreview.innerText = currentUser.username;
-                playSfx('deal'); socket.emit('req_inbox', { username: currentUser.username }); 
-            } else document.getElementById('login-error').innerText = data.error;
-        }
-
-        window.onload = () => { const savedU = localStorage.getItem('cr_user'); const savedP = localStorage.getItem('cr_pass'); if(savedU && savedP) { document.getElementById('login-user').value = savedU; document.getElementById('login-pass').value = savedP; login(); } };
-        
-        socket.on('credit_update', (data) => { if(currentUser && currentUser.username.toLowerCase() === data.username.toLowerCase()) { currentUser.credits = data.credits; updateAllCredits(); } });
-
-        socket.on('game_lock_state', (locks) => {
-            gameLocks = locks;
-            ['under', 'seven', 'over'].forEach(c => { const b = document.getElementById(`dice-btn-${c}`); if(b) locks.dice ? b.classList.add('locked') : b.classList.remove('locked'); });
-            for(let i=0; i<6; i++) { const b = document.getElementById(`derby-btn-${i}`); if(b) locks.derby ? b.classList.add('locked') : b.classList.remove('locked'); }
-            ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { const b = document.getElementById(`color-btn-${c}`); if(b) locks.color ? b.classList.add('locked') : b.classList.remove('locked'); });
-            for(let i=0; i<3; i++) { const b = document.getElementById(`cups-btn-${i}`); if(b) locks.cups ? b.classList.add('locked') : b.classList.remove('locked'); }
-        });
-
-        socket.on('force_disconnect', () => { alert("Your connection was severed by the Administrator."); logout(); });
-
-        function updateAllCredits() {
-            if(!currentUser) return; const creds = formatNumber(currentUser.credits);
-            ['hud-credits', 'dice-credits', 'derby-credits', 'color-credits', 'pvp-credits', 'cups-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
-        }
-        function logout() { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); location.reload(); }
-
-        function exitToMenu(game) { 
-            if (game === 'blackjack') {
-                if (mySeatIndex !== -1 && currentGameState && currentGameState.seats[mySeatIndex]) {
-                    if (currentGameState.seats[mySeatIndex].hands.some(h => h.bet > 0)) return alert("You cannot leave the table with active bets!");
-                }
-            } else if (game === 'dice') {
-                if (myDiceBets.under > 0 || myDiceBets.seven > 0 || myDiceBets.over > 0) return alert("You cannot leave while you have active bets!");
-            } else if (game === 'derby') {
-                let totalDerbyBet = myDerbyBets.reduce((a,b)=>a+b, 0);
-                if (totalDerbyBet > 0) return alert("You cannot leave while you have active bets!");
-            } else if (game === 'pvp') {
-                if (myDuelSeatIndex !== -1) return alert("You must stand up from the PVP duel before leaving!");
-            } else if (game === 'cups') {
-                let totalCupsBet = myCupsBets.reduce((a,b)=>a+b, 0);
-                if (totalCupsBet > 0) return alert("You cannot leave while you have active bets!");
-            } else if (game === 'color') {
-                let totalColorBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
-                if (totalColorBet > 0) return alert("You cannot leave while you have active bets!");
+                const u = document.getElementById('signup-user').value; const p = document.getElementById('signup-pass').value; const msgBox = document.getElementById('signup-msg');
+                if(!u || !p) return msgBox.innerText = "Enter credentials."; if(!document.getElementById('tos-checkbox').checked) return msgBox.innerText = "Must accept terms.";
+                msgBox.style.color = '#fff'; msgBox.innerText = "Sending request...";
+                const res = await fetch('/api/signup', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
+                const data = await res.json();
+                if(res.ok) { msgBox.style.color = 'var(--success)'; msgBox.innerText = "REQUEST SENT! PENDING APPROVAL."; setTimeout(() => toggleAuth('login'), 3500); } 
+                else { msgBox.style.color = 'var(--danger)'; msgBox.innerText = data.error; }
             }
 
-            document.getElementById('main-menu-view').classList.remove('hidden'); 
+            async function login() {
+                const u = document.getElementById('login-user').value; const p = document.getElementById('login-pass').value;
+                const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
+                const data = await res.json();
+                if(res.ok) {
+                    currentUser = data; localStorage.setItem('cr_user', u); localStorage.setItem('cr_pass', p);
+                    document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
+                    updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; 
+                    const userPreview = document.getElementById('profile-username-preview'); if(userPreview) userPreview.innerText = currentUser.username;
+                    playSfx('deal'); socket.emit('req_inbox', { username: currentUser.username }); 
+                } else document.getElementById('login-error').innerText = data.error;
+            }
+
+            window.onload = () => { const savedU = localStorage.getItem('cr_user'); const savedP = localStorage.getItem('cr_pass'); if(savedU && savedP) { document.getElementById('login-user').value = savedU; document.getElementById('login-pass').value = savedP; login(); } };
             
-            if(game === 'blackjack') { 
-                document.getElementById('game-interface').classList.add('hidden'); 
-                if (currentGameState) { const seatIdx = currentGameState.seats.findIndex(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if (seatIdx !== -1) window.actEjectSeat(seatIdx); } 
-                socket.emit('leave_room', { username: currentUser.username, roomId: currentRoomId }); currentRoomId = null; 
+            socket.on('credit_update', (data) => { if(currentUser && currentUser.username.toLowerCase() === data.username.toLowerCase()) { currentUser.credits = data.credits; updateAllCredits(); } });
+
+            socket.on('game_lock_state', (locks) => {
+                gameLocks = locks;
+                ['under', 'seven', 'over'].forEach(c => { const b = document.getElementById(`dice-btn-${c}`); if(b) locks.dice ? b.classList.add('locked') : b.classList.remove('locked'); });
+                for(let i=0; i<6; i++) { const b = document.getElementById(`derby-btn-${i}`); if(b) locks.derby ? b.classList.add('locked') : b.classList.remove('locked'); }
+                ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { const b = document.getElementById(`color-btn-${c}`); if(b) locks.color ? b.classList.add('locked') : b.classList.remove('locked'); });
+                for(let i=0; i<3; i++) { const b = document.getElementById(`cups-btn-${i}`); if(b) locks.cups ? b.classList.add('locked') : b.classList.remove('locked'); }
+            });
+
+            socket.on('force_disconnect', () => { alert("Your connection was severed by the Administrator."); logout(); });
+
+            function updateAllCredits() {
+                if(!currentUser) return; const creds = formatNumber(currentUser.credits);
+                ['hud-credits', 'dice-credits', 'derby-credits', 'color-credits', 'pvp-credits', 'cups-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
             }
-            if(['dice', 'derby', 'color', 'pvp', 'cups'].includes(game)) { 
-                document.getElementById(game+'-interface').classList.add('hidden'); 
-                socket.emit('leave_arcade', { username: currentUser.username, game }); currentRoomId = null; 
-            }
-        }
+            function logout() { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); location.reload(); }
 
-        function joinRoom(roomId) { currentRoomId = roomId; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
-        function joinDice() { currentRoomId = 'dice'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
-        function joinDerby() { currentRoomId = 'derby'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); }
-        function joinColorGame() { currentRoomId = 'color'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
-        function joinCups() { currentRoomId = 'cups'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('cups-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'cups' }); socket.emit('get_cups_state'); playSfx('deal'); }
-
-        function joinPVP() { 
-            currentRoomId = 'pvp'; 
-            hideModal('play-category-modal'); 
-            document.getElementById('main-menu-view').classList.add('hidden'); 
-            document.querySelectorAll('.game-interface').forEach(el => el.classList.add('hidden'));
-            document.getElementById('pvp-interface').classList.remove('hidden'); 
-            socket.emit('enter_arcade', { username: currentUser.username, game: 'pvp' }); 
-            socket.emit('get_pvp_state'); 
-            playSfx('deal'); 
-        }
-
-        // --- BLACKJACK ENGINE ---
-        window.actSitDown = function(idx) { if(gameLocks[currentRoomId]) return alert('Table is currently offline for maintenance.'); if(actionLocked) return; actionLocked = true; socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
-        window.actPlaceBet = function(idx) { 
-            if(gameLocks[currentRoomId]) return alert('Table is currently offline for maintenance.');
-            if(actionLocked) return; const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value.replace(/,/g, '')) : 0;
-            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount."); if (amt > 100000) return alert("Maximum limit is 100,000 credits."); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            actionLocked = true; window.lastBetAmount = amt; socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet');
-        }
-        window.actEjectSeat = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actHit = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actStand = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actDouble = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
-        window.actSplit = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
-
-        function formatCardHTML(c, isHidden) {
-            if (isHidden) return `<div class="card dealer-hidden"></div>`;
-            const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : 'black'; const suitSym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit];
-            return `<div class="card ${colorClass}"><div class="card-corner top-left">${c.value}<br>${suitSym}</div><div class="card-center-suit">${suitSym}</div><div class="card-corner bottom-right">${c.value}<br>${suitSym}</div></div>`;
-        }
-
-        socket.on('game_state_update', (state) => {
-            if(currentGameState && currentGameState.status === 'dealerTurn' && state.status === 'resolving') {
-                if(mySeatIndex !== -1 && state.seats[mySeatIndex]) {
-                    let hasWin = state.seats[mySeatIndex].hands.some(h => h.result === 'win' || h.result === 'win-bj'); let hasLose = state.seats[mySeatIndex].hands.some(h => h.result === 'lose' || h.result === 'bust');
-                    if(hasWin) playSfx('win'); else if (hasLose) playSfx('lose');
-                }
-            }
-            if(currentGameState && currentGameState.status === 'betting' && state.status === 'playing') playSfx('deal');
-            actionLocked = false; currentGameState = state; 
-            if(currentUser && currentRoomId && !document.getElementById('game-interface').classList.contains('hidden')) { updateLobby(state); renderTable(state); manageTimers(state); }
-        });
-
-        function updateLobby(state) {
-            const lobby = document.getElementById('lobby-list'); lobby.innerHTML = ''; document.getElementById('player-count').innerText = state.lobby.length;
-            state.lobby.forEach(p => { lobby.innerHTML += `<div class="lobby-player" style="color:${p.color}">▶ ${p.username}</div>`; });
-        }
-
-        function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
-
-        function renderTable(state) {
-            if (!state) return; document.getElementById('phase-display').innerText = state.status === 'resolving' ? 'RESULTS' : state.status.toUpperCase();
-            const dCards = document.getElementById('dealer-cards'); dCards.innerHTML = ''; const dBadge = document.getElementById('dealer-val');
-            state.dealerCards.forEach(c => { dCards.innerHTML += formatCardHTML(c, c.hidden); }); const visibleDealerCards = state.dealerCards.filter(c => !c.hidden);
-            if (visibleDealerCards.length > 0) { dBadge.innerText = calculateValue(visibleDealerCards); dBadge.classList.remove('hidden'); } else { dBadge.classList.add('hidden'); }
-
-            const seatsArea = document.getElementById('seats-area');
-            const isMobile = window.innerWidth <= 768;
-            let activeElements = [];
-            
-            if(currentUser) { const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if(mySeatData) { mySeatIndex = state.seats.indexOf(mySeatData);} else { mySeatIndex = -1; } }
-
-            for(let index=0; index<state.seats.length; index++) {
-                let seatData = state.seats[index]; let isMySeat = currentUser && seatData && seatData.username.toLowerCase() === currentUser.username.toLowerCase();
-                let hasSeatAnywhere = state.seats.some(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
-                const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
-
-                if (!seatData) {
-                    if (state.status === 'waiting' || state.status === 'betting') {
-                        let sitBtn = !hasSeatAnywhere ? `<button class="btn-sit-empty pixel-text" onclick="actSitDown(${index})">SIT</button>` : '';
-                        seatDiv.innerHTML = `<div class="seat-empty-box"><div class="pixel-text" style="font-size:28px; color:#94a3b8; margin-bottom:10px;">EMPTY</div>${sitBtn}</div>`; activeElements.push(seatDiv);
+            function exitToMenu(game) { 
+                if (game === 'blackjack') {
+                    if (mySeatIndex !== -1 && currentGameState && currentGameState.seats[mySeatIndex]) {
+                        if (currentGameState.seats[mySeatIndex].hands.some(h => h.bet > 0)) return alert("You cannot leave the table with active bets!");
                     }
-                } else {
-                    seatDiv.classList.add('occupied'); if (isMySeat) seatDiv.classList.add('my-seat'); if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
-                    let html = ``; let wrapperScale = seatData.hands.length > 1 ? "transform: scale(0.85); width: 125%;" : "";
-                    html += `<div class="hands-wrapper" style="${wrapperScale}">`;
-                    seatData.hands.forEach((hand, hIdx) => {
-                        let activeHandClass = (state.activeSeatIndex === index && seatData.currentHand === hIdx && hand.status === 'waiting') ? 'active-hand' : '';
-                        html += `<div class="hand-box ${activeHandClass}"><div class="hand-container">`;
-                        hand.cards.forEach(c => { html += formatCardHTML(c, false); }); if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
-                        
-                        if (hand.status === 'bust' || hand.result === 'bust') html += `<div class="hand-status-label hand-status-bust">BUST</div>`;
-                        else if (hand.result) {
-                            if(hand.result === 'win' || hand.result === 'win-bj') html += `<div class="hand-status-label hand-status-win">${hand.result==='win-bj'?'BLACKJACK':'WIN'}</div>`;
-                            else if(hand.result === 'lose') html += `<div class="hand-status-label hand-status-lose">LOSE</div>`; else if(hand.result === 'push') html += `<div class="hand-status-label hand-status-push">PUSH</div>`;
-                        } else if (hand.status === 'blackjack' && state.status !== 'resolving') html += `<div class="hand-status-label hand-status-blackjack">21!</div>`;
-                        html += `</div>`; 
-                        
-                        let handBet = hand.bet > 0 ? hand.bet : 0; let betAnimClass = '';
-                        if (state.status === 'resolving') {
-                            if (hand.result === 'win') { handBet = hand.bet * 2; betAnimClass = 'anim-win'; } else if (hand.result === 'win-bj') { handBet = hand.bet * 2.5; betAnimClass = 'anim-win'; }
-                            else if (hand.result === 'push') { handBet = hand.bet; } else { handBet = 0; betAnimClass = 'anim-lose'; }
-                        }
-                        if (handBet > 0 || state.status === 'resolving') { html += `<div class="player-bet-text pixel-text ${betAnimClass}">${formatNumber(handBet)}</div>`; }
-                        if (activeHandClass) html += `<div class="turn-bar-container"><div class="turn-bar-fill" id="turn-bar-${index}"></div></div>`;
-                        html += `</div>`; 
-                    });
-                    html += `</div><div class="player-info-plate"><div class="player-name-text" style="color:${seatData.color}">${seatData.username}</div></div>`;
-
-                    if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
-                        if (seatData.hands[0].bet === 0) {
-                            let startBet = window.lastBetAmount || 0; let opts = [1000, 5000, 20000, 50000, 100000]; if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
-                            let optHTML = `<option value="1000" ${startBet === 1000 || startBet === 0 ? 'selected' : ''}>1,000</option>`; optHTML += [5000, 20000, 50000, 100000].map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
-                            html += `<div class="seat-bet-box"><div style="display: flex; gap: 8px;"><select id="inseat-bet-${index}" class="pixel-text" style="flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;">${optHTML}</select><button class="s-btn btn-bet pixel-text" style="font-size: 24px; padding: 6px 12px;" onclick="actPlaceBet(${index})">BET</button></div></div><div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
-                        }
-                    } else if (isMySeat && state.status === 'waiting') { html += `<div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`; }
-
-                    if (isMySeat && state.status === 'playing' && state.activeSeatIndex === index) {
-                        const cHand = seatData.hands[seatData.currentHand];
-                        if (cHand && cHand.status === 'waiting') {
-                            html += `<div class="seat-controls"><button class="s-btn btn-hit pixel-text" style="font-size:18px;" onclick="actHit(${index})">HIT</button><button class="s-btn btn-stand pixel-text" style="font-size:18px;" onclick="actStand(${index})">STAND</button>`;
-                            if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) { html += `<button class="s-btn btn-double pixel-text" style="font-size:18px;" onclick="actDouble(${index})">2X</button>`; if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) { html += `<button class="s-btn btn-split pixel-text" style="font-size:18px;" onclick="actSplit(${index})">SPLIT</button>`; } }
-                            html += `</div>`;
-                        }
-                    }
-                    seatDiv.innerHTML += html; activeElements.push(seatDiv);
+                } else if (game === 'dice') {
+                    if (myDiceBets.under > 0 || myDiceBets.seven > 0 || myDiceBets.over > 0) return alert("You cannot leave while you have active bets!");
+                } else if (game === 'derby') {
+                    let totalDerbyBet = myDerbyBets.reduce((a,b)=>a+b, 0);
+                    if (totalDerbyBet > 0) return alert("You cannot leave while you have active bets!");
+                } else if (game === 'pvp') {
+                    if (myDuelSeatIndex !== -1) return alert("You must stand up from the PVP duel before leaving!");
+                } else if (game === 'cups') {
+                    let totalCupsBet = myCupsBets.reduce((a,b)=>a+b, 0);
+                    if (totalCupsBet > 0) return alert("You cannot leave while you have active bets!");
+                } else if (game === 'color') {
+                    let totalColorBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
+                    if (totalColorBet > 0) return alert("You cannot leave while you have active bets!");
                 }
-            }
-            
-            seatsArea.innerHTML = ''; 
-            if (isMobile || state.status === 'playing' || state.status === 'dealerTurn' || state.status === 'resolving') { 
-                seatsArea.style.justifyContent = 'center'; 
-                activeElements.forEach(el => { 
-                    el.style.position = 'relative'; 
-                    el.style.transform = 'none'; 
-                    el.style.left = 'auto'; 
-                    el.style.bottom = 'auto'; 
-                    seatsArea.appendChild(el); 
-                }); 
-            } else { 
-                seatsArea.style.justifyContent = 'flex-start'; 
-                activeElements.forEach((el, i) => { 
-                    el.style.position = 'absolute'; 
-                    el.style.transform = 'translate(-50%, 0)'; 
-                    if (state.seats.length === 3) { el.style.left = `${[25, 50, 75][i]}%`; el.style.bottom = `0px`; } 
-                    else if (state.seats.length === 5) { el.style.left = `${[12, 31, 50, 69, 88][i]}%`; el.style.bottom = `${[40, 20, 10, 20, 40][i]}px`; } 
-                    seatsArea.appendChild(el); 
-                }); 
-            }
-        }
 
-        function manageTimers(state) {
-            const gTimerUI = document.getElementById('global-timer'); const nTimerUI = document.getElementById('next-round-timer'); const iTimerUI = document.getElementById('idle-timer');
-            if (state.status === 'betting' && state.betTimeLeft > 0) { let left = Math.ceil(state.betTimeLeft / 1000); gTimerUI.classList.remove('hidden'); clearInterval(globalTimerInt); nTimerUI.classList.add('hidden'); document.getElementById('g-time').innerText = left; globalTimerInt = setInterval(() => { left--; if (left > 0) document.getElementById('g-time').innerText = left; else { clearInterval(globalTimerInt); gTimerUI.classList.add('hidden'); } }, 1000);
-            } else if (state.status !== 'betting') { gTimerUI.classList.add('hidden'); clearInterval(globalTimerInt); }
-            if (state.status === 'resolving' && state.nextRoundTimeLeft > 0) { let left = Math.ceil(state.nextRoundTimeLeft / 1000); nTimerUI.classList.remove('hidden'); clearInterval(nextRoundTimerInt); document.getElementById('n-time').innerText = left; nextRoundTimerInt = setInterval(() => { left--; if (left > 0) document.getElementById('n-time').innerText = left; else { clearInterval(nextRoundTimerInt); nTimerUI.classList.add('hidden'); } }, 1000);
-            } else if (state.status !== 'resolving') { nTimerUI.classList.add('hidden'); clearInterval(nextRoundTimerInt); }
-            if (mySeatIndex !== -1 && (state.status === 'betting' || state.status === 'waiting')) {
-                const mySeatData = state.seats[mySeatIndex];
-                if (mySeatData && mySeatData.hands[0].bet === 0 && mySeatData.kickTimeLeft > 0) { let left = Math.ceil(mySeatData.kickTimeLeft / 1000); iTimerUI.classList.remove('hidden'); clearInterval(idleTimerInt); document.getElementById('i-time').innerText = left; idleTimerInt = setInterval(() => { left--; if (left > 0) document.getElementById('i-time').innerText = left; else { clearInterval(idleTimerInt); iTimerUI.classList.add('hidden'); } }, 1000); } 
-                else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
-            } else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
-            clearInterval(turnTimerVisualInt);
-            if (state.status === 'playing' && state.turnTimeLeft > 0 && state.activeSeatIndex !== -1) {
-                const bar = document.getElementById(`turn-bar-${state.activeSeatIndex}`);
-                if (bar) { let remaining = state.turnTimeLeft; turnTimerVisualInt = setInterval(() => { remaining -= 200; if (remaining < 0) remaining = 0; bar.style.width = `${(remaining / 15000) * 100}%`; if (remaining <= 0) clearInterval(turnTimerVisualInt); }, 200); }
-            }
-        }
-
-        // --- ARCADE LOBBIES ---
-        socket.on('arcade_lobby_update', (data) => {
-            const countId = data.game === 'dice' ? 'dice-player-count' : (data.game === 'color' ? 'color-player-count' : (data.game === 'derby' ? 'derby-player-count' : (data.game === 'cups' ? 'cups-player-count' : 'pvp-player-count')));
-            const popId = data.game === 'dice' ? 'dice-players-list' : (data.game === 'color' ? 'color-players-list' : (data.game === 'derby' ? 'derby-players-list' : (data.game === 'cups' ? 'cups-players-list' : 'pvp-players-list')));
-            const countEl = document.getElementById(countId); const popEl = document.getElementById(popId);
-            if(countEl) countEl.innerText = data.lobby.length;
-            if(popEl) popEl.innerHTML = data.lobby.map(p => `<div class="lobby-player" style="color:${p.color};">▶ ${p.username}</div>`).join('');
-        });
-
-        // --- ARCADE UTILS ---
-        function applyThrottle() {
-            isBetting = true; clearTimeout(betThrottleTimeout); betThrottleTimeout = setTimeout(() => { isBetting = false; }, 250);
-        }
-
-        // --- DICE LOGIC ---
-        const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']; let diceInterval = null;
-        socket.on('dice_state_update', (data) => {
-            const statusText = document.getElementById('dice-result-text'); const timerText = document.getElementById('dice-timer');
-            const d1 = document.getElementById('die1'); const d2 = document.getElementById('die2');
-            
-            if(data.history) document.getElementById('dice-history').innerHTML = data.history.map(n => `<div class="history-list-item"><span style="color:${n[0]+n[1]===7?'#a855f7':(n[0]+n[1]<7?'var(--accent-glow-2)':'var(--success)')}">${diceFaces[n[0]-1]} ${diceFaces[n[1]-1]} = ${n[0]+n[1]}</span></div>`).join('');
-
-            if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; d1.classList.remove('shake'); d2.classList.remove('shake'); myDiceBets = { under: 0, seven: 0, over: 0 }; clearInterval(diceInterval);
-                document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-under') || b.id.includes('badge-over') || b.id.includes('badge-seven')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
-                diceInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(diceInterval); }, 1000);
-            } 
-            else if (data.status === 'rolling') { statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); playSfx('deal'); } 
-            else if (data.status === 'resolving') {
-                d1.classList.remove('shake'); d2.classList.remove('shake'); d1.innerText = diceFaces[data.dice[0]-1]; d2.innerText = diceFaces[data.dice[1]-1]; statusText.innerText = `RESULT: ${data.total}`;
-                let totalDiceBet = Object.values(myDiceBets).reduce((a,b)=>a+b, 0);
-                if (totalDiceBet > 0) {
-                    let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
-                    if (myWins.length > 0) { 
-                        let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
-                        timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
-                    } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
-                    ['under', 'seven', 'over'].forEach(c => { 
-                        if(myDiceBets[c] > 0) {
-                            const badge = document.getElementById(`badge-${c}`); let winData = myWins.find(w=>w.choice===c);
-                            if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
-                            else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
-                        }
-                    });
+                document.getElementById('main-menu-view').classList.remove('hidden'); 
+                
+                if(game === 'blackjack') { 
+                    document.getElementById('game-interface').classList.add('hidden'); 
+                    if (currentGameState) { const seatIdx = currentGameState.seats.findIndex(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if (seatIdx !== -1) window.actEjectSeat(seatIdx); } 
+                    socket.emit('leave_room', { username: currentUser.username, roomId: currentRoomId }); currentRoomId = null; 
                 }
-            }
-        });
-        
-        window.placeDiceBet = function(choice) {
-            if(gameLocks.dice) return alert('This game is currently offline for maintenance.');
-            if(isBetting) return; const box = document.getElementById(`dice-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`dice-master-bet`).value);
-            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-            if (myDiceBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            
-            applyThrottle(); myDiceBets[choice] += amt; socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt });
-        };
-
-        // --- 8-BIT DERBY SPRINT LOGIC ---
-        let derbyInterval = null;
-        socket.on('derby_state_update', (data) => {
-            const statusText = document.getElementById('derby-result-text'); const timerText = document.getElementById('derby-timer');
-            
-            if(data.history) { 
-                const colorNames = ['RED', 'BLUE', 'GREEN', 'PURPLE', 'PINK', 'GOLD'];
-                document.getElementById('derby-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="font-weight:bold;" class="lane-${r+1}-color">${colorNames[r]}</span></div>`).join(''); 
-            }
-
-            if(data.distances) {
-                for(let i=0; i<6; i++) {
-                    const racer = document.getElementById(`racer-${i}`);
-                    if(racer) racer.style.left = `calc(${data.distances[i]}% - ${data.distances[i] * 0.6}px)`;
+                if(['dice', 'derby', 'color', 'pvp', 'cups'].includes(game)) { 
+                    document.getElementById(game+'-interface').classList.add('hidden'); 
+                    socket.emit('leave_arcade', { username: currentUser.username, game }); currentRoomId = null; 
                 }
             }
 
-            if (data.laneProfiles) {
-                for(let i=0; i<6; i++) {
-                    const mult = data.laneProfiles[i].m;
-                    const trackInd = document.getElementById(`track-ind-${i}`);
-                    const betMult = document.getElementById(`bet-mult-${i}`);
-                    const colorCodes = ['#ef4444', '#3b82f6', '#10b981', '#a855f7', '#ec4899', '#fbbf24'];
-                    const colorAbbr = ['RED', 'BLU', 'GRN', 'PUR', 'PNK', 'GLD'];
-                    if(trackInd) trackInd.innerHTML = `<span style="color:${colorCodes[i]};">${colorAbbr[i]} | ${mult}x</span>`;
-                    if(betMult) betMult.innerText = `PAYS ${mult}x`;
-                }
-            }
+            function joinRoom(roomId) { currentRoomId = roomId; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
+            function joinDice() { currentRoomId = 'dice'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
+            function joinDerby() { currentRoomId = 'derby'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); }
+            function joinColorGame() { currentRoomId = 'color'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
+            function joinCups() { currentRoomId = 'cups'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('cups-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'cups' }); socket.emit('get_cups_state'); playSfx('deal'); }
 
-            if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; 
-                myDerbyBets = [0, 0, 0, 0, 0, 0]; 
-                clearInterval(derbyInterval);
-                document.querySelectorAll('.racer-sprite').forEach(r => r.classList.remove('racer-running'));
-                document.querySelectorAll('.derby-lane').forEach(l => l.classList.remove('scrolling'));
-                for(let i=0; i<6; i++) {
-                    const badge = document.getElementById(`badge-derby-${i}`);
-                    if(badge) { badge.classList.add('hidden'); badge.style.backgroundColor = 'var(--accent-glow-2)'; }
-                }
-                derbyInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(derbyInterval); }, 1000);
-            }
-            else if (data.status === 'racing') { 
-                statusText.innerText = "RACING..."; timerText.innerText = "NO MORE BETS"; 
-                document.querySelectorAll('.racer-sprite').forEach(r => r.classList.add('racer-running'));
-                document.querySelectorAll('.derby-lane').forEach(l => l.classList.add('scrolling'));
+            function joinPVP() { 
+                currentRoomId = 'pvp'; 
+                hideModal('play-category-modal'); 
+                document.getElementById('main-menu-view').classList.add('hidden'); 
+                document.querySelectorAll('.game-interface').forEach(el => el.classList.add('hidden'));
+                document.getElementById('pvp-interface').classList.remove('hidden'); 
+                socket.emit('enter_arcade', { username: currentUser.username, game: 'pvp' }); 
+                socket.emit('get_pvp_state'); 
                 playSfx('deal'); 
             }
-            else if (data.status === 'resolving') {
-                document.querySelectorAll('.racer-sprite').forEach(r => r.classList.remove('racer-running'));
-                document.querySelectorAll('.derby-lane').forEach(l => l.classList.remove('scrolling'));
-                const cNames = ['RED', 'BLUE', 'GREEN', 'PURPLE', 'PINK', 'GOLD'];
-                statusText.innerText = `${cNames[data.winner]} WINS!`;
-                
-                let totalDerbyBet = myDerbyBets.reduce((a,b)=>a+b, 0);
-                if (totalDerbyBet > 0) {
-                    let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
-                    if (myWins.length > 0) { 
-                        let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
-                        timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
-                    } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
-                    
-                    for(let i=0; i<6; i++) {
-                        if(myDerbyBets[i] > 0) {
-                            const badge = document.getElementById(`badge-derby-${i}`); 
-                            let winData = myWins.find(w=>w.choice===i);
-                            if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
-                            else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
-                        }
+
+            // --- BLACKJACK ENGINE ---
+            window.actSitDown = function(idx) { if(gameLocks[currentRoomId]) return alert('Table is currently offline for maintenance.'); if(actionLocked) return; actionLocked = true; socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+            window.actPlaceBet = function(idx) { 
+                if(gameLocks[currentRoomId]) return alert('Table is currently offline for maintenance.');
+                if(actionLocked) return; const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value.replace(/,/g, '')) : 0;
+                if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount."); if (amt > 100000) return alert("Maximum limit is 100,000 credits."); if (amt > currentUser.credits) return alert("Insufficient credits!");
+                actionLocked = true; window.lastBetAmount = amt; socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet');
+            }
+            window.actEjectSeat = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+            window.actHit = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+            window.actStand = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+            window.actDouble = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+            window.actSplit = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+
+            function formatCardHTML(c, isHidden) {
+                if (isHidden) return `<div class="card dealer-hidden"></div>`;
+                const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : 'black'; const suitSym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit];
+                return `<div class="card ${colorClass}"><div class="card-corner top-left">${c.value}<br>${suitSym}</div><div class="card-center-suit">${suitSym}</div><div class="card-corner bottom-right">${c.value}<br>${suitSym}</div></div>`;
+            }
+
+            socket.on('game_state_update', (state) => {
+                if(currentGameState && currentGameState.status === 'dealerTurn' && state.status === 'resolving') {
+                    if(mySeatIndex !== -1 && state.seats[mySeatIndex]) {
+                        let hasWin = state.seats[mySeatIndex].hands.some(h => h.result === 'win' || h.result === 'win-bj'); let hasLose = state.seats[mySeatIndex].hands.some(h => h.result === 'lose' || h.result === 'bust');
+                        if(hasWin) playSfx('win'); else if (hasLose) playSfx('lose');
                     }
                 }
+                if(currentGameState && currentGameState.status === 'betting' && state.status === 'playing') playSfx('deal');
+                actionLocked = false; currentGameState = state; 
+                if(currentUser && currentRoomId && !document.getElementById('game-interface').classList.contains('hidden')) { updateLobby(state); renderTable(state); manageTimers(state); }
+            });
+
+            function updateLobby(state) {
+                const lobby = document.getElementById('lobby-list'); lobby.innerHTML = ''; document.getElementById('player-count').innerText = state.lobby.length;
+                state.lobby.forEach(p => { lobby.innerHTML += `<div class="lobby-player" style="color:${p.color}">▶ ${p.username}</div>`; });
             }
-        });
 
-        socket.on('derby_race_tick', (data) => {
-            if(data.distances) {
-                for(let i=0; i<6; i++) {
-                    const racer = document.getElementById(`racer-${i}`);
-                    if(racer) racer.style.left = `calc(${data.distances[i]}% - ${data.distances[i] * 0.6}px)`;
-                }
-            }
-        });
+            function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
 
-        window.placeDerbyBet = function(choice) {
-            if(gameLocks.derby) return alert('This game is currently offline for maintenance.');
-            if(isBetting) return; const box = document.getElementById(`derby-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`derby-master-bet`).value);
-            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-            if (myDerbyBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per lane!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            
-            applyThrottle(); myDerbyBets[choice] += amt; socket.emit('place_derby_bet', { username: currentUser.username, choice, amount: amt }); 
-        };
+            function renderTable(state) {
+                if (!state) return; document.getElementById('phase-display').innerText = state.status === 'resolving' ? 'RESULTS' : state.status.toUpperCase();
+                const dCards = document.getElementById('dealer-cards'); dCards.innerHTML = ''; const dBadge = document.getElementById('dealer-val');
+                state.dealerCards.forEach(c => { dCards.innerHTML += formatCardHTML(c, c.hidden); }); const visibleDealerCards = state.dealerCards.filter(c => !c.hidden);
+                if (visibleDealerCards.length > 0) { dBadge.innerText = calculateValue(visibleDealerCards); dBadge.classList.remove('hidden'); } else { dBadge.classList.add('hidden'); }
 
-        // --- 3 CUPS GAME LOGIC ---
-        let cupsInterval = null; 
-        let shuffleAnim = null;
-        socket.on('cups_state_update', (data) => {
-            const statusText = document.getElementById('cups-result-text'); const timerText = document.getElementById('cups-timer');
-            
-            if(data.history) { document.getElementById('cups-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:#f59e0b;">CUP ${r + 1}</span></div>`).join(''); }
-
-            if (data.status === 'shuffling') { 
-                statusText.innerText = "SHUFFLING..."; timerText.innerText = "NO MORE BETS"; myCupsBets = [0,0,0]; playSfx('deal'); 
-                document.querySelectorAll('.cup-wrapper').forEach(w => w.classList.remove('reveal'));
-                document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('cups')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
+                const seatsArea = document.getElementById('seats-area');
+                const isMobile = window.innerWidth <= 768;
+                let activeElements = [];
                 
-                let shuffleCount = 0;
-                clearInterval(shuffleAnim);
-                shuffleAnim = setInterval(() => {
-                    let pos = ['0%', '33.33%', '66.66%'].sort(() => Math.random() - 0.5);
-                    document.getElementById('cup-wrap-0').style.left = pos[0];
-                    document.getElementById('cup-wrap-1').style.left = pos[1];
-                    document.getElementById('cup-wrap-2').style.left = pos[2];
-                    shuffleCount++;
-                }, 200);
-            }
-            else if (data.status === 'betting') {
-                clearInterval(shuffleAnim);
-                statusText.innerText = "WHERE IS THE BALL?"; clearInterval(cupsInterval);
-                cupsInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(cupsInterval); }, 1000);
-            }
-            else if (data.status === 'resolving') {
-                clearInterval(shuffleAnim);
-                setTimeout(() => {
-                    const winCupWrap = document.getElementById(`cup-wrap-${data.winningCup}`);
-                    if(winCupWrap) winCupWrap.classList.add('reveal');
-                    statusText.innerText = `CUP ${data.winningCup + 1} HAS THE BALL!`;
-                    
-                    let totalCupsBet = myCupsBets.reduce((a,b)=>a+b, 0);
-                    if (totalCupsBet > 0) {
-                        let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
-                        if (myWins.length > 0) { 
-                            let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
-                            timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
-                        } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
-                        
-                        for(let i=0; i<3; i++) {
-                            if(myCupsBets[i] > 0) {
-                                const badge = document.getElementById(`badge-cups-${i}`); let winData = myWins.find(w=>w.choice===i);
-                                if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
-                                else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
+                if(currentUser) { const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if(mySeatData) { mySeatIndex = state.seats.indexOf(mySeatData);} else { mySeatIndex = -1; } }
+
+                for(let index=0; index<state.seats.length; index++) {
+                    let seatData = state.seats[index]; let isMySeat = currentUser && seatData && seatData.username.toLowerCase() === currentUser.username.toLowerCase();
+                    let hasSeatAnywhere = state.seats.some(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
+                    const seatDiv = document.createElement('div'); seatDiv.className = 'seat clear-text'; seatDiv.id = `seat-${index}`;
+
+                    if (!seatData) {
+                        if (state.status === 'waiting' || state.status === 'betting') {
+                            let sitBtn = !hasSeatAnywhere ? `<button class="btn-sit-empty pixel-text" onclick="actSitDown(${index})">SIT</button>` : '';
+                            seatDiv.innerHTML = `<div class="seat-empty-box"><div class="pixel-text" style="font-size:28px; color:#94a3b8; margin-bottom:10px;">EMPTY</div>${sitBtn}</div>`; activeElements.push(seatDiv);
+                        }
+                    } else {
+                        seatDiv.classList.add('occupied'); if (isMySeat) seatDiv.classList.add('my-seat'); if (state.activeSeatIndex === index) seatDiv.classList.add('active-turn');
+                        let html = ``; let wrapperScale = seatData.hands.length > 1 ? "transform: scale(0.85); width: 125%;" : "";
+                        html += `<div class="hands-wrapper" style="${wrapperScale}">`;
+                        seatData.hands.forEach((hand, hIdx) => {
+                            let activeHandClass = (state.activeSeatIndex === index && seatData.currentHand === hIdx && hand.status === 'waiting') ? 'active-hand' : '';
+                            html += `<div class="hand-box ${activeHandClass}"><div class="hand-container">`;
+                            hand.cards.forEach(c => { html += formatCardHTML(c, false); }); if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
+                            
+                            if (hand.status === 'bust' || hand.result === 'bust') html += `<div class="hand-status-label hand-status-bust">BUST</div>`;
+                            else if (hand.result) {
+                                if(hand.result === 'win' || hand.result === 'win-bj') html += `<div class="hand-status-label hand-status-win">${hand.result==='win-bj'?'BLACKJACK':'WIN'}</div>`;
+                                else if(hand.result === 'lose') html += `<div class="hand-status-label hand-status-lose">LOSE</div>`; else if(hand.result === 'push') html += `<div class="hand-status-label hand-status-push">PUSH</div>`;
+                            } else if (hand.status === 'blackjack' && state.status !== 'resolving') html += `<div class="hand-status-label hand-status-blackjack">21!</div>`;
+                            html += `</div>`; 
+                            
+                            let handBet = hand.bet > 0 ? hand.bet : 0; let betAnimClass = '';
+                            if (state.status === 'resolving') {
+                                if (hand.result === 'win') { handBet = hand.bet * 2; betAnimClass = 'anim-win'; } else if (hand.result === 'win-bj') { handBet = hand.bet * 2.5; betAnimClass = 'anim-win'; }
+                                else if (hand.result === 'push') { handBet = hand.bet; } else { handBet = 0; betAnimClass = 'anim-lose'; }
+                            }
+                            if (handBet > 0 || state.status === 'resolving') { html += `<div class="player-bet-text pixel-text ${betAnimClass}">${formatNumber(handBet)}</div>`; }
+                            if (activeHandClass) html += `<div class="turn-bar-container"><div class="turn-bar-fill" id="turn-bar-${index}"></div></div>`;
+                            html += `</div>`; 
+                        });
+                        html += `</div><div class="player-info-plate"><div class="player-name-text" style="color:${seatData.color}">${seatData.username}</div></div>`;
+
+                        if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
+                            if (seatData.hands[0].bet === 0) {
+                                let startBet = window.lastBetAmount || 0; let opts = [1000, 5000, 20000, 50000, 100000]; if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
+                                let optHTML = `<option value="1000" ${startBet === 1000 || startBet === 0 ? 'selected' : ''}>1,000</option>`; optHTML += [5000, 20000, 50000, 100000].map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
+                                html += `<div class="seat-bet-box"><div style="display: flex; gap: 8px;"><select id="inseat-bet-${index}" class="pixel-text" style="flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;">${optHTML}</select><button class="s-btn btn-bet pixel-text" style="font-size: 24px; padding: 6px 12px;" onclick="actPlaceBet(${index})">BET</button></div></div><div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
+                            }
+                        } else if (isMySeat && state.status === 'waiting') { html += `<div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`; }
+
+                        if (isMySeat && state.status === 'playing' && state.activeSeatIndex === index) {
+                            const cHand = seatData.hands[seatData.currentHand];
+                            if (cHand && cHand.status === 'waiting') {
+                                html += `<div class="seat-controls"><button class="s-btn btn-hit pixel-text" style="font-size:18px;" onclick="actHit(${index})">HIT</button><button class="s-btn btn-stand pixel-text" style="font-size:18px;" onclick="actStand(${index})">STAND</button>`;
+                                if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) { html += `<button class="s-btn btn-double pixel-text" style="font-size:18px;" onclick="actDouble(${index})">2X</button>`; if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) { html += `<button class="s-btn btn-split pixel-text" style="font-size:18px;" onclick="actSplit(${index})">SPLIT</button>`; } }
+                                html += `</div>`;
                             }
                         }
+                        seatDiv.innerHTML += html; activeElements.push(seatDiv);
                     }
-                }, 500);
-            }
-        });
-
-        window.placeCupsBet = function(choice) {
-            if(gameLocks.cups) return alert('This game is currently offline for maintenance.');
-            if(isBetting) return; const box = document.getElementById(`cups-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`cups-master-bet`).value);
-            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-            if (myCupsBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per cup!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            
-            applyThrottle(); myCupsBets[choice] += amt; socket.emit('place_cups_bet', { username: currentUser.username, choice, amount: amt }); 
-        };
-
-        // --- NEW PVP ARENA (MODALS + COIN & WHEEL) LOGIC ---
-        window.joinPvpSeat = function(index) {
-            if(!currentUser) return;
-            socket.emit('join_pvp_seat', { username: currentUser.username, seatIndex: index });
-        };
-
-        window.leavePvpSeat = function() {
-            if(myDuelSeatIndex !== -1 && currentUser) {
-                socket.emit('leave_pvp_seat', { username: currentUser.username, seatIndex: myDuelSeatIndex });
-            }
-        };
-
-        // HOST FLOW
-        socket.on('open_pvp_host_modal', () => {
-            showModal('pvp-host-modal');
-        });
-
-        window.toggleModalWheelConfig = function() {
-            const type = document.getElementById('modal-duel-type').value;
-            if(type === 'wheel') { document.getElementById('modal-wheel-config-row').classList.remove('hidden'); document.getElementById('coin-config-row').classList.add('hidden'); }
-            else { document.getElementById('modal-wheel-config-row').classList.add('hidden'); document.getElementById('coin-config-row').classList.remove('hidden'); }
-        };
-
-        window.submitPvpHostConfig = function() {
-            const type = document.getElementById('modal-duel-type').value;
-            const format = parseInt(document.getElementById('modal-duel-format').value);
-            const betAmount = parseInt(document.getElementById('modal-duel-bet').value);
-            const slices = type === 'wheel' ? parseInt(document.getElementById('modal-duel-wheel-slices').value) : 2;
-            const hostChoice = type === 'coin' ? document.getElementById('duel-host-choice').value : currentUser.username;
-
-            if (betAmount > currentUser.credits) { return alert("You have insufficient credits for this wager."); }
-
-            socket.emit('host_pvp_match', { username: currentUser.username, type, format, betAmount, slices, hostChoice });
-            hideModal('pvp-host-modal');
-        };
-
-        // CHALLENGER FLOW
-        socket.on('open_pvp_accept_modal', (data) => {
-            document.getElementById('accept-host-name').innerText = data.hostName.toUpperCase();
-            document.getElementById('accept-game-type').innerText = data.type === 'wheel' ? `WHEEL SPIN (${data.slices} Slices)` : 'COIN FLIP';
-            document.getElementById('accept-format').innerText = data.format === 1 ? '1 ROUND' : `FIRST TO ${data.format}`;
-            document.getElementById('accept-wager').innerText = data.betAmount === 0 ? 'ITEM WAGER (0 CR)' : `${formatNumber(data.betAmount)} CR`;
-            
-            showModal('pvp-accept-modal');
-        });
-
-        window.acceptPvpDuel = function() {
-            socket.emit('accept_pvp_duel', { username: currentUser.username, choice: currentUser.username });
-            hideModal('pvp-accept-modal');
-        };
-
-        window.declinePvpDuel = function() {
-            hideModal('pvp-accept-modal');
-            leavePvpSeat();
-        };
-
-        window.readyDuel = function() {
-            if(!currentUser || myDuelSeatIndex === -1) return;
-            socket.emit('ready_pvp_duel', { username: currentUser.username });
-        };
-
-        socket.on('pvp_duel_state_update', (state) => {
-            currentPvpDuelState = state;
-            const statusBox = document.getElementById('duel-status-box');
-            statusBox.innerText = state.message;
-
-            const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
-            myDuelSeatIndex = mySeatData ? state.seats.indexOf(mySeatData) : -1;
-
-            for(let i=0; i<2; i++) {
-                const seat = state.seats[i];
-                const emptyUI = document.getElementById(`duel-empty-${i}`);
-                const occUI = document.getElementById(`duel-occupied-${i}`);
-                const seatCard = document.getElementById(`duel-seat-${i}`);
-
-                if(seat) {
-                    emptyUI.classList.add('hidden');
-                    occUI.classList.remove('hidden');
-                    document.getElementById(`duel-name-${i}`).innerText = seat.username.toUpperCase();
-                    document.getElementById(`duel-name-${i}`).style.color = seat.color || '#fff';
-                    document.getElementById(`duel-score-${i}`).innerText = seat.score;
-                    document.getElementById(`duel-choice-${i}`).innerText = seat.choice ? seat.choice.toUpperCase() : 'WAITING...';
-                    
-                    const readyBadge = document.getElementById(`duel-ready-${i}`);
-                    if(seat.ready) readyBadge.classList.remove('hidden');
-                    else readyBadge.classList.add('hidden');
-
-                    if(myDuelSeatIndex === i) seatCard.classList.add('my-seat');
-                    else seatCard.classList.remove('my-seat');
-                } else {
-                    emptyUI.classList.remove('hidden');
-                    occUI.classList.add('hidden');
-                    seatCard.classList.remove('my-seat');
-                    document.getElementById(`duel-ready-${i}`).classList.add('hidden');
-                }
-            }
-
-            const matchVisual = document.getElementById('duel-match-visual');
-            const pointer = document.getElementById('duel-wheel-pointer');
-            const canvas = document.getElementById('duel-wheel-canvas');
-            
-            if(state.status === 'flipping' || state.status === 'spinning') {
-                if (state.type === 'wheel') {
-                    matchVisual.classList.add('hidden');
-                    canvas.classList.remove('hidden');
-                    canvas.classList.add('wheel-spinning');
-                    pointer.classList.remove('hidden');
-                    
-                    drawWheel(canvas, state.slices, state.seats[0].username, state.seats[1].username);
-                } else {
-                    canvas.classList.add('hidden');
-                    matchVisual.classList.remove('hidden');
-                    matchVisual.className = 'duel-coin flipping';
-                    matchVisual.innerText = '?';
-                    pointer.classList.add('hidden');
-                }
-            } else if (state.status === 'resolving' || state.status === 'finished') {
-                if (state.type === 'wheel') {
-                    matchVisual.classList.add('hidden');
-                    canvas.classList.remove('hidden', 'wheel-spinning');
-                    pointer.classList.remove('hidden');
-                    
-                    const sliceAngle = 360 / state.slices;
-                    const stopAngle = (360 * 5) - (state.winSliceIndex * sliceAngle) - (sliceAngle / 2);
-                    
-                    canvas.style.transition = 'transform 3s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                    canvas.style.transform = `rotate(${stopAngle}deg)`;
-                    
-                } else {
-                    canvas.classList.add('hidden');
-                    matchVisual.classList.remove('hidden', 'flipping');
-                    matchVisual.innerText = state.result ? state.result.charAt(0).toUpperCase() : '?';
                 }
                 
-                if(state.status === 'finished') {
-                    if(mySeatData && mySeatData.score >= state.format) playSfx('win');
-                    else if (mySeatData) playSfx('lose');
-                }
-            } else {
-                if(state.type === 'wheel') {
-                    matchVisual.classList.add('hidden');
-                    canvas.classList.remove('hidden', 'wheel-spinning');
-                    canvas.style.transition = 'none';
-                    canvas.style.transform = 'rotate(0deg)';
-                    
-                    if(state.seats[0] && state.seats[1]) {
-                        drawWheel(canvas, state.slices, state.seats[0].username, state.seats[1].username);
-                    } else {
-                        drawWheel(canvas, state.slices, 'WAITING', 'WAITING');
-                    }
-                    
-                    pointer.classList.remove('hidden');
-                } else {
-                    canvas.classList.add('hidden');
-                    matchVisual.classList.remove('hidden');
-                    matchVisual.className = 'duel-coin';
-                    matchVisual.innerText = '?';
-                    matchVisual.style.fontSize = '60px';
-                    pointer.classList.add('hidden');
+                seatsArea.innerHTML = ''; 
+                if (isMobile || state.status === 'playing' || state.status === 'dealerTurn' || state.status === 'resolving') { 
+                    seatsArea.style.justifyContent = 'center'; 
+                    activeElements.forEach(el => { 
+                        el.style.position = 'relative'; 
+                        el.style.transform = 'none'; 
+                        el.style.left = 'auto'; 
+                        el.style.bottom = 'auto'; 
+                        seatsArea.appendChild(el); 
+                    }); 
+                } else { 
+                    seatsArea.style.justifyContent = 'flex-start'; 
+                    activeElements.forEach((el, i) => { 
+                        el.style.position = 'absolute'; 
+                        el.style.transform = 'translate(-50%, 0)'; 
+                        if (state.seats.length === 3) { el.style.left = `${[25, 50, 75][i]}%`; el.style.bottom = `0px`; } 
+                        else if (state.seats.length === 5) { el.style.left = `${[12, 31, 50, 69, 88][i]}%`; el.style.bottom = `${[40, 20, 10, 20, 40][i]}px`; } 
+                        seatsArea.appendChild(el); 
+                    }); 
                 }
             }
-        });
 
-        // HTML5 CANVAS WHEEL DRAWING
-        function drawWheel(canvas, numSlices, p1Name, p2Name) {
-            if(!canvas.getContext) return;
-            const ctx = canvas.getContext('2d');
-            const x = canvas.width / 2;
-            const y = canvas.height / 2;
-            const radius = x - 5;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const sliceAngle = (2 * Math.PI) / numSlices;
-            const colors = ['#ef4444', '#3b82f6']; // Red and Blue
-            
-            for (let i = 0; i < numSlices; i++) {
-                const startAngle = i * sliceAngle - (Math.PI / 2); 
-                const endAngle = startAngle + sliceAngle;
-                
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.arc(x, y, radius, startAngle, endAngle);
-                ctx.closePath();
-                ctx.fillStyle = colors[i % 2];
-                ctx.fill();
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#0f172a';
-                ctx.stroke();
-                
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(startAngle + (sliceAngle / 2));
-                ctx.textAlign = "right";
-                ctx.fillStyle = "#fff";
-                ctx.font = "bold 16px Arial";
-                ctx.shadowColor = "black";
-                ctx.shadowBlur = 4;
-                const text = i % 2 === 0 ? p1Name : p2Name;
-                ctx.fillText(text.substring(0, 8), radius - 15, 6);
-                ctx.restore();
+            function manageTimers(state) {
+                const gTimerUI = document.getElementById('global-timer'); const nTimerUI = document.getElementById('next-round-timer'); const iTimerUI = document.getElementById('idle-timer');
+                if (state.status === 'betting' && state.betTimeLeft > 0) { let left = Math.ceil(state.betTimeLeft / 1000); gTimerUI.classList.remove('hidden'); clearInterval(globalTimerInt); nTimerUI.classList.add('hidden'); document.getElementById('g-time').innerText = left; globalTimerInt = setInterval(() => { left--; if (left > 0) document.getElementById('g-time').innerText = left; else { clearInterval(globalTimerInt); gTimerUI.classList.add('hidden'); } }, 1000);
+                } else if (state.status !== 'betting') { gTimerUI.classList.add('hidden'); clearInterval(globalTimerInt); }
+                if (state.status === 'resolving' && state.nextRoundTimeLeft > 0) { let left = Math.ceil(state.nextRoundTimeLeft / 1000); nTimerUI.classList.remove('hidden'); clearInterval(nextRoundTimerInt); document.getElementById('n-time').innerText = left; nextRoundTimerInt = setInterval(() => { left--; if (left > 0) document.getElementById('n-time').innerText = left; else { clearInterval(nextRoundTimerInt); nTimerUI.classList.add('hidden'); } }, 1000);
+                } else if (state.status !== 'resolving') { nTimerUI.classList.add('hidden'); clearInterval(nextRoundTimerInt); }
+                if (mySeatIndex !== -1 && (state.status === 'betting' || state.status === 'waiting')) {
+                    const mySeatData = state.seats[mySeatIndex];
+                    if (mySeatData && mySeatData.hands[0].bet === 0 && mySeatData.kickTimeLeft > 0) { let left = Math.ceil(mySeatData.kickTimeLeft / 1000); iTimerUI.classList.remove('hidden'); clearInterval(idleTimerInt); document.getElementById('i-time').innerText = left; idleTimerInt = setInterval(() => { left--; if (left > 0) document.getElementById('i-time').innerText = left; else { clearInterval(idleTimerInt); iTimerUI.classList.add('hidden'); } }, 1000); } 
+                    else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
+                } else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
+                clearInterval(turnTimerVisualInt);
+                if (state.status === 'playing' && state.turnTimeLeft > 0 && state.activeSeatIndex !== -1) {
+                    const bar = document.getElementById(`turn-bar-${state.activeSeatIndex}`);
+                    if (bar) { let remaining = state.turnTimeLeft; turnTimerVisualInt = setInterval(() => { remaining -= 200; if (remaining < 0) remaining = 0; bar.style.width = `${(remaining / 15000) * 100}%`; if (remaining <= 0) clearInterval(turnTimerVisualInt); }, 200); }
+                }
             }
-            
-            ctx.beginPath();
-            ctx.arc(x, y, 15, 0, 2 * Math.PI);
-            ctx.fillStyle = '#fbbf24';
-            ctx.fill();
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = '#b45309';
-            ctx.stroke();
-        }
 
-        // --- CLASSIC COLOR GAME LOGIC ---
-        let colorInterval = null; let colorAnimInterval = null; const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
-        socket.on('color_state_update', (data) => {
-            const statusText = document.getElementById('color-result-text'); const timerText = document.getElementById('color-timer');
-            const d1 = document.getElementById('col-die1'); const d2 = document.getElementById('col-die2'); const d3 = document.getElementById('col-die3');
-            
-            if(data.history) { document.getElementById('color-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${getColorHex(r[0])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[1])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[2])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span></div>`).join(''); }
+            // --- ARCADE LOBBIES ---
+            socket.on('arcade_lobby_update', (data) => {
+                const countId = data.game === 'dice' ? 'dice-player-count' : (data.game === 'color' ? 'color-player-count' : (data.game === 'derby' ? 'derby-player-count' : (data.game === 'cups' ? 'cups-player-count' : 'pvp-player-count')));
+                const popId = data.game === 'dice' ? 'dice-players-list' : (data.game === 'color' ? 'color-players-list' : (data.game === 'derby' ? 'derby-players-list' : (data.game === 'cups' ? 'cups-players-list' : 'pvp-players-list')));
+                const countEl = document.getElementById(countId); const popEl = document.getElementById(popId);
+                if(countEl) countEl.innerText = data.lobby.length;
+                if(popEl) popEl.innerHTML = data.lobby.map(p => `<div class="lobby-player" style="color:${p.color};">▶ ${p.username}</div>`).join('');
+            });
 
-            if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 }; d1.classList.remove('shake'); d2.classList.remove('shake'); d3.classList.remove('shake'); clearInterval(colorInterval);
-                document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('color') || b.id.includes('badge-red') || b.id.includes('badge-blue') || b.id.includes('badge-yellow') || b.id.includes('badge-green') || b.id.includes('badge-pink') || b.id.includes('badge-white')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
-                colorInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(colorInterval); }, 1000);
+            // --- ARCADE UTILS ---
+            function applyThrottle() {
+                isBetting = true; clearTimeout(betThrottleTimeout); betThrottleTimeout = setTimeout(() => { isBetting = false; }, 250);
             }
-            else if (data.status === 'rolling') { 
-                statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); d3.classList.add('shake'); playSfx('deal'); 
-                clearInterval(colorAnimInterval);
-                colorAnimInterval = setInterval(()=>{
-                    d1.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`; d2.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`; d3.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`;
-                }, 100);
-            }
-            else if (data.status === 'resolving') {
-                clearInterval(colorAnimInterval); d1.classList.remove('shake'); d2.classList.remove('shake'); d3.classList.remove('shake');
-                setTimeout(()=> { d1.className = `color-die bg-${data.dice[0]}`; }, 100);
-                setTimeout(()=> { d2.className = `color-die bg-${data.dice[1]}`; }, 300);
-                setTimeout(()=> { d3.className = `color-die bg-${data.dice[2]}`; statusText.innerText = "RESULT!"; }, 500);
+
+            // --- DICE LOGIC ---
+            const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']; let diceInterval = null;
+            socket.on('dice_state_update', (data) => {
+                const statusText = document.getElementById('dice-result-text'); const timerText = document.getElementById('dice-timer');
+                const d1 = document.getElementById('die1'); const d2 = document.getElementById('die2');
                 
-                setTimeout(() => {
-                    let totalColorBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
-                    if (totalColorBet > 0) {
+                if(data.history) document.getElementById('dice-history').innerHTML = data.history.map(n => `<div class="history-list-item"><span style="color:${n[0]+n[1]===7?'#a855f7':(n[0]+n[1]<7?'var(--accent-glow-2)':'var(--success)')}">${diceFaces[n[0]-1]} ${diceFaces[n[1]-1]} = ${n[0]+n[1]}</span></div>`).join('');
+
+                if (data.status === 'betting') {
+                    statusText.innerText = "PLACE YOUR BETS"; d1.classList.remove('shake'); d2.classList.remove('shake'); myDiceBets = { under: 0, seven: 0, over: 0 }; clearInterval(diceInterval);
+                    document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-under') || b.id.includes('badge-over') || b.id.includes('badge-seven')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
+                    diceInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(diceInterval); }, 1000);
+                } 
+                else if (data.status === 'rolling') { statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); playSfx('deal'); } 
+                else if (data.status === 'resolving') {
+                    d1.classList.remove('shake'); d2.classList.remove('shake'); d1.innerText = diceFaces[data.dice[0]-1]; d2.innerText = diceFaces[data.dice[1]-1]; statusText.innerText = `RESULT: ${data.total}`;
+                    let totalDiceBet = Object.values(myDiceBets).reduce((a,b)=>a+b, 0);
+                    if (totalDiceBet > 0) {
                         let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
                         if (myWins.length > 0) { 
                             let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
                             timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
                         } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
-                        
-                        ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { 
-                            if(myColorBets[c] > 0) {
+                        ['under', 'seven', 'over'].forEach(c => { 
+                            if(myDiceBets[c] > 0) {
                                 const badge = document.getElementById(`badge-${c}`); let winData = myWins.find(w=>w.choice===c);
                                 if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
                                 else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
                             }
                         });
                     }
-                }, 600);
-            }
-        });
-
-        window.placeColorBet = function(choice) {
-            if(gameLocks.color) return alert('This game is currently offline for maintenance.');
-            if(isBetting) return; const box = document.getElementById(`color-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`color-master-bet`).value);
-            if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
-            if (myColorBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per color!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
-            
-            applyThrottle(); myColorBets[choice] += amt; socket.emit('place_color_bet', { username: currentUser.username, choice, amount: amt }); 
-        };
-
-        socket.on('arcade_bet_placed', (data) => { 
-            let prefix = data.game === 'dice' ? '' : data.game + '-';
-            if(data.game === 'color') prefix = '';
-            const badge = document.getElementById(`badge-${prefix}${data.choice}`); 
-            if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); badge.classList.remove('hidden'); }
-            playSfx('bet'); 
-        });
-
-        socket.on('arcade_error', (msg) => { alert(msg); isBetting = false; });
-
-        function getColorHex(c) {
-            if(c==='red') return '#ef4444'; if(c==='blue') return '#3b82f6'; if(c==='yellow') return '#eab308';
-            if(c==='green') return '#10b981'; if(c==='pink') return '#ec4899'; return '#f8fafc';
-        }
-
-        // --- UTILITY & CHAT ---
-        window.actSendChat = function(gameType) {
-            let inputId = `${gameType}-chat-input`;
-            const input = document.getElementById(inputId);
-            if (input && input.value.trim() && currentUser && currentRoomId) { socket.emit('send_chat', { roomId: currentRoomId, username: currentUser.username, message: input.value.trim() }); input.value = ''; } 
-        };
-
-        socket.on('receive_chat', data => { 
-            let boxId = `${data.roomId}-chat-messages`;
-            if (data.roomId === '3seat' || data.roomId === '5seat') boxId = 'blackjack-chat-messages';
-            
-            const msgs = document.getElementById(boxId);
-            if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2); font-weight:bold;">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
-        });
-
-        socket.on('chat_wiped', (data) => {
-            let boxId = `${data.room}-chat-messages`;
-            if (data.room === '3seat' || data.room === '5seat' || data.room === 'blackjack') boxId = 'blackjack-chat-messages';
-            const msgs = document.getElementById(boxId);
-            if(msgs) msgs.innerHTML = `<div style="color:var(--danger); text-align:center; margin-top:20px;">[CHAT CLEARED BY ADMIN]</div>`;
-        });
-
-        // --- UI MENUS & BANKING ---
-        window.showProfile = function() { if(!currentUser) return; document.getElementById('profile-username-preview').innerText = currentUser.username; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showModal('profile-modal'); };
-        window.showBank = function() { if(!currentUser) return; document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showModal('bank-modal'); };
-        window.openProfileLedger = function() { if(!currentUser) return; hideModal('profile-modal'); showModal('profile-ledger-modal'); loadLedger(false); };
-        window.openBankLedger = function() { if(!currentUser) return; hideModal('bank-modal'); showModal('bank-ledger-modal'); loadLedger(true); };
-        
-        async function loadLedger(isBankOnly) {
-            const res = await fetch(`/api/profile/ledger/${currentUser.username}`); const data = await res.json();
-            const list = document.getElementById(isBankOnly ? 'bank-ledger-list' : 'ledger-list'); list.innerHTML = '';
-            let filteredData = isBankOnly ? data.filter(tx => tx.type.includes('BANK')) : data;
-            if (filteredData.length === 0) { list.innerHTML = '<div style="color:#475569; text-align:center; margin-top:20px;">No records found.</div>'; return; }
-            filteredData.forEach(tx => {
-                let statusBadge = ''; let amtColor = '#fff'; let displayAmt = Math.abs(tx.amount); let prefix = '';
-                if (tx.type.includes('BANK')) {
-                    let isWithdrawal = tx.type.includes('WITHDRAWAL'); prefix = isWithdrawal ? '-' : '+';
-                    if (tx.status === 'pending') amtColor = '#94a3b8'; else if (tx.status === 'completed') amtColor = isWithdrawal ? 'var(--danger)' : 'var(--success)'; else amtColor = 'var(--danger)'; 
-                    let stColor = tx.status === 'pending' ? '#fbbf24' : (tx.status === 'completed' ? '#10b981' : '#ef4444'); statusBadge = ` <span style="color:${stColor}; font-size:20px;">[${(tx.status === 'completed' ? 'APPROVED' : tx.status).toUpperCase()}]</span>`;
-                } else { amtColor = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff'); prefix = tx.amount > 0 ? '+' : (tx.amount < 0 ? '-' : ''); }
-                const time = new Date(tx.date).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
-                list.innerHTML += `<div class="ledger-item">
-                    <span><span style="color:#64748b; font-size:20px; margin-right:10px;">[${time}]</span><span class="ledger-desc">${tx.type.toUpperCase()}${statusBadge}</span></span> 
-                    <span style="color:${amtColor}">${prefix}${formatNumber(displayAmt)} <span class="coin-icon">🪙</span></span>
-                </div>`;
+                }
             });
-        }
-
-        window.showBankConfirm = function(type) {
-            const amtInput = document.getElementById('bank-amount').value.replace(/,/g, ''); const amt = parseInt(amtInput);
-            if(isNaN(amt) || amt <= 0) return alert("Enter a valid amount.");
-            if (type === 'deposit' && (amt < 10000 || amt > 100000)) return alert("Deposit must be between 10,000 and 100,000.");
-            if (type === 'withdrawal' && (amt < 50000 || amt > 100000)) return alert("Withdrawal must be between 50,000 and 100,000.");
-            if (type === 'withdrawal' && amt > currentUser.credits) return alert("Insufficient funds.");
-            pendingBankAction = { type, amount: amt }; document.getElementById('confirm-bank-type').innerText = type.toUpperCase(); document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
-            document.getElementById('bank-confirm-msg').innerText = '';
-            document.getElementById('bank-confirm-btn-row').innerHTML = `<button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button><button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>`;
-            hideModal('bank-modal'); showModal('bank-confirm-modal');
-        }
-
-        window.executeBankRequest = async function() {
-            if(!pendingBankAction) return; const { type, amount } = pendingBankAction;
-            const btnRow = document.getElementById('bank-confirm-btn-row'); const statusMsg = document.getElementById('bank-confirm-msg');
-            statusMsg.style.color = "#fff"; statusMsg.innerText = "SENDING REQUEST...";
-            const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount}) });
-            if(res.ok) { statusMsg.style.color = "var(--success)"; statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; document.getElementById('bank-amount').value=''; playSfx('deal'); btnRow.innerHTML = `<button class="wood-btn pixel-text" style="width:100%; background: #475569;" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">BACK TO BANK</button>`; }
-            else { const d = await res.json(); statusMsg.style.color = "var(--danger)"; statusMsg.innerText = d.error; }
-            pendingBankAction = null;
-        }
-
-        window.redeemCodeMain = async function() {
-            if(!currentUser) return; const code = document.getElementById('gift-code-main').value; const msgBox = document.getElementById('redeem-msg');
-            if(!code) return; const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
-            if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; updateAllCredits(); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code-main').value=''; playSfx('win'); }
-            else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
-            setTimeout(()=> msgBox.innerText='', 3000);
-        }
-        
-        function updateRewardTimerUI() {
-            if (rewardCooldownSeconds <= 0) { clearInterval(rewardTimerInt); showRewards(); return; }
-            let h = Math.floor(rewardCooldownSeconds / 3600); let m = Math.floor((rewardCooldownSeconds % 3600) / 60); let s = rewardCooldownSeconds % 60;
-            const tEl = document.getElementById('reward-timer'); if(tEl) tEl.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        }
-        function startRewardTimer() { clearInterval(rewardTimerInt); updateRewardTimerUI(); rewardTimerInt = setInterval(() => { rewardCooldownSeconds--; updateRewardTimerUI(); }, 1000); }
-        window.showRewards = function() {
-            if(!currentUser) return; showModal('reward-modal'); document.getElementById('reward-msg').innerText = ''; document.querySelectorAll('.reward-box').forEach(b => b.classList.remove('open')); isPickingReward = false;
-            if (rewardCooldownSeconds <= 0) { document.getElementById('reward-active-view').classList.remove('hidden'); document.getElementById('reward-cooldown-view').classList.add('hidden'); } 
-            else { document.getElementById('reward-active-view').classList.add('hidden'); document.getElementById('reward-cooldown-view').classList.remove('hidden'); startRewardTimer(); }
-        }
-
-        let isPickingReward = false;
-        window.pickRewardBox = function(index) { if(isPickingReward) return; isPickingReward = true; socket.emit('claim_daily_reward_box', { username: currentUser.username, boxIndex: index }); }
-        socket.on('reward_box_opened', (data) => {
-            isPickingReward = false; 
-            if(data.success) {
-                data.allPrizes.forEach((prize, i) => {
-                    const backEl = document.getElementById(`box-val-${i}`); backEl.innerHTML = prize > 0 ? `+${formatNumber(prize)} <span class="coin-icon">🪙</span>` : 'EMPTY';
-                    if(prize === 0) backEl.classList.add('zero'); else backEl.classList.remove('zero'); setTimeout(() => document.querySelectorAll('.reward-box')[i].classList.add('open'), i * 100);
-                });
+            
+            window.placeDiceBet = function(choice) {
+                if(gameLocks.dice) return alert('This game is currently offline for maintenance.');
+                if(isBetting) return; const box = document.getElementById(`dice-btn-${choice}`); if(box && box.classList.contains('locked')) return;
+                const amt = parseInt(document.getElementById(`dice-master-bet`).value);
+                if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
+                if (myDiceBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
                 
-                rewardCooldownSeconds = data.cooldownSeconds; startRewardTimer();
-                const msg = document.getElementById('reward-msg');
-                if (data.wonAmount > 0) { msg.style.color = "var(--success)"; msg.innerText = `YOU WON ${formatNumber(data.wonAmount)} CREDITS!`; playSfx('win'); }
-                else { msg.style.color = "var(--danger)"; msg.innerText = "BETTER LUCK NEXT TIME!"; playSfx('lose');}
-                setTimeout(() => { showRewards(); }, 4000); 
-            } else { alert(data.message); showRewards(); }
-        });
+                applyThrottle(); myDiceBets[choice] += amt; socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt });
+            };
 
-        // --- SECURITY: DISABLE DEV TOOLS & RIGHT CLICK ---
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
-            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
-        });
-    </script>
-</body>
-</html>
+            // --- 8-BIT DERBY SPRINT LOGIC ---
+            let derbyInterval = null;
+            socket.on('derby_state_update', (data) => {
+                const statusText = document.getElementById('derby-result-text'); const timerText = document.getElementById('derby-timer');
+                
+                if(data.history) { 
+                    const colorNames = ['RED', 'BLUE', 'GREEN', 'PURPLE', 'PINK', 'GOLD'];
+                    document.getElementById('derby-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="font-weight:bold;" class="lane-${r+1}-color">${colorNames[r]}</span></div>`).join(''); 
+                }
+
+                if(data.distances) {
+                    let maxDist = Math.max(...data.distances);
+                    let finishLine = document.querySelector('.derby-finish-line');
+
+                    if (maxDist < 80) {
+                        for(let i=0; i<6; i++) {
+                            let relative = data.distances[i] - maxDist;
+                            let basePos = (maxDist / 80) * 50;
+                            const racer = document.getElementById(`racer-${i}`);
+                            if(racer) racer.style.left = `${Math.max(0, basePos + relative)}%`;
+                        }
+                        if(finishLine) finishLine.style.right = '-50px';
+                    } else {
+                        for(let i=0; i<6; i++) {
+                            let sprintPos = 50 + ((data.distances[i] - 80) / 20) * 40;
+                            const racer = document.getElementById(`racer-${i}`);
+                            if(racer) racer.style.left = `${Math.max(0, sprintPos)}%`;
+                        }
+                        if(finishLine) finishLine.style.right = `${((100 - maxDist) / 20) * 10}%`;
+                    }
+                }
+
+                if (data.laneProfiles) {
+                    for(let i=0; i<6; i++) {
+                        const mult = data.laneProfiles[i].m;
+                        const trackInd = document.getElementById(`track-ind-${i}`);
+                        const betMult = document.getElementById(`bet-mult-${i}`);
+                        const colorCodes = ['#ef4444', '#3b82f6', '#10b981', '#a855f7', '#ec4899', '#fbbf24'];
+                        const colorAbbr = ['RED', 'BLU', 'GRN', 'PUR', 'PNK', 'GLD'];
+                        if(trackInd) trackInd.innerHTML = `<span style="color:${colorCodes[i]};">${colorAbbr[i]} | ${mult}x</span>`;
+                        if(betMult) betMult.innerText = `PAYS ${mult}x`;
+                    }
+                }
+
+                if (data.status === 'betting') {
+                    statusText.innerText = "PLACE YOUR BETS"; 
+                    myDerbyBets = [0, 0, 0, 0, 0, 0]; 
+                    clearInterval(derbyInterval);
+                    document.querySelectorAll('.racer-sprite').forEach(r => r.classList.remove('racer-running'));
+                    document.querySelectorAll('.derby-lane').forEach(l => l.classList.remove('scrolling'));
+                    for(let i=0; i<6; i++) {
+                        const badge = document.getElementById(`badge-derby-${i}`);
+                        if(badge) { badge.classList.add('hidden'); badge.style.backgroundColor = 'var(--accent-glow-2)'; }
+                    }
+                    derbyInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(derbyInterval); }, 1000);
+                }
+                else if (data.status === 'racing') { 
+                    statusText.innerText = "RACING..."; timerText.innerText = "NO MORE BETS"; 
+                    document.querySelectorAll('.racer-sprite').forEach(r => r.classList.add('racer-running'));
+                    document.querySelectorAll('.derby-lane').forEach(l => l.classList.add('scrolling'));
+                    playSfx('deal'); 
+                }
+                else if (data.status === 'resolving') {
+                    document.querySelectorAll('.racer-sprite').forEach(r => r.classList.remove('racer-running'));
+                    document.querySelectorAll('.derby-lane').forEach(l => l.classList.remove('scrolling'));
+                    const cNames = ['RED', 'BLUE', 'GREEN', 'PURPLE', 'PINK', 'GOLD'];
+                    statusText.innerText = `${cNames[data.winner]} WINS!`;
+                    
+                    let totalDerbyBet = myDerbyBets.reduce((a,b)=>a+b, 0);
+                    if (totalDerbyBet > 0) {
+                        let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
+                        if (myWins.length > 0) { 
+                            let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
+                            timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
+                        } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
+                        
+                        for(let i=0; i<6; i++) {
+                            if(myDerbyBets[i] > 0) {
+                                const badge = document.getElementById(`badge-derby-${i}`); 
+                                let winData = myWins.find(w=>w.choice===i);
+                                if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
+                                else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
+                            }
+                        }
+                    }
+                }
+            });
+
+            socket.on('derby_race_tick', (data) => {
+                if(data.distances) {
+                    let maxDist = Math.max(...data.distances);
+                    let finishLine = document.querySelector('.derby-finish-line');
+
+                    if (maxDist < 80) {
+                        for(let i=0; i<6; i++) {
+                            let relative = data.distances[i] - maxDist;
+                            let basePos = (maxDist / 80) * 50;
+                            const racer = document.getElementById(`racer-${i}`);
+                            if(racer) racer.style.left = `${Math.max(0, basePos + relative)}%`;
+                        }
+                        if(finishLine) finishLine.style.right = '-50px';
+                    } else {
+                        for(let i=0; i<6; i++) {
+                            let sprintPos = 50 + ((data.distances[i] - 80) / 20) * 40;
+                            const racer = document.getElementById(`racer-${i}`);
+                            if(racer) racer.style.left = `${Math.max(0, sprintPos)}%`;
+                        }
+                        if(finishLine) finishLine.style.right = `${((100 - maxDist) / 20) * 10}%`;
+                    }
+                }
+            });
+
+            window.placeDerbyBet = function(choice) {
+                if(gameLocks.derby) return alert('This game is currently offline for maintenance.');
+                if(isBetting) return; const box = document.getElementById(`derby-btn-${choice}`); if(box && box.classList.contains('locked')) return;
+                const amt = parseInt(document.getElementById(`derby-master-bet`).value);
+                if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
+                if (myDerbyBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per lane!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
+                
+                applyThrottle(); myDerbyBets[choice] += amt; socket.emit('place_derby_bet', { username: currentUser.username, choice, amount: amt }); 
+            };
+
+            // --- 3 CUPS GAME LOGIC ---
+            let cupsInterval = null; 
+            let shuffleAnim = null;
+            socket.on('cups_state_update', (data) => {
+                const statusText = document.getElementById('cups-result-text'); const timerText = document.getElementById('cups-timer');
+                
+                if(data.history) { document.getElementById('cups-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:#f59e0b;">CUP ${r + 1}</span></div>`).join(''); }
+
+                if (data.status === 'shuffling') { 
+                    statusText.innerText = "SHUFFLING..."; timerText.innerText = "NO MORE BETS"; myCupsBets = [0,0,0]; currentCupsBetChoice = -1; playSfx('deal'); 
+                    document.querySelectorAll('.cup-wrapper').forEach(w => w.classList.remove('reveal'));
+                    document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('cups')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
+                    
+                    let shuffleCount = 0;
+                    clearInterval(shuffleAnim);
+                    shuffleAnim = setInterval(() => {
+                        let pos = ['0%', '33.33%', '66.66%'].sort(() => Math.random() - 0.5);
+                        document.getElementById('cup-wrap-0').style.left = pos[0];
+                        document.getElementById('cup-wrap-1').style.left = pos[1];
+                        document.getElementById('cup-wrap-2').style.left = pos[2];
+                        shuffleCount++;
+                    }, 200);
+                }
+                else if (data.status === 'betting') {
+                    clearInterval(shuffleAnim);
+                    statusText.innerText = "WHERE IS THE BALL?"; clearInterval(cupsInterval);
+                    cupsInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(cupsInterval); }, 1000);
+                }
+                else if (data.status === 'resolving') {
+                    clearInterval(shuffleAnim);
+                    setTimeout(() => {
+                        const winCupWrap = document.getElementById(`cup-wrap-${data.winningCup}`);
+                        if(winCupWrap) winCupWrap.classList.add('reveal');
+                        statusText.innerText = `CUP ${data.winningCup + 1} HAS THE BALL!`;
+                        
+                        let totalCupsBet = myCupsBets.reduce((a,b)=>a+b, 0);
+                        if (totalCupsBet > 0) {
+                            let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
+                            if (myWins.length > 0) { 
+                                let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
+                                timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
+                            } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
+                            
+                            for(let i=0; i<3; i++) {
+                                if(myCupsBets[i] > 0) {
+                                    const badge = document.getElementById(`badge-cups-${i}`); let winData = myWins.find(w=>w.choice===i);
+                                    if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
+                                    else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
+                                }
+                            }
+                        }
+                    }, 500);
+                }
+            });
+
+            window.placeCupsBet = function(choice) {
+                if(gameLocks.cups) return alert('This game is currently offline for maintenance.');
+                if(isBetting) return; const box = document.getElementById(`cups-btn-${choice}`); if(box && box.classList.contains('locked')) return;
+                
+                if (currentCupsBetChoice !== -1 && currentCupsBetChoice !== choice) {
+                    return alert("You can only bet on ONE cup per round!");
+                }
+
+                const amt = parseInt(document.getElementById(`cups-master-bet`).value);
+                if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
+                if (myCupsBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per cup!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
+                
+                currentCupsBetChoice = choice;
+                applyThrottle(); myCupsBets[choice] += amt; socket.emit('place_cups_bet', { username: currentUser.username, choice, amount: amt }); 
+            };
+
+            // --- NEW PVP ARENA (MODALS + COIN & WHEEL) LOGIC ---
+            window.joinPvpSeat = function(index) {
+                if(!currentUser) return;
+                socket.emit('join_pvp_seat', { username: currentUser.username, seatIndex: index });
+            };
+
+            window.leavePvpSeat = function() {
+                if(myDuelSeatIndex !== -1 && currentUser) {
+                    socket.emit('leave_pvp_seat', { username: currentUser.username, seatIndex: myDuelSeatIndex });
+                }
+            };
+
+            // HOST FLOW
+            socket.on('open_pvp_host_modal', () => {
+                showModal('pvp-host-modal');
+            });
+
+            window.toggleModalWheelConfig = function() {
+                const type = document.getElementById('modal-duel-type').value;
+                if(type === 'wheel') { document.getElementById('modal-wheel-config-row').classList.remove('hidden'); document.getElementById('coin-config-row').classList.add('hidden'); }
+                else { document.getElementById('modal-wheel-config-row').classList.add('hidden'); document.getElementById('coin-config-row').classList.remove('hidden'); }
+            };
+
+            window.submitPvpHostConfig = function() {
+                const type = document.getElementById('modal-duel-type').value;
+                const format = parseInt(document.getElementById('modal-duel-format').value);
+                const betAmount = parseInt(document.getElementById('modal-duel-bet').value);
+                const slices = type === 'wheel' ? parseInt(document.getElementById('modal-duel-wheel-slices').value) : 2;
+                const hostChoice = type === 'coin' ? document.getElementById('duel-host-choice').value : currentUser.username;
+
+                if (betAmount > currentUser.credits) { return alert("You have insufficient credits for this wager."); }
+
+                socket.emit('host_pvp_match', { username: currentUser.username, type, format, betAmount, slices, hostChoice });
+                hideModal('pvp-host-modal');
+            };
+
+            // CHALLENGER FLOW
+            socket.on('open_pvp_accept_modal', (data) => {
+                document.getElementById('accept-host-name').innerText = data.hostName.toUpperCase();
+                document.getElementById('accept-game-type').innerText = data.type === 'wheel' ? `WHEEL SPIN (${data.slices} Slices)` : 'COIN FLIP';
+                document.getElementById('accept-format').innerText = data.format === 1 ? '1 ROUND' : `FIRST TO ${data.format}`;
+                document.getElementById('accept-wager').innerText = data.betAmount === 0 ? 'ITEM WAGER (0 CR)' : `${formatNumber(data.betAmount)} CR`;
+                
+                showModal('pvp-accept-modal');
+            });
+
+            window.acceptPvpDuel = function() {
+                socket.emit('accept_pvp_duel', { username: currentUser.username, choice: currentUser.username });
+                hideModal('pvp-accept-modal');
+            };
+
+            window.declinePvpDuel = function() {
+                hideModal('pvp-accept-modal');
+                leavePvpSeat();
+            };
+
+            window.readyDuel = function() {
+                if(!currentUser || myDuelSeatIndex === -1) return;
+                socket.emit('ready_pvp_duel', { username: currentUser.username });
+            };
+
+            socket.on('pvp_duel_state_update', (state) => {
+                currentPvpDuelState = state;
+                const statusBox = document.getElementById('duel-status-box');
+                statusBox.innerText = state.message;
+
+                const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
+                myDuelSeatIndex = mySeatData ? state.seats.indexOf(mySeatData) : -1;
+
+                for(let i=0; i<2; i++) {
+                    const seat = state.seats[i];
+                    const emptyUI = document.getElementById(`duel-empty-${i}`);
+                    const occUI = document.getElementById(`duel-occupied-${i}`);
+                    const seatCard = document.getElementById(`duel-seat-${i}`);
+
+                    if(seat) {
+                        emptyUI.classList.add('hidden');
+                        occUI.classList.remove('hidden');
+                        document.getElementById(`duel-name-${i}`).innerText = seat.username.toUpperCase();
+                        document.getElementById(`duel-name-${i}`).style.color = seat.color || '#fff';
+                        document.getElementById(`duel-score-${i}`).innerText = seat.score;
+                        document.getElementById(`duel-choice-${i}`).innerText = seat.choice ? seat.choice.toUpperCase() : 'WAITING...';
+                        
+                        const readyBadge = document.getElementById(`duel-ready-${i}`);
+                        if(seat.ready) readyBadge.classList.remove('hidden');
+                        else readyBadge.classList.add('hidden');
+
+                        if(myDuelSeatIndex === i) seatCard.classList.add('my-seat');
+                        else seatCard.classList.remove('my-seat');
+                    } else {
+                        emptyUI.classList.remove('hidden');
+                        occUI.classList.add('hidden');
+                        seatCard.classList.remove('my-seat');
+                        document.getElementById(`duel-ready-${i}`).classList.add('hidden');
+                    }
+                }
+
+                const matchVisual = document.getElementById('duel-match-visual');
+                const pointer = document.getElementById('duel-wheel-pointer');
+                const canvas = document.getElementById('duel-wheel-canvas');
+                
+                if(state.status === 'flipping' || state.status === 'spinning') {
+                    if (state.type === 'wheel') {
+                        matchVisual.classList.add('hidden');
+                        canvas.classList.remove('hidden');
+                        canvas.classList.add('wheel-spinning');
+                        pointer.classList.remove('hidden');
+                        
+                        drawWheel(canvas, state.slices, state.seats[0].username, state.seats[1].username);
+                    } else {
+                        canvas.classList.add('hidden');
+                        matchVisual.classList.remove('hidden');
+                        matchVisual.className = 'duel-coin flipping';
+                        matchVisual.innerText = '?';
+                        pointer.classList.add('hidden');
+                    }
+                } else if (state.status === 'resolving' || state.status === 'finished') {
+                    if (state.type === 'wheel') {
+                        matchVisual.classList.add('hidden');
+                        canvas.classList.remove('hidden', 'wheel-spinning');
+                        pointer.classList.remove('hidden');
+                        
+                        const sliceAngle = 360 / state.slices;
+                        const stopAngle = (360 * 5) - (state.winSliceIndex * sliceAngle) - (sliceAngle / 2);
+                        
+                        canvas.style.transition = 'transform 3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                        canvas.style.transform = `rotate(${stopAngle}deg)`;
+                        
+                    } else {
+                        canvas.classList.add('hidden');
+                        matchVisual.classList.remove('hidden', 'flipping');
+                        matchVisual.innerText = state.result ? state.result.charAt(0).toUpperCase() : '?';
+                    }
+                    
+                    if(state.status === 'finished') {
+                        if(mySeatData && mySeatData.score >= state.format) playSfx('win');
+                        else if (mySeatData) playSfx('lose');
+                    }
+                } else {
+                    if(state.type === 'wheel') {
+                        matchVisual.classList.add('hidden');
+                        canvas.classList.remove('hidden', 'wheel-spinning');
+                        canvas.style.transition = 'none';
+                        canvas.style.transform = 'rotate(0deg)';
+                        
+                        if(state.seats[0] && state.seats[1]) {
+                            drawWheel(canvas, state.slices, state.seats[0].username, state.seats[1].username);
+                        } else {
+                            drawWheel(canvas, state.slices, 'WAITING', 'WAITING');
+                        }
+                        
+                        pointer.classList.remove('hidden');
+                    } else {
+                        canvas.classList.add('hidden');
+                        matchVisual.classList.remove('hidden');
+                        matchVisual.className = 'duel-coin';
+                        matchVisual.innerText = '?';
+                        matchVisual.style.fontSize = '60px';
+                        pointer.classList.add('hidden');
+                    }
+                }
+            });
+
+            // HTML5 CANVAS WHEEL DRAWING
+            function drawWheel(canvas, numSlices, p1Name, p2Name) {
+                if(!canvas.getContext) return;
+                const ctx = canvas.getContext('2d');
+                const x = canvas.width / 2;
+                const y = canvas.height / 2;
+                const radius = x - 5;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const sliceAngle = (2 * Math.PI) / numSlices;
+                const colors = ['#ef4444', '#3b82f6']; // Red and Blue
+                
+                for (let i = 0; i < numSlices; i++) {
+                    const startAngle = i * sliceAngle - (Math.PI / 2); 
+                    const endAngle = startAngle + sliceAngle;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.arc(x, y, radius, startAngle, endAngle);
+                    ctx.closePath();
+                    ctx.fillStyle = colors[i % 2];
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#0f172a';
+                    ctx.stroke();
+                    
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(startAngle + (sliceAngle / 2));
+                    ctx.textAlign = "right";
+                    ctx.fillStyle = "#fff";
+                    ctx.font = "bold 16px Arial";
+                    ctx.shadowColor = "black";
+                    ctx.shadowBlur = 4;
+                    const text = i % 2 === 0 ? p1Name : p2Name;
+                    ctx.fillText(text.substring(0, 8), radius - 15, 6);
+                    ctx.restore();
+                }
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 15, 0, 2 * Math.PI);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#b45309';
+                ctx.stroke();
+            }
+
+            // --- CLASSIC COLOR GAME LOGIC ---
+            let colorInterval = null; let colorAnimInterval = null; const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
+            socket.on('color_state_update', (data) => {
+                const statusText = document.getElementById('color-result-text'); const timerText = document.getElementById('color-timer');
+                const d1 = document.getElementById('col-die1'); const d2 = document.getElementById('col-die2'); const d3 = document.getElementById('col-die3');
+                
+                if(data.history) { document.getElementById('color-history').innerHTML = data.history.map(r => `<div class="history-list-item"><span style="color:${getColorHex(r[0])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[1])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span> <span style="color:${getColorHex(r[2])}; font-size: 32px; text-shadow: 2px 2px 0 #000;">■</span></div>`).join(''); }
+
+                if (data.status === 'betting') {
+                    statusText.innerText = "PLACE YOUR BETS"; myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 }; d1.classList.remove('shake'); d2.classList.remove('shake'); d3.classList.remove('shake'); clearInterval(colorInterval);
+                    document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('color') || b.id.includes('badge-red') || b.id.includes('badge-blue') || b.id.includes('badge-yellow') || b.id.includes('badge-green') || b.id.includes('badge-pink') || b.id.includes('badge-white')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
+                    colorInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(colorInterval); }, 1000);
+                }
+                else if (data.status === 'rolling') { 
+                    statusText.innerText = "ROLLING..."; timerText.innerText = "NO MORE BETS"; d1.classList.add('shake'); d2.classList.add('shake'); d3.classList.add('shake'); playSfx('deal'); 
+                    clearInterval(colorAnimInterval);
+                    colorAnimInterval = setInterval(()=>{
+                        d1.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`; d2.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`; d3.className = `color-die shake bg-${PERYA_COLORS[Math.floor(Math.random()*6)]}`;
+                    }, 100);
+                }
+                else if (data.status === 'resolving') {
+                    clearInterval(colorAnimInterval); d1.classList.remove('shake'); d2.classList.remove('shake'); d3.classList.remove('shake');
+                    setTimeout(()=> { d1.className = `color-die bg-${data.dice[0]}`; }, 100);
+                    setTimeout(()=> { d2.className = `color-die bg-${data.dice[1]}`; }, 300);
+                    setTimeout(()=> { d3.className = `color-die bg-${data.dice[2]}`; statusText.innerText = "RESULT!"; }, 500);
+                    
+                    setTimeout(() => {
+                        let totalColorBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
+                        if (totalColorBet > 0) {
+                            let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
+                            if (myWins.length > 0) { 
+                                let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
+                                timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
+                            } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
+                            
+                            ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { 
+                                if(myColorBets[c] > 0) {
+                                    const badge = document.getElementById(`badge-${c}`); let winData = myWins.find(w=>w.choice===c);
+                                    if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
+                                    else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
+                                }
+                            });
+                        }
+                    }, 600);
+                }
+            });
+
+            window.placeColorBet = function(choice) {
+                if(gameLocks.color) return alert('This game is currently offline for maintenance.');
+                if(isBetting) return; const box = document.getElementById(`color-btn-${choice}`); if(box && box.classList.contains('locked')) return;
+                const amt = parseInt(document.getElementById(`color-master-bet`).value);
+                if (isNaN(amt) || amt <= 0) return alert("Select a valid bet amount at the top!"); 
+                if (myColorBets[choice] + amt > 50000) return alert("Maximum limit is 50,000 per color!"); if (amt > currentUser.credits) return alert("Insufficient credits!");
+                
+                applyThrottle(); myColorBets[choice] += amt; socket.emit('place_color_bet', { username: currentUser.username, choice, amount: amt }); 
+            };
+
+            socket.on('arcade_bet_placed', (data) => { 
+                let prefix = data.game === 'dice' ? '' : data.game + '-';
+                if(data.game === 'color') prefix = '';
+                const badge = document.getElementById(`badge-${prefix}${data.choice}`); 
+                if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); badge.classList.remove('hidden'); }
+                playSfx('bet'); 
+            });
+
+            socket.on('arcade_error', (msg) => { alert(msg); isBetting = false; });
+
+            function getColorHex(c) {
+                if(c==='red') return '#ef4444'; if(c==='blue') return '#3b82f6'; if(c==='yellow') return '#eab308';
+                if(c==='green') return '#10b981'; if(c==='pink') return '#ec4899'; return '#f8fafc';
+            }
+
+            // --- UTILITY & CHAT ---
+            window.actSendChat = function(gameType) {
+                let inputId = `${gameType}-chat-input`;
+                const input = document.getElementById(inputId);
+                if (input && input.value.trim() && currentUser && currentRoomId) { socket.emit('send_chat', { roomId: currentRoomId, username: currentUser.username, message: input.value.trim() }); input.value = ''; } 
+            };
+
+            socket.on('receive_chat', data => { 
+                let boxId = `${data.roomId}-chat-messages`;
+                if (data.roomId === '3seat' || data.roomId === '5seat') boxId = 'blackjack-chat-messages';
+                
+                const msgs = document.getElementById(boxId);
+                if(msgs) { msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2); font-weight:bold;">${data.username}:</span> <span>${data.message}</span></div>`; msgs.scrollTop = msgs.scrollHeight; }
+            });
+
+            socket.on('chat_wiped', (data) => {
+                let boxId = `${data.room}-chat-messages`;
+                if (data.room === '3seat' || data.room === '5seat' || data.room === 'blackjack') boxId = 'blackjack-chat-messages';
+                const msgs = document.getElementById(boxId);
+                if(msgs) msgs.innerHTML = `<div style="color:var(--danger); text-align:center; margin-top:20px;">[CHAT CLEARED BY ADMIN]</div>`;
+            });
+
+            // --- UI MENUS & BANKING ---
+            window.showProfile = function() { if(!currentUser) return; document.getElementById('profile-username-preview').innerText = currentUser.username; document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showModal('profile-modal'); };
+            window.showBank = function() { if(!currentUser) return; document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits); showModal('bank-modal'); };
+            window.openProfileLedger = function() { if(!currentUser) return; hideModal('profile-modal'); showModal('profile-ledger-modal'); loadLedger(false); };
+            window.openBankLedger = function() { if(!currentUser) return; hideModal('bank-modal'); showModal('bank-ledger-modal'); loadLedger(true); };
+            
+            async function loadLedger(isBankOnly) {
+                const res = await fetch(`/api/profile/ledger/${currentUser.username}`); const data = await res.json();
+                const list = document.getElementById(isBankOnly ? 'bank-ledger-list' : 'ledger-list'); list.innerHTML = '';
+                let filteredData = isBankOnly ? data.filter(tx => tx.type.includes('BANK')) : data;
+                if (filteredData.length === 0) { list.innerHTML = '<div style="color:#475569; text-align:center; margin-top:20px;">No records found.</div>'; return; }
+                filteredData.forEach(tx => {
+                    let statusBadge = ''; let amtColor = '#fff'; let displayAmt = Math.abs(tx.amount); let prefix = '';
+                    if (tx.type.includes('BANK')) {
+                        let isWithdrawal = tx.type.includes('WITHDRAWAL'); prefix = isWithdrawal ? '-' : '+';
+                        if (tx.status === 'pending') amtColor = '#94a3b8'; else if (tx.status === 'completed') amtColor = isWithdrawal ? 'var(--danger)' : 'var(--success)'; else amtColor = 'var(--danger)'; 
+                        let stColor = tx.status === 'pending' ? '#fbbf24' : (tx.status === 'completed' ? '#10b981' : '#ef4444'); statusBadge = ` <span style="color:${stColor}; font-size:20px;">[${(tx.status === 'completed' ? 'APPROVED' : tx.status).toUpperCase()}]</span>`;
+                    } else { amtColor = tx.amount > 0 ? 'var(--success)' : (tx.amount < 0 ? 'var(--danger)' : '#fff'); prefix = tx.amount > 0 ? '+' : (tx.amount < 0 ? '-' : ''); }
+                    const time = new Date(tx.date).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
+                    list.innerHTML += `<div class="ledger-item">
+                        <span><span style="color:#64748b; font-size:20px; margin-right:10px;">[${time}]</span><span class="ledger-desc">${tx.type.toUpperCase()}${statusBadge}</span></span> 
+                        <span style="color:${amtColor}">${prefix}${formatNumber(displayAmt)} <span class="coin-icon">🪙</span></span>
+                    </div>`;
+                });
+            }
+
+            window.showBankConfirm = function(type) {
+                const amtInput = document.getElementById('bank-amount').value.replace(/,/g, ''); const amt = parseInt(amtInput);
+                if(isNaN(amt) || amt <= 0) return alert("Enter a valid amount.");
+                if (type === 'deposit' && (amt < 10000 || amt > 100000)) return alert("Deposit must be between 10,000 and 100,000.");
+                if (type === 'withdrawal' && (amt < 50000 || amt > 100000)) return alert("Withdrawal must be between 50,000 and 100,000.");
+                if (type === 'withdrawal' && amt > currentUser.credits) return alert("Insufficient funds.");
+                pendingBankAction = { type, amount: amt }; document.getElementById('confirm-bank-type').innerText = type.toUpperCase(); document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
+                document.getElementById('bank-confirm-msg').innerText = '';
+                document.getElementById('bank-confirm-btn-row').innerHTML = `<button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button><button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>`;
+                hideModal('bank-modal'); showModal('bank-confirm-modal');
+            }
+
+            window.executeBankRequest = async function() {
+                if(!pendingBankAction) return; const { type, amount } = pendingBankAction;
+                const btnRow = document.getElementById('bank-confirm-btn-row'); const statusMsg = document.getElementById('bank-confirm-msg');
+                statusMsg.style.color = "#fff"; statusMsg.innerText = "SENDING REQUEST...";
+                const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount}) });
+                if(res.ok) { statusMsg.style.color = "var(--success)"; statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; document.getElementById('bank-amount').value=''; playSfx('deal'); btnRow.innerHTML = `<button class="wood-btn pixel-text" style="width:100%; background: #475569;" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">BACK TO BANK</button>`; }
+                else { const d = await res.json(); statusMsg.style.color = "var(--danger)"; statusMsg.innerText = d.error; }
+                pendingBankAction = null;
+            }
+
+            window.redeemCodeMain = async function() {
+                if(!currentUser) return; const code = document.getElementById('gift-code-main').value; const msgBox = document.getElementById('redeem-msg');
+                if(!code) return; const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, code}) });
+                if(res.ok) { const d = await res.json(); currentUser.credits += d.amount; updateAllCredits(); msgBox.style.color="var(--success)"; msgBox.innerText = "+"+formatNumber(d.amount)+" CREDITS!"; document.getElementById('gift-code-main').value=''; playSfx('win'); }
+                else { const d = await res.json(); msgBox.style.color="var(--danger)"; msgBox.innerText = d.error; }
+                setTimeout(()=> msgBox.innerText='', 3000);
+            }
+            
+            function updateRewardTimerUI() {
+                if (rewardCooldownSeconds <= 0) { clearInterval(rewardTimerInt); showRewards(); return; }
+                let h = Math.floor(rewardCooldownSeconds / 3600); let m = Math.floor((rewardCooldownSeconds % 3600) / 60); let s = rewardCooldownSeconds % 60;
+                const tEl = document.getElementById('reward-timer'); if(tEl) tEl.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }
+            function startRewardTimer() { clearInterval(rewardTimerInt); updateRewardTimerUI(); rewardTimerInt = setInterval(() => { rewardCooldownSeconds--; updateRewardTimerUI(); }, 1000); }
+            window.showRewards = function() {
+                if(!currentUser) return; showModal('reward-modal'); document.getElementById('reward-msg').innerText = ''; document.querySelectorAll('.reward-box').forEach(b => b.classList.remove('open')); isPickingReward = false;
+                if (rewardCooldownSeconds <= 0) { document.getElementById('reward-active-view').classList.remove('hidden'); document.getElementById('reward-cooldown-view').classList.add('hidden'); } 
+                else { document.getElementById('reward-active-view').classList.add('hidden'); document.getElementById('reward-cooldown-view').classList.remove('hidden'); startRewardTimer(); }
+            }
+
+            let isPickingReward = false;
+            window.pickRewardBox = function(index) { if(isPickingReward) return; isPickingReward = true; socket.emit('claim_daily_reward_box', { username: currentUser.username, boxIndex: index }); }
+            socket.on('reward_box_opened', (data) => {
+                isPickingReward = false; 
+                if(data.success) {
+                    data.allPrizes.forEach((prize, i) => {
+                        const backEl = document.getElementById(`box-val-${i}`); backEl.innerHTML = prize > 0 ? `+${formatNumber(prize)} <span class="coin-icon">🪙</span>` : 'EMPTY';
+                        if(prize === 0) backEl.classList.add('zero'); else backEl.classList.remove('zero'); setTimeout(() => document.querySelectorAll('.reward-box')[i].classList.add('open'), i * 100);
+                    });
+                    
+                    rewardCooldownSeconds = data.cooldownSeconds; startRewardTimer();
+                    const msg = document.getElementById('reward-msg');
+                    if (data.wonAmount > 0) { msg.style.color = "var(--success)"; msg.innerText = `YOU WON ${formatNumber(data.wonAmount)} CREDITS!`; playSfx('win'); }
+                    else { msg.style.color = "var(--danger)"; msg.innerText = "BETTER LUCK NEXT TIME!"; playSfx('lose');}
+                    setTimeout(() => { showRewards(); }, 4000); 
+                } else { alert(data.message); showRewards(); }
+            });
+
+            // --- SECURITY: DISABLE DEV TOOLS & RIGHT CLICK ---
+            document.addEventListener('contextmenu', event => event.preventDefault());
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
+                if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
+            });
+        </script>
+    </body>
+    </html>
