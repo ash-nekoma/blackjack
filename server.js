@@ -121,10 +121,11 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // DERBY LOOP (15 SECONDS: 11s TREADMILL SCRAMBLE + 4s SPRINT)
+    // DERBY LOOP (CLASSIC SPRINT - NO INVISIBLE WALLS)
     if (derbyGame.status === 'betting' && now >= derbyGame.betEndTime) {
         derbyGame.status = 'racing'; 
         derbyGame.distances = [0,0,0,0,0,0]; 
+        derbyGame.speeds = derbyGame.laneProfiles.map(p => p.s);
         
         io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, timeLeft: 0, distances: derbyGame.distances, history: derbyGame.history, laneProfiles: derbyGame.laneProfiles });
         
@@ -137,41 +138,27 @@ setInterval(() => {
             let laneBets = [0,0,0,0,0,0]; 
             derbyGame.bets.forEach(b => laneBets[b.choice] += b.amount);
 
-            // Phase 1: Scramble Jostling (Ticks 0-110 = 11 seconds)
-            if (raceTick < 110) {
-                if (raceTick % 12 === 1) { 
-                    // Completely randomize speed every 1.2 seconds so any horse can take the lead
-                    for(let i=0; i<6; i++) currentSpeeds[i] = Math.random() * 1.5 + 0.2; 
-                }
-                
+            // Change speeds every 10 ticks (1 second) for chaotic jostling
+            if (raceTick % 10 === 1) { 
                 for(let i=0; i<6; i++) {
-                    derbyGame.distances[i] += currentSpeeds[i];
-                    let maxD = Math.max(...derbyGame.distances);
-                    
-                    // Rubber-band effect: Pull trailing horses forward so they stay in the pack
-                    if (maxD - derbyGame.distances[i] > 12) derbyGame.distances[i] += 1.0;
-                    
-                    // Cap progress so they don't trigger the sprint early
-                    if (derbyGame.distances[i] > 79) derbyGame.distances[i] = 79; 
-                }
-            } 
-            // Phase 2: The Final Sprint (Ticks 110-150 = 4 seconds)
-            else {
-                if (raceTick === 110) {
-                    for(let i=0; i<6; i++) {
-                        let oddsSpeed = derbyGame.laneProfiles[i].s; 
-                        let mod = (strictHouseEdge && laneBets[i] > 0) ? 0.8 : 1;
-                        
-                        // Underdog Boost: High-payout horses (slow base speed) have a chance to hit massive nitro
-                        let miracle = (oddsSpeed < 1.0 && Math.random() > 0.85) ? (Math.random() * 2 + 1) : 0;
-                        currentSpeeds[i] = (oddsSpeed * mod) + miracle + (Math.random() * 0.5); 
+                    let oddsSpeed = derbyGame.laneProfiles[i].s; 
+                    let mod = (strictHouseEdge && laneBets[i] > 0) ? 0.8 : 1;
+
+                    if (raceTick < 110) {
+                        // Scramble Phase: Wild variations so anyone can lead, averaging ~0.6 per tick
+                        currentSpeeds[i] = (0.3 + Math.random() * 0.7) * (oddsSpeed * 0.4 + 0.6) * mod;
+                    } else {
+                        // Sprint Phase: Real odds kick in, underdogs get a miracle boost chance
+                        let miracle = (oddsSpeed < 1.0 && Math.random() > 0.85) ? (Math.random() * 1.5 + 0.5) : 0;
+                        currentSpeeds[i] = (oddsSpeed * mod * 0.7) + miracle + (Math.random() * 0.3);
                     }
                 }
-                
-                for(let i=0; i<6; i++) {
-                    derbyGame.distances[i] += currentSpeeds[i] * 0.6; // Scale down for a 4s sprint to 100
-                    if (derbyGame.distances[i] >= 100) { finished = true; }
-                }
+            }
+            
+            // Move horses without capping them at an invisible wall
+            for(let i=0; i<6; i++) {
+                derbyGame.distances[i] += currentSpeeds[i]; 
+                if (derbyGame.distances[i] >= 100) { finished = true; }
             }
 
             io.to('arcade_derby').emit('derby_race_tick', { distances: derbyGame.distances });
@@ -250,7 +237,7 @@ setInterval(() => {
     // 3 CUPS GAME LOOP (Shuffling -> Betting -> Resolving)
     if (cupsGame.status === 'shuffling' && now >= cupsGame.stateEndTime) {
         cupsGame.status = 'betting';
-        cupsGame.betEndTime = now + 7000; // 7 seconds betting
+        cupsGame.betEndTime = now + 7000; 
         cupsGame.stateEndTime = cupsGame.betEndTime;
         io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, betEndTime: cupsGame.betEndTime, history: cupsGame.history });
     }
