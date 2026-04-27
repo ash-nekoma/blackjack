@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
-    <title>Casino Royale: Arcade Casino</title>
+    <title>Casino Royale: Arcade Realms</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
@@ -19,7 +19,6 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body, input, button, table, th, td, textarea, select { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
-        /* FIXED MOBILE VIEWPORT ISSUE WITH 100dvh */
         body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100dvh; overflow: hidden; }
         
         .hidden { display: none !important; }
@@ -33,281 +32,193 @@
         .custom-scroll:hover::-webkit-scrollbar { background: #020617; border-left: 2px solid #334155; }
         .custom-scroll:hover::-webkit-scrollbar-thumb { background: #475569; border: 2px solid #000; border-top: 2px solid #94a3b8; border-left: 2px solid #94a3b8; }
         .custom-scroll:hover::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        .custom-scroll:hover::-webkit-scrollbar-button:single-button { display: block; background-color: #1e293b; border: 2px solid #000; border-top: 2px solid #94a3b8; border-left: 2px solid #94a3b8; height: 14px; width: 14px; }
 
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
-        input[type="range"] { -webkit-appearance: none; background: transparent; height: 10px; border-radius: 5px; border: 2px solid var(--border-std); outline: none; margin: 0 10px; cursor: pointer; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 14px; background: var(--accent-glow-2); border: 2px solid #fff; border-radius: 2px; cursor: pointer; }
-        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; }
+        #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100dvh; background: var(--bg-dark); border-radius: 0; border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
 
-        #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100dvh; background: var(--bg-dark); border-radius: 12px; border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
+        /* --- MINECRAFT / MMO CHUNKY UI --- */
+        .mc-btn {
+            background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8;
+            color: #FFF; text-shadow: 2px 2px 0 #000; padding: 12px 24px; font-size: 28px; cursor: pointer; text-transform: uppercase;
+            font-family: 'VT323'; transition: 0.05s; display: flex; justify-content: center; align-items: center; text-align: center;
+        }
+        .mc-btn:hover:not(:disabled) { background: #8e8e8e; filter: brightness(1.1); }
+        .mc-btn:active:not(:disabled) { border-color: #383838 #A8A8A8 #A8A8A8 #383838; padding-top: 14px; padding-bottom: 10px; }
+        .mc-btn:disabled { filter: grayscale(1); opacity: 0.7; cursor: not-allowed; }
+        .mc-btn.small { padding: 4px 12px; font-size: 22px; }
+        .mc-btn.small:active:not(:disabled) { padding-top: 6px; padding-bottom: 2px; }
+
+        .mc-panel {
+            background: #1e1e2f; background-image: radial-gradient(#2a2a3f 1px, transparent 1px); background-size: 10px 10px;
+            border: 6px solid; border-color: #555 #111 #111 #555; color: #fff; box-shadow: 10px 10px 0 rgba(0,0,0,0.8);
+        }
 
         .full-menu, .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
         .full-menu { background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); }
-        .overlay-menu { background: rgba(0,0,0,0.9); z-index: 300; padding: 20px;}
+        .overlay-menu { background: rgba(0,0,0,0.85); z-index: 300; padding: 20px; backdrop-filter: blur(4px);}
         
-        .modal-box { background: var(--bg-dark); border: 2px solid var(--border-std); padding: 30px; width: 650px; max-width: 100%; text-align: center; box-shadow: 10px 10px 0 #000; max-height: 90dvh; display: flex; flex-direction: column; overflow-y: auto;}
+        .modal-box { padding: 30px; width: 650px; max-width: 100%; text-align: center; max-height: 90dvh; display: flex; flex-direction: column; overflow-y: auto;}
         
-        .input-group { display: flex; gap: 10px; margin: 15px 0; align-items: stretch; flex-shrink: 0;}
+        input.retro-input, select.retro-input, textarea.retro-input { 
+            width: 100%; padding: 12px; margin: 0; background: #0f172a; color: var(--warning); 
+            border: 4px solid; border-color: #111 #555 #555 #111; border-radius: 0; 
+            font-size: 24px; font-weight:bold; outline: none; transition: 0.2s; box-shadow: inset 0 4px 8px rgba(0,0,0,0.8); font-family: 'VT323';
+        }
+        input.retro-input:focus, select.retro-input:focus, textarea.retro-input:focus { border-color: var(--accent-glow-2); }
         
-        input.retro-input, select.retro-input, textarea.retro-input { flex: 1; padding: 12px; margin: 0; background: #0f172a; color: var(--warning); border: 3px solid #64748b; border-radius: 6px; font-size: 24px; font-weight:bold; text-align: center; outline: none; cursor:pointer; transition: 0.2s; box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);}
-        input.retro-input:focus, select.retro-input:focus, textarea.retro-input:focus { border-color: var(--accent-glow-2); box-shadow: 0 0 12px rgba(59,130,246,0.6), inset 0 2px 8px rgba(0,0,0,0.8); }
-        input.retro-input::placeholder, textarea.retro-input::placeholder { color: #64748b; }
-        
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 700px; margin-top: 20px; flex-shrink: 0; max-width: 100%;}
-        .wood-btn { width: 100%; background: #475569; border: 2px solid var(--border-std); color: #fff; padding: 12px 20px; font-size: 26px; cursor: pointer; box-shadow: 4px 4px 0 #000; text-transform: uppercase; transition: 0.1s; font-family: 'VT323', monospace; letter-spacing: 1px; display: flex; justify-content: center; align-items: center;}
-        .wood-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
-        .wood-btn:active:not(:disabled) { transform: scale(0.98) translate(2px, 2px); box-shadow: 0 0 0 transparent; }
-        .wood-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.8; }
-        .wood-btn.locked { border-color: #555; background: #333; color: #aaa; box-shadow: none; transform: translate(2px, 2px); }
-        .wood-btn.small { padding: 4px 8px; font-size: 20px; box-shadow: 2px 2px 0 #000; width: auto;}
-        .wood-btn.small.active { background: var(--accent-glow-2); border-color: #fff;}
+        /* --- MMO HOTBAR --- */
+        .hotbar-wrapper { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 250; }
+        .hotbar { display: flex; gap: 4px; padding: 6px; background: rgba(0,0,0,0.7); border: 4px solid #111; border-radius: 4px;}
+        .hotbar-slot { width: 64px; height: 64px; background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8; display: flex; justify-content: center; align-items: center; font-size: 32px; cursor: pointer; position: relative; transition: 0.1s; }
+        .hotbar-slot:hover { background: #8e8e8e; transform: translateY(-4px); }
+        .hotbar-slot:active { border-color: #383838 #A8A8A8 #A8A8A8 #383838; transform: translateY(0); }
+        .hotbar-tooltip { position: absolute; top: -35px; background: #000; color: #fff; padding: 4px 8px; border: 2px solid #fff; font-size: 18px; pointer-events: none; opacity: 0; transition: 0.2s; white-space: nowrap; }
+        .hotbar-slot:hover .hotbar-tooltip { opacity: 1; }
 
-        .info-box { background: rgba(0,0,0,0.5); border: 2px solid #334155; border-radius: 8px; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; overflow-x: hidden; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
+        /* --- REALM SELECTOR (SERVER BROWSER) --- */
+        .realm-card { display: flex; align-items: center; background: rgba(0,0,0,0.6); border: 4px solid #444; margin-bottom: 12px; padding: 10px; cursor: pointer; transition: 0.1s; text-align: left;}
+        .realm-card:hover { border-color: var(--success); background: rgba(16, 185, 129, 0.15); transform: translateX(5px); }
+        .realm-icon { width: 70px; height: 70px; font-size: 48px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; background: #0f172a; border: 4px solid; border-color: #333 #111 #111 #333; margin-right: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
+        .realm-info { flex: 1; }
+        .realm-title { font-size: 32px; color: #fff; text-shadow: 2px 2px 0 #000; font-weight: bold; margin-bottom: 4px; line-height: 1;}
+        .realm-desc { font-size: 20px; color: #94a3b8; line-height: 1;}
+        .realm-status { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 80px;}
+        .status-dot { width: 14px; height: 14px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); margin-bottom: 4px; animation: pulse 2s infinite;}
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-        .profile-preview { font-size: 50px; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; text-transform: uppercase;}
-        
-        .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
-        .reward-box { height: 100px; background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
-        .reward-box:hover { background: #3b82f6; transform: translateY(-5px); }
-        .reward-box .inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; }
-        .reward-box.open .inner { transform: rotateY(180deg); }
-        .reward-box .front, .reward-box .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; border-radius: 4px;}
-        .reward-box .front { background: #1e293b; font-size: 40px; }
-        .reward-box .back { background: #000; transform: rotateY(180deg); font-size: 24px; color: var(--warning); border: 2px solid var(--warning); flex-direction: column; }
+        /* --- MMO CHAT OVERLAY --- */
+        .mmo-chat-container { position: absolute; bottom: 20px; left: 20px; width: 450px; height: 280px; display: flex; flex-direction: column; z-index: 150; opacity: 0.5; transition: opacity 0.3s; pointer-events: auto; }
+        .mmo-chat-container:hover, .mmo-chat-container:focus-within { opacity: 1; }
+        .mmo-chat-messages { flex: 1; background: rgba(0,0,0,0.65); overflow-y: auto; padding: 10px; text-shadow: 1px 1px 0 #000; color: #fff; font-size: 22px; border: 2px solid rgba(255,255,255,0.2); border-bottom: none; backdrop-filter: blur(2px);}
+        .mmo-chat-input-row { display: flex; height: 40px;}
+        .mmo-chat-input { flex: 1; background: rgba(0,0,0,0.85); border: 2px solid rgba(255,255,255,0.5); color: #fff; padding: 0 10px; font-family: 'VT323'; font-size: 22px; outline: none; margin: 0;}
+        .mmo-chat-input:focus { border-color: #fff; }
+        .mmo-chat-btn { background: #333; color: #fff; border: 2px solid rgba(255,255,255,0.5); border-left: none; padding: 0 15px; font-family: 'VT323'; font-size: 20px; cursor: pointer; transition: 0.1s;}
+        .mmo-chat-btn:hover { background: #555; color: var(--success); border-color: #fff;}
 
-        .game-interface { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; width: 100%; height: 100%; min-height: 0; background: #000; box-sizing: border-box; overflow: hidden;}
-        .game-area { position: relative; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); min-width: 800px; min-height: 0;}
+        /* --- GAME BOARDS --- */
+        .game-interface { display: block; width: 100%; height: 100%; padding: 0; background: #000; overflow: hidden; position: relative;}
+        .game-area { position: absolute; top:0; left:0; width: 100%; height: 100%; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); display: flex; flex-direction: column; overflow: hidden; }
         .game-area.dice-bg { background: radial-gradient(circle at center, #7e22ce 0%, #4c1d95 100%); }
         .game-area.coin-bg { background: radial-gradient(circle at center, #111827 0%, #000 100%); }
         .game-area.color-bg { background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
-        
-        .sidebar-col { display: flex; flex-direction: column; gap: 20px; height: 100%; flex-shrink: 0; min-height: 0; position: relative;}
-        .sidebar-box { flex: 1; background: var(--bg-darker); border-radius: 12px; border: 2px solid var(--border-std); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); min-height: 0; position: relative;}
-        
-        .player-dropdown-btn { background: #1e293b; color: #fff; padding: 10px 15px; font-size: 28px; display: flex; justify-content: space-between; align-items: center; text-shadow: 1px 1px 0 #000; font-weight: bold; cursor: pointer; border-radius: 12px; border: 2px solid var(--border-std); box-shadow: 0 0 20px rgba(0,0,0,0.8); transition: filter 0.1s; }
-        .player-dropdown-btn:hover { filter: brightness(1.2); }
-        .player-dropdown-btn:active { transform: scale(0.98); }
-        
-        .player-dropdown-list { position: absolute; top: calc(100% + 8px); left: 0; width: 100%; background: var(--bg-darker); border: 2px solid var(--border-std); border-radius: 12px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.9); padding: 5px; box-sizing: border-box; }
-        
-        .lobby-player { padding: 5px 10px; margin: 0; border-bottom: 1px dashed #333; text-align: left; font-size: 28px; }
-        .lobby-player:last-child { border-bottom: none; }
 
-        /* STICKY TOP HUD FOR MOBILE SCROLLING */
-        .top-hud { position: sticky; top: 0; z-index: 100; width: 100%; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; background: rgba(0,0,0,0.8); border-bottom: 2px solid var(--border-std); box-sizing: border-box; flex-shrink: 0; backdrop-filter: blur(5px);}
-        .hud-left { justify-self: start; } .hud-center { justify-self: center; text-align: center; } .hud-right { justify-self: end; }
-        .btn-menu { color: #fff; font-size: 28px; cursor: pointer; opacity: 0.4; transition: 0.2s; background: none; border: none; font-family: 'VT323'; text-shadow: 2px 2px 0 #000;}
-        .btn-menu:hover { opacity: 1; text-shadow: 0 0 15px #fff; }
-        .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 4px; border: 2px solid var(--border-std); color: #fff; font-size: 26px; box-shadow: 2px 2px 0 #000;}
-
-        .sidebar-header { background: #1e293b; color: #fff; padding: 10px; text-align: center; font-size: 28px; border-bottom: 2px solid var(--border-std); display: flex; justify-content: center; gap: 15px; text-shadow: 1px 1px 0 #000; font-weight: bold; flex-shrink: 0; align-items: center;}
+        .top-hud { position: absolute; top: 0; left: 0; z-index: 100; width: 100%; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); pointer-events: none;}
+        .top-hud > * { pointer-events: auto; }
+        .hud-center { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; }
+        .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border: 4px solid; border-color: #555 #111 #111 #555; color: #fff; font-size: 26px; display: flex; align-items: center; gap: 10px;}
         
-        .chat-messages { flex: 1; padding: 10px; font-size: 22px; text-shadow: 1px 1px 0 #000; color: #fff; overflow-y: auto; word-wrap: break-word; min-height: 0;}
-        .chat-input-area { display: flex; border-top: 2px solid var(--border-std); background: #000; flex-shrink: 0;}
-        .chat-input-area input { flex: 1; padding: 12px; font-size: 22px; margin:0; border:none; text-align: left; background: transparent; color: #fff; outline: none; font-family: 'VT323';}
-        .chat-input-area button { background: var(--success); color: #000; border: none; border-left: 2px solid var(--border-std); padding: 0 20px; font-size: 26px; cursor: pointer; font-weight: bold; font-family: 'VT323';}
+        .player-dropdown-list { position: absolute; top: calc(100% + 5px); right: 0; width: 250px; background: rgba(0,0,0,0.9); border: 2px solid #555; max-height: 300px; overflow-y: auto; z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.9); padding: 5px; }
+        .lobby-player { padding: 5px 10px; border-bottom: 1px dashed #333; text-align: left; font-size: 24px; }
+        
+        /* General Elements */
+        .info-box { background: rgba(0,0,0,0.5); border: 4px solid #334155; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
+        .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+        .reward-box { height: 100px; background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
+        .reward-box:hover { filter: brightness(1.2); transform: translateY(-5px); }
+        .reward-box .inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; }
+        .reward-box.open .inner { transform: rotateY(180deg); }
+        .reward-box .front, .reward-box .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; }
+        .reward-box .front { font-size: 50px; }
+        .reward-box .back { background: #000; border: 4px solid var(--warning); transform: rotateY(180deg); font-size: 24px; color: var(--warning); flex-direction: column; }
 
-        .table-surface { flex: 1; display: flex; flex-direction: column; width: 100%; position: relative; }
-        .banker-station { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; width: 100%;}
-        #timers-container { position: absolute; top: 240px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; z-index: 20; width: 100%; pointer-events: none;}
-        .global-timer { font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border-radius: 30px; border: 2px solid var(--border-std); box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000; white-space: nowrap;}
-        .global-timer.blue { background: rgba(59, 130, 246, 0.9); }
-        .global-timer.warning { background: #eab308; color: #000; font-size: 32px; font-weight: bold; text-shadow: none !important; border: 2px solid #000;}
-
-        #seats-area { position: absolute; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center; align-items: flex-end; box-sizing: border-box; z-index: 5; height: auto; min-height: 250px; gap: 30px;}
+        /* Specific Game Layouts */
+        .table-surface { flex: 1; display: flex; flex-direction: column; width: 100%; position: relative; margin-top: 60px;}
+        .banker-station { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; width: 100%;}
+        #timers-container { position: absolute; top: 200px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 20; pointer-events: none;}
+        .global-timer { font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000;}
+        
+        #seats-area { position: absolute; bottom: 40px; left: 0; width: 100%; display: flex; justify-content: center; align-items: flex-end; box-sizing: border-box; z-index: 5; height: auto; gap: 30px;}
         .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0; position: relative;}
-        .seat-empty-box { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 160px; border: 2px dashed rgba(255,255,255,0.4); border-radius: 8px; background: rgba(0,0,0,0.3); padding: 10px;}
-        .btn-sit-empty { background: #10b981; color: #000; font-size: 26px; border: 2px solid var(--border-std); box-shadow: 4px 4px 0 #000; padding: 6px 30px; cursor: pointer; border-radius: 4px; font-weight: bold; letter-spacing: 1px; transition: 0.1s; font-family: 'VT323'; text-shadow: none;}
-        .btn-sit-empty:active { transform: translate(4px, 4px); box-shadow: 0 0 0 transparent; }
-        .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 0 15px rgba(59,130,246,0.3); }
-        .turn-bar-container { width: 100%; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
+        .seat-empty-box { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 160px; border: 4px dashed rgba(255,255,255,0.3); background: rgba(0,0,0,0.4); padding: 10px;}
+        .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 10px; box-shadow: 0 0 20px rgba(59,130,246,0.5); }
+        .turn-bar-container { width: 100%; height: 8px; background: #111; margin-top: 8px; border: 2px solid #333; }
         .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
-        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: #1e293b; border: 2px solid var(--border-std); border-radius: 6px; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 rgba(0,0,0,0.8); line-height: 1; min-width: 140px; z-index: 5; text-align: center; box-sizing: border-box;}
-        .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 2px 2px 0 #000;}
-
-        @keyframes loseDrop { 0% { transform: translateY(0); color: var(--warning); } 50% { transform: translateY(5px); color: var(--danger); text-shadow: 0 0 10px var(--danger); } 100% { transform: translateY(10px); color: #555; opacity: 0.5; } }
-        .anim-win { animation: coinCollect 0.8s ease-out forwards; } .anim-lose { animation: loseDrop 0.8s ease-out forwards; }
-        .player-bet-text { background: #000; color: var(--warning); font-size: 24px; font-weight: bold; border: 2px solid var(--warning); border-radius: 4px; padding: 2px 12px; margin-top: 8px; text-shadow: 1px 1px 0 #000; width: 100%; text-align: center; box-sizing: border-box; display: inline-block;}
-
-        .seat-bet-box { display: flex; flex-direction: row; width: 100%; margin-top: 10px; gap: 8px; justify-content: center; align-items: stretch;}
-        .s-btn { padding: 4px 2px; border: 2px solid var(--border-std); border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; font-family: 'VT323', monospace; letter-spacing: 1px; font-size: 20px;}
-        .s-btn.btn-bet { background: var(--success); color: #000; font-size: 24px; padding: 6px 12px;}
-        .s-btn:active:not(:disabled) { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
-        .s-btn:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.8; }
+        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.8); border: 2px solid #555; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 #000; line-height: 1; min-width: 140px; text-align: center;}
         
-        .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px; box-sizing: border-box;}
-        .btn-hit { background: var(--success); color: #000; font-size: 18px; padding: 6px;} .btn-stand { background: #b45309; color: #fff; font-size: 18px; padding: 6px;} .btn-double { background: var(--accent-glow-2); color: #fff; font-size: 18px; padding: 6px;} .btn-split { background: var(--accent-glow); color: #fff; font-size: 18px; padding: 6px;}
-        .btn-inseat-standup { background: var(--danger); color: #fff; width: 100%; margin-top: 8px; font-size: 22px; padding: 6px; letter-spacing: 1px; box-shadow: 2px 2px 0 #000; box-sizing: border-box; border: 2px solid var(--border-std); cursor: pointer; text-transform: uppercase; font-weight: bold; font-family: 'VT323';}
-        .btn-inseat-standup:active { transform: scale(0.95); box-shadow: 0 0 0 transparent; }
-
         .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 120px; width: 100%; margin-bottom: 12px;}
         .hand-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative; min-height: 120px;}
         .hand-container { position: relative; display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px;}
-        .card { width: 62px; height: 88px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; margin-left: -35px; border: 2px solid var(--border-std); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; flex-shrink: 0; z-index: 2;}
+        .card { width: 62px; height: 88px; background: #fff; border-radius: 4px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; margin-left: -35px; border: 2px solid #111; box-shadow: 2px 2px 5px rgba(0,0,0,0.8); font-family: Arial, Helvetica, sans-serif; flex-shrink: 0; z-index: 2; color: #000;}
         .card:first-child { margin-left: 0; z-index: 1;}
-        .card.red { color: #d00; } .card.black { color: #000; }
-        .card-corner { position: absolute; font-size: 15px; font-weight: bold; line-height: 1; text-align: center; letter-spacing: -1px; font-family: Arial;}
+        .card.red { color: #d00; }
+        .card-corner { position: absolute; font-size: 15px; font-weight: bold; line-height: 1; text-align: center; letter-spacing: -1px; }
         .card-corner.top-left { top: 3px; left: 3px; } .card-corner.bottom-right { bottom: 3px; right: 3px; transform: rotate(180deg); }
-        .card-center-suit { font-size: 34px; font-family: Arial;}
-        .card.dealer-hidden { background: repeating-linear-gradient(45deg, #0f172a, #0f172a 5px, #1e293b 5px, #1e293b 10px); color: transparent; }
-        .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.6); z-index: 10; font-family: Arial, sans-serif; line-height: 1; padding: 0; padding-top: 1px;}
-        .hand-status-label { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); font-size: 28px; font-weight: bold; text-shadow: 2px 2px 0 #000; padding: 2px 10px; border: 3px solid currentColor; border-radius: 4px; background: rgba(0,0,0,0.85); z-index: 20; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 10px rgba(0,0,0,0.5);}
-        .hand-status-bust { color: var(--danger); } .hand-status-win { color: var(--success); } .hand-status-lose { color: var(--danger); } .hand-status-push { color: #94a3b8; } .hand-status-blackjack { color: var(--warning); }
+        .card-center-suit { font-size: 34px; }
+        .card.dealer-hidden { background: repeating-linear-gradient(45deg, #222, #222 5px, #444 5px, #444 10px); color: transparent; }
+        .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.8); z-index: 10; font-family: Arial; padding-top: 1px;}
         
-        .ledger-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px dashed #333; font-size: 24px; margin-bottom: 5px; border-radius: 4px;}
-        .coin-icon { color:#fbbf24; text-shadow: 1px 1px 0 #000; font-family: 'Segoe UI Emoji', sans-serif;}
-        
-        /* Arcade Components */
-        .dice-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1; perspective: 1000px; }
-        .dice { font-size: 120px; color: #fff; text-shadow: 0 0 30px var(--accent-glow); line-height: 1; font-family: Arial, sans-serif; }
-        .dice.shake { animation: subtleShake 0.2s infinite; color: var(--warning); text-shadow: 0 0 40px var(--warning);}
-        
-        @keyframes subtleShake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-1deg); } 50% { transform: translate(-2px, 1px) rotate(1deg); } 75% { transform: translate(2px, 1px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(1deg); } }
+        .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px;}
 
-        .arcade-bet-area { padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6); flex-shrink: 0;}
-        .master-bet-row { display:flex; justify-content: center; margin-bottom: 15px; align-items: center; gap: 10px;}
-        .arcade-grid { display: flex; justify-content: center; gap: 20px; }
-        
-        .arcade-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; width: 250px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; cursor: pointer; transition: 0.1s; position: relative; height: 160px;}
-        .arcade-bet-box:active:not(.locked) { transform: scale(0.95); }
+        /* Arcade Area General */
+        .arcade-bet-area { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(to top, rgba(0,0,0,0.95) 50%, transparent); display: flex; flex-direction: column; align-items: center; z-index: 50;}
+        .arcade-grid { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;}
+        .arcade-bet-box { background: #2d2d2d; border: 4px solid; border-color: #555 #111 #111 #555; padding: 20px; text-align: center; width: 250px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.1s; position: relative; height: 140px;}
+        .arcade-bet-box:active:not(.locked) { border-color: #111 #555 #555 #111; transform: translateY(2px); }
         .arcade-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
-        
-        .arcade-bet-title { font-size: 40px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 10px; text-transform: uppercase;}
+        .arcade-bet-title { font-size: 40px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 5px; font-weight: bold;}
         .arcade-bet-payout { font-size: 24px; color: var(--success); font-weight: bold;}
-        
-        .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 30;}
-        
-        /* PINNED BET BADGE POSITION */
-        .bet-badge { position: absolute; top: -10px; right: -10px; background: var(--accent-glow-2); color: #fff; padding: 2px 8px; border-radius: 8px; border: 2px solid #fff; font-size: 18px; z-index: 40; font-weight: bold; box-shadow: 2px 2px 0 #000; text-shadow: 1px 1px 0 #000;}
+        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); color: #fff; padding: 4px 10px; border: 2px solid #fff; font-size: 20px; z-index: 40; font-weight: bold; box-shadow: 2px 2px 0 #000;}
 
-        /* --- FONT SIZE FIX FOR HISTORY RESULTS --- */
-        .history-content { flex: 1; overflow-y: auto; padding: 0 5px; margin-bottom: 2px; }
-        .history-list-item { font-size: 32px; border-bottom: 1px dashed #333; padding: 10px; text-align: center; font-weight: bold; text-shadow: 2px 2px 0 #000; }
+        /* Center Focus Areas */
+        .center-focus { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 180px; /* Space for bets */ }
 
-        /* --- 8-BIT DERBY UI --- */
-        @keyframes trackScroll { 100% { background-position: -50px 0; } }
-        .derby-track-container { flex: 1; background: #111; border-bottom: 4px solid var(--border-std); display: flex; flex-direction: column; position: relative; overflow: hidden; margin-top: 10px; border-radius: 8px; box-shadow: inset 0 0 20px #000;}
-        .derby-lane { flex: 1; border-bottom: 2px dashed #333; position: relative; display: flex; align-items: center; padding: 0 10px; background-image: linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 50px 100%; }
-        .derby-lane.scrolling { animation: trackScroll 0.5s linear infinite; }
-        
-        .derby-finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 30px; background: repeating-linear-gradient(45deg, #fff 0, #fff 10px, #000 10px, #000 20px); z-index: 10; border-left: 4px solid var(--success); opacity: 0.8; }
-        .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 26px; color: rgba(255,255,255,0.3); font-weight: bold; z-index: 5; pointer-events: none; text-shadow: 1px 1px 0 #000; }
-        
-        /* HORSE MASK TRICK: Perfect Coloring & Classic Orientation */
-        .racer-sprite { width: 60px; height: 45px; position: absolute; bottom: 5px; z-index: 20; -webkit-mask: url('horse.gif') no-repeat center / contain; mask: url('horse.gif') no-repeat center / contain; transform: scaleX(-1); transform-origin: center bottom; transition: left 0.1s linear; will-change: left;}
-        @keyframes gallop { 0% { transform: scaleX(-1) translateY(0px) rotate(-2deg); } 50% { transform: scaleX(-1) translateY(-3px) rotate(3deg); } 100% { transform: scaleX(-1) translateY(0px) rotate(-2deg); } }
-        .racer-running { animation: gallop 0.3s infinite; filter: brightness(1.2); }
-        
-        .derby-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 8px; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
-        .derby-bet-box:active:not(.locked) { transform: scale(0.95); }
-        .derby-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
-        
-        .bg-red { background-color: #ef4444 !important; } .bg-blue { background-color: #3b82f6 !important; } .bg-green { background-color: #10b981 !important; } .bg-purple { background-color: #a855f7 !important; } .bg-pink { background-color: #ec4899 !important; } .bg-gold { background-color: #fbbf24 !important; }
-        .lane-1-color { color: #ef4444 !important; border-top-color: #ef4444; } .lane-2-color { color: #3b82f6 !important; border-top-color: #3b82f6; } .lane-3-color { color: #10b981 !important; border-top-color: #10b981; } .lane-4-color { color: #a855f7 !important; border-top-color: #a855f7; } .lane-5-color { color: #ec4899 !important; border-top-color: #ec4899; } .lane-6-color { color: #fbbf24 !important; border-top-color: #fbbf24; }
-        .derby-bet-title { font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; margin: 0; font-weight: bold; text-transform: uppercase;}
+        .dice-container { display: flex; gap: 30px; margin-bottom: 20px;}
+        .dice { font-size: 150px; color: #fff; text-shadow: 0 10px 30px rgba(0,0,0,0.8); font-family: Arial; line-height: 1;}
+        .dice.shake { animation: subtleShake 0.1s infinite; color: var(--warning); }
+        @keyframes subtleShake { 0% { transform: translate(2px, 2px) rotate(0deg); } 50% { transform: translate(-2px, -2px) rotate(-2deg); } 100% { transform: translate(2px, -2px) rotate(2deg); } }
 
-        /* --- PVP DUELS (WHEEL & COIN) --- */
-        .duel-arena-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 20px 0; }
-        .duel-arena { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 800px; height: 280px; margin-bottom: 20px;}
-        .duel-seat { width: 280px; height: 100%; flex-shrink: 0; background: #1e293b; border: 4px solid var(--border-std); border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); position: relative; box-sizing: border-box; }
-        .duel-seat.my-seat { border-color: var(--accent-glow-2); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
-        .duel-seat-empty { width: 100%; height: 100%; border: 4px dashed rgba(255,255,255,0.2); border-radius: 12px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); cursor: pointer; transition: 0.2s;}
-        .duel-seat-empty:hover { background: rgba(255,255,255,0.1); border-color: #fff;}
-        .duel-seat-name { font-size: 32px; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 0 #000; }
-        .duel-seat-score { font-size: 60px; font-weight: bold; color: var(--warning); text-shadow: 4px 4px 0 #000; line-height: 1;}
-        .duel-seat-choice { font-size: 24px; color: #94a3b8; background: #0f172a; padding: 4px 12px; border-radius: 4px; border: 2px solid var(--border-std); margin-top: 10px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
-        .duel-seat-ready { position: absolute; top: -15px; background: var(--success); color: #000; padding: 4px 15px; border-radius: 8px; font-size: 20px; font-weight: bold; border: 2px solid #fff; box-shadow: 2px 2px 0 #000;}
+        /* Derby Specific */
+        .derby-track-container { width: 90%; max-width: 1200px; height: 300px; background: #111; border: 6px solid #333; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: inset 0 0 40px #000, 0 20px 40px rgba(0,0,0,0.8);}
+        .derby-lane { flex: 1; border-bottom: 2px dashed #444; position: relative; display: flex; align-items: center; padding: 0 10px; background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 60px 100%; }
+        .derby-lane.scrolling { animation: trackScroll 0.4s linear infinite; }
+        @keyframes trackScroll { 100% { background-position: -60px 0; } }
+        .derby-finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 40px; background: repeating-linear-gradient(45deg, #fff 0, #fff 15px, #000 15px, #000 30px); z-index: 10; border-left: 6px solid var(--success); opacity: 0.8; }
         
-        .duel-center { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 160px; flex-shrink: 0;}
-        .duel-center-vs { font-size: 40px; font-weight: bold; color: #ef4444; text-shadow: 2px 2px 0 #000; margin-bottom: 20px;}
-        
-        .duel-coin { width: 120px; height: 120px; background: #fbbf24; border-radius: 50%; border: 8px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 60px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 0 30px #fbbf24; font-family: Arial; transition: transform 0.1s;}
-        .duel-coin.flipping { animation: flipCoin 0.3s infinite linear; }
-        @keyframes flipCoin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+        .racer-sprite { width: 75px; height: 55px; position: absolute; bottom: 5px; z-index: 20; -webkit-mask: url('horse.gif') no-repeat center / contain; mask: url('horse.gif') no-repeat center / contain; transform: scaleX(-1); transform-origin: center bottom; transition: left 0.1s linear; will-change: left;}
+        @keyframes gallop { 0% { transform: scaleX(-1) translateY(0px) rotate(-3deg); } 50% { transform: scaleX(-1) translateY(-4px) rotate(4deg); } 100% { transform: scaleX(-1) translateY(0px) rotate(-3deg); } }
+        .racer-running { animation: gallop 0.25s infinite; filter: brightness(1.2); }
+        .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 24px; color: rgba(255,255,255,0.4); font-weight: bold; z-index: 5; text-shadow: 1px 1px 0 #000; }
 
-        .duel-wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 24px solid #fff; z-index: 10; filter: drop-shadow(0 0 5px #000); }
-        @keyframes spinWheel { 100% { transform: rotate(360deg); } }
-        .wheel-spinning { animation: spinWheel 0.3s linear infinite !important; }
-        .wheel-stopping { transition: transform 3s cubic-bezier(0.2, 0.8, 0.2, 1) !important; }
-        
-        .duel-status-box { background: rgba(0,0,0,0.8); border: 2px solid var(--accent-glow-2); padding: 10px 20px; border-radius: 8px; font-size: 28px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 20px; text-align: center; width: 100%; max-width: 800px; height: 60px; display: flex; justify-content: center; align-items: center; box-sizing: border-box;}
+        .bg-red { background-color: #ef4444 !important; } .bg-blue { background-color: #3b82f6 !important; } .bg-green { background-color: #10b981 !important; } .bg-purple { background-color: #a855f7 !important; } .bg-pink { background-color: #ec4899 !important; } .bg-gold { background-color: #fbbf24 !important; } .bg-yellow { background-color: #eab308 !important; }
+        .derby-bet-box { height: 110px; border-left-width: 15px; } /* Thicker left border for color accent */
 
-        /* PERYA COLOR GAME */
-        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 650px; margin: 0 auto; }
-        .color-die-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex: 1;}
-        .color-die { width: 90px; height: 90px; border: 5px solid var(--border-std); border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5); transition: background-color 0.1s;}
-        .color-die.shake { animation: subtleShake 0.2s infinite; }
-        .color-die.bg-white { background-color: #f8fafc !important; color: #000 !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.5) !important; }
-        
-        .color-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 8px; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
-        .color-bet-box:active:not(.locked) { transform: scale(0.95); }
-        .color-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
-        .color-bet-box.br-red { border-top-color: #ef4444; } .color-bet-box.br-blue { border-top-color: #3b82f6; } .color-bet-box.br-yellow { border-top-color: #eab308; }
-        .color-bet-box.br-green { border-top-color: #10b981; } .color-bet-box.br-pink { border-top-color: #ec4899; } .color-bet-box.br-white { border-top-color: #f8fafc; }
-        
-        .color-bet-title { font-size: 34px; color: #fff; text-shadow: 2px 2px 0 #000; margin: 0; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;}
-        .color-bet-box.br-white .color-bet-title { color: #f8fafc !important; text-shadow: 2px 2px 0 #555 !important; }
-
-        /* 3 CUPS GAME - FLIPPED CUPS AND CENTERED */
-        .cups-container { position: relative; width: 480px; height: 100%; min-height: 200px; margin: 0 auto; display: flex; justify-content: center; align-items: center;}
-        .cup-wrapper { position: absolute; width: 120px; height: 120px; transition: left 0.1s ease-in-out; display: flex; justify-content: center; align-items: flex-end;}
-        .cup-shape { width: 80px; height: 100px; background: #dc2626; border-radius: 40px 40px 5px 5px; border: 4px solid #991b1b; border-bottom: 10px solid #f87171; border-top: none; box-shadow: 0 10px 15px rgba(0,0,0,0.6); position: absolute; bottom: 0; z-index: 10; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .cup-ball { font-size: 50px; position: absolute; bottom: -5px; z-index: 5; opacity: 0; transition: opacity 0.2s; }
-        .cup-wrapper.reveal .cup-shape { transform: translateY(-80px) rotate(10deg); }
+        /* Cups Specific */
+        .cups-container { position: relative; width: 600px; height: 200px; display: flex; justify-content: center; align-items: center;}
+        .cup-wrapper { position: absolute; width: 140px; height: 140px; transition: left 0.15s ease-in-out; display: flex; justify-content: center; align-items: flex-end;}
+        .cup-shape { width: 100px; height: 120px; background: #dc2626; border-radius: 50px 50px 5px 5px; border: 4px solid #991b1b; border-bottom: 12px solid #f87171; border-top: none; box-shadow: 0 15px 20px rgba(0,0,0,0.8); position: absolute; bottom: 0; z-index: 10; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .cup-ball { font-size: 60px; position: absolute; bottom: -5px; z-index: 5; opacity: 0; transition: opacity 0.1s; text-shadow: 0 5px 10px #000;}
+        .cup-wrapper.reveal .cup-shape { transform: translateY(-90px) rotate(15deg); }
         .cup-wrapper.reveal .cup-ball { opacity: 1; }
+
+        /* Color Game */
+        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 800px; }
+        .color-die { width: 100px; height: 100px; border: 6px solid #222; border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 15px 30px rgba(0,0,0,0.8); transition: 0.1s;}
+        .color-die.bg-white { background-color: #f8fafc !important; box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 15px 30px rgba(0,0,0,0.8) !important; }
+        .color-bet-box { height: 100px; padding: 10px; border-top-width: 12px;}
+
+        /* PVP Specific */
+        .duel-arena { display: flex; justify-content: center; align-items: center; width: 100%; max-width: 1000px; gap: 40px; margin-bottom: 20px;}
+        .duel-seat { flex: 1; max-width: 320px; height: 320px; flex-shrink: 0; background: rgba(0,0,0,0.7); border: 6px solid #333; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; box-shadow: 0 15px 30px rgba(0,0,0,0.8); position: relative; }
+        .duel-seat.my-seat { border-color: var(--accent-glow-2); box-shadow: 0 0 30px rgba(59,130,246,0.4); }
+        .duel-seat-empty { width: 100%; height: 100%; border: 4px dashed rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); cursor: pointer; transition: 0.1s;}
+        .duel-seat-empty:hover { background: rgba(255,255,255,0.1); border-color: #fff; transform: scale(1.02);}
+        .duel-seat-name { font-size: 36px; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 0 #000; }
+        .duel-seat-score { font-size: 80px; font-weight: bold; color: var(--warning); text-shadow: 4px 4px 0 #000; line-height: 1;}
+        .duel-seat-choice { font-size: 28px; color: #fff; background: #111; padding: 4px 15px; border: 2px solid #555; margin-top: 10px;}
+        .duel-seat-ready { position: absolute; top: -20px; background: var(--success); color: #000; padding: 4px 20px; font-size: 24px; font-weight: bold; border: 4px solid #fff; box-shadow: 4px 4px 0 #000;}
         
-        .cup-bet-box { background: #1e293b; border: 2px solid var(--border-std); border-radius: 8px; padding: 20px; text-align: center; width: 200px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; border-top-width: 10px; border-top-color: #f59e0b; cursor: pointer; transition: 0.1s; position: relative; height: 160px;}
-        .cup-bet-box:active:not(.locked) { transform: scale(0.95); }
-        .cup-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
+        /* FIX: Ensure Center section doesn't squish canvas */
+        .duel-center { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 220px; flex-shrink: 0; position: relative;}
+        .duel-center-vs { font-size: 50px; font-weight: bold; color: #ef4444; text-shadow: 3px 3px 0 #000; margin-bottom: 20px;}
+        .duel-coin { width: 150px; height: 150px; background: #fbbf24; border-radius: 50%; border: 10px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 70px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 10px 20px #000; font-family: Arial; transition: transform 0.1s;}
+        
+        .duel-status-box { background: rgba(0,0,0,0.8); border: 4px solid var(--accent-glow-2); padding: 15px 30px; font-size: 32px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 30px; text-align: center; width: 100%; max-width: 800px; box-shadow: 0 10px 20px rgba(0,0,0,0.8);}
 
-        /* --- MOBILE RESPONSIVENESS --- */
-        @media (max-width: 768px) {
-            #arcade-cabinet { width: 100vw; height: 100dvh; border: none; border-radius: 0; flex-direction: column; }
-            .game-interface { display: flex; flex-direction: column; overflow-y: auto; padding: 0; padding-bottom: 20px; gap: 10px;}
-            .game-area { min-width: 100%; min-height: 65dvh; flex-shrink: 0; border-radius: 0; border-left: none; border-right: none;}
-            .sidebar-col { min-height: 50dvh; flex-shrink: 0; padding: 0 10px;}
-            .top-hud { padding: 10px; grid-template-columns: 1fr; gap: 10px; text-align: center; }
-            .hud-left, .hud-right { justify-self: center; }
-            .menu-grid { width: 100%; grid-template-columns: 1fr; padding: 0 15px; }
-            .wood-btn { grid-column: span 1 !important; font-size: 20px; padding: 10px; }
-            .modal-box { width: 95%; padding: 15px; max-height: 85dvh;}
-            
-            .arcade-grid { flex-wrap: wrap; gap: 10px; }
-            .arcade-bet-box, .cup-bet-box { width: 48%; height: 120px; padding: 10px; }
-            .arcade-bet-title { font-size: 26px; }
-            .arcade-bet-payout { font-size: 18px; }
-            .dice { font-size: 80px; }
-            .cups-container { width: 100%; } .cup-wrapper { width: 80px; height: 100px; } .cup-shape { width: 60px; height: 80px; } .cup-ball { font-size: 40px; }
-            
-            .color-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-            .color-die { width: 60px; height: 60px; }
-            .color-bet-box { height: 80px; }
-            .color-bet-title { font-size: 20px; }
-            
-            .table-surface { flex-direction: column; overflow-y: auto; justify-content: flex-start; padding-top: 10px; }
-            .banker-station { position: relative; top: auto; left: auto; transform: none; margin-bottom: 15px; }
-            #timers-container { position: relative; top: auto; left: auto; transform: none; margin-bottom: 15px; }
-            #seats-area { position: relative; bottom: auto; left: auto; flex-wrap: wrap; justify-content: center; gap: 10px; padding-bottom: 20px; height: auto; margin-top: 10px;}
-            .seat { width: 45%; max-width: 140px; transform: none !important; }
-            .hands-wrapper { min-height: 80px; }
-            .card { width: 45px; height: 64px; margin-left: -25px; }
-            .card-corner { font-size: 12px; }
-            .card-center-suit { font-size: 24px; }
-            .player-name-text { font-size: 18px; }
-            .seat-empty-box { height: 120px; }
-            .btn-sit-empty { font-size: 20px; padding: 4px 15px; }
-            .global-timer { font-size: 24px; padding: 5px 15px; white-space: normal; }
-
-            .duel-arena { flex-direction: column; height: auto; gap: 20px; padding: 10px;}
-            .duel-seat, .duel-seat-empty { width: 100%; height: 150px; }
-            .duel-center { width: 100%; flex-direction: row; gap: 20px;}
-            .duel-center-vs { margin-bottom: 0; }
-            .duel-coin { width: 80px; height: 80px; font-size: 40px; border-width: 4px;}
-            .duel-wheel { width: 100px; height: 100px; }
-        }
+        /* Make modal selects and inputs look blocky */
+        #pvp-host-modal select { border-radius: 0; border: 4px solid; border-color: #111 #555 #555 #111; }
     </style>
 </head>
 <body>
@@ -321,453 +232,297 @@
     <div id="arcade-cabinet">
         
         <div id="auth-view" class="full-menu">
-            <h1 class="pixel-text" style="font-size: 80px; text-shadow: 4px 4px 0px #000, 0 0 30px var(--accent-glow); margin-bottom: 10px; text-align: center;">CASINO ROYALE</h1>
+            <h1 class="pixel-text" style="font-size: 100px; text-shadow: 6px 6px 0px #000, 0 0 40px var(--accent-glow); margin-bottom: 20px; text-align: center;">CASINO ROYALE</h1>
             
-            <div id="panel-login" class="modal-box custom-scroll">
-                <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 40px;">MEMBER LOGIN</h2>
-                <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME" style="color:#fff; width:100%; margin-bottom:15px; display:block; box-sizing:border-box;">
-                <input type="password" id="login-pass" class="retro-input pixel-text" placeholder="PASSWORD" style="color:#fff; width:100%; margin-bottom:15px; display:block; box-sizing:border-box;">
-                <div style="display: flex; justify-content: center; margin-top: 10px;"><button class="wood-btn pixel-text" style="background: var(--accent-glow-2);" onclick="login()">LOGIN</button></div>
-                <p id="login-error" class="pixel-text" style="color: var(--danger); font-size: 24px; margin-top:10px;"></p>
-                <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('signup')">New Player? Request Access Here</div>
+            <div id="panel-login" class="modal-box mc-panel custom-scroll">
+                <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 40px; text-shadow: 2px 2px 0 #000;">MEMBER LOGIN</h2>
+                <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME" style="margin-bottom:15px; display:block;">
+                <input type="password" id="login-pass" class="retro-input pixel-text" placeholder="PASSWORD" style="margin-bottom:15px; display:block;">
+                <div style="display: flex; justify-content: center; margin-top: 10px;"><button class="mc-btn" style="background: var(--accent-glow-2); width: 100%;" onclick="login()">LOGIN</button></div>
+                <p id="login-error" class="pixel-text" style="color: var(--danger); font-size: 24px; margin-top:15px;"></p>
+                <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 22px;" onclick="toggleAuth('signup')">Request Access Here</div>
             </div>
 
-            <div id="panel-signup" class="modal-box hidden custom-scroll">
-                <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 40px;">REQUEST ACCESS</h2>
-                <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME" style="color:#fff; width:100%; margin-bottom:15px; display:block; box-sizing:border-box;">
-                <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD" style="color:#fff; width:100%; margin-bottom:15px; display:block; box-sizing:border-box;">
+            <div id="panel-signup" class="modal-box mc-panel hidden custom-scroll">
+                <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 40px; text-shadow: 2px 2px 0 #000;">REQUEST ACCESS</h2>
+                <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME" style="margin-bottom:15px; display:block;">
+                <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD" style="margin-bottom:15px; display:block;">
                 
-                <div class="clear-text pixel-text" style="color: var(--warning); cursor: pointer; text-decoration: underline; margin: 15px 0; font-size: 22px;" onclick="showModal('tos-modal')">READ SYSTEM TERMS</div>
+                <div class="clear-text pixel-text" style="color: var(--warning); cursor: pointer; text-decoration: underline; margin: 15px 0; font-size: 24px;" onclick="showModal('tos-modal')">READ SYSTEM TERMS</div>
                 <label class="pixel-text" style="font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
                     <input type="checkbox" id="tos-checkbox" style="width: 24px; height: 24px; margin:0;"> I ACCEPT THE TERMS
                 </label>
 
-                <div style="display: flex; justify-content: center; margin-top: 10px;"><button class="wood-btn pixel-text" style="background: var(--success);" onclick="signup()">SUBMIT REQUEST</button></div>
-                <p id="signup-msg" class="pixel-text" style="font-size: 24px; margin-top:10px;"></p>
-                <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 20px;" onclick="toggleAuth('login')">Back to Login</div>
+                <div style="display: flex; justify-content: center; margin-top: 10px;"><button class="mc-btn" style="background: var(--success); width: 100%; color: #000;" onclick="signup()">SUBMIT REQUEST</button></div>
+                <p id="signup-msg" class="pixel-text" style="font-size: 24px; margin-top:15px;"></p>
+                <div class="clear-text pixel-text" style="color: #94a3b8; cursor: pointer; text-decoration: underline; margin-top: 10px; font-size: 22px;" onclick="toggleAuth('login')">Back to Login</div>
             </div>
         </div>
 
-        <div id="main-menu-view" class="full-menu hidden">
-            <h1 class="pixel-text" style="font-size: 80px; margin-bottom: 10px; text-shadow: 4px 4px 0px #000; text-align: center;">ARCADE DASHBOARD</h1>
-            <div class="menu-grid">
-                
-                <button class="wood-btn" style="background: var(--success); color:#000; grid-column: span 2; font-size: 36px; padding: 20px;" onclick="showModal('play-category-modal')">PLAY GAMES</button>
-                
-                <button class="wood-btn" style="background: #3b82f6;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
-                <button class="wood-btn" style="background: #8b5cf6; position:relative;" onclick="openInbox()">
-                    INBOX 
-                    <span id="notif-badge" class="hidden" style="position:absolute; top:-10px; right:-10px; background:var(--danger); border:2px solid #fff; border-radius:50%; width:30px; height:30px; display:flex; justify-content:center; align-items:center; font-size:22px; font-weight:bold; box-shadow: 2px 2px 0 #000;">0</span>
-                </button>
+        <div id="main-menu-view" class="full-menu hidden" style="background: url('https://www.transparenttextures.com/patterns/stardust.png'), linear-gradient(to bottom, #1e293b, #000);">
+            
+            <h1 class="pixel-text" style="font-size: 120px; margin-bottom: 50px; text-shadow: 6px 6px 0px #000, 0 0 50px rgba(59, 130, 246, 0.5); text-align: center; letter-spacing: 4px;">ARCADE HUB</h1>
+            
+            <button class="mc-btn" style="background: var(--success); color:#000; font-size: 60px; padding: 20px 80px; box-shadow: 0 10px 30px rgba(16,185,129,0.4);" onclick="showModal('play-category-modal')">▶ PLAY NOW</button>
+            <button class="mc-btn" style="background: #3b82f6; margin-top: 20px; font-size: 32px;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
 
-                <button class="wood-btn" style="background: var(--warning); color:#000;" onclick="showBank()">BANKING</button>
-                <button class="wood-btn" style="background: #10b981; color:#000;" onclick="showProfile()">PROFILE</button>
-                <button class="wood-btn" style="background: #0f766e;" onclick="showRewards()">DAILY REWARDS</button>
-                <button class="wood-btn" style="background: #d946ef;" onclick="showModal('redeem-modal')">REDEEM CODE</button>
-                
-                <button class="wood-btn locked" disabled style="background: #3f3f46; color: #a1a1aa; border-color: #52525b; box-shadow: none; font-size: 22px; grid-column: span 2;">MARKET (SOON)</button>
-
-                <button class="wood-btn" style="background: var(--danger); grid-column: span 2;" onclick="logout()">LOGOUT</button>
-            </div>
-        </div>
-
-        <div id="play-category-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 500px;">
-                <h2 class="pixel-text" style="margin-bottom: 20px; font-size: 45px; color: var(--success);">SELECT CATEGORY</h2>
-                <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-                    <button class="wood-btn" style="background: var(--accent-glow); margin-bottom: 5px;" onclick="hideModal('play-category-modal'); showModal('table-modal');">BLACKJACK (TABLE GAMES)</button>
-                    <button class="wood-btn" style="background: #ea580c; margin-bottom: 5px;" onclick="hideModal('play-category-modal'); showModal('arcade-modal');">ARCADE CASINO</button>
-                    <button class="wood-btn" style="background: #ec4899; margin-bottom: 10px;" onclick="hideModal('play-category-modal'); joinPVP();">PVP ARENA</button>
-                    <button class="wood-btn" style="background: #475569; margin-top: 10px;" onclick="hideModal('play-category-modal')">BACK</button>
-                </div>
-            </div>
-        </div>
-        
-        <div id="table-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 500px;">
-                <h2 class="pixel-text" style="margin-bottom: 20px; font-size: 45px; color: var(--success);">TABLE GAMES</h2>
-                <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-                    <button class="wood-btn" style="background: var(--accent-glow); margin-bottom: 5px;" onclick="joinRoom('3seat'); hideModal('table-modal');">3-SEAT VIP BLACKJACK</button>
-                    <button class="wood-btn" style="background: var(--success); color:#000; margin-bottom: 10px;" onclick="joinRoom('5seat'); hideModal('table-modal');">5-SEAT CLASSIC BLACKJACK</button>
-                    <button class="wood-btn" style="background: #475569; margin-top: 10px;" onclick="hideModal('table-modal'); showModal('play-category-modal');">BACK</button>
+            <div class="hotbar-wrapper">
+                <div class="hotbar">
+                    <div class="hotbar-slot" onclick="showProfile()"><div class="hotbar-tooltip pixel-text">Profile</div>👤</div>
+                    <div class="hotbar-slot" onclick="showBank()"><div class="hotbar-tooltip pixel-text">Banking</div>🪙</div>
+                    <div class="hotbar-slot" onclick="showRewards()"><div class="hotbar-tooltip pixel-text">Daily Rewards</div>🎁</div>
+                    <div class="hotbar-slot" onclick="showModal('redeem-modal')"><div class="hotbar-tooltip pixel-text">Redeem Code</div>🎫</div>
+                    
+                    <div class="hotbar-slot" style="background: #444; border-color: #222;" title="Market (Soon)">🛒</div>
+                    
+                    <div class="hotbar-slot" onclick="openInbox()"><div class="hotbar-tooltip pixel-text">Mailbox</div>✉️<span id="notif-badge" class="hidden" style="position:absolute; top:-8px; right:-8px; background:var(--danger); border:2px solid #fff; border-radius:50%; width:24px; height:24px; font-size:16px; line-height:20px; text-align:center; font-weight:bold; box-shadow:2px 2px 0 #000; font-family: Arial;">0</span></div>
+                    <div class="hotbar-slot" onclick="showModal('settings-modal')"><div class="hotbar-tooltip pixel-text">Settings</div>⚙️</div>
+                    <div class="hotbar-slot" onclick="logout()" style="background: #7f1d1d; border-color: #ef4444 #450a0a #450a0a #ef4444;"><div class="hotbar-tooltip pixel-text">Logout</div>🚪</div>
                 </div>
             </div>
         </div>
 
-        <div id="arcade-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 500px;">
-                <h2 class="pixel-text" style="margin-bottom: 20px; font-size: 45px; color: #ea580c;">ARCADE CASINO</h2>
-                <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-                    <button class="wood-btn" style="background: #a855f7; margin-bottom: 5px;" onclick="joinDice(); hideModal('arcade-modal');">HIGH-LOW DICE</button>
-                    <button class="wood-btn" style="background: #ea580c; margin-bottom: 5px;" onclick="joinDerby(); hideModal('arcade-modal');">8-BIT DERBY SPRINT</button>
-                    <button class="wood-btn" style="background: #f59e0b; color:#000; margin-bottom: 5px;" onclick="joinCups(); hideModal('arcade-modal');">3 CUPS AND A BALL</button>
-                    <button class="wood-btn" style="background: #ef4444; margin-bottom: 10px;" onclick="joinColorGame(); hideModal('arcade-modal');">CLASSIC COLOR GAME</button>
-                    <button class="wood-btn" style="background: #475569; margin-top: 10px;" onclick="hideModal('arcade-modal'); showModal('play-category-modal');">BACK</button>
+        <div id="play-category-modal" class="overlay-menu hidden">
+            <div class="modal-box mc-panel custom-scroll" style="width: 800px; padding: 20px; text-align: left;">
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 4px solid #333;">
+                    <h2 class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 3px 3px 0 #000; margin:0;">SELECT REALM</h2>
+                    <button class="mc-btn small" style="background:#ef4444;" onclick="hideModal('play-category-modal')">CLOSE</button>
+                </div>
+                
+                <div style="max-height: 60dvh; overflow-y: auto; padding-right: 10px;" class="custom-scroll">
+                    <div class="realm-card" onclick="joinRoom('5seat')">
+                        <div class="realm-icon" style="color:var(--success);">♠️</div>
+                        <div class="realm-info pixel-text">
+                            <div class="realm-title">CLASSIC BLACKJACK</div>
+                            <div class="realm-desc">5-Seat Table • Dealer hits on soft 17 • Max 100k</div>
+                        </div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div><span class="lobby-cnt-5seat">OPEN</span></div>
+                    </div>
+                    <div class="realm-card" onclick="joinRoom('3seat')">
+                        <div class="realm-icon" style="color:var(--accent-glow);">💎</div>
+                        <div class="realm-info pixel-text">
+                            <div class="realm-title">VIP BLACKJACK</div>
+                            <div class="realm-desc">3-Seat Exclusive Table • Fast Paced</div>
+                        </div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div><span class="lobby-cnt-3seat">OPEN</span></div>
+                    </div>
+
+                    <div class="realm-card" style="margin-top: 20px;" onclick="joinDerby()">
+                        <div class="realm-icon" style="color:var(--warning);">🐎</div>
+                        <div class="realm-info pixel-text">
+                            <div class="realm-title">8-BIT DERBY SPRINT</div>
+                            <div class="realm-desc">High-Volatility 6-Lane Track • Underdog Boost Active</div>
+                        </div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div> <span id="derby-player-count">0</span>/∞</div>
+                    </div>
+                    <div class="realm-card" onclick="joinCups()">
+                        <div class="realm-icon" style="color:#ea580c;">🔴</div>
+                        <div class="realm-info pixel-text">
+                            <div class="realm-title">STREET HUSTLE: 3 CUPS</div>
+                            <div class="realm-desc">Find the golden ball • 2.5x Payout • Single Bet Locked</div>
+                        </div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div> <span id="cups-player-count">0</span>/∞</div>
+                    </div>
+                    <div class="realm-card" onclick="joinDice()">
+                        <div class="realm-icon" style="color:#a855f7;">🎲</div>
+                        <div class="realm-info pixel-text">
+                            <div class="realm-title">HIGH-LOW DICE</div>
+                            <div class="realm-desc">Classic 2-Die Roll • Jackpot 7s Pays 4:1</div>
+                        </div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div> <span id="dice-player-count">0</span>/∞</div>
+                    </div>
+                    <div class="realm-card" onclick="joinColorGame()">
+                        <div class="realm-icon" style="color:var(--success);">🟩</div>
+                        <div class="realm-info pixel-text">
+                            <div class="realm-title">PERYA COLOR GAME</div>
+                            <div class="realm-desc">3 Color Dice • Multipliers stack on hits</div>
+                        </div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div> <span id="color-player-count">0</span>/∞</div>
+                    </div>
+
+                    <div class="realm-card" style="margin-top: 20px; border-color: var(--danger);" onclick="joinPVP()">
+                        <div class="realm-icon" style="color:var(--danger);">⚔️</div>
+                        <div class="realm-info pixel-text">
+                            <div class="realm-title" style="color: var(--danger);">THE ARENA (PVP)</div>
+                            <div class="realm-desc">1v1 Custom Duels • Wheel Spin & Coin Flips</div>
+                        </div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div> <span id="pvp-player-count">0</span> IN</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div id="pvp-host-modal" class="overlay-menu hidden" style="z-index: 500;">
-            <div class="modal-box custom-scroll" style="width: 600px; border-color: var(--warning);">
+            <div class="modal-box mc-panel custom-scroll" style="width: 600px;">
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 20px; font-size: 45px;">CONFIGURE MATCH</h2>
-                
                 <div style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
-                    <div>
-                        <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">GAME TYPE:</span>
-                        <select id="modal-duel-type" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;" onchange="toggleModalWheelConfig()">
-                            <option value="coin">COIN FLIP (Heads/Tails)</option>
-                            <option value="wheel">CUSTOM WHEEL SPIN</option>
-                        </select>
-                    </div>
-                    
-                    <div id="modal-wheel-config-row" class="hidden">
-                        <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">WHEEL SLICES (Populates Names):</span>
-                        <select id="modal-duel-wheel-slices" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;">
-                            <option value="2">2 SLICES</option>
-                            <option value="4" selected>4 SLICES</option>
-                            <option value="8">8 SLICES</option>
-                            <option value="10">10 SLICES</option>
-                        </select>
-                    </div>
-
-                    <div id="coin-config-row">
-                        <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">YOUR COIN PICK:</span>
-                        <select id="duel-host-choice" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;">
-                            <option value="heads">TAKE HEADS</option>
-                            <option value="tails">TAKE TAILS</option>
-                        </select>
-                    </div>
-                    
+                    <div><span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">GAME TYPE:</span><select id="modal-duel-type" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;" onchange="toggleModalWheelConfig()"><option value="coin">COIN FLIP (Heads/Tails)</option><option value="wheel">CUSTOM WHEEL SPIN</option></select></div>
+                    <div id="modal-wheel-config-row" class="hidden"><span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">WHEEL SLICES:</span><select id="modal-duel-wheel-slices" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;"><option value="2">2 SLICES</option><option value="4" selected>4 SLICES</option><option value="8">8 SLICES</option><option value="10">10 SLICES</option></select></div>
+                    <div id="coin-config-row"><span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">YOUR COIN PICK:</span><select id="duel-host-choice" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;"><option value="heads">TAKE HEADS</option><option value="tails">TAKE TAILS</option></select></div>
                     <div style="display: flex; gap: 10px;">
-                        <div style="flex: 1;">
-                            <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">FORMAT:</span>
-                            <select id="modal-duel-format" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;">
-                                <option value="1">1 ROUND</option>
-                                <option value="3">FIRST TO 3</option>
-                                <option value="5">FIRST TO 5</option>
-                            </select>
-                        </div>
-                        <div style="flex: 1;">
-                            <span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">WAGER:</span>
-                            <select id="modal-duel-bet" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;">
-                                <option value="0">0 (ITEM WAGER)</option>
-                                <option value="1000">1,000 CR</option>
-                                <option value="5000">5,000 CR</option>
-                                <option value="20000">20,000 CR</option>
-                                <option value="50000">50,000 CR</option>
-                                <option value="100000">100,000 CR</option>
-                            </select>
-                        </div>
+                        <div style="flex: 1;"><span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">FORMAT:</span><select id="modal-duel-format" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;"><option value="1">1 ROUND</option><option value="3">FIRST TO 3</option><option value="5">FIRST TO 5</option></select></div>
+                        <div style="flex: 1;"><span class="pixel-text" style="font-size: 24px; color: #cbd5e1;">WAGER:</span><select id="modal-duel-bet" class="retro-input pixel-text" style="width: 100%; margin-top: 5px;"><option value="0">0 (ITEM WAGER)</option><option value="1000">1,000 CR</option><option value="5000">5,000 CR</option><option value="20000">20,000 CR</option><option value="50000">50,000 CR</option><option value="100000">100,000 CR</option></select></div>
                     </div>
                 </div>
-
-                <div style="display: flex; gap: 10px; margin-top: 25px;">
-                    <button class="wood-btn pixel-text" style="flex:2; background: var(--success); color:#000;" onclick="submitPvpHostConfig()">POST CHALLENGE</button>
-                    <button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('pvp-host-modal'); leavePvpSeat();">CANCEL</button>
-                </div>
+                <div style="display: flex; gap: 10px; margin-top: 25px;"><button class="mc-btn" style="flex:2; background: var(--success); color:#000;" onclick="submitPvpHostConfig()">POST CHALLENGE</button><button class="mc-btn" style="flex:1; background: var(--danger);" onclick="hideModal('pvp-host-modal'); leavePvpSeat();">CANCEL</button></div>
             </div>
         </div>
 
         <div id="pvp-accept-modal" class="overlay-menu hidden" style="z-index: 500;">
-            <div class="modal-box custom-scroll" style="width: 500px; border-color: var(--danger);">
+            <div class="modal-box mc-panel custom-scroll" style="width: 500px;">
                 <h2 class="pixel-text" style="color: var(--danger); margin-bottom: 10px; font-size: 45px;">CHALLENGE RECEIVED!</h2>
-                
-                <div class="info-box" style="margin: 15px 0; text-align: center; border-color: var(--danger); background: rgba(239, 68, 68, 0.1);">
-                    <div style="font-size: 28px; color: #fff; margin-bottom: 10px;"><span id="accept-host-name" style="color:var(--accent-glow-2); font-weight:bold;"></span> has challenged you!</div>
-                    <div style="font-size: 24px; color: var(--warning); margin-bottom: 5px;">GAME: <span id="accept-game-type"></span></div>
-                    <div style="font-size: 24px; color: var(--warning); margin-bottom: 5px;">FORMAT: <span id="accept-format"></span></div>
-                    <div style="font-size: 24px; color: var(--success); font-weight:bold;">WAGER: <span id="accept-wager"></span></div>
-                </div>
-
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="acceptPvpDuel()">ACCEPT DUEL</button>
-                    <button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="declinePvpDuel()">DECLINE</button>
-                </div>
+                <div class="info-box" style="margin: 15px 0; text-align: center; border-color: var(--danger); background: rgba(239, 68, 68, 0.1);"><div style="font-size: 28px; color: #fff; margin-bottom: 10px;"><span id="accept-host-name" style="color:var(--accent-glow-2); font-weight:bold;"></span> has challenged you!</div><div style="font-size: 24px; color: var(--warning); margin-bottom: 5px;">GAME: <span id="accept-game-type"></span></div><div style="font-size: 24px; color: var(--warning); margin-bottom: 5px;">FORMAT: <span id="accept-format"></span></div><div style="font-size: 24px; color: var(--success); font-weight:bold;">WAGER: <span id="accept-wager"></span></div></div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;"><button class="mc-btn" style="flex:1; background: var(--success); color:#000;" onclick="acceptPvpDuel()">ACCEPT</button><button class="mc-btn" style="flex:1; background: var(--danger);" onclick="declinePvpDuel()">DECLINE</button></div>
             </div>
         </div>
 
         <div id="notify-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 750px; height: 750px; max-height: 90dvh; display: flex; flex-direction: column;">
+            <div class="modal-box mc-panel custom-scroll" style="width: 750px; height: 750px; max-height: 90dvh; display: flex; flex-direction: column;">
                 <h2 class="pixel-text" style="color: #8b5cf6; margin-bottom: 15px; font-size: 50px;">SYSTEM INBOX</h2>
-                
-                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0;">
-                    <button id="tab-announcement" class="wood-btn small active" onclick="setInboxTab('announcement')">ANNOUNCEMENTS</button>
-                    <button id="tab-message" class="wood-btn small" onclick="setInboxTab('message')">MESSAGES</button>
-                    <button id="tab-support" class="wood-btn small" onclick="setInboxTab('support')">SUPPORT</button>
-                </div>
-
-                <div id="inbox-list-view" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left; display: flex; flex-direction: column;">
-                    <div id="inbox-content" style="flex:1;">
-                        <div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">LOADING INBOX...</div>
-                    </div>
-                    <button id="btn-create-ticket" class="wood-btn hidden" style="background: var(--accent-glow-2); width: 100%; margin-top: 10px; flex-shrink: 0;" onclick="openCreateTicket()">CREATE SUPPORT TICKET</button>
-                </div>
-
-                <div id="inbox-thread-view" class="hidden" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; flex-shrink: 0;">
-                        <button class="wood-btn small" style="background: #475569;" onclick="backToInbox()">◄ BACK</button>
-                        <span id="thread-subject" style="font-size: 24px; font-weight: bold; color: var(--warning);"></span>
-                        <span id="thread-status" style="font-size: 24px; font-weight: bold;"></span>
-                    </div>
-                    <div id="thread-messages" class="custom-scroll" style="flex: 1; background: #000; border: 2px solid #334155; padding: 15px; overflow-y: auto; text-align: left; margin-bottom: 10px;"></div>
-                    
-                    <div id="thread-reply-box" style="display: flex; gap: 10px; flex-shrink: 0;">
-                        <input type="text" id="reply-input" class="retro-input" placeholder="Type reply..." style="flex: 1;">
-                        <button class="wood-btn" style="background: var(--success); color: #000; width: 120px;" onclick="sendReply()">REPLY</button>
-                    </div>
-                    <div id="thread-closed-box" class="hidden" style="background: var(--danger); padding: 10px; border: 2px solid #fff; font-size: 24px; font-weight: bold; text-shadow: 1px 1px 0 #000; flex-shrink: 0;">
-                        [ THIS CONVERSATION IS CLOSED ]
-                    </div>
-                    <div id="thread-readonly-box" class="hidden" style="background: #1e293b; padding: 10px; border: 2px solid var(--border-std); font-size: 24px; font-weight: bold; color: #94a3b8; flex-shrink: 0;">
-                        [ ANNOUNCEMENTS ARE READ-ONLY ]
-                    </div>
-                </div>
-
-                <div id="inbox-create-view" class="hidden" style="flex: 1; display: flex; flex-direction: column; text-align: left; min-height: 0;">
-                    <div style="margin-bottom: 15px; flex-shrink: 0;">
-                        <button class="wood-btn small" style="background: #475569;" onclick="backToInbox()">◄ CANCEL</button>
-                    </div>
-                    <div style="margin-bottom: 10px; flex-shrink: 0;">
-                        <input type="text" id="ticket-subject" class="retro-input" placeholder="SUBJECT" style="width: 100%;">
-                    </div>
-                    <div style="flex: 1; display: flex; flex-direction: column; margin-bottom: 10px;">
-                        <textarea id="ticket-text" class="retro-input custom-scroll" style="flex: 1; width: 100%; resize: none;" placeholder="DESCRIBE YOUR ISSUE..."></textarea>
-                    </div>
-                    <button class="wood-btn" style="background: var(--success); color: #000; width: 100%; flex-shrink: 0;" onclick="submitTicket()">SUBMIT TICKET</button>
-                </div>
-
-                <button id="inbox-close-btn" class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 15px; flex-shrink: 0;" onclick="hideModal('notify-modal')">CLOSE WINDOW</button>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0;"><button id="tab-announcement" class="mc-btn small" onclick="setInboxTab('announcement')">ANNOUNCEMENTS</button><button id="tab-message" class="mc-btn small" onclick="setInboxTab('message')">MESSAGES</button><button id="tab-support" class="mc-btn small" onclick="setInboxTab('support')">SUPPORT</button></div>
+                <div id="inbox-list-view" class="custom-scroll" style="flex: 1; background: #000; border: 4px solid #111; padding: 15px; overflow-y: auto; text-align: left; display: flex; flex-direction: column;"><div id="inbox-content" style="flex:1;"></div><button id="btn-create-ticket" class="mc-btn hidden" style="background: var(--accent-glow-2); width: 100%; margin-top: 10px;" onclick="openCreateTicket()">CREATE TICKET</button></div>
+                <div id="inbox-thread-view" class="hidden" style="flex: 1; display: flex; flex-direction: column; min-height: 0;"><div style="display: flex; justify-content: space-between; margin-bottom: 10px; flex-shrink: 0;"><button class="mc-btn small" onclick="backToInbox()">◄ BACK</button><span id="thread-subject" class="pixel-text" style="font-size: 28px; color: var(--warning);"></span><span id="thread-status" class="pixel-text" style="font-size: 24px;"></span></div><div id="thread-messages" class="custom-scroll pixel-text" style="flex: 1; background: #000; border: 4px solid #111; padding: 15px; overflow-y: auto; text-align: left; margin-bottom: 10px;"></div><div id="thread-reply-box" style="display: flex; gap: 10px; flex-shrink: 0;"><input type="text" id="reply-input" class="retro-input" placeholder="Type reply..." style="flex: 1;"><button class="mc-btn" style="background: var(--success); color: #000; width: 120px;" onclick="sendReply()">SEND</button></div></div>
+                <div id="inbox-create-view" class="hidden" style="flex: 1; display: flex; flex-direction: column; text-align: left; min-height: 0;"><div style="margin-bottom: 15px; flex-shrink: 0;"><button class="mc-btn small" onclick="backToInbox()">◄ CANCEL</button></div><div style="margin-bottom: 10px; flex-shrink: 0;"><input type="text" id="ticket-subject" class="retro-input pixel-text" placeholder="SUBJECT" style="width: 100%;"></div><div style="flex: 1; display: flex; flex-direction: column; margin-bottom: 10px;"><textarea id="ticket-text" class="retro-input pixel-text custom-scroll" style="flex: 1; width: 100%; resize: none;" placeholder="DESCRIBE YOUR ISSUE..."></textarea></div><button class="mc-btn" style="background: var(--success); color: #000; width: 100%; flex-shrink: 0;" onclick="submitTicket()">SUBMIT TICKET</button></div>
+                <button id="inbox-close-btn" class="mc-btn" style="background: var(--danger); width: 100%; margin-top: 15px; flex-shrink: 0;" onclick="hideModal('notify-modal')">CLOSE WINDOW</button>
             </div>
         </div>
 
         <div id="how-to-play-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 750px; padding: 25px;">
-                <h2 class="pixel-text" style="margin-bottom: 15px; font-size: 40px; color: var(--accent-glow-2);">ARCADE RULES & MECHANICS</h2>
-                
-                <div style="display: flex; justify-content: center; margin-bottom: 15px;">
-                    <select class="retro-input pixel-text" style="width: 100%; max-width: 350px; background: #1e293b; color: #fff; cursor: pointer; border-color: var(--accent-glow-2);" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');">
-                        <option value="rule-bj">BLACKJACK</option>
-                        <option value="rule-dice">HIGH-LOW DICE</option>
-                        <option value="rule-derby">8-BIT DERBY SPRINT</option>
-                        <option value="rule-cups">3 CUPS AND A BALL</option>
-                        <option value="rule-color">CLASSIC COLOR GAME</option>
-                        <option value="rule-pvp">PVP ARENA (WHEEL & COIN)</option>
-                        <option value="rule-sys">SYSTEM RULES</option>
-                    </select>
+            <div class="modal-box mc-panel custom-scroll" style="width: 750px; padding: 25px;">
+                <h2 class="pixel-text" style="margin-bottom: 15px; font-size: 40px; color: var(--accent-glow-2);">RULES & MECHANICS</h2>
+                <div style="display: flex; justify-content: center; margin-bottom: 15px;"><select class="retro-input pixel-text" style="width: 100%; max-width: 350px;" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');"><option value="rule-bj">BLACKJACK</option><option value="rule-dice">HIGH-LOW DICE</option><option value="rule-derby">8-BIT DERBY SPRINT</option><option value="rule-cups">3 CUPS AND A BALL</option><option value="rule-color">CLASSIC COLOR GAME</option><option value="rule-pvp">PVP ARENA</option></select></div>
+                <div class="info-box custom-scroll" style="text-align: left; height: 320px; overflow-y: auto; margin-bottom: 15px; background: #000; border: 4px solid #111;">
+                    <div id="rule-bj" class="rule-content pixel-text" style="font-size:24px; color:#ccc;">Beat the Dealer without going over 21. Max 100k bet. Ties push. Blackjack pays 3:2.</div>
+                    <div id="rule-dice" class="rule-content hidden pixel-text" style="font-size:24px; color:#ccc;">Bet Under 7, Over 7, or Exactly 7. 7 pays 4:1. Max 50k per tile.</div>
+                    <div id="rule-derby" class="rule-content hidden pixel-text" style="font-size:24px; color:#ccc;">Classic sprint. Horses jostle for position for 11s, then sprint for 4s. Underdogs have a chance to hit nitro at the end. Max 50k per lane.</div>
+                    <div id="rule-cups" class="rule-content hidden pixel-text" style="font-size:24px; color:#ccc;">Find the ball. <strong>You may only bet on ONE cup per round.</strong> Pays 2.5x. Max 50k.</div>
+                    <div id="rule-color" class="rule-content hidden pixel-text" style="font-size:24px; color:#ccc;">Bet on colors. Matches multiply payouts (1:1, 2:1, 3:1). Max 50k per color.</div>
+                    <div id="rule-pvp" class="rule-content hidden pixel-text" style="font-size:24px; color:#ccc;">1v1 custom duels. Host chooses Coin or Wheel, wager, and rounds.</div>
                 </div>
-                
-                <div class="info-box custom-scroll" style="text-align: left; height: 320px; overflow-y: auto; margin-bottom: 15px; background: rgba(0,0,0,0.6); border: 3px solid #334155;">
-                    <div id="rule-bj" class="rule-content">
-                        <strong style="color: var(--success); font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">BLACKJACK</strong>
-                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">Beat the Dealer's hand without exceeding 21. Face cards are 10, Aces are 1 or 11.</p>
-                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max 1 seat. Max bet 100,000 credits.</li>
-                            <li style="margin-bottom: 10px;"><strong>Timer:</strong> Exactly 15s to Hit, Stand, Double, or Split.</li>
-                            <li style="margin-bottom: 10px;"><strong>Payouts:</strong> Wins pay 1:1. Blackjack pays 3:2. Push refunds bet.</li>
-                        </ul>
-                    </div>
-                    
-                    <div id="rule-dice" class="rule-content hidden">
-                        <strong style="color: #a855f7; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">HIGH-LOW DICE</strong>
-                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">Two 6-sided dice are rolled globally. Select your bet amount and click a tile.</p>
-                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per tile.</li>
-                            <li style="margin-bottom: 10px;"><strong>Under 7 / Over 7:</strong> Pays 1:1.</li>
-                            <li style="margin-bottom: 10px;"><strong>Exactly 7:</strong> Jackpot! Pays massive 4:1 odds.</li>
-                        </ul>
-                    </div>
-                    
-                    <div id="rule-derby" class="rule-content hidden">
-                        <strong style="color: var(--warning); font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">8-BIT DERBY SPRINT</strong>
-                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">Bet on the winning pixel horse across a 6-lane sprint.</p>
-                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 per lane.</li>
-                            <li style="margin-bottom: 10px;"><strong>Payouts:</strong> Varies strictly by lane probability (2x up to 10x).</li>
-                        </ul>
-                    </div>
-
-                    <div id="rule-cups" class="rule-content hidden">
-                        <strong style="color: #f59e0b; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">3 CUPS AND A BALL</strong>
-                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">A golden ball is hidden under one of three cups. The cups shuffle rapidly. Pick the correct cup!</p>
-                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits. <strong>Only ONE cup can be bet on per round.</strong></li>
-                            <li style="margin-bottom: 10px;"><strong>Payout:</strong> Guessing correctly pays a massive <strong>2.5x</strong> multiplier!</li>
-                        </ul>
-                    </div>
-                    
-                    <div id="rule-color" class="rule-content hidden">
-                        <strong style="color: #ef4444; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">CLASSIC COLOR GAME</strong>
-                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">3 colored dice are rolled. Tap colors to place chips.</p>
-                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Limits:</strong> Max bet 50,000 credits per color.</li>
-                            <li style="margin-bottom: 10px;"><strong>Payouts:</strong> 1 Match = 1:1 | 2 Matches = 2:1 | 3 Matches = 3:1</li>
-                        </ul>
-                    </div>
-
-                    <div id="rule-pvp" class="rule-content hidden">
-                        <strong style="color: #ec4899; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">PVP ARENA (WHEEL & COIN)</strong>
-                        <p style="margin-bottom: 8px; font-size: 24px; color:#cbd5e1;">1v1 duels against other players for credits or items.</p>
-                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Host Powers:</strong> Host chooses Coin Flip or Custom Wheel Spin, wager amount, and formats (Best of 1, 3, or 5).</li>
-                            <li style="margin-bottom: 10px;"><strong>Custom Wheel:</strong> Host selects how many slices (2, 4, 8, 10). The wheel automatically populates with both players' names alternating!</li>
-                        </ul>
-                    </div>
-
-                    <div id="rule-sys" class="rule-content hidden">
-                        <strong style="color: #10b981; font-size: 28px; display:block; margin-bottom:10px; border-bottom: 1px dashed #333; padding-bottom:5px;">SYSTEM RULES</strong>
-                        <ul style="padding-left: 25px; font-size: 24px; color:#cbd5e1;">
-                            <li style="margin-bottom: 10px;"><strong>Deposits/Withdrawals:</strong> Max limit should be 100,000 per transaction.</li>
-                            <li style="margin-bottom: 10px;"><strong>Daily Rewards:</strong> Mystery boxes respawn exactly every 24 hours.</li>
-                            <li style="margin-bottom: 10px;"><strong>Spam Protection:</strong> Arcade buttons lock for 250ms after clicking.</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <button class="wood-btn" style="background: var(--danger); width: 100%; margin-top: 0;" onclick="hideModal('how-to-play-modal')">CLOSE</button>
+                <button class="mc-btn" style="background: var(--danger); width: 100%; margin-top: 0;" onclick="hideModal('how-to-play-modal')">CLOSE</button>
             </div>
         </div>
 
         <div id="tos-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 600px;">
+            <div class="modal-box mc-panel custom-scroll" style="width: 600px;">
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 20px; font-size: 40px;">TERMS OF SERVICE</h2>
-                <div class="info-box custom-scroll">
-                    By requesting access to Casino Royale, you agree to the Fair Play Policy:<br><br>
-                    - Maximum of ONE active seat per room.<br>
-                    - Using macros or alt-accounts to farm rewards is strictly prohibited and results in an IP Ban.<br>
-                    - All accounts require manual Admin approval.
-                </div>
-                <div style="display: flex; justify-content: center; margin-top: 15px;"><button class="wood-btn" style="background: var(--success); width: 100%; color:#000;" onclick="hideModal('tos-modal')">I UNDERSTAND</button></div>
+                <div class="info-box custom-scroll pixel-text" style="font-size:24px;">By playing, you agree:<br>- Max ONE active seat.<br>- No macros/alts.<br>- Admin approval required.</div>
+                <button class="mc-btn" style="background: var(--success); width: 100%; color:#000; margin-top: 15px;" onclick="hideModal('tos-modal')">I UNDERSTAND</button>
             </div>
         </div>
 
         <div id="redeem-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll">
+            <div class="modal-box mc-panel custom-scroll">
                 <h2 class="pixel-text" style="color: #d946ef; margin-bottom: 20px; font-size: 60px;">REDEEM CODE</h2>
-                <div class="input-group" style="margin: 20px 0;">
-                    <input type="text" id="gift-code-main" class="retro-input pixel-text" placeholder="ENTER PROMO CODE" style="text-transform:uppercase;">
-                    <button class="wood-btn" style="width: 150px; margin-bottom:0; background: var(--success); color:#000;" onclick="redeemCodeMain()">REDEEM</button>
-                </div>
-                <p id="redeem-msg" class="pixel-text" style="font-size: 28px; margin-bottom: 10px;"></p>
-                <button class="wood-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('redeem-modal')">CLOSE</button>
+                <input type="text" id="gift-code-main" class="retro-input pixel-text" placeholder="ENTER CODE" style="text-transform:uppercase; margin-bottom:15px;">
+                <button class="mc-btn" style="background: var(--success); color:#000; width: 100%;" onclick="redeemCodeMain()">REDEEM</button>
+                <p id="redeem-msg" class="pixel-text" style="font-size: 28px; margin: 15px 0; height: 30px;"></p>
+                <button class="mc-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('redeem-modal')">CLOSE</button>
             </div>
         </div>
 
         <div id="profile-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 750px;">
+            <div class="modal-box mc-panel custom-scroll" style="width: 750px;">
                 <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 50px;">PLAYER DOSSIER</h2>
                 <div class="profile-preview pixel-text" id="profile-username-preview" style="color: #fff;">USERNAME</div>
-                <div class="profile-credits pixel-text" style="margin-bottom: 15px; font-size: 36px;">TOTAL BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
-                <button class="wood-btn pixel-text" style="background: #475569;" onclick="openProfileLedger()">VIEW TRANSACTION LEDGER</button>
-                <div style="margin-top: 15px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('profile-modal')">CLOSE</button></div>
+                <div class="profile-credits pixel-text" style="margin-bottom: 20px; font-size: 36px; background:#000; padding:10px; border:4px solid #111;">BALANCE: <span class="coin-icon">🪙</span> <span id="profile-credits-preview">0</span></div>
+                <button class="mc-btn" onclick="openProfileLedger()">TRANSACTION LEDGER</button>
+                <div style="margin-top: 15px;"><button class="mc-btn" style="background: var(--danger); width:100%;" onclick="hideModal('profile-modal')">CLOSE</button></div>
             </div>
         </div>
 
         <div id="profile-ledger-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box" style="width: 700px; display: flex; flex-direction: column;">
-                <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 50px; flex-shrink: 0;">TRANSACTION LEDGER</h2>
-                <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 300px; margin-bottom: 15px;"></div>
-                <div style="display: flex; justify-content: center; flex-shrink: 0;"><button class="wood-btn pixel-text" style="background: var(--danger); width:100%;" onclick="hideModal('profile-ledger-modal'); showModal('profile-modal');">BACK TO PROFILE</button></div>
+            <div class="modal-box mc-panel" style="width: 700px; display: flex; flex-direction: column;">
+                <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 50px; flex-shrink: 0;">LEDGER</h2>
+                <div id="ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 4px solid #111; text-align: left; min-height: 300px; margin-bottom: 15px;"></div>
+                <button class="mc-btn" style="background: var(--danger); width:100%;" onclick="hideModal('profile-ledger-modal'); showModal('profile-modal');">BACK</button>
             </div>
         </div>
         
         <div id="bank-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 700px;">
+            <div class="modal-box mc-panel custom-scroll" style="width: 700px;">
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 5px; font-size: 50px;">SYSTEM BANKING</h2>
-                <div class="pixel-text" style="font-size: 28px; margin-bottom: 20px;">CURRENT BALANCE: <span class="coin-icon">🪙</span> <span id="bank-balance-display" style="font-size: 40px;">0</span></div>
-                
-                <div class="input-group">
-                    <input type="text" id="bank-amount" class="retro-input pixel-text" placeholder="ENTER AMOUNT" oninput="formatInput(this)">
-                </div>
+                <div class="pixel-text" style="font-size: 28px; margin-bottom: 20px; background:#000; padding:10px; border:4px solid #111;">BALANCE: <span class="coin-icon">🪙</span> <span id="bank-balance-display" style="font-size: 40px;">0</span></div>
+                <input type="text" id="bank-amount" class="retro-input pixel-text" placeholder="ENTER AMOUNT" oninput="formatInput(this)" style="margin-bottom:15px;">
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <button class="wood-btn" style="flex: 1; background: var(--accent-glow-2);" onclick="showBankConfirm('deposit')">DEPOSIT</button>
-                    <button class="wood-btn" style="flex: 1; background: var(--warning); color:#000;" onclick="showBankConfirm('withdrawal')">WITHDRAW</button>
+                    <button class="mc-btn" style="flex: 1; background: var(--accent-glow-2);" onclick="showBankConfirm('deposit')">DEPOSIT</button>
+                    <button class="mc-btn" style="flex: 1; background: var(--warning); color:#000;" onclick="showBankConfirm('withdrawal')">WITHDRAW</button>
                 </div>
-                <button class="wood-btn pixel-text" style="background: #475569;" onclick="openBankLedger()">VIEW BANK REQUESTS</button>
-                <div style="margin-top: 10px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('bank-modal')">CLOSE</button></div>
+                <button class="mc-btn" onclick="openBankLedger()">VIEW BANK REQUESTS</button>
+                <div style="margin-top: 15px;"><button class="mc-btn" style="background: var(--danger); width:100%;" onclick="hideModal('bank-modal')">CLOSE</button></div>
             </div>
         </div>
 
         <div id="bank-ledger-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box" style="width: 700px; display: flex; flex-direction: column;">
+            <div class="modal-box mc-panel" style="width: 700px; display: flex; flex-direction: column;">
                 <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 50px; flex-shrink: 0;">BANK REQUESTS</h2>
-                <div id="bank-ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 2px solid var(--border-std); text-align: left; min-height: 300px; margin-bottom: 15px;"></div>
-                <div style="display: flex; justify-content: center; flex-shrink: 0;"><button class="wood-btn pixel-text" style="background: var(--danger); width:100%;" onclick="hideModal('bank-ledger-modal'); showModal('bank-modal');">BACK TO BANK</button></div>
+                <div id="bank-ledger-list" class="pixel-text custom-scroll" style="flex: 1; overflow-y: auto; background: #000; padding: 10px; border: 4px solid #111; text-align: left; min-height: 300px; margin-bottom: 15px;"></div>
+                <button class="mc-btn" style="background: var(--danger); width:100%;" onclick="hideModal('bank-ledger-modal'); showModal('bank-modal');">BACK</button>
             </div>
         </div>
 
         <div id="bank-confirm-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 500px;">
+            <div class="modal-box mc-panel custom-scroll" style="width: 500px;">
                 <h2 class="pixel-text" style="color: var(--warning); margin-bottom: 10px; font-size: 40px;">CONFIRM REQUEST</h2>
                 <div class="pixel-text" style="font-size: 32px; color: #fff; margin-bottom: 10px;"><span id="confirm-bank-type"></span>: <span style="color: var(--success);"><span class="coin-icon">🪙</span> <span id="confirm-bank-amt"></span></span></div>
-                
-                <div class="info-box" style="margin: 20px 0; text-align: center; border: none; background: transparent; box-shadow: none;">
-                    <p style="margin-bottom: 10px; color: #fff; font-family: 'VT323'; font-size: 24px;">Please notify the admin for your request:</p>
-                    <div style="display: flex; justify-content: center; align-items: center; gap: 20px; font-size: 18px; color: var(--accent-glow-2); font-weight: bold; font-family: 'Segoe UI', sans-serif;">
-                        <span style="display: flex; align-items: center;">
-                            <svg class="discord-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36" style="width: 24px; height: 24px; fill: currentColor; margin-right: 8px;"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91,65.69,84.69,65.69Z"/></svg> @ashley.gg
-                        </span>
-                        <span>SNT: @AshleyChan</span>
-                    </div>
+                <div class="info-box pixel-text" style="text-align: center; background: #000; border: 4px solid #111; font-size: 20px;">
+                    Notify Admin:<br>Discord: @ashley.gg<br>SNT: @AshleyChan
                 </div>
-
-                <div id="bank-confirm-msg" class="pixel-text" style="font-size: 26px; margin-bottom: 10px;"></div>
-
+                <div id="bank-confirm-msg" class="pixel-text" style="font-size: 26px; margin-bottom: 10px; height:30px;"></div>
                 <div id="bank-confirm-btn-row" style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button>
-                    <button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>
+                    <button class="mc-btn" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button>
+                    <button class="mc-btn" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>
                 </div>
             </div>
         </div>
 
         <div id="reward-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll" style="width: 600px;">
-                <h2 class="pixel-text" style="color: var(--accent-glow-2); font-size: 50px;">DAILY REWARD</h2>
+            <div class="modal-box mc-panel custom-scroll" style="width: 600px;">
+                <h2 class="pixel-text" style="color: var(--warning); font-size: 50px;">DAILY LOOT</h2>
                 <div id="reward-active-view">
                     <div class="rewards-grid" id="rewards-grid">
-                        <div class="reward-box" onclick="pickRewardBox(0)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-0"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(1)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-1"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(2)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-2"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(3)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-3"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(4)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-4"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(5)"><div class="inner"><div class="front">📦</div><div class="back" id="box-val-5"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(0)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-0"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(1)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-1"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(2)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-2"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(3)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-3"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(4)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-4"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(5)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-5"></div></div></div>
                     </div>
                 </div>
                 <div id="reward-cooldown-view" class="hidden">
-                    <div class="pixel-text" id="reward-timer" style="font-size: 60px; color: var(--danger);">00:00:00</div>
+                    <div class="pixel-text" id="reward-timer" style="font-size: 60px; color: var(--danger); margin: 20px 0; background:#000; border:4px solid #111; padding:10px;">00:00:00</div>
                 </div>
-                <p id="reward-msg" class="pixel-text" style="font-size: 32px; margin-top: 15px;"></p>
-                <div style="margin-top: 15px;"><button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('reward-modal')">CLOSE</button></div>
+                <p id="reward-msg" class="pixel-text" style="font-size: 32px; margin-top: 15px; height: 40px;"></p>
+                <div style="margin-top: 15px;"><button class="mc-btn" style="background: var(--danger); width:100%;" onclick="hideModal('reward-modal')">CLOSE</button></div>
             </div>
         </div>
 
         <div id="settings-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll">
-                <h2 class="pixel-text" style="font-size: 50px; margin-bottom: 20px;">SYSTEM SETTINGS</h2>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; background: #000; padding: 15px; border: 2px solid var(--border-std);">
+            <div class="modal-box mc-panel custom-scroll">
+                <h2 class="pixel-text" style="font-size: 50px; margin-bottom: 20px;">SETTINGS</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; background: #000; padding: 15px; border: 4px solid #111;">
                     <span class="pixel-text" style="font-size: 32px;">SFX</span>
                     <input type="range" id="vol-sfx" min="0" max="1" step="0.05" value="1" oninput="updateVol('sfx', this.value)">
                 </div>
-                <button class="wood-btn" style="background: var(--danger); width:100%;" onclick="hideModal('settings-modal')">CLOSE</button>
-            </div>
-        </div>
-
-        <div id="logout-modal" class="overlay-menu hidden" style="z-index: 400;">
-            <div class="modal-box custom-scroll">
-                <h2 class="pixel-text" style="color: var(--danger); font-size: 50px;">CONFIRM LOGOUT?</h2>
-                <div style="display: flex; gap: 10px; margin-top: 30px;">
-                    <button class="wood-btn" style="flex: 1; background: var(--danger);" onclick="logout()">YES</button>
-                    <button class="wood-btn" style="flex: 1;" onclick="hideModal('logout-modal')">NO</button>
-                </div>
+                <button class="mc-btn" style="background: var(--danger); width:100%; margin-top:15px;" onclick="hideModal('settings-modal')">CLOSE</button>
             </div>
         </div>
 
         <div id="game-interface" class="game-interface hidden">
             <div class="game-area">
                 <div class="top-hud">
-                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('blackjack')">◄ DASHBOARD</button></div>
-                    <div class="hud-center"><div style="font-size: 36px; color: var(--accent-glow-2);" id="phase-display" class="pixel-text">WAITING</div></div>
-                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="hud-credits"></span></div></div>
+                    <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('blackjack')">◄ LEAVE</button></div>
+                    <div class="hud-center"><div style="font-size: 40px; color: var(--accent-glow-2); text-shadow: 3px 3px 0 #000;" id="phase-display" class="pixel-text">WAITING</div></div>
+                    <div class="hud-right" style="display: flex; align-items: center;">
+                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                            <button class="mc-btn small" onclick="togglePlayerList('bj-players-list')">👥 <span id="player-count">0</span></button>
+                            <div id="bj-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                        </div>
+                        <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="hud-credits"></span></div>
+                    </div>
                 </div>
+
                 <div class="table-surface">
                     <div class="banker-station">
                         <div class="pixel-text" style="font-size: 40px; color: #f8fafc; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; letter-spacing: 2px;">DEALER</div>
@@ -780,18 +535,12 @@
                     </div>
                     <div id="seats-area"></div>
                 </div>
-            </div>
-            <div class="sidebar-col">
-                <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text"><span>PLAYERS</span> <span id="player-count" style="color:var(--accent-glow-2);">0</span></div>
-                    <div id="lobby-list" style="flex: 1; padding: 10px; overflow-y: auto;" class="pixel-text custom-scroll"></div>
-                </div>
-                <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">TABLE CHAT</div>
-                    <div id="blackjack-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
-                    <div class="chat-input-area">
-                        <input type="text" id="blackjack-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
-                        <button class="pixel-text" onclick="actSendChat('blackjack')">SEND</button>
+
+                <div class="mmo-chat-container">
+                    <div id="blackjack-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                    <div class="mmo-chat-input-row">
+                        <input type="text" id="blackjack-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
+                        <button class="mmo-chat-btn pixel-text" onclick="actSendChat('blackjack')">►</button>
                     </div>
                 </div>
             </div>
@@ -800,15 +549,25 @@
         <div id="dice-interface" class="game-interface hidden">
             <div class="game-area dice-bg">
                 <div class="top-hud">
-                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('dice')">◄ DASHBOARD</button></div>
-                    <div class="hud-center"><div style="font-size: 36px; color: var(--warning);" id="dice-phase-display" class="pixel-text">BETS OPEN</div></div>
-                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="dice-credits"></span></div></div>
+                    <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('dice')">◄ LEAVE</button></div>
+                    <div class="hud-center"><div style="font-size: 40px; color: var(--warning); text-shadow: 3px 3px 0 #000;" id="dice-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    <div class="hud-right" style="display: flex; align-items: center;">
+                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                            <button class="mc-btn small" onclick="togglePlayerList('dice-players-list')">👥 <span id="dice-player-count">0</span></button>
+                            <div id="dice-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                        </div>
+                        <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="dice-credits"></span></div>
+                    </div>
                 </div>
-                <div class="dice-container"><div id="die1" class="dice">⚀</div><div id="die2" class="dice">⚀</div></div>
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <div id="dice-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
-                    <div id="dice-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">15s REMAINING</div>
+                
+                <div class="center-focus">
+                    <div class="dice-container"><div id="die1" class="dice">⚀</div><div id="die2" class="dice">⚀</div></div>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div id="dice-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
+                        <div id="dice-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 2px solid #333; display:inline-block;">15s REMAINING</div>
+                    </div>
                 </div>
+
                 <div class="arcade-bet-area">
                     <div class="master-bet-row">
                         <select id="dice-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
@@ -833,25 +592,12 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="sidebar-col">
-                <div style="position: relative; z-index: 50; flex-shrink: 0;">
-                    <div id="dice-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('dice-players-list', 'dice-dropdown-header')">
-                        <span>PLAYERS</span>
-                        <span><span id="dice-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
-                    </div>
-                    <div id="dice-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
-                </div>
-                <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">ROLL HISTORY</div>
-                    <div class="history-content custom-scroll pixel-text" id="dice-history"></div>
-                </div>
-                <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center; gap: 15px;">TABLE CHAT</div>
-                    <div id="dice-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
-                    <div class="chat-input-area">
-                        <input type="text" id="dice-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
-                        <button class="pixel-text" onclick="actSendChat('dice')">SEND</button>
+
+                <div class="mmo-chat-container">
+                    <div id="dice-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                    <div class="mmo-chat-input-row">
+                        <input type="text" id="dice-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
+                        <button class="mmo-chat-btn pixel-text" onclick="actSendChat('dice')">►</button>
                     </div>
                 </div>
             </div>
@@ -860,82 +606,76 @@
         <div id="derby-interface" class="game-interface hidden">
             <div class="game-area coin-bg">
                 <div class="top-hud">
-                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('derby')">◄ DASHBOARD</button></div>
-                    <div class="hud-center"><div style="font-size: 36px; color: var(--warning);" id="derby-phase-display" class="pixel-text">BETS OPEN</div></div>
-                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="derby-credits"></span></div></div>
+                    <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('derby')">◄ LEAVE</button></div>
+                    <div class="hud-center"><div style="font-size: 40px; color: var(--warning); text-shadow: 3px 3px 0 #000;" id="derby-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    <div class="hud-right" style="display: flex; align-items: center;">
+                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                            <button class="mc-btn small" onclick="togglePlayerList('derby-players-list')">👥 <span id="derby-player-count">0</span></button>
+                            <div id="derby-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                        </div>
+                        <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="derby-credits"></span></div>
+                    </div>
                 </div>
 
-                <div id="derby-race-container" style="display:flex; flex-direction:column; flex:1;">
+                <div class="center-focus" style="padding-bottom: 220px;">
                     <div class="derby-track-container" id="derby-track">
                         <div class="derby-finish-line"></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-0" style="color:#ef4444;">RED | ?x</div><div class="racer-sprite" id="racer-0" style="left:0%; background-color:#ef4444;"></div></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-1" style="color:#3b82f6;">BLU | ?x</div><div class="racer-sprite" id="racer-1" style="left:0%; background-color:#3b82f6;"></div></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-2" style="color:#10b981;">GRN | ?x</div><div class="racer-sprite" id="racer-2" style="left:0%; background-color:#10b981;"></div></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-3" style="color:#a855f7;">PUR | ?x</div><div class="racer-sprite" id="racer-3" style="left:0%; background-color:#a855f7;"></div></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-4" style="color:#ec4899;">PNK | ?x</div><div class="racer-sprite" id="racer-4" style="left:0%; background-color:#ec4899;"></div></div>
-                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-5" style="color:#fbbf24;">GLD | ?x</div><div class="racer-sprite" id="racer-5" style="left:0%; background-color:#fbbf24;"></div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-0" style="color:#ef4444;">RED | ?x</div><div class="racer-sprite" id="racer-0" style="background-color:#ef4444;"></div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-1" style="color:#3b82f6;">BLU | ?x</div><div class="racer-sprite" id="racer-1" style="background-color:#3b82f6;"></div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-2" style="color:#10b981;">GRN | ?x</div><div class="racer-sprite" id="racer-2" style="background-color:#10b981;"></div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-3" style="color:#a855f7;">PUR | ?x</div><div class="racer-sprite" id="racer-3" style="background-color:#a855f7;"></div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-4" style="color:#ec4899;">PNK | ?x</div><div class="racer-sprite" id="racer-4" style="background-color:#ec4899;"></div></div>
+                        <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-5" style="color:#fbbf24;">GLD | ?x</div><div class="racer-sprite" id="racer-5" style="background-color:#fbbf24;"></div></div>
                     </div>
                     
-                    <div style="text-align: center; margin: 10px 0;">
-                        <div id="derby-result-text" class="pixel-text" style="font-size: 40px; color: #fff; text-shadow: 2px 2px 0 #000;">NEXT SPRINT SOON</div>
-                        <div id="derby-timer" class="pixel-text" style="font-size: 24px; color: var(--accent-glow-2);">15s REMAINING</div>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <div id="derby-result-text" class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 3px 3px 0 #000;">NEXT SPRINT SOON</div>
+                        <div id="derby-timer" class="pixel-text" style="font-size: 28px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 2px solid #333; display:inline-block;">15s REMAINING</div>
                     </div>
-                    
-                    <div class="arcade-bet-area" style="padding-top: 0;">
-                        <div class="master-bet-row" style="margin-bottom: 10px;">
-                            <select id="derby-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 20px; padding: 4px;">
-                                <option value="1000" selected>1,000</option>
-                                <option value="5000">5,000</option>
-                                <option value="20000">20,000</option>
-                                <option value="50000">50,000</option>
-                            </select>
+                </div>
+                
+                <div class="arcade-bet-area" style="padding-top: 0;">
+                    <div class="master-bet-row" style="margin-bottom: 10px;">
+                        <select id="derby-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 20px; padding: 6px;">
+                            <option value="1000" selected>1,000</option>
+                            <option value="5000">5,000</option>
+                            <option value="20000">20,000</option>
+                            <option value="50000">50,000</option>
+                        </select>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 100%; max-width: 1200px;">
+                        <div id="derby-btn-0" class="arcade-bet-box derby-bet-box lane-1-color" onclick="placeDerbyBet(0)">
+                            <div class="bet-badge pixel-text hidden" id="badge-derby-0">0</div>
+                            <div class="derby-bet-title pixel-text" style="color:#ef4444;">RED</div><div id="bet-mult-0" class="pixel-text" style="font-size: 20px; font-weight: bold; color:#fff;">PAYS ?x</div>
                         </div>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 10px;">
-                            <div id="derby-btn-0" class="derby-bet-box lane-1-color" onclick="placeDerbyBet(0)">
-                                <div class="bet-badge pixel-text hidden" id="badge-derby-0">0</div>
-                                <div class="derby-bet-title pixel-text" style="color:#ef4444;">RED</div><div id="bet-mult-0" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
-                            </div>
-                            <div id="derby-btn-1" class="derby-bet-box lane-2-color" onclick="placeDerbyBet(1)">
-                                <div class="bet-badge pixel-text hidden" id="badge-derby-1">0</div>
-                                <div class="derby-bet-title pixel-text" style="color:#3b82f6;">BLUE</div><div id="bet-mult-1" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
-                            </div>
-                            <div id="derby-btn-2" class="derby-bet-box lane-3-color" onclick="placeDerbyBet(2)">
-                                <div class="bet-badge pixel-text hidden" id="badge-derby-2">0</div>
-                                <div class="derby-bet-title pixel-text" style="color:#10b981;">GREEN</div><div id="bet-mult-2" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
-                            </div>
-                            <div id="derby-btn-3" class="derby-bet-box lane-4-color" onclick="placeDerbyBet(3)">
-                                <div class="bet-badge pixel-text hidden" id="badge-derby-3">0</div>
-                                <div class="derby-bet-title pixel-text" style="color:#a855f7;">PURPLE</div><div id="bet-mult-3" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
-                            </div>
-                            <div id="derby-btn-4" class="derby-bet-box lane-5-color" onclick="placeDerbyBet(4)">
-                                <div class="bet-badge pixel-text hidden" id="badge-derby-4">0</div>
-                                <div class="derby-bet-title pixel-text" style="color:#ec4899;">PINK</div><div id="bet-mult-4" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
-                            </div>
-                            <div id="derby-btn-5" class="derby-bet-box lane-6-color" onclick="placeDerbyBet(5)">
-                                <div class="bet-badge pixel-text hidden" id="badge-derby-5">0</div>
-                                <div class="derby-bet-title pixel-text" style="color:#fbbf24;">GOLD</div><div id="bet-mult-5" class="pixel-text" style="font-size: 20px; font-weight: bold;">PAYS ?x</div>
-                            </div>
+                        <div id="derby-btn-1" class="arcade-bet-box derby-bet-box lane-2-color" onclick="placeDerbyBet(1)">
+                            <div class="bet-badge pixel-text hidden" id="badge-derby-1">0</div>
+                            <div class="derby-bet-title pixel-text" style="color:#3b82f6;">BLUE</div><div id="bet-mult-1" class="pixel-text" style="font-size: 20px; font-weight: bold; color:#fff;">PAYS ?x</div>
+                        </div>
+                        <div id="derby-btn-2" class="arcade-bet-box derby-bet-box lane-3-color" onclick="placeDerbyBet(2)">
+                            <div class="bet-badge pixel-text hidden" id="badge-derby-2">0</div>
+                            <div class="derby-bet-title pixel-text" style="color:#10b981;">GREEN</div><div id="bet-mult-2" class="pixel-text" style="font-size: 20px; font-weight: bold; color:#fff;">PAYS ?x</div>
+                        </div>
+                        <div id="derby-btn-3" class="arcade-bet-box derby-bet-box lane-4-color" onclick="placeDerbyBet(3)">
+                            <div class="bet-badge pixel-text hidden" id="badge-derby-3">0</div>
+                            <div class="derby-bet-title pixel-text" style="color:#a855f7;">PURPLE</div><div id="bet-mult-3" class="pixel-text" style="font-size: 20px; font-weight: bold; color:#fff;">PAYS ?x</div>
+                        </div>
+                        <div id="derby-btn-4" class="arcade-bet-box derby-bet-box lane-5-color" onclick="placeDerbyBet(4)">
+                            <div class="bet-badge pixel-text hidden" id="badge-derby-4">0</div>
+                            <div class="derby-bet-title pixel-text" style="color:#ec4899;">PINK</div><div id="bet-mult-4" class="pixel-text" style="font-size: 20px; font-weight: bold; color:#fff;">PAYS ?x</div>
+                        </div>
+                        <div id="derby-btn-5" class="arcade-bet-box derby-bet-box lane-6-color" onclick="placeDerbyBet(5)">
+                            <div class="bet-badge pixel-text hidden" id="badge-derby-5">0</div>
+                            <div class="derby-bet-title pixel-text" style="color:#fbbf24;">GOLD</div><div id="bet-mult-5" class="pixel-text" style="font-size: 20px; font-weight: bold; color:#fff;">PAYS ?x</div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="sidebar-col">
-                <div style="position: relative; z-index: 50; flex-shrink: 0;">
-                    <div id="derby-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('derby-players-list')">
-                        <span>PLAYERS</span><span><span id="derby-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
-                    </div>
-                    <div id="derby-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
-                </div>
-                <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center;">DERBY HISTORY</div>
-                    <div class="history-content custom-scroll pixel-text" id="derby-history"></div>
-                </div>
-                <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center;">TABLE CHAT</div>
-                    <div id="derby-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
-                    <div class="chat-input-area">
-                        <input type="text" id="derby-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
-                        <button class="pixel-text" onclick="actSendChat('derby')">SEND</button>
+
+                <div class="mmo-chat-container" style="bottom: 160px; height: 200px;">
+                    <div id="derby-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                    <div class="mmo-chat-input-row">
+                        <input type="text" id="derby-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
+                        <button class="mmo-chat-btn pixel-text" onclick="actSendChat('derby')">►</button>
                     </div>
                 </div>
             </div>
@@ -944,20 +684,28 @@
         <div id="cups-interface" class="game-interface hidden">
             <div class="game-area coin-bg">
                 <div class="top-hud">
-                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('cups')">◄ DASHBOARD</button></div>
-                    <div class="hud-center"><div style="font-size: 36px; color: #f59e0b;" id="cups-phase-display" class="pixel-text">WAITING</div></div>
-                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="cups-credits"></span></div></div>
+                    <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('cups')">◄ LEAVE</button></div>
+                    <div class="hud-center"><div style="font-size: 40px; color: #f59e0b; text-shadow: 3px 3px 0 #000;" id="cups-phase-display" class="pixel-text">WAITING</div></div>
+                    <div class="hud-right" style="display: flex; align-items: center;">
+                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                            <button class="mc-btn small" onclick="togglePlayerList('cups-players-list')">👥 <span id="cups-player-count">0</span></button>
+                            <div id="cups-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                        </div>
+                        <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="cups-credits"></span></div>
+                    </div>
                 </div>
                 
-                <div class="cups-container" id="cups-anim-container">
-                    <div class="cup-wrapper" id="cup-wrap-0" style="left:0%"><div class="cup-ball">🟡</div><div class="cup-shape" id="cup-0"></div></div>
-                    <div class="cup-wrapper" id="cup-wrap-1" style="left:33.33%"><div class="cup-ball">🟡</div><div class="cup-shape" id="cup-1"></div></div>
-                    <div class="cup-wrapper" id="cup-wrap-2" style="left:66.66%"><div class="cup-ball">🟡</div><div class="cup-shape" id="cup-2"></div></div>
-                </div>
-                
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <div id="cups-result-text" class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 4px 4px 0 #000;">WHERE IS THE BALL?</div>
-                    <div id="cups-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2);">WAITING FOR NEXT SHUFFLE</div>
+                <div class="center-focus">
+                    <div class="cups-container" id="cups-anim-container">
+                        <div class="cup-wrapper" id="cup-wrap-0" style="left:0%"><div class="cup-ball">🟡</div><div class="cup-shape" id="cup-0"></div></div>
+                        <div class="cup-wrapper" id="cup-wrap-1" style="left:33.33%"><div class="cup-ball">🟡</div><div class="cup-shape" id="cup-1"></div></div>
+                        <div class="cup-wrapper" id="cup-wrap-2" style="left:66.66%"><div class="cup-ball">🟡</div><div class="cup-shape" id="cup-2"></div></div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 40px;">
+                        <div id="cups-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">WHERE IS THE BALL?</div>
+                        <div id="cups-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 2px solid #333; display:inline-block;">WAITING FOR NEXT SHUFFLE</div>
+                    </div>
                 </div>
                 
                 <div class="arcade-bet-area">
@@ -970,38 +718,99 @@
                         </select>
                     </div>
                     <div class="arcade-grid">
-                        <div id="cups-btn-0" class="cup-bet-box" onclick="placeCupsBet(0)">
+                        <div id="cups-btn-0" class="arcade-bet-box cup-bet-box" onclick="placeCupsBet(0)">
                             <div class="bet-badge pixel-text hidden" id="badge-cups-0">0</div>
                             <div class="arcade-bet-title pixel-text" style="color:#f59e0b;">CUP 1</div><div class="arcade-bet-payout pixel-text">PAYS 2.5x</div>
                         </div>
-                        <div id="cups-btn-1" class="cup-bet-box" onclick="placeCupsBet(1)">
+                        <div id="cups-btn-1" class="arcade-bet-box cup-bet-box" onclick="placeCupsBet(1)">
                             <div class="bet-badge pixel-text hidden" id="badge-cups-1">0</div>
                             <div class="arcade-bet-title pixel-text" style="color:#f59e0b;">CUP 2</div><div class="arcade-bet-payout pixel-text">PAYS 2.5x</div>
                         </div>
-                        <div id="cups-btn-2" class="cup-bet-box" onclick="placeCupsBet(2)">
+                        <div id="cups-btn-2" class="arcade-bet-box cup-bet-box" onclick="placeCupsBet(2)">
                             <div class="bet-badge pixel-text hidden" id="badge-cups-2">0</div>
                             <div class="arcade-bet-title pixel-text" style="color:#f59e0b;">CUP 3</div><div class="arcade-bet-payout pixel-text">PAYS 2.5x</div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="sidebar-col">
-                <div style="position: relative; z-index: 50; flex-shrink: 0;">
-                    <div id="cups-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('cups-players-list')">
-                        <span>PLAYERS</span><span><span id="cups-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
+
+                <div class="mmo-chat-container">
+                    <div id="cups-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                    <div class="mmo-chat-input-row">
+                        <input type="text" id="cups-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
+                        <button class="mmo-chat-btn pixel-text" onclick="actSendChat('cups')">►</button>
                     </div>
-                    <div id="cups-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                 </div>
-                <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center;">HISTORY</div>
-                    <div class="history-content custom-scroll pixel-text" id="cups-history"></div>
+            </div>
+        </div>
+
+        <div id="color-interface" class="game-interface hidden">
+            <div class="game-area color-bg">
+                <div class="top-hud">
+                    <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('color')">◄ LEAVE</button></div>
+                    <div class="hud-center"><div style="font-size: 40px; color: var(--success); text-shadow: 3px 3px 0 #000;" id="color-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    <div class="hud-right" style="display: flex; align-items: center;">
+                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                            <button class="mc-btn small" onclick="togglePlayerList('color-players-list')">👥 <span id="color-player-count">0</span></button>
+                            <div id="color-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                        </div>
+                        <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="color-credits"></span></div>
+                    </div>
                 </div>
-                <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center;">TABLE CHAT</div>
-                    <div id="cups-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
-                    <div class="chat-input-area">
-                        <input type="text" id="cups-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
-                        <button class="pixel-text" onclick="actSendChat('cups')">SEND</button>
+                
+                <div class="center-focus">
+                    <div class="color-die-container">
+                        <div id="col-die1" class="color-die bg-red"></div>
+                        <div id="col-die2" class="color-die bg-blue"></div>
+                        <div id="col-die3" class="color-die bg-yellow"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <div id="color-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
+                        <div id="color-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 2px solid #333; display:inline-block;">15s REMAINING</div>
+                    </div>
+                </div>
+
+                <div class="arcade-bet-area">
+                    <div style="display:flex; justify-content: center; margin-bottom: 15px;">
+                        <select id="color-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
+                            <option value="1000" selected>1,000</option>
+                            <option value="5000">5,000</option>
+                            <option value="20000">20,000</option>
+                            <option value="50000">50,000</option>
+                        </select>
+                    </div>
+                    <div class="color-grid">
+                        <div id="color-btn-red" class="arcade-bet-box color-bet-box br-red color-bet-btn" onclick="placeColorBet('red')">
+                            <div class="bet-badge pixel-text hidden" id="badge-red">0</div><div class="color-payout-overlay hidden" id="payout-red"></div>
+                            <div class="color-bet-title">RED</div>
+                        </div>
+                        <div id="color-btn-blue" class="arcade-bet-box color-bet-box br-blue color-bet-btn" onclick="placeColorBet('blue')">
+                            <div class="bet-badge pixel-text hidden" id="badge-blue">0</div><div class="color-payout-overlay hidden" id="payout-blue"></div>
+                            <div class="color-bet-title">BLUE</div>
+                        </div>
+                        <div id="color-btn-yellow" class="arcade-bet-box color-bet-box br-yellow color-bet-btn" onclick="placeColorBet('yellow')">
+                            <div class="bet-badge pixel-text hidden" id="badge-yellow">0</div><div class="color-payout-overlay hidden" id="payout-yellow"></div>
+                            <div class="color-bet-title">YELLOW</div>
+                        </div>
+                        <div id="color-btn-green" class="arcade-bet-box color-bet-box br-green color-bet-btn" onclick="placeColorBet('green')">
+                            <div class="bet-badge pixel-text hidden" id="badge-green">0</div><div class="color-payout-overlay hidden" id="payout-green"></div>
+                            <div class="color-bet-title">GREEN</div>
+                        </div>
+                        <div id="color-btn-pink" class="arcade-bet-box color-bet-box br-pink color-bet-btn" onclick="placeColorBet('pink')">
+                            <div class="bet-badge pixel-text hidden" id="badge-pink">0</div><div class="color-payout-overlay hidden" id="payout-pink"></div>
+                            <div class="color-bet-title">PINK</div>
+                        </div>
+                        <div id="color-btn-white" class="arcade-bet-box color-bet-box br-white color-bet-btn" onclick="placeColorBet('white')">
+                            <div class="bet-badge pixel-text hidden" id="badge-white">0</div><div class="color-payout-overlay hidden" id="payout-white"></div>
+                            <div class="color-bet-title" style="color:#f8fafc; text-shadow: 2px 2px 0 #555;">WHITE</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mmo-chat-container" style="bottom: 230px; height: 180px;">
+                    <div id="color-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                    <div class="mmo-chat-input-row">
+                        <input type="text" id="color-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
+                        <button class="mmo-chat-btn pixel-text" onclick="actSendChat('color')">►</button>
                     </div>
                 </div>
             </div>
@@ -1010,14 +819,20 @@
         <div id="pvp-interface" class="game-interface hidden">
             <div class="game-area coin-bg">
                 <div class="top-hud">
-                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('pvp')">◄ DASHBOARD</button></div>
-                    <div class="hud-center"><div style="font-size: 36px; color: var(--warning);" id="pvp-phase-display" class="pixel-text">PVP ARENA</div></div>
-                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="pvp-credits"></span></div></div>
+                    <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('pvp')">◄ LEAVE</button></div>
+                    <div class="hud-center"><div style="font-size: 40px; color: var(--danger); text-shadow: 3px 3px 0 #000;" id="pvp-phase-display" class="pixel-text">THE ARENA</div></div>
+                    <div class="hud-right" style="display: flex; align-items: center;">
+                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                            <button class="mc-btn small" onclick="togglePlayerList('pvp-players-list')">👥 <span id="pvp-player-count">0</span></button>
+                            <div id="pvp-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                        </div>
+                        <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="pvp-credits"></span></div>
+                    </div>
                 </div>
                 
-                <div id="pvp-container" class="custom-scroll" style="flex:1; display:flex; flex-direction:column; padding: 20px; overflow-y:auto; align-items:center;">
+                <div id="pvp-container" class="custom-scroll" style="flex:1; display:flex; flex-direction:column; padding: 20px; padding-top: 80px; overflow-y:auto; align-items:center;">
                     
-                    <div class="duel-status-box" id="duel-status-box">WAITING FOR PLAYERS</div>
+                    <div class="duel-status-box mc-panel" id="duel-status-box">WAITING FOR PLAYERS</div>
 
                     <div class="duel-arena-wrapper">
                         <div class="duel-arena">
@@ -1057,103 +872,17 @@
 
                         </div>
 
-                        <div style="margin-top: 20px;">
-                            <button class="wood-btn" style="background: var(--danger); width: 300px;" onclick="leavePvpSeat()">STAND UP FROM ARENA</button>
+                        <div style="margin-top: 30px;">
+                            <button class="mc-btn" style="background: var(--danger); width: 300px;" onclick="leavePvpSeat()">STAND UP FROM ARENA</button>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="sidebar-col">
-                <div style="position: relative; z-index: 50; flex-shrink: 0;">
-                    <div id="pvp-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('pvp-players-list')">
-                        <span>ARENA PLAYERS</span><span><span id="pvp-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
-                    </div>
-                    <div id="pvp-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
-                </div>
-                <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center;">ARENA CHAT</div>
-                    <div id="pvp-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
-                    <div class="chat-input-area">
-                        <input type="text" id="pvp-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
-                        <button class="pixel-text" onclick="actSendChat('pvp')">SEND</button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div id="color-interface" class="game-interface hidden">
-            <div class="game-area color-bg">
-                <div class="top-hud">
-                    <div class="hud-left"><button class="btn-menu" onclick="exitToMenu('color')">◄ DASHBOARD</button></div>
-                    <div class="hud-center"><div style="font-size: 36px; color: var(--success);" id="color-phase-display" class="pixel-text">BETS OPEN</div></div>
-                    <div class="hud-right"><div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="color-credits"></span></div></div>
-                </div>
-                
-                <div class="color-die-container">
-                    <div id="col-die1" class="color-die bg-red"></div>
-                    <div id="col-die2" class="color-die bg-blue"></div>
-                    <div id="col-die3" class="color-die bg-yellow"></div>
-                </div>
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <div id="color-result-text" class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
-                    <div id="color-timer" class="pixel-text" style="font-size: 26px; color: var(--accent-glow-2);">15s REMAINING</div>
-                </div>
-                <div style="padding: 10px; border-top: 2px solid var(--border-std); background: rgba(0,0,0,0.6);">
-                    <div style="display:flex; justify-content: center; margin-bottom: 10px;">
-                        <select id="color-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
-                            <option value="1000" selected>1,000</option>
-                            <option value="5000">5,000</option>
-                            <option value="20000">20,000</option>
-                            <option value="50000">50,000</option>
-                        </select>
-                    </div>
-                    <div class="color-grid">
-                        <div id="color-btn-red" class="color-bet-box br-red color-bet-btn" onclick="placeColorBet('red')">
-                            <div class="bet-badge pixel-text hidden" id="badge-red">0</div><div class="color-payout-overlay hidden" id="payout-red"></div>
-                            <div class="color-bet-title">RED</div>
-                        </div>
-                        <div id="color-btn-blue" class="color-bet-box br-blue color-bet-btn" onclick="placeColorBet('blue')">
-                            <div class="bet-badge pixel-text hidden" id="badge-blue">0</div><div class="color-payout-overlay hidden" id="payout-blue"></div>
-                            <div class="color-bet-title">BLUE</div>
-                        </div>
-                        <div id="color-btn-yellow" class="color-bet-box br-yellow color-bet-btn" onclick="placeColorBet('yellow')">
-                            <div class="bet-badge pixel-text hidden" id="badge-yellow">0</div><div class="color-payout-overlay hidden" id="payout-yellow"></div>
-                            <div class="color-bet-title">YELLOW</div>
-                        </div>
-                        <div id="color-btn-green" class="color-bet-box br-green color-bet-btn" onclick="placeColorBet('green')">
-                            <div class="bet-badge pixel-text hidden" id="badge-green">0</div><div class="color-payout-overlay hidden" id="payout-green"></div>
-                            <div class="color-bet-title">GREEN</div>
-                        </div>
-                        <div id="color-btn-pink" class="color-bet-box br-pink color-bet-btn" onclick="placeColorBet('pink')">
-                            <div class="bet-badge pixel-text hidden" id="badge-pink">0</div><div class="color-payout-overlay hidden" id="payout-pink"></div>
-                            <div class="color-bet-title">PINK</div>
-                        </div>
-                        <div id="color-btn-white" class="color-bet-box br-white color-bet-btn" onclick="placeColorBet('white')">
-                            <div class="bet-badge pixel-text hidden" id="badge-white">0</div><div class="color-payout-overlay hidden" id="payout-white"></div>
-                            <div class="color-bet-title" style="color:#f8fafc; text-shadow: 2px 2px 0 #555;">WHITE</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="sidebar-col">
-                <div style="position: relative; z-index: 50; flex-shrink: 0;">
-                    <div id="color-dropdown-header" class="player-dropdown-btn pixel-text" onclick="togglePlayerList('color-players-list')">
-                        <span>PLAYERS</span><span><span id="color-player-count" style="color:var(--accent-glow-2);">0</span> <span style="color:#fff; font-size: 20px;">▼</span></span>
-                    </div>
-                    <div id="color-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
-                </div>
-                <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center;">ROLL HISTORY</div>
-                    <div class="history-content custom-scroll pixel-text" id="color-history"></div>
-                </div>
-                <div class="sidebar-box">
-                    <div class="sidebar-header pixel-text" style="justify-content: center;">TABLE CHAT</div>
-                    <div id="color-chat-messages" class="chat-messages custom-scroll pixel-text"></div>
-                    <div class="chat-input-area">
-                        <input type="text" id="color-chat-input" class="pixel-text" placeholder="Type message..." maxlength="100">
-                        <button class="pixel-text" onclick="actSendChat('color')">SEND</button>
+                <div class="mmo-chat-container">
+                    <div id="pvp-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                    <div class="mmo-chat-input-row">
+                        <input type="text" id="pvp-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
+                        <button class="mmo-chat-btn pixel-text" onclick="actSendChat('pvp')">►</button>
                     </div>
                 </div>
             </div>
@@ -1301,9 +1030,9 @@
                 const isMe = m.sender !== 'ADMIN';
                 const time = new Date(m.date).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' });
                 return `
-                <div class="msg-bubble ${isMe ? 'player' : 'admin'}">
-                    <div style="font-size:18px; color:#64748b; margin-bottom:5px;">${isMe ? 'YOU' : 'ADMIN'} - ${time}</div>
-                    <div style="font-size:24px; color:#fff; white-space:pre-wrap;">${m.text}</div>
+                <div style="margin-bottom: 10px;">
+                    <div style="font-size:18px; color:#64748b; margin-bottom:2px;">${isMe ? 'YOU' : 'ADMIN'} - ${time}</div>
+                    <div style="font-size:24px; color:${isMe ? '#fff' : 'var(--warning)'}; white-space:pre-wrap;">${m.text}</div>
                 </div>`;
             }).join('');
             list.scrollTop = list.scrollHeight;
@@ -1364,7 +1093,7 @@
                 
                 let isUnread = false;
                 if(t.username === 'GLOBAL') { isUnread = !t.readBy.includes(currentUser.username); } else { isUnread = t.unreadPlayer; }
-                const borderClass = isUnread ? 'ticket-unread' : 'ticket-read';
+                const borderClass = isUnread ? 'border-color: var(--danger);' : 'border-color: #333;';
                 const newTag = isUnread ? `<span style="color:var(--danger); font-weight:bold;">[ NEW ]</span> ` : '';
                 const lastMsg = t.messages[t.messages.length - 1].text.substring(0, 40) + '...';
                 
@@ -1377,12 +1106,12 @@
                 const encodedSub = encodeURIComponent(t.subject || 'NO SUBJECT');
                 
                 return `
-                <div class="ticket-item ${borderClass}" onclick="openTicket('${t._id}', '${t.status}', '${t.type}', '${encodedMsg}', '${encodedSub}')">
+                <div style="background: #111; border: 2px solid; ${borderClass} padding: 10px; margin-bottom: 10px; cursor: pointer;" onclick="openTicket('${t._id}', '${t.status}', '${t.type}', '${encodedMsg}', '${encodedSub}')">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                        <span style="font-size:24px; color:#fff;">${newTag}${tagVisual} <span style="font-weight:bold;">${t.subject || 'SYSTEM NOTIFICATION'}</span></span>
-                        ${t.username !== 'GLOBAL' ? `<button class="wood-btn small" style="background:var(--danger); box-shadow:none;" onclick="deleteTicket('${t._id}', event)">DEL</button>` : `<span style="font-size:20px; color:#94a3b8;">${date} ${time}</span>`}
+                        <span class="pixel-text" style="font-size:24px; color:#fff;">${newTag}${tagVisual} <span style="font-weight:bold;">${t.subject || 'SYSTEM NOTIFICATION'}</span></span>
+                        ${t.username !== 'GLOBAL' ? `<button class="mc-btn small" style="background:var(--danger);" onclick="deleteTicket('${t._id}', event)">DEL</button>` : `<span class="pixel-text" style="font-size:20px; color:#94a3b8;">${date} ${time}</span>`}
                     </div>
-                    <div style="font-size:22px; color:#94a3b8;">${lastMsg}</div>
+                    <div class="pixel-text" style="font-size:22px; color:#94a3b8;">${lastMsg}</div>
                 </div>`;
             }).join('');
         }
@@ -1415,7 +1144,14 @@
             }
         });
         
-        function togglePlayerList(id) { const list = document.getElementById(id); if(list) list.classList.toggle('hidden'); }
+        function togglePlayerList(id) { 
+            const list = document.getElementById(id); 
+            if(list) {
+                // Close others
+                document.querySelectorAll('.player-dropdown-list').forEach(l => { if(l.id !== id) l.classList.add('hidden'); });
+                list.classList.toggle('hidden'); 
+            }
+        }
 
         function toggleAuth(panel) { 
             document.getElementById('panel-login').classList.toggle('hidden', panel !== 'login');
@@ -1548,8 +1284,9 @@
         });
 
         function updateLobby(state) {
-            const lobby = document.getElementById('lobby-list'); lobby.innerHTML = ''; document.getElementById('player-count').innerText = state.lobby.length;
-            state.lobby.forEach(p => { lobby.innerHTML += `<div class="lobby-player" style="color:${p.color}">▶ ${p.username}</div>`; });
+            const list = document.getElementById('bj-players-list'); list.innerHTML = ''; document.getElementById('player-count').innerText = state.lobby.length;
+            document.querySelector('.lobby-cnt-5seat').innerText = state.lobby.length; // Update counts in menu if visible
+            state.lobby.forEach(p => { list.innerHTML += `<div class="lobby-player" style="color:${p.color}">▶ ${p.username}</div>`; });
         }
 
         function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
@@ -1573,7 +1310,7 @@
 
                 if (!seatData) {
                     if (state.status === 'waiting' || state.status === 'betting') {
-                        let sitBtn = !hasSeatAnywhere ? `<button class="btn-sit-empty pixel-text" onclick="actSitDown(${index})">SIT</button>` : '';
+                        let sitBtn = !hasSeatAnywhere ? `<button class="mc-btn small" onclick="actSitDown(${index})" style="background:var(--success); color:#000;">SIT</button>` : '';
                         seatDiv.innerHTML = `<div class="seat-empty-box"><div class="pixel-text" style="font-size:28px; color:#94a3b8; margin-bottom:10px;">EMPTY</div>${sitBtn}</div>`; activeElements.push(seatDiv);
                     }
                 } else {
@@ -1607,15 +1344,15 @@
                         if (seatData.hands[0].bet === 0) {
                             let startBet = window.lastBetAmount || 0; let opts = [1000, 5000, 20000, 50000, 100000]; if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
                             let optHTML = `<option value="1000" ${startBet === 1000 || startBet === 0 ? 'selected' : ''}>1,000</option>`; optHTML += [5000, 20000, 50000, 100000].map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
-                            html += `<div class="seat-bet-box"><div style="display: flex; gap: 8px;"><select id="inseat-bet-${index}" class="pixel-text" style="flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); border-radius: 4px; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;">${optHTML}</select><button class="s-btn btn-bet pixel-text" style="font-size: 24px; padding: 6px 12px;" onclick="actPlaceBet(${index})">BET</button></div></div><div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
+                            html += `<div class="seat-bet-box"><div style="display: flex; gap: 8px;"><select id="inseat-bet-${index}" class="pixel-text" style="flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;">${optHTML}</select><button class="mc-btn small" style="background:var(--success); color:#000;" onclick="actPlaceBet(${index})">BET</button></div></div><div style="width: 100%; margin-top: 5px;"><button class="mc-btn small" style="background:var(--danger); width:100%;" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
                         }
-                    } else if (isMySeat && state.status === 'waiting') { html += `<div style="width: 100%; margin-top: 5px;"><button class="btn-inseat-standup pixel-text" onclick="actEjectSeat(${index})">STAND UP</button></div>`; }
+                    } else if (isMySeat && state.status === 'waiting') { html += `<div style="width: 100%; margin-top: 5px;"><button class="mc-btn small" style="background:var(--danger); width:100%;" onclick="actEjectSeat(${index})">STAND UP</button></div>`; }
 
                     if (isMySeat && state.status === 'playing' && state.activeSeatIndex === index) {
                         const cHand = seatData.hands[seatData.currentHand];
                         if (cHand && cHand.status === 'waiting') {
-                            html += `<div class="seat-controls"><button class="s-btn btn-hit pixel-text" style="font-size:18px;" onclick="actHit(${index})">HIT</button><button class="s-btn btn-stand pixel-text" style="font-size:18px;" onclick="actStand(${index})">STAND</button>`;
-                            if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) { html += `<button class="s-btn btn-double pixel-text" style="font-size:18px;" onclick="actDouble(${index})">2X</button>`; if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) { html += `<button class="s-btn btn-split pixel-text" style="font-size:18px;" onclick="actSplit(${index})">SPLIT</button>`; } }
+                            html += `<div class="seat-controls"><button class="mc-btn small" style="background:var(--success); color:#000;" onclick="actHit(${index})">HIT</button><button class="mc-btn small" style="background:#b45309; color:#fff;" onclick="actStand(${index})">STAND</button>`;
+                            if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) { html += `<button class="mc-btn small" style="background:var(--accent-glow-2);" onclick="actDouble(${index})">2X</button>`; if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) { html += `<button class="mc-btn small" style="background:var(--accent-glow);" onclick="actSplit(${index})">SPLIT</button>`; } }
                             html += `</div>`;
                         }
                     }
@@ -1625,7 +1362,6 @@
             
             seatsArea.innerHTML = ''; 
             if (isMobile || state.status === 'playing' || state.status === 'dealerTurn' || state.status === 'resolving') { 
-                seatsArea.style.justifyContent = 'center'; 
                 activeElements.forEach(el => { 
                     el.style.position = 'relative'; 
                     el.style.transform = 'none'; 
@@ -1634,7 +1370,6 @@
                     seatsArea.appendChild(el); 
                 }); 
             } else { 
-                seatsArea.style.justifyContent = 'flex-start'; 
                 activeElements.forEach((el, i) => { 
                     el.style.position = 'absolute'; 
                     el.style.transform = 'translate(-50%, 0)'; 
@@ -1734,7 +1469,7 @@
             if(data.distances) {
                 for(let i=0; i<6; i++) {
                     const racer = document.getElementById(`racer-${i}`);
-                    if(racer) racer.style.left = `calc(${data.distances[i]}% - ${data.distances[i] * 0.6}px)`;
+                    if(racer) racer.style.left = `calc(${data.distances[i]}% - ${data.distances[i] * 0.75}px)`;
                 }
             }
 
@@ -1798,7 +1533,7 @@
             if(data.distances) {
                 for(let i=0; i<6; i++) {
                     const racer = document.getElementById(`racer-${i}`);
-                    if(racer) racer.style.left = `calc(${data.distances[i]}% - ${data.distances[i] * 0.6}px)`;
+                    if(racer) racer.style.left = `calc(${data.distances[i]}% - ${data.distances[i] * 0.75}px)`;
                 }
             }
         });
@@ -2060,7 +1795,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             const sliceAngle = (2 * Math.PI) / numSlices;
-            const colors = ['#ef4444', '#3b82f6']; // Red and Blue
+            const colors = ['#ef4444', '#3b82f6']; 
             
             for (let i = 0; i < numSlices; i++) {
                 const startAngle = i * sliceAngle - (Math.PI / 2); 
@@ -2226,7 +1961,7 @@
             if (type === 'withdrawal' && amt > currentUser.credits) return alert("Insufficient funds.");
             pendingBankAction = { type, amount: amt }; document.getElementById('confirm-bank-type').innerText = type.toUpperCase(); document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
             document.getElementById('bank-confirm-msg').innerText = '';
-            document.getElementById('bank-confirm-btn-row').innerHTML = `<button class="wood-btn pixel-text" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button><button class="wood-btn pixel-text" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>`;
+            document.getElementById('bank-confirm-btn-row').innerHTML = `<button class="mc-btn" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button><button class="mc-btn" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>`;
             hideModal('bank-modal'); showModal('bank-confirm-modal');
         }
 
@@ -2235,7 +1970,7 @@
             const btnRow = document.getElementById('bank-confirm-btn-row'); const statusMsg = document.getElementById('bank-confirm-msg');
             statusMsg.style.color = "#fff"; statusMsg.innerText = "SENDING REQUEST...";
             const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount}) });
-            if(res.ok) { statusMsg.style.color = "var(--success)"; statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; document.getElementById('bank-amount').value=''; playSfx('deal'); btnRow.innerHTML = `<button class="wood-btn pixel-text" style="width:100%; background: #475569;" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">BACK TO BANK</button>`; }
+            if(res.ok) { statusMsg.style.color = "var(--success)"; statusMsg.innerText = "REQUEST SENT SUCCESSFULLY!"; document.getElementById('bank-amount').value=''; playSfx('deal'); btnRow.innerHTML = `<button class="mc-btn" style="width:100%;" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">BACK TO BANK</button>`; }
             else { const d = await res.json(); statusMsg.style.color = "var(--danger)"; statusMsg.innerText = d.error; }
             pendingBankAction = null;
         }
