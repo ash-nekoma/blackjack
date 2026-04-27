@@ -28,7 +28,8 @@ const SystemConfig = mongoose.model('SystemConfig', new mongoose.Schema({ config
 const User = mongoose.model('User', new mongoose.Schema({
     username: { type: String, required: true, unique: true }, password: { type: String, required: true },
     credits: { type: Number, default: 0 }, status: { type: String, default: 'active' }, nameColor: { type: String, default: '#f8fafc' }, 
-    ipAddress: String, tosAccepted: Boolean, lastRewardClaim: { type: Date, default: null }, createdAt: { type: Date, default: Date.now }
+    ipAddress: String, tosAccepted: Boolean, lastRewardClaim: { type: Date, default: null }, createdAt: { type: Date, default: Date.now },
+    inventory: { type: [String], default: ['Starter Token', 'Retro Badge'] } // New Inventory System
 }));
 
 const Transaction = mongoose.model('Transaction', new mongoose.Schema({
@@ -74,20 +75,49 @@ const cupsGame = { status: 'shuffling', stateEndTime: Date.now() + 3000, betEndT
 // --- PVP ARENA GLOBALS ---
 let pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null };
 
+// --- MARKET AUCTION GLOBALS ---
+let activeAuctions = []; // { id, seller, item, currentBid, highestBidder, endTime }
+
 const socketUserMap = {}; let diceLobby = []; let derbyLobby = []; let colorLobby = []; let pvpLobby = []; let cupsLobby = [];
 let strictHouseEdge = false; let gameLocks = { blackjack: false, dice: false, derby: false, color: false, cups: false };
 
 function getPHTTime() { try { return new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' }); } catch(e) { return new Date().toLocaleTimeString(); } }
 function adminLog(action) { io.to('admin_room').emit('admin_log', `▶ [${getPHTTime()}] ${action}`); }
 
-// --- GAME LOOPS ---
+// Helper for Mail
+async function sendSystemMail(username, subject, text) {
+    const t = new Ticket({ username, target: 'specific', type: 'message', subject, messages: [{ sender: 'SYSTEM', text }], unreadPlayer: true, unreadAdmin: false });
+    await t.save(); io.emit('new_mail', { username });
+}
+
+// --- GAME & MARKET LOOPS ---
 setInterval(() => {
     const now = Date.now();
+    
+    // ROOMS LOOP
     Object.keys(rooms).forEach(roomId => {
         let room = rooms[roomId]; let changed = false;
         room.seats.forEach((seat, i) => { if (seat && seat.kickAt && now >= seat.kickAt) { room.seats[i] = null; changed = true; } });
         if (changed) { if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } emitGameState(roomId); }
     });
+
+    // MARKET AUCTION LOOP
+    for (let i = activeAuctions.length - 1; i >= 0; i--) {
+        let auc = activeAuctions[i];
+        if (now >= auc.endTime) {
+            activeAuctions.splice(i, 1);
+            if (auc.highestBidder) {
+                User.updateOne({username: new RegExp('^' + auc.highestBidder + '$', 'i')}, {$push: {inventory: auc.item}}).exec();
+                User.updateOne({username: new RegExp('^' + auc.seller + '$', 'i')}, {$inc: {credits: auc.currentBid}}).exec();
+                sendSystemMail(auc.highestBidder, 'AUCTION WON', `You won the auction for ${auc.item} for ${auc.currentBid} CR. It has been added to your inventory.`);
+                sendSystemMail(auc.seller, 'ITEM SOLD', `Your ${auc.item} successfully sold to ${auc.highestBidder} for ${auc.currentBid} CR.`);
+            } else {
+                User.updateOne({username: new RegExp('^' + auc.seller + '$', 'i')}, {$push: {inventory: auc.item}}).exec();
+                sendSystemMail(auc.seller, 'AUCTION EXPIRED', `No one bid on your ${auc.item}. It has been returned to your inventory.`);
+            }
+            io.emit('market_update', activeAuctions);
+        }
+    }
 }, 1000);
 
 setInterval(() => {
@@ -145,17 +175,14 @@ setInterval(() => {
                     let mod = (strictHouseEdge && laneBets[i] > 0) ? 0.8 : 1;
 
                     if (raceTick < 110) {
-                        // Scramble Phase: Wild variations so anyone can lead, averaging ~0.6 per tick
                         currentSpeeds[i] = (0.3 + Math.random() * 0.7) * (oddsSpeed * 0.4 + 0.6) * mod;
                     } else {
-                        // Sprint Phase: Real odds kick in, underdogs get a miracle boost chance
                         let miracle = (oddsSpeed < 1.0 && Math.random() > 0.85) ? (Math.random() * 1.5 + 0.5) : 0;
                         currentSpeeds[i] = (oddsSpeed * mod * 0.7) + miracle + (Math.random() * 0.3);
                     }
                 }
             }
             
-            // Move horses without capping them at an invisible wall
             for(let i=0; i<6; i++) {
                 derbyGame.distances[i] += currentSpeeds[i]; 
                 if (derbyGame.distances[i] >= 100) { finished = true; }
@@ -299,13 +326,12 @@ function startTurnTimer(roomId) {
 }
 function getGameTitle(roomId) { return roomId === '3seat' ? '3-SEAT BLACKJACK' : '5-SEAT BLACKJACK'; }
 
-// --- ADMIN SECURITY & ECONOMY APIs ---
+// --- ADMIN SECURITY & APIs ---
 const checkAdminRole = async (req, res, next) => {
     try {
         const pass = req.headers['x-admin-pass'];
         const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
         const mConf = await SystemConfig.findOne({ configName: 'mod_password' });
-        
         if (aConf && pass === aConf.configValue) { req.role = 'admin'; next(); }
         else if (mConf && pass === mConf.configValue) { req.role = 'mod'; next(); }
         else { return res.status(403).json({ error: 'Unauthorized' }); }
@@ -322,81 +348,13 @@ app.post('/api/admin/login', async (req, res) => {
     } catch(e) { res.status(500).json({ error: 'Database loading, please try again.' }); }
 });
 
-app.post('/api/admin/change_password', checkAdminRole, async (req, res) => {
-    try {
-        if (req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
-        const { targetRole, newPassword } = req.body;
-        if (!newPassword || newPassword.length < 4) return res.status(400).json({error: 'Password too short.'});
-        const configName = targetRole === 'admin' ? 'admin_password' : 'mod_password';
-        await SystemConfig.updateOne({ configName }, { configValue: newPassword });
-        adminLog(`MASTER ADMIN changed the ${targetRole.toUpperCase()} password.`); res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: 'Server Error' }); }
-});
-
-app.get('/api/admin/economy', checkAdminRole, async (req, res) => {
-    try {
-        const users = await User.find({}, '-password'); const txs = await Transaction.find(); const codes = await GiftCode.find();
-        let deposits = 0; let withdrawals = 0; let promoIssued = 0; let totalBets = 0; let totalWins = 0; let circulating = 0;
-        users.forEach(u => circulating += u.credits);
-        txs.forEach(t => {
-            if(t.status === 'completed') {
-                if(t.type === 'BANK DEPOSIT') deposits += t.amount;
-                if(t.type === 'BANK WITHDRAWAL') withdrawals += t.amount;
-                if(['DAILY REWARD', 'GIFT CODE'].includes(t.type)) promoIssued += t.amount;
-                if(t.type.includes('WIN') || (t.amount > 0 && !t.type.includes('BANK') && !['DAILY REWARD', 'GIFT CODE'].includes(t.type))) totalWins += t.amount;
-            }
-            if(t.amount < 0 && !t.type.includes('BANK')) totalBets += Math.abs(t.amount);
-        });
-        const vault = 1500000 + deposits - withdrawals; const ggr = totalBets - totalWins; const onlineUsers = [...new Set(Object.values(socketUserMap).map(u => u.username))];
-        res.json({ users, codes, bankRequests: txs.filter(t=>t.status==='pending'), economy: { baseVault: 1500000, deposits, withdrawals, vault, ggr, totalBets, totalWins, promoIssued, circulating }, strictHouseEdge, onlineUsers, gameLocks });
-    } catch (e) { res.status(500).json({ error: 'Data Fetch Error' }); }
-});
-
-app.get('/api/admin/game_rounds', checkAdminRole, async (req, res) => {
-    try { const rounds = await GameRound.find().sort({ timestamp: -1 }).limit(100); res.json(rounds); } catch(e) { res.status(500).json({error: 'Server Error'}); }
-});
-
-app.post('/api/admin/user/status', checkAdminRole, async (req, res) => { 
-    try { await User.updateOne({ username: new RegExp('^' + req.body.username + '$', 'i') }, { status: req.body.status }); adminLog(`Changed status of player ${req.body.username} to ${req.body.status.toUpperCase()}`); res.json({ success: true }); } catch (e) { res.status(500).json({ error: 'Server Error' }); }
-});
-
-app.post('/api/admin/settings', checkAdminRole, async (req, res) => {
-    try { if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'}); strictHouseEdge = req.body.strictHouseEdge; adminLog(`House Edge RTP modifier set to: ${strictHouseEdge ? 'ON' : 'OFF'}`); res.json({ success: true }); } catch (e) { res.status(500).json({ error: 'Server Error' }); }
-});
-
-app.post('/api/admin/tx/resolve', checkAdminRole, async (req, res) => {
-    try {
-        if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
-        const { id, action } = req.body; const tx = await Transaction.findById(id); 
-        if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid TX' });
-        let updatedUser;
-        if (action === 'approve') { tx.status = 'completed'; if (tx.type === 'BANK DEPOSIT') { updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + tx.username + '$', 'i') }, { $inc: { credits: tx.amount } }, { new: true }); } } 
-        else { tx.status = 'denied'; if (tx.type === 'BANK WITHDRAWAL') { updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + tx.username + '$', 'i') }, { $inc: { credits: tx.amount } }, { new: true }); } }
-        await tx.save(); adminLog(`Admin ${action.toUpperCase()}ED bank request for ${tx.username} (${tx.amount} credits)`);
-        if(updatedUser) io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
-        res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: 'Server Error' }); }
-});
-
-app.post('/api/admin/giftcode', checkAdminRole, async (req, res) => { 
-    try {
-        if(req.role !== 'admin') return res.status(403).json({error: 'Forbidden'});
-        const { batchName, amount, quantity } = req.body;
-        for(let i=0; i<quantity; i++) { let code = Math.random().toString(36).substring(2, 8).toUpperCase(); await new GiftCode({ code, amount, usesLeft: 1, batchName }).save(); }
-        adminLog(`Generated ${quantity} gift codes for batch: ${batchName}`); res.json({ success: true }); 
-    } catch (e) { res.status(500).json({ error: 'Server Error' }); }
-});
-
-app.get('/api/admin/player_full/:username', checkAdminRole, async (req, res) => {
-    try { const user = await User.findOne({ username: new RegExp('^' + req.params.username + '$', 'i') }, '-password'); const txs = await Transaction.find({ username: new RegExp('^' + req.params.username + '$', 'i') }).sort({ date: -1 }); res.json({ user, txs }); } catch (e) { res.status(500).json({ error: 'Server Error' }); }
-});
-
 // --- PLAYER APIs ---
 app.post('/api/signup', async (req, res) => { 
     try { 
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const existing = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i') }); if(existing) return res.status(400).json({ error: 'Username taken.' });
-        await new User({ username: req.body.username, password: req.body.password, ipAddress: ip, tosAccepted: true, status: 'pending' }).save(); 
+        // Give starter inventory
+        await new User({ username: req.body.username, password: req.body.password, ipAddress: ip, tosAccepted: true, status: 'pending', inventory: ['Starter Token', 'Retro Badge'] }).save(); 
         adminLog(`New account requested: ${req.body.username} (IP: ${ip})`); res.status(201).json({ message: 'Account requested successfully.' }); 
     } catch (err) { res.status(400).json({ error: 'Username taken.' }); } 
 });
@@ -448,43 +406,80 @@ app.get('/api/profile/ledger/:username', async (req, res) => {
 // --- SOCKET SYSTEM ---
 io.on('connection', (socket) => {
     
-    socket.on('admin_join', () => { socket.join('admin_room'); socket.emit('game_lock_state', gameLocks); });
-    
-    socket.on('admin_action', ({ action, room, username, game, locked }) => {
+    // MARKET & INVENTORY
+    socket.on('req_market', async ({ username }) => {
         try {
-            if(action === 'wipe_chat') { io.emit('chat_wiped', { room }); } 
-            else if (action === 'kick_user') { const targetSocket = Object.keys(socketUserMap).find(id => socketUserMap[id].username.toLowerCase() === username.toLowerCase()); if(targetSocket) { io.to(targetSocket).emit('force_disconnect'); io.sockets.sockets.get(targetSocket)?.disconnect(); } } 
-            else if (action === 'toggle_game') { gameLocks[game] = locked; io.emit('game_lock_state', gameLocks); adminLog(`System Override: ${game ? game.toUpperCase() : 'GAME'} is now ${locked ? 'LOCKED' : 'UNLOCKED'}`); }
-        } catch (e) {}
+            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
+            if(user) socket.emit('market_data', { auctions: activeAuctions, inventory: user.inventory || [] });
+        } catch(e){}
     });
 
-    // --- NOTIFICATION SYSTEM ---
+    socket.on('create_auction', async ({ username, item, startingBid }) => {
+        try {
+            if(startingBid < 100) return socket.emit('arcade_error', 'Starting bid must be at least 100 CR.');
+            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
+            if(!user || !user.inventory.includes(item)) return socket.emit('arcade_error', 'Item not in inventory.');
+            
+            // Remove item from inventory
+            const itemIndex = user.inventory.indexOf(item);
+            user.inventory.splice(itemIndex, 1);
+            await user.save();
+
+            // Create Auction
+            const auction = {
+                id: Math.random().toString(36).substring(2, 9),
+                seller: user.username,
+                item: item,
+                currentBid: startingBid,
+                highestBidder: null,
+                endTime: Date.now() + (5 * 60 * 1000) // 5 Minute Auction for testing
+            };
+            activeAuctions.push(auction);
+            io.emit('market_update', activeAuctions);
+            socket.emit('market_data', { auctions: activeAuctions, inventory: user.inventory });
+        } catch(e){}
+    });
+
+    socket.on('place_bid', async ({ id, username, bidAmount }) => {
+        try {
+            let auc = activeAuctions.find(a => a.id === id);
+            if (!auc) return socket.emit('arcade_error', 'Auction not found.');
+            if (auc.seller.toLowerCase() === username.toLowerCase()) return socket.emit('arcade_error', 'You cannot bid on your own item.');
+            if (bidAmount <= auc.currentBid && auc.highestBidder) return socket.emit('arcade_error', 'Bid must be higher than current bid.');
+            if (bidAmount < auc.currentBid && !auc.highestBidder) return socket.emit('arcade_error', 'Bid must meet starting price.');
+
+            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
+            if (!user || user.credits < bidAmount) return socket.emit('arcade_error', 'Insufficient credits.');
+
+            // Escrow: Deduct new bidder
+            user.credits -= bidAmount;
+            await user.save();
+            io.emit('credit_update', {username: user.username, credits: user.credits});
+
+            // Refund old bidder
+            if (auc.highestBidder) {
+                const old = await User.findOneAndUpdate({username: new RegExp('^' + auc.highestBidder + '$', 'i')}, {$inc: {credits: auc.currentBid}}, {new: true});
+                if(old) io.emit('credit_update', {username: old.username, credits: old.credits});
+            }
+
+            // Update Auction
+            auc.highestBidder = user.username;
+            auc.currentBid = bidAmount;
+            
+            // Anti-snipe: if less than 15s left, reset to 15s
+            if (auc.endTime - Date.now() < 15000) auc.endTime = Date.now() + 15000;
+
+            io.emit('market_update', activeAuctions);
+            socket.emit('market_data', { auctions: activeAuctions, inventory: user.inventory }); // Force refresh local inventory
+        } catch(e){}
+    });
+
+    // NOTIFICATION SYSTEM
     socket.on('req_inbox', async ({ username }) => { try { const tickets = await Ticket.find({ $or: [{ username: new RegExp('^' + username + '$', 'i') }, { username: 'GLOBAL' }] }).sort({ updatedAt: -1 }); socket.emit('inbox_data', tickets); } catch(e){} });
     socket.on('read_ticket', async ({ id, username }) => { try { const t = await Ticket.findById(id); if(t) { if(t.username === 'GLOBAL') { if(!t.readBy.includes(username)) { t.readBy.push(username); await t.save(); } } else { t.unreadPlayer = false; await t.save(); } } } catch(e){} });
     socket.on('player_create_ticket', async ({ username, subject, text }) => { try { const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if(!user) return; const t = new Ticket({ username: user.username, target: 'specific', type: 'support', subject, messages: [{ sender: user.username, text }], unreadPlayer: false, unreadAdmin: true }); await t.save(); adminLog(`New support ticket from ${user.username}: ${subject}`); io.emit('admin_inbox_update'); const tickets = await Ticket.find({ $or: [{ username: user.username }, { username: 'GLOBAL' }] }).sort({ updatedAt: -1 }); socket.emit('inbox_data', tickets); } catch(e){} });
     socket.on('player_reply', async ({ id, username, text }) => { try { const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if(!user) return; const t = await Ticket.findById(id); if(t && t.status === 'open' && t.type !== 'announcement') { t.messages.push({ sender: user.username, text }); t.unreadAdmin = true; t.updatedAt = Date.now(); await t.save(); socket.emit('ticket_updated', t); io.emit('admin_inbox_update'); } } catch(e){} });
     socket.on('del_ticket', async ({ id, username }) => { try { const t = await Ticket.findById(id); if(t && t.username !== 'GLOBAL') { await Ticket.findByIdAndDelete(id); } const tickets = await Ticket.find({ $or: [{ username: new RegExp('^' + username + '$', 'i') }, { username: 'GLOBAL' }] }).sort({ updatedAt: -1 }); socket.emit('inbox_data', tickets); } catch(e){} });
-
-    socket.on('req_admin_inbox', async () => { try { const tickets = await Ticket.find().sort({ updatedAt: -1 }); socket.emit('admin_inbox_data', tickets); } catch(e){} });
-    socket.on('admin_read_ticket', async ({ id }) => { try { await Ticket.findByIdAndUpdate(id, { unreadAdmin: false }); io.emit('admin_inbox_update'); } catch(e){} });
-    socket.on('admin_reply', async ({ id, text }) => { try { const t = await Ticket.findById(id); if(t && t.status === 'open' && t.type !== 'announcement') { t.messages.push({ sender: 'ADMIN', text }); t.unreadPlayer = true; t.updatedAt = Date.now(); await t.save(); io.emit('admin_inbox_update'); io.emit('new_mail', { username: t.username }); } } catch(e){} });
-    socket.on('admin_close_ticket', async ({ id }) => { try { const t = await Ticket.findByIdAndUpdate(id, { status: 'closed' }, { new: true }); if(t) { adminLog(`Closed conversation for ${t.username}`); io.emit('admin_inbox_update'); io.emit('new_mail', { username: t.username }); } } catch(e){} });
-    socket.on('admin_notify', async ({ target, username, type, subject, message }) => {
-        try {
-            if (target === 'all') {
-                if(type === 'announcement') { const t = new Ticket({ username: 'GLOBAL', target, type, subject, messages: [{ sender: 'ADMIN', text: message }] }); await t.save(); adminLog(`Global Announcement Broadcasted: ${subject}`); io.emit('system_notification', { target, type, subject, message }); io.emit('new_mail', { username: 'GLOBAL' }); } 
-                else { const allUsers = await User.find({}); for(let u of allUsers) { await new Ticket({ username: u.username, target: 'specific', type, subject, messages: [{ sender: 'ADMIN', text: message }], unreadPlayer: true, unreadAdmin: false }).save(); } adminLog(`Mass Message sent to ALL ${allUsers.length} players.`); io.emit('system_notification', { target, type, subject, message }); io.emit('new_mail', { target: 'all' }); }
-                io.emit('admin_inbox_update');
-            } else if (target === 'active') {
-                const onlineUsernames = [...new Set(Object.values(socketUserMap).map(u => u.username))];
-                for(let u of onlineUsernames) { await new Ticket({ username: u, target: 'specific', type, subject, messages: [{ sender: 'ADMIN', text: message }], unreadPlayer: true, unreadAdmin: false }).save(); }
-                adminLog(`Broadcast sent to ${onlineUsernames.length} Active Players.`); io.emit('system_notification', { target, type, subject, message }); io.emit('new_mail', { target: 'active' }); io.emit('admin_inbox_update');
-            } else if (target === 'specific_online' || target === 'specific_all') {
-                const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
-                if(user) { const t = new Ticket({ username: user.username, target: 'specific', type, subject, messages: [{ sender: 'ADMIN', text: message }], unreadPlayer: true, unreadAdmin: false }); await t.save(); adminLog(`Sent direct ${type} to ${user.username}: ${subject}`); io.emit('new_mail', { username: user.username }); io.emit('admin_inbox_update'); }
-            }
-        } catch(e){}
-    });
 
     // ARCADE LOBBIES
     socket.on('enter_arcade', async ({ username, game }) => {
@@ -494,7 +489,6 @@ io.on('connection', (socket) => {
             let lobby; if(game === 'dice') lobby = diceLobby; else if(game === 'color') lobby = colorLobby; else if(game === 'derby') lobby = derbyLobby; else if(game === 'pvp') lobby = pvpLobby; else if(game === 'cups') lobby = cupsLobby;
             if (lobby && !lobby.find(p => p.username === user.username)) lobby.push({ username: user.username, color: user.nameColor });
             io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
-            adminLog(`[SPECTATOR] ${user.username} entered the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
         } catch(e) {}
     });
 
@@ -513,12 +507,10 @@ io.on('connection', (socket) => {
         }
         if(socketUserMap[socket.id]) { delete socketUserMap[socket.id].arcadeGame; delete socketUserMap[socket.id].roomId; }
         io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
-        adminLog(`[SPECTATOR] ${username} left the ${game ? game.toUpperCase() : 'ARCADE'} room.`);
     });
 
     socket.on('send_chat', ({ roomId, username, message }) => { 
         if(roomId && username && message) {
-            adminLog(`[CHAT] (${roomId}) ${username}: ${message}`); 
             if (['dice', 'derby', 'color', 'pvp', 'cups'].includes(roomId)) io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
             else io.to(roomId).emit('receive_chat', { roomId, username, message }); 
         }
@@ -539,7 +531,7 @@ io.on('connection', (socket) => {
             await new Transaction({ username: user.username, type: 'HIGH-LOW DICE', amount: -amount }).save();
             let existingBetObj = diceGame.bets.find(b => b.username.toLowerCase() === user.username.toLowerCase() && b.choice === choice);
             if (existingBetObj) existingBetObj.amount += amount; else diceGame.bets.push({ username: user.username, choice, amount }); 
-            adminLog(`[BET] ${user.username} bet ${amount} on DICE (${choice})`); io.emit('credit_update', { username: user.username, credits: user.credits }); 
+            io.emit('credit_update', { username: user.username, credits: user.credits }); 
             socket.emit('arcade_bet_placed', { game: 'dice', credits: user.credits, choice, totalChoiceBet: existingBetAmt + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
@@ -558,7 +550,7 @@ io.on('connection', (socket) => {
             await new Transaction({ username: user.username, type: '8-BIT DERBY', amount: -amount }).save();
             let existingBetObj = derbyGame.bets.find(b => b.username.toLowerCase() === user.username.toLowerCase() && b.choice === choiceIdx);
             if (existingBetObj) existingBetObj.amount += amount; else derbyGame.bets.push({ username: user.username, choice: choiceIdx, amount }); 
-            adminLog(`[BET] ${user.username} bet ${amount} on DERBY LANE ${choiceIdx + 1}`); io.emit('credit_update', { username: user.username, credits: user.credits });
+            io.emit('credit_update', { username: user.username, credits: user.credits });
             socket.emit('arcade_bet_placed', { game: 'derby', credits: user.credits, choice: choiceIdx, totalChoiceBet: existingBetAmt + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
@@ -577,12 +569,11 @@ io.on('connection', (socket) => {
             await new Transaction({ username: user.username, type: 'COLOR GAME', amount: -amount }).save();
             let existingBetObj = colorGame.bets.find(b => b.username.toLowerCase() === user.username.toLowerCase() && b.choice === choice);
             if (existingBetObj) existingBetObj.amount += amount; else colorGame.bets.push({ username: user.username, choice, amount }); 
-            adminLog(`[BET] ${user.username} bet ${amount} on COLOR (${choice})`); io.emit('credit_update', { username: user.username, credits: user.credits }); 
+            io.emit('credit_update', { username: user.username, credits: user.credits }); 
             socket.emit('arcade_bet_placed', { game: 'color', credits: user.credits, choice, totalChoiceBet: existingBetAmt + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
 
-    // 3 CUPS BETTING
     socket.on('get_cups_state', () => { socket.emit('cups_state_update', { status: cupsGame.status, betEndTime: cupsGame.betEndTime, history: cupsGame.history }); });
     socket.on('place_cups_bet', async ({ username, choice, amount }) => {
         try {
@@ -601,7 +592,7 @@ io.on('connection', (socket) => {
             await new Transaction({ username: user.username, type: '3 CUPS', amount: -amount }).save();
             let existingBetObj = cupsGame.bets.find(b => b.username.toLowerCase() === user.username.toLowerCase() && b.choice === choice);
             if (existingBetObj) existingBetObj.amount += amount; else cupsGame.bets.push({ username: user.username, choice, amount }); 
-            adminLog(`[BET] ${user.username} bet ${amount} on CUP ${choice + 1}`); io.emit('credit_update', { username: user.username, credits: user.credits }); 
+            io.emit('credit_update', { username: user.username, credits: user.credits }); 
             socket.emit('arcade_bet_placed', { game: 'cups', credits: user.credits, choice, totalChoiceBet: existingBetAmt + amount });
         } catch(e) { socket.emit('arcade_error', 'Server sync error.'); }
     });
@@ -629,7 +620,6 @@ io.on('connection', (socket) => {
                     format: pvpDuel.format, betAmount: pvpDuel.betAmount, type: pvpDuel.type, slices: pvpDuel.slices 
                 });
             }
-            adminLog(`[PVP] ${user.username} sat at PVP seat ${seatIndex+1}`);
             io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
         } catch(e) {}
     });
@@ -652,7 +642,6 @@ io.on('connection', (socket) => {
         pvpDuel.seats[seatIndex].choice = type === 'coin' ? hostChoice : pvpDuel.seats[seatIndex]?.username; 
         pvpDuel.seats[seatIndex].ready = true; 
         pvpDuel.message = 'WAITING FOR CHALLENGER...';
-        
         io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
     });
 
@@ -691,7 +680,6 @@ io.on('connection', (socket) => {
                     await new Transaction({ username: u2.username, type: 'PVP ARENA WAGER', amount: -pvpDuel.betAmount }).save();
                     io.emit('credit_update', { username: u1.username, credits: u1.credits - pvpDuel.betAmount });
                     io.emit('credit_update', { username: u2.username, credits: u2.credits - pvpDuel.betAmount });
-                    adminLog(`[PVP] ${u1.username} vs ${u2.username} match started. Pot: ${pvpDuel.betAmount * 2}`);
                 }
             }
 
@@ -714,7 +702,7 @@ io.on('connection', (socket) => {
         const seatIndex = room.seats.findIndex(s => s && s.username.toLowerCase() === username.toLowerCase());
         if (seatIndex !== -1) { room.seats[seatIndex] = null; if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } }
         if(socketUserMap[socket.id]) delete socketUserMap[socket.id]; 
-        adminLog(`[SPECTATOR] ${username} left ${getGameTitle(roomId)}.`); emitGameState(roomId);
+        emitGameState(roomId);
     });
 
     socket.on('join_seat', async ({ roomId, username, seatIndex }) => {
@@ -722,7 +710,7 @@ io.on('connection', (socket) => {
             let room = rooms[roomId]; if (!room || room.seats.some(s => s && s.username.toLowerCase() === username.toLowerCase()) || seatIndex < 0 || seatIndex >= room.seats.length || room.seats[seatIndex]) return;
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return;
             room.seats[seatIndex] = { username: user.username, color: user.nameColor, socketId: socket.id, credits: user.credits, hands: [{ cards: [], bet: 0, status: 'waiting', value: 0 }], currentHand: 0, kickAt: Date.now() + 7000 };
-            if (room.status === 'waiting') room.status = 'betting'; adminLog(`[TABLE] ${user.username} sat down at ${getGameTitle(roomId)}.`); emitGameState(roomId);
+            if (room.status === 'waiting') room.status = 'betting'; emitGameState(roomId);
         } catch(e) {}
     });
 
@@ -739,7 +727,7 @@ io.on('connection', (socket) => {
                 const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i'), credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
                 if (!updatedUser) return; seat.credits = updatedUser.credits; seat.hands[0].bet = betAmount; seat.kickAt = null; 
                 await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId), amount: -betAmount }).save();
-                adminLog(`[BET] ${updatedUser.username} bet ${betAmount} at ${getGameTitle(roomId)}.`); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
+                io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
                 room.betEndTime = Date.now() + 15000; clearInterval(room.betTimerInterval);
                 if (room.seats.every(s => s !== null && s.hands[0].bet > 0)) { clearInterval(room.betTimerInterval); startGame(roomId); } 
                 else { room.betTimerInterval = setInterval(() => { if (Date.now() >= room.betEndTime) { clearInterval(room.betTimerInterval); startGame(roomId); } }, 1000); emitGameState(roomId); }
@@ -757,9 +745,14 @@ io.on('connection', (socket) => {
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return; const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); const msIn24Hours = 24 * 60 * 60 * 1000;
             if (now.getTime() - lastClaim.getTime() >= msIn24Hours) {
                 let prizes = [1000, 0, 0, 0, 5000, 10000]; prizes = prizes.sort(() => Math.random() - 0.5); let wonAmount = prizes[boxIndex]; if(typeof wonAmount !== 'number' || isNaN(wonAmount)) wonAmount = 0; user.lastRewardClaim = now;
-                if (wonAmount > 0) { user.credits += wonAmount; await new Transaction({ username: user.username, type: 'DAILY REWARD', amount: wonAmount, status: 'completed' }).save(); adminLog(`${user.username} claimed ${wonAmount} Daily Reward.`); } await user.save();
+                
+                let wonItem = null;
+                if (Math.random() > 0.8) { wonItem = "Gold VIP Token"; user.inventory.push(wonItem); } // Chance for item drop
+                
+                if (wonAmount > 0) { user.credits += wonAmount; await new Transaction({ username: user.username, type: 'DAILY REWARD', amount: wonAmount, status: 'completed' }).save(); } await user.save();
                 const msLeft = new Date(now.getTime() + msIn24Hours).getTime() - now.getTime(); const cooldownSeconds = Math.floor(msLeft / 1000);
-                socket.emit('reward_box_opened', { success: true, wonAmount, allPrizes: prizes, credits: user.credits, cooldownSeconds });
+                
+                socket.emit('reward_box_opened', { success: true, wonAmount, wonItem, allPrizes: prizes, credits: user.credits, cooldownSeconds });
                 io.emit('credit_update', { username: user.username, credits: user.credits }); Object.keys(rooms).forEach(rId => { const seat = rooms[rId].seats.find(s => s && s.username === user.username); if(seat) { seat.credits = user.credits; emitGameState(rId); } });
             } else { socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); }
         } catch (e) { socket.emit('reward_box_opened', { success: false, message: 'Server sync error' }); }
@@ -798,18 +791,14 @@ async function handlePvpLeave(seatIndex) {
     const otherIndex = seatIndex === 0 ? 1 : 0; 
     const otherSeat = pvpDuel.seats[otherIndex];
 
-    // SAFEGUARD 0: Instantly kill the game state to stop timers BEFORE any asynchronous awaits
     pvpDuel.status = 'waiting';
     pvpDuel.seats[seatIndex] = null;
     
     if(wasActive && betToRefund > 0) {
-        // Run refunds asynchronously in background so we don't block the state update
         Promise.all([
             refundPvpSeat(seat.username, betToRefund),
             otherSeat ? refundPvpSeat(otherSeat.username, betToRefund) : Promise.resolve()
-        ]).then(() => {
-            adminLog(`[PVP ABORTED] ${seat.username} left mid-game. Bets refunded.`);
-        });
+        ]).then(() => {});
     }
     
     if(pvpDuel.seats[0] === null && pvpDuel.seats[1] === null) {
@@ -840,24 +829,16 @@ function runPvpSequence() {
     io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
 
     let countdown = setInterval(() => {
-        // SAFEGUARD 1: Stop countdown if someone fled the match
-        if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) { 
-            clearInterval(countdown); 
-            return; 
-        }
+        if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) { clearInterval(countdown); return; }
 
         pvpDuel.timer--;
         if(pvpDuel.timer > 0) { 
-            pvpDuel.message = `${actionVerb} IN ${pvpDuel.timer}...`; 
-            io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel); 
+            pvpDuel.message = `${actionVerb} IN ${pvpDuel.timer}...`; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel); 
         } 
         else {
-            clearInterval(countdown); 
-            pvpDuel.message = `${actionVerb}...`; 
-            io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+            clearInterval(countdown); pvpDuel.message = `${actionVerb}...`; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
 
             setTimeout(async () => {
-                // SAFEGUARD 2: Prevent crash if someone disconnected during the animation
                 if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
 
                 let res; 
@@ -867,16 +848,14 @@ function runPvpSequence() {
                     pvpDuel.winSliceIndex = Math.floor(Math.random() * pvpDuel.slices);
                     res = pvpDuel.winSliceIndex % 2 === 0 ? pvpDuel.seats[0].username : pvpDuel.seats[1].username;
                 }
-                pvpDuel.result = res; 
-                pvpDuel.status = 'resolving';
+                pvpDuel.result = res; pvpDuel.status = 'resolving';
                 
                 let roundWinnerIndex = -1; 
                 if(pvpDuel.seats[0]?.choice === res) roundWinnerIndex = 0; 
                 if(pvpDuel.seats[1]?.choice === res) roundWinnerIndex = 1;
                 
                 if(roundWinnerIndex !== -1 && pvpDuel.seats[roundWinnerIndex]) { 
-                    pvpDuel.seats[roundWinnerIndex].score++; 
-                    pvpDuel.message = `${pvpDuel.seats[roundWinnerIndex].username.toUpperCase()} SCORES!`; 
+                    pvpDuel.seats[roundWinnerIndex].score++; pvpDuel.message = `${pvpDuel.seats[roundWinnerIndex].username.toUpperCase()} SCORES!`; 
                 }
                 io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
                 
@@ -885,13 +864,10 @@ function runPvpSequence() {
                 if(pvpDuel.seats[1] && pvpDuel.seats[1].score >= pvpDuel.format) matchWinner = 1;
                 
                 setTimeout(async () => {
-                    // SAFEGUARD 3: Prevent crash before dispensing winnings
                     if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
 
                     if(matchWinner !== null && pvpDuel.seats[matchWinner]) {
-                        pvpDuel.status = 'finished'; 
-                        const winner = pvpDuel.seats[matchWinner]; 
-                        pvpDuel.message = `${winner.username.toUpperCase()} WINS THE MATCH!`;
+                        pvpDuel.status = 'finished'; const winner = pvpDuel.seats[matchWinner]; pvpDuel.message = `${winner.username.toUpperCase()} WINS THE MATCH!`;
 
                         if(pvpDuel.betAmount > 0) {
                             const winAmount = pvpDuel.betAmount * 2;
@@ -913,11 +889,7 @@ function runPvpSequence() {
                         }, 3000);
 
                     } else { 
-                        if(pvpDuel.status !== 'finished') { 
-                            pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping'; 
-                            pvpDuel.result = null; 
-                            runPvpSequence(); 
-                        } 
+                        if(pvpDuel.status !== 'finished') { pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping'; pvpDuel.result = null; runPvpSequence(); } 
                     }
                 }, 3000);
             }, 2000);
