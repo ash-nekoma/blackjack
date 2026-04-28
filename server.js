@@ -6,13 +6,14 @@ const mongoose = require('mongoose');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+// Increase maxHttpBufferSize to handle audio blobs (e.g., 5MB)
+const io = new Server(server, { cors: { origin: '*' }, maxHttpBufferSize: 5e6 });
 
 app.use(express.json());
 app.use(express.static(__dirname));
 
 // --- MONGODB CONNECTION ---
-mongoose.connect(process.env.MONGODB_URI).then(async () => {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/casinoroyale').then(async () => {
     console.log('MongoDB Connected Successfully');
     try {
         const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
@@ -29,7 +30,7 @@ const User = mongoose.model('User', new mongoose.Schema({
     username: { type: String, required: true, unique: true }, password: { type: String, required: true },
     credits: { type: Number, default: 0 }, status: { type: String, default: 'active' }, nameColor: { type: String, default: '#f8fafc' }, 
     ipAddress: String, tosAccepted: Boolean, lastRewardClaim: { type: Date, default: null }, createdAt: { type: Date, default: Date.now },
-    inventory: { type: [String], default: ['Starter Token', 'Retro Badge'] } // New Inventory System
+    inventory: { type: [String], default: ['Starter Token', 'Retro Badge'] }
 }));
 
 const Transaction = mongoose.model('Transaction', new mongoose.Schema({
@@ -72,11 +73,9 @@ const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['r
 
 const cupsGame = { status: 'shuffling', stateEndTime: Date.now() + 3000, betEndTime: 0, winningCup: 0, bets: [], history: [] };
 
-// --- PVP ARENA GLOBALS ---
 let pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null };
 
-// --- MARKET AUCTION GLOBALS ---
-let activeAuctions = []; // { id, seller, item, currentBid, highestBidder, endTime }
+let activeAuctions = []; 
 
 const socketUserMap = {}; let diceLobby = []; let derbyLobby = []; let colorLobby = []; let pvpLobby = []; let cupsLobby = [];
 let strictHouseEdge = false; let gameLocks = { blackjack: false, dice: false, derby: false, color: false, cups: false };
@@ -84,7 +83,6 @@ let strictHouseEdge = false; let gameLocks = { blackjack: false, dice: false, de
 function getPHTTime() { try { return new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' }); } catch(e) { return new Date().toLocaleTimeString(); } }
 function adminLog(action) { io.to('admin_room').emit('admin_log', `▶ [${getPHTTime()}] ${action}`); }
 
-// Helper for Mail
 async function sendSystemMail(username, subject, text) {
     const t = new Ticket({ username, target: 'specific', type: 'message', subject, messages: [{ sender: 'SYSTEM', text }], unreadPlayer: true, unreadAdmin: false });
     await t.save(); io.emit('new_mail', { username });
@@ -168,7 +166,6 @@ setInterval(() => {
             let laneBets = [0,0,0,0,0,0]; 
             derbyGame.bets.forEach(b => laneBets[b.choice] += b.amount);
 
-            // Change speeds every 10 ticks (1 second) for chaotic jostling
             if (raceTick % 10 === 1) { 
                 for(let i=0; i<6; i++) {
                     let oddsSpeed = derbyGame.laneProfiles[i].s; 
@@ -261,7 +258,7 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // 3 CUPS GAME LOOP (Shuffling -> Betting -> Resolving)
+    // 3 CUPS GAME LOOP
     if (cupsGame.status === 'shuffling' && now >= cupsGame.stateEndTime) {
         cupsGame.status = 'betting';
         cupsGame.betEndTime = now + 7000; 
@@ -353,7 +350,6 @@ app.post('/api/signup', async (req, res) => {
     try { 
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const existing = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i') }); if(existing) return res.status(400).json({ error: 'Username taken.' });
-        // Give starter inventory
         await new User({ username: req.body.username, password: req.body.password, ipAddress: ip, tosAccepted: true, status: 'pending', inventory: ['Starter Token', 'Retro Badge'] }).save(); 
         adminLog(`New account requested: ${req.body.username} (IP: ${ip})`); res.status(201).json({ message: 'Account requested successfully.' }); 
     } catch (err) { res.status(400).json({ error: 'Username taken.' }); } 
@@ -406,6 +402,14 @@ app.get('/api/profile/ledger/:username', async (req, res) => {
 // --- SOCKET SYSTEM ---
 io.on('connection', (socket) => {
     
+    // PUSH TO TALK RELAY
+    socket.on('voice_message', (data) => {
+        // Broadcast the audio blob to everyone else in the room
+        if (data.room && data.audio) {
+            socket.to(data.room).emit('voice_broadcast', { username: socketUserMap[socket.id]?.username || 'Unknown', audio: data.audio });
+        }
+    });
+
     // MARKET & INVENTORY
     socket.on('req_market', async ({ username }) => {
         try {
@@ -420,19 +424,17 @@ io.on('connection', (socket) => {
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
             if(!user || !user.inventory.includes(item)) return socket.emit('arcade_error', 'Item not in inventory.');
             
-            // Remove item from inventory
             const itemIndex = user.inventory.indexOf(item);
             user.inventory.splice(itemIndex, 1);
             await user.save();
 
-            // Create Auction
             const auction = {
                 id: Math.random().toString(36).substring(2, 9),
                 seller: user.username,
                 item: item,
                 currentBid: startingBid,
                 highestBidder: null,
-                endTime: Date.now() + (5 * 60 * 1000) // 5 Minute Auction for testing
+                endTime: Date.now() + (5 * 60 * 1000) 
             };
             activeAuctions.push(auction);
             io.emit('market_update', activeAuctions);
@@ -451,26 +453,22 @@ io.on('connection', (socket) => {
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
             if (!user || user.credits < bidAmount) return socket.emit('arcade_error', 'Insufficient credits.');
 
-            // Escrow: Deduct new bidder
             user.credits -= bidAmount;
             await user.save();
             io.emit('credit_update', {username: user.username, credits: user.credits});
 
-            // Refund old bidder
             if (auc.highestBidder) {
                 const old = await User.findOneAndUpdate({username: new RegExp('^' + auc.highestBidder + '$', 'i')}, {$inc: {credits: auc.currentBid}}, {new: true});
                 if(old) io.emit('credit_update', {username: old.username, credits: old.credits});
             }
 
-            // Update Auction
             auc.highestBidder = user.username;
             auc.currentBid = bidAmount;
             
-            // Anti-snipe: if less than 15s left, reset to 15s
             if (auc.endTime - Date.now() < 15000) auc.endTime = Date.now() + 15000;
 
             io.emit('market_update', activeAuctions);
-            socket.emit('market_data', { auctions: activeAuctions, inventory: user.inventory }); // Force refresh local inventory
+            socket.emit('market_data', { auctions: activeAuctions, inventory: user.inventory }); 
         } catch(e){}
     });
 
@@ -485,7 +483,7 @@ io.on('connection', (socket) => {
     socket.on('enter_arcade', async ({ username, game }) => {
         try {
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return;
-            socket.join('arcade_' + game); socketUserMap[socket.id] = { username: user.username, arcadeGame: game, roomId: game };
+            socket.join('arcade_' + game); socketUserMap[socket.id] = { username: user.username, arcadeGame: game, roomId: 'arcade_' + game };
             let lobby; if(game === 'dice') lobby = diceLobby; else if(game === 'color') lobby = colorLobby; else if(game === 'derby') lobby = derbyLobby; else if(game === 'pvp') lobby = pvpLobby; else if(game === 'cups') lobby = cupsLobby;
             if (lobby && !lobby.find(p => p.username === user.username)) lobby.push({ username: user.username, color: user.nameColor });
             io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
@@ -747,7 +745,7 @@ io.on('connection', (socket) => {
                 let prizes = [1000, 0, 0, 0, 5000, 10000]; prizes = prizes.sort(() => Math.random() - 0.5); let wonAmount = prizes[boxIndex]; if(typeof wonAmount !== 'number' || isNaN(wonAmount)) wonAmount = 0; user.lastRewardClaim = now;
                 
                 let wonItem = null;
-                if (Math.random() > 0.8) { wonItem = "Gold VIP Token"; user.inventory.push(wonItem); } // Chance for item drop
+                if (Math.random() > 0.8) { wonItem = "Gold VIP Token"; user.inventory.push(wonItem); }
                 
                 if (wonAmount > 0) { user.credits += wonAmount; await new Transaction({ username: user.username, type: 'DAILY REWARD', amount: wonAmount, status: 'completed' }).save(); } await user.save();
                 const msLeft = new Date(now.getTime() + msIn24Hours).getTime() - now.getTime(); const cooldownSeconds = Math.floor(msLeft / 1000);
