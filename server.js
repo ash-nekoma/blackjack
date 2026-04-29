@@ -404,7 +404,6 @@ io.on('connection', (socket) => {
     
     // PUSH TO TALK RELAY
     socket.on('voice_message', (data) => {
-        // Broadcast the audio blob to everyone else in the room
         if (data.room && data.audio) {
             socket.to(data.room).emit('voice_broadcast', { username: socketUserMap[socket.id]?.username || 'Unknown', audio: data.audio });
         }
@@ -690,7 +689,7 @@ io.on('connection', (socket) => {
     socket.on('enter_room', async ({ username, roomId }) => {
         try {
             if (!rooms[roomId]) return; socket.join(roomId); const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); 
-            if (user) { socketUserMap[socket.id] = { username: user.username, roomId }; if(!rooms[roomId].lobby.find(p => p.username === user.username)) { rooms[roomId].lobby.push({ username: user.username, color: user.nameColor }); } adminLog(`[SPECTATOR] ${user.username} entered ${getGameTitle(roomId)}.`); }
+            if (user) { socketUserMap[socket.id] = { username: user.username, roomId }; if(!rooms[roomId].lobby.find(p => p.username === user.username)) { rooms[roomId].lobby.push({ username: user.username, color: user.nameColor }); } }
             emitGameState(roomId);
         } catch(e) {}
     });
