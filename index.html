@@ -39,16 +39,20 @@
 
         /* --- TOAST SYSTEM --- */
         #toast-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 9999; pointer-events: none; }
-        .toast { background: rgba(0,0,0,0.9); border: 4px solid #fff; padding: 15px 30px; font-size: 28px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.8); transition: opacity 0.3s, transform 0.3s; pointer-events: auto; }
-        .toast-error { border-color: var(--danger); color: var(--danger); text-shadow: 1px 1px 0 #000; }
-        .toast-success { border-color: var(--success); color: var(--success); text-shadow: 1px 1px 0 #000; }
-        .toast-warning { border-color: var(--warning); color: var(--warning); text-shadow: 1px 1px 0 #000; }
+        .toast { background: rgba(0,0,0,0.9); border: 4px solid #fff; padding: 15px 30px; font-size: 28px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.8); transition: opacity 0.3s, transform 0.3s; pointer-events: auto; font-family: 'VT323'; }
+        .toast-error { border-color: var(--danger); color: var(--danger); }
+        .toast-success { border-color: var(--success); color: var(--success); }
+        .toast-warning { border-color: var(--warning); color: var(--warning); }
         .toast.fade-out { opacity: 0; transform: translateY(-20px); }
+
+        /* --- MIC LIVE BANNER --- */
+        #mic-live-banner { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: var(--danger); border: 4px solid #fff; color: #fff; font-size: 28px; padding: 5px 20px; z-index: 9000; font-weight: bold; animation: pulseMic 1s infinite; pointer-events: none;}
+        @keyframes pulseMic { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         /* --- MINECRAFT / MMO CHUNKY UI --- */
         .mc-btn {
             background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8;
-            color: #FFF; text-shadow: 2px 2px 0 #000; padding: 12px 24px; font-size: 28px; cursor: pointer; text-transform: uppercase;
+            color: #FFF; padding: 12px 24px; font-size: 28px; cursor: pointer; text-transform: uppercase;
             font-family: 'VT323'; transition: 0.05s; display: flex; justify-content: center; align-items: center; text-align: center;
         }
         .mc-btn:hover:not(:disabled) { background: #8e8e8e; filter: brightness(1.1); }
@@ -56,9 +60,9 @@
         .mc-btn:disabled { filter: grayscale(1); opacity: 0.7; cursor: not-allowed; }
         .mc-btn.small { padding: 4px 12px; font-size: 22px; }
         .mc-btn.small:active:not(:disabled) { padding-top: 6px; padding-bottom: 2px; }
-        .mc-btn.circular { width: 60px; height: 60px; border-radius: 50%; padding: 0; font-size: 30px; display: flex; justify-content: center; align-items: center; }
+        .mc-btn.circular { width: 50px; height: 50px; border-radius: 4px; padding: 0; display: flex; justify-content: center; align-items: center; }
         .mc-btn.circular:active:not(:disabled) { padding-top: 2px; padding-bottom: 0; }
-        .mc-btn.active { background: var(--success); border-color: #fff; color: #000; text-shadow: none; }
+        .mc-btn.active { background: var(--success); border-color: #fff; }
 
         .mc-panel {
             background: #1e1e2f; background-image: radial-gradient(#2a2a3f 1px, transparent 1px); background-size: 10px 10px;
@@ -81,37 +85,23 @@
         /* --- MMO HOTBAR --- */
         .hotbar-wrapper { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 250; }
         .hotbar { display: flex; gap: 4px; padding: 6px; background: rgba(0,0,0,0.7); border: 4px solid #111; border-radius: 4px;}
-        .hotbar-slot { width: 64px; height: 64px; background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8; display: flex; justify-content: center; align-items: center; font-size: 32px; cursor: pointer; position: relative; transition: 0.1s; }
+        .hotbar-slot { width: 64px; height: 64px; background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; transition: 0.1s; }
         .hotbar-slot:hover { background: #8e8e8e; transform: translateY(-4px); }
         .hotbar-slot:active { border-color: #383838 #A8A8A8 #A8A8A8 #383838; transform: translateY(0); }
-        .hotbar-tooltip { position: absolute; top: -35px; background: #000; color: #fff; padding: 4px 8px; border: 2px solid #fff; font-size: 18px; pointer-events: none; opacity: 0; transition: 0.2s; white-space: nowrap; }
+        .hotbar-tooltip { position: absolute; top: -35px; background: #000; color: #fff; padding: 4px 8px; border: 2px solid #fff; font-size: 18px; pointer-events: none; opacity: 0; transition: 0.2s; white-space: nowrap; font-family: 'VT323'; }
         .hotbar-slot:hover .hotbar-tooltip { opacity: 1; }
+
+        /* Custom Pixel SVGs for Hotbar */
+        .svg-icon { width: 32px; height: 32px; }
 
         /* --- REALM SELECTOR --- */
         .realm-card { display: flex; align-items: center; background: rgba(0,0,0,0.6); border: 4px solid #444; margin-bottom: 12px; padding: 10px; cursor: pointer; transition: 0.1s; text-align: left;}
         .realm-card:hover { border-color: var(--success); background: rgba(16, 185, 129, 0.15); transform: translateX(5px); }
         .realm-icon { width: 70px; height: 70px; font-size: 48px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; background: #0f172a; border: 4px solid; border-color: #333 #111 #111 #333; margin-right: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
         .realm-info { flex: 1; }
-        .realm-title { font-size: 32px; color: #fff; text-shadow: 2px 2px 0 #000; font-weight: bold; margin-bottom: 4px; line-height: 1;}
+        .realm-title { font-size: 32px; color: #fff; font-weight: bold; margin-bottom: 4px; line-height: 1;}
         .realm-desc { font-size: 20px; color: #94a3b8; line-height: 1;}
         .realm-status { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 80px;}
-        .status-dot { width: 14px; height: 14px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); margin-bottom: 4px; animation: pulse 2s infinite;}
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-
-        /* --- MMO CHAT OVERLAY (SAFE ZONE) --- */
-        .chat-dock { position: absolute; bottom: 20px; left: 20px; z-index: 150; display: flex; flex-direction: column; align-items: flex-start; pointer-events: none;}
-        .chat-dock > * { pointer-events: auto; }
-        .floating-chat-controls { display: flex; gap: 10px; margin-bottom: 10px; }
-        .mmo-chat-container { width: 350px; height: 250px; display: flex; flex-direction: column; opacity: 0.8; transition: opacity 0.3s, transform 0.3s; transform-origin: bottom left; }
-        .mmo-chat-container.chat-hidden { opacity: 0; transform: scale(0); pointer-events: none; }
-        .mmo-chat-container:hover, .mmo-chat-container:focus-within { opacity: 1; }
-        .mmo-chat-messages { flex: 1; background: rgba(0,0,0,0.75); overflow-y: auto; padding: 10px; text-shadow: 1px 1px 0 #000; color: #fff; font-size: 22px; border: 4px solid #333; border-bottom: none;}
-        .mmo-chat-input-row { display: flex; height: 40px;}
-        .mmo-chat-input { flex: 1; background: rgba(0,0,0,0.95); border: 4px solid #555; border-right: none; color: #fff; padding: 0 10px; font-family: 'VT323'; font-size: 22px; outline: none; margin: 0;}
-        .mmo-chat-input:focus { border-color: var(--accent-glow-2); }
-        .mmo-chat-btn { background: #333; color: #fff; border: 4px solid #555; padding: 0 15px; font-family: 'VT323'; font-size: 20px; cursor: pointer; transition: 0.1s;}
-        .mmo-chat-btn:hover { background: #555; color: var(--success); border-color: #fff;}
-        .chat-notif { position: absolute; top: -5px; right: -5px; background: var(--danger); width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; pointer-events: none; }
 
         /* --- FLEXBOX SAFE ZONES --- */
         .game-interface { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 0; background: #000; overflow: hidden; position: relative;}
@@ -120,42 +110,56 @@
         .game-area.coin-bg { background: radial-gradient(circle at center, #111827 0%, #000 100%); }
         .game-area.color-bg { background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
 
-        .top-hud { flex-shrink: 0; position: relative; z-index: 100; width: 100%; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);}
-        .hud-center { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; }
-        .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border: 4px solid; border-color: #555 #111 #111 #555; color: #fff; font-size: 26px; display: flex; align-items: center; gap: 10px;}
-        .player-dropdown-list { position: absolute; top: calc(100% + 5px); right: 0; width: 250px; background: rgba(0,0,0,0.9); border: 2px solid #555; max-height: 300px; overflow-y: auto; z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.9); padding: 5px; }
+        /* Top HUD & DOCKED CHAT */
+        .top-hud { flex-shrink: 0; position: relative; z-index: 100; width: 100%; padding: 15px 30px; display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(to bottom, rgba(0,0,0,0.95), transparent);}
+        .hud-center { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; top: 15px;}
+        .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border: 4px solid; border-color: #555 #111 #111 #555; color: #fff; font-size: 26px; display: flex; align-items: center; gap: 10px; height: 50px;}
+        
+        .hud-right-dock { display: flex; gap: 10px; position: relative; }
+        
+        /* Dropdown Chat */
+        .dropdown-panel { position: absolute; top: calc(100% + 10px); right: 0; width: 350px; background: rgba(0,0,0,0.95); border: 4px solid #555; z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.9); display: flex; flex-direction: column; }
+        .chat-panel { height: 350px; }
+        .mmo-chat-messages { flex: 1; overflow-y: auto; padding: 10px; color: #fff; font-size: 22px; border-bottom: 4px solid #333;}
+        .mmo-chat-input-row { display: flex; height: 40px;}
+        .mmo-chat-input { flex: 1; background: #000; border: none; color: #fff; padding: 0 10px; font-family: 'VT323'; font-size: 22px; outline: none; margin: 0;}
+        .mmo-chat-btn { background: var(--success); color: #000; border: none; padding: 0 15px; font-family: 'VT323'; font-size: 20px; cursor: pointer; font-weight: bold;}
+        .chat-notif { position: absolute; top: -5px; right: -5px; background: var(--danger); width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; pointer-events: none; }
+
+        .player-dropdown-list { position: absolute; top: calc(100% + 10px); right: 0; width: 250px; background: rgba(0,0,0,0.95); border: 4px solid #555; max-height: 300px; overflow-y: auto; z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.9); padding: 5px; }
         .lobby-player { padding: 5px 10px; border-bottom: 1px dashed #333; text-align: left; font-size: 24px; }
         
         /* Middle Game Board */
         .center-focus { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 10; min-height: 0;}
         
         /* Bottom Control Deck */
-        .arcade-bet-area { flex-shrink: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(0,0,0,0.95) 60%, transparent); display: flex; flex-direction: column; align-items: center; z-index: 50;}
+        .arcade-bet-area { flex-shrink: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(0,0,0,0.95) 70%, transparent); display: flex; flex-direction: column; align-items: center; z-index: 50;}
 
-        /* General Elements */
-        .info-box { background: rgba(0,0,0,0.5); border: 4px solid #334155; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
+        /* Rewards Grid */
         .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
-        .reward-box { height: 100px; background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
+        .reward-box { height: 100px; background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
         .reward-box:hover { filter: brightness(1.2); transform: translateY(-5px); }
         .reward-box .inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; }
         .reward-box.open .inner { transform: rotateY(180deg); }
         .reward-box .front, .reward-box .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; }
-        .reward-box .front { font-size: 50px; }
+        .reward-box .front svg { width: 50px; height: 50px; fill: #fff; }
         .reward-box .back { background: #000; border: 4px solid var(--warning); transform: rotateY(180deg); font-size: 24px; color: var(--warning); flex-direction: column; }
 
-        /* Blackjack */
-        .table-surface { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; position: relative; padding: 20px 0; min-height: 0;}
+        /* WIDER Blackjack Seats & 2x2 Grid */
+        .table-surface { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; position: relative; padding: 20px 0; min-height: 0; margin-top: 50px;}
         .banker-station { display: flex; flex-direction: column; align-items: center; z-index: 10;}
-        #timers-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 20; pointer-events: none;}
-        .global-timer { font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center; text-shadow: 2px 2px 0 #000;}
-        #seats-area { display: flex; justify-content: center; align-items: flex-end; width: 100%; gap: 30px; z-index: 5;}
-        .seat { width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0;}
+        #timers-container { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 20; pointer-events: none;}
+        .global-timer { font-size: 40px; color: #fff; background: rgba(220, 38, 38, 0.9); padding: 10px 40px; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.7); text-align: center;}
+        
+        #seats-area { display: flex; justify-content: center; align-items: flex-end; width: 100%; gap: 15px; z-index: 5; flex-wrap: wrap;}
+        .seat { width: 220px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: all 0.5s ease; flex-shrink: 0;}
         .seat-empty-box { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 160px; border: 4px dashed rgba(255,255,255,0.3); background: rgba(0,0,0,0.4); padding: 10px;}
         .seat.active-turn .hand-box.active-hand { border: 2px solid var(--accent-glow-2); background: rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 10px; box-shadow: 0 0 20px rgba(59,130,246,0.5); }
         .turn-bar-container { width: 100%; height: 8px; background: #111; margin-top: 8px; border: 2px solid #333; }
         .turn-bar-fill { height: 100%; background: var(--warning); width: 100%; transition: width 0.2s linear; }
-        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.8); border: 2px solid #555; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 #000; line-height: 1; min-width: 140px; text-align: center;}
-        .hands-wrapper { display: flex; gap: 15px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 120px; width: 100%; margin-bottom: 12px;}
+        .player-info-plate { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.8); border: 2px solid #555; padding: 6px 15px; margin-top: 8px; box-shadow: 2px 2px 0 #000; line-height: 1; width: 100%; text-align: center;}
+        .player-name-text { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #fff;}
+        .hands-wrapper { display: flex; gap: 10px; justify-content: center; align-items: flex-end; transition: 0.3s; min-height: 120px; width: 100%; margin-bottom: 12px;}
         .hand-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative; min-height: 120px;}
         .hand-container { position: relative; display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 5px; min-height: 88px;}
         .card { width: 62px; height: 88px; background: #fff; border-radius: 4px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; margin-left: -35px; border: 2px solid #111; box-shadow: 2px 2px 5px rgba(0,0,0,0.8); font-family: Arial, Helvetica, sans-serif; flex-shrink: 0; z-index: 2; color: #000;}
@@ -166,16 +170,18 @@
         .card-center-suit { font-size: 34px; }
         .card.dealer-hidden { background: repeating-linear-gradient(45deg, #222, #222 5px, #444 5px, #444 10px); color: transparent; }
         .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.8); z-index: 10; font-family: Arial; padding-top: 1px;}
-        .seat-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; margin-top: 10px;}
+        
+        /* 2x2 Grid for Blackjack Controls */
+        .seat-controls { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 6px; width: 100%; margin-top: 10px;}
 
         /* Arcade Area Grid Items */
         .arcade-grid { display: flex; justify-content: center; gap: 15px; margin-bottom: 5px; flex-wrap: wrap;}
         .arcade-bet-box { background: #2d2d2d; border: 4px solid; border-color: #555 #111 #111 #555; padding: 15px; text-align: center; width: 200px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
         .arcade-bet-box:active:not(.locked) { border-color: #111 #555 #555 #111; transform: translateY(2px); }
         .arcade-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
-        .arcade-bet-title { font-size: 34px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 5px; font-weight: bold;}
+        .arcade-bet-title { font-size: 34px; color: #fff; margin-bottom: 5px; font-weight: bold;}
         .arcade-bet-payout { font-size: 20px; color: var(--success); font-weight: bold;}
-        .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); display: flex; justify-content: center; align-items: center; font-size: 35px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 30;}
+        .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); display: flex; justify-content: center; align-items: center; font-size: 35px; font-weight: bold; z-index: 30;}
         .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); color: #fff; padding: 4px 10px; border: 2px solid #fff; font-size: 20px; z-index: 40; font-weight: bold; box-shadow: 2px 2px 0 #000;}
 
         /* Dice */
@@ -194,9 +200,9 @@
         @keyframes gallop { 0% { transform: scaleX(-1) translateY(0px) rotate(-3deg); } 50% { transform: scaleX(-1) translateY(-4px) rotate(4deg); } 100% { transform: scaleX(-1) translateY(0px) rotate(-3deg); } }
         .racer-running { animation: gallop 0.25s infinite; filter: brightness(1.2); }
         .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 24px; color: rgba(255,255,255,0.4); font-weight: bold; z-index: 5; text-shadow: 1px 1px 0 #000; }
-
-        .bg-red { background-color: #ef4444 !important; } .bg-blue { background-color: #3b82f6 !important; } .bg-green { background-color: #10b981 !important; } .bg-purple { background-color: #a855f7 !important; } .bg-pink { background-color: #ec4899 !important; } .bg-gold { background-color: #fbbf24 !important; } .bg-yellow { background-color: #eab308 !important; }
         .derby-bet-box { height: 90px; width: 150px; border-left-width: 15px; padding: 5px; } 
+
+        .lane-1-color { border-left-color: #ef4444; } .lane-2-color { border-left-color: #3b82f6; } .lane-3-color { border-left-color: #10b981; } .lane-4-color { border-left-color: #a855f7; } .lane-5-color { border-left-color: #ec4899; } .lane-6-color { border-left-color: #fbbf24; }
 
         /* Cups */
         .cups-container { position: relative; width: 500px; height: 200px; display: flex; justify-content: center; align-items: center;}
@@ -205,36 +211,39 @@
         .cup-ball { font-size: 60px; position: absolute; bottom: -5px; z-index: 5; opacity: 0; transition: opacity 0.1s; text-shadow: 0 5px 10px #000;}
         .cup-wrapper.reveal .cup-shape { transform: translateY(-90px) rotate(15deg); }
         .cup-wrapper.reveal .cup-ball { opacity: 1; }
+        .cup-bet-box { border-top-color: #f59e0b; border-top-width: 12px;}
 
-        /* Color Game FIX: 2 Rows, 3 Columns */
-        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 800px; width: 100%;}
+        /* Neon Color Game */
+        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 600px; width: 100%;}
         .color-die-container { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 30px; margin-bottom: 20px; flex-wrap: nowrap;}
         .color-die { width: 110px; height: 110px; border: 6px solid #222; border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 15px 30px rgba(0,0,0,0.8); transition: 0.1s;}
         .color-die.bg-white { background-color: #f8fafc !important; box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 15px 30px rgba(0,0,0,0.8) !important; }
         .color-bet-box { height: 90px; width: 100%; padding: 10px; border-top-width: 12px;}
-
+        .bg-red { background-color: #ef4444 !important; } .bg-blue { background-color: #3b82f6 !important; } .bg-yellow { background-color: #eab308 !important; } .bg-green { background-color: #10b981 !important; } .bg-pink { background-color: #ec4899 !important; } .bg-white { background-color: #f8fafc !important; }
+        .br-red { border-top-color: #ef4444; } .br-blue { border-top-color: #3b82f6; } .br-yellow { border-top-color: #eab308; } .br-green { border-top-color: #10b981; } .br-pink { border-top-color: #ec4899; } .br-white { border-top-color: #f8fafc; }
+        
         /* PVP Specific */
         .duel-arena { display: flex; justify-content: center; align-items: center; width: 100%; max-width: 900px; gap: 20px;}
         .duel-seat { flex: 1; max-width: 300px; height: 280px; flex-shrink: 0; background: rgba(0,0,0,0.7); border: 6px solid #333; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; box-shadow: 0 15px 30px rgba(0,0,0,0.8); position: relative; }
         .duel-seat.my-seat { border-color: var(--accent-glow-2); box-shadow: 0 0 30px rgba(59,130,246,0.4); }
         .duel-seat-empty { width: 100%; height: 100%; border: 4px dashed rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); cursor: pointer; transition: 0.1s;}
         .duel-seat-empty:hover { background: rgba(255,255,255,0.1); border-color: #fff; transform: scale(1.02);}
-        .duel-seat-name { font-size: 32px; font-weight: bold; text-transform: uppercase; text-shadow: 2px 2px 0 #000; }
-        .duel-seat-score { font-size: 70px; font-weight: bold; color: var(--warning); text-shadow: 4px 4px 0 #000; line-height: 1;}
+        .duel-seat-name { font-size: 32px; font-weight: bold; text-transform: uppercase;}
+        .duel-seat-score { font-size: 70px; font-weight: bold; color: var(--warning); line-height: 1;}
         .duel-seat-choice { font-size: 24px; color: #fff; background: #111; padding: 4px 15px; border: 2px solid #555; margin-top: 10px;}
         .duel-seat-ready { position: absolute; top: -20px; background: var(--success); color: #000; padding: 4px 20px; font-size: 24px; font-weight: bold; border: 4px solid #fff; box-shadow: 4px 4px 0 #000;}
         
         .duel-center { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 220px; flex-shrink: 0; position: relative;}
-        .duel-center-vs { font-size: 45px; font-weight: bold; color: #ef4444; text-shadow: 3px 3px 0 #000; margin-bottom: 10px;}
+        .duel-center-vs { font-size: 45px; font-weight: bold; color: #ef4444; margin-bottom: 10px;}
         .duel-coin { width: 140px; height: 140px; background: #fbbf24; border-radius: 50%; border: 10px solid #b45309; display: flex; justify-content: center; align-items: center; font-size: 70px; color: #b45309; font-weight: bold; box-shadow: inset 0 0 20px #fef08a, 0 10px 20px #000; font-family: Arial; transition: transform 0.1s;}
         
-        .duel-status-box { background: rgba(0,0,0,0.8); border: 4px solid var(--accent-glow-2); padding: 10px 30px; font-size: 32px; color: #fff; text-shadow: 2px 2px 0 #000; margin-bottom: 20px; text-align: center; width: 100%; max-width: 800px; box-shadow: 0 10px 20px rgba(0,0,0,0.8);}
+        .duel-status-box { background: rgba(0,0,0,0.8); border: 4px solid var(--accent-glow-2); padding: 10px 30px; font-size: 32px; color: #fff; margin-bottom: 20px; text-align: center; width: 100%; max-width: 800px; box-shadow: 0 10px 20px rgba(0,0,0,0.8);}
 
         /* Market */
         .market-split { display: flex; gap: 20px; text-align: left; max-height: 500px; }
         .market-col { flex: 1; display: flex; flex-direction: column; background: #000; border: 4px solid #333; padding: 15px; overflow-y: auto; }
         .market-item { border: 2px solid #555; padding: 10px; margin-bottom: 10px; background: #111; display: flex; justify-content: space-between; align-items: center; }
-        .market-title { font-size: 28px; color: var(--warning); font-weight: bold; text-shadow: 1px 1px 0 #000; }
+        .market-title { font-size: 28px; color: var(--warning); font-weight: bold;}
         .market-desc { font-size: 20px; color: #aaa; }
     </style>
 </head>
@@ -247,6 +256,7 @@
     <audio id="sfx-lose" src="lose.mp3" preload="auto"></audio>
 
     <div id="toast-container"></div>
+    <div id="mic-live-banner" class="hidden pixel-text">🔴 MIC LIVE</div>
 
     <div id="arcade-cabinet">
         
@@ -254,7 +264,7 @@
             <h1 class="pixel-text" style="font-size: 100px; text-shadow: 6px 6px 0px #000, 0 0 40px var(--accent-glow); margin-bottom: 20px; text-align: center;">CASINO ROYALE</h1>
             
             <div id="panel-login" class="modal-box mc-panel custom-scroll">
-                <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 40px; text-shadow: 2px 2px 0 #000;">MEMBER LOGIN</h2>
+                <h2 class="pixel-text" style="color: #3b82f6; margin-bottom: 20px; font-size: 40px;">MEMBER LOGIN</h2>
                 <input type="text" id="login-user" class="retro-input pixel-text" placeholder="USERNAME" style="margin-bottom:15px; display:block;">
                 <input type="password" id="login-pass" class="retro-input pixel-text" placeholder="PASSWORD" style="margin-bottom:15px; display:block;">
                 <div style="display: flex; justify-content: center; margin-top: 10px;"><button class="mc-btn" style="background: var(--accent-glow-2); width: 100%;" onclick="login()">LOGIN</button></div>
@@ -262,7 +272,7 @@
             </div>
 
             <div id="panel-signup" class="modal-box mc-panel hidden custom-scroll">
-                <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 40px; text-shadow: 2px 2px 0 #000;">REQUEST ACCESS</h2>
+                <h2 class="pixel-text" style="color: #10b981; margin-bottom: 20px; font-size: 40px;">REQUEST ACCESS</h2>
                 <input type="text" id="signup-user" class="retro-input pixel-text" placeholder="CHOOSE USERNAME" style="margin-bottom:15px; display:block;">
                 <input type="password" id="signup-pass" class="retro-input pixel-text" placeholder="CREATE PASSWORD" style="margin-bottom:15px; display:block;">
                 
@@ -285,16 +295,16 @@
 
             <div class="hotbar-wrapper">
                 <div class="hotbar">
-                    <div class="hotbar-slot" onclick="showProfile()"><div class="hotbar-tooltip pixel-text">Profile</div>👤</div>
-                    <div class="hotbar-slot" onclick="showBank()"><div class="hotbar-tooltip pixel-text">Banking</div>🪙</div>
-                    <div class="hotbar-slot" onclick="showRewards()"><div class="hotbar-tooltip pixel-text">Daily Rewards</div>🎁</div>
-                    <div class="hotbar-slot" onclick="showModal('redeem-modal')"><div class="hotbar-tooltip pixel-text">Redeem Code</div>🎫</div>
+                    <div class="hotbar-slot" onclick="showProfile()"><div class="hotbar-tooltip pixel-text">Profile</div><svg class="svg-icon" viewBox="0 0 16 16" fill="#94a3b8"><path d="M6 2h4v4H6zM4 8h8v6H4z"/></svg></div>
+                    <div class="hotbar-slot" onclick="showBank()"><div class="hotbar-tooltip pixel-text">Banking</div><svg class="svg-icon" viewBox="0 0 16 16"><path fill="#fbbf24" d="M6 2h4v2h2v2h2v4h-2v2H8v2H4v-2H2V6h2V4h2V2z"/><path fill="#fef08a" d="M6 4h4v2H6V4z"/></svg></div>
+                    <div class="hotbar-slot" onclick="showRewards()"><div class="hotbar-tooltip pixel-text">Daily Rewards</div><svg class="svg-icon" viewBox="0 0 16 16" fill="#d97706"><path d="M2 4h12v8H2z"/><path fill="#fcd34d" d="M7 8h2v2H7z"/></svg></div>
+                    <div class="hotbar-slot" onclick="showModal('redeem-modal')"><div class="hotbar-tooltip pixel-text">Redeem Code</div><svg class="svg-icon" viewBox="0 0 16 16" fill="#a855f7"><path d="M2 4h12v8H2z"/><path fill="#fff" d="M4 6h2v4H4zm4 0h2v4H8z"/></svg></div>
                     
-                    <div class="hotbar-slot" onclick="openMarket()" style="background: #059669; border-color: #34d399 #064e3b #064e3b #34d399;"><div class="hotbar-tooltip pixel-text">Markethouse</div>🛒</div>
+                    <div class="hotbar-slot" onclick="openMarket()"><div class="hotbar-tooltip pixel-text">Markethouse</div><svg class="svg-icon" viewBox="0 0 16 16" fill="#10b981"><path d="M2 2h2v2h8v6H4V4H2z"/><path fill="#fff" d="M4 12h2v2H4zm6 0h2v2h-2z"/></svg></div>
                     
-                    <div class="hotbar-slot" onclick="openInbox()"><div class="hotbar-tooltip pixel-text">Mailbox</div>✉️<span id="notif-badge" class="hidden" style="position:absolute; top:-8px; right:-8px; background:var(--danger); border:2px solid #fff; border-radius:50%; width:24px; height:24px; font-size:16px; line-height:20px; text-align:center; font-weight:bold; box-shadow:2px 2px 0 #000; font-family: Arial;">0</span></div>
-                    <div class="hotbar-slot" onclick="showModal('settings-modal')"><div class="hotbar-tooltip pixel-text">Settings</div>⚙️</div>
-                    <div class="hotbar-slot" onclick="promptLogout()" style="background: #7f1d1d; border-color: #ef4444 #450a0a #450a0a #ef4444;"><div class="hotbar-tooltip pixel-text">Logout</div>🚪</div>
+                    <div class="hotbar-slot" onclick="openInbox()"><div class="hotbar-tooltip pixel-text">Mailbox</div><svg class="svg-icon" viewBox="0 0 16 16" fill="#3b82f6"><path d="M2 4h12v8H2z"/><path fill="#1e3a8a" d="M2 4l6 4 6-4v2l-6 4-6-4z"/></svg><span id="notif-badge" class="hidden" style="position:absolute; top:-8px; right:-8px; background:var(--danger); border:2px solid #fff; border-radius:50%; width:24px; height:24px; font-size:16px; line-height:20px; text-align:center; font-weight:bold; box-shadow:2px 2px 0 #000; font-family: Arial;">0</span></div>
+                    <div class="hotbar-slot" onclick="showModal('settings-modal')"><div class="hotbar-tooltip pixel-text">Settings</div><svg class="svg-icon" viewBox="0 0 16 16" fill="#94a3b8"><path d="M6 2h4v2h2v2h2v4h-2v2H8v2H4v-2H2V8h2V6h2V4z"/><path fill="#0f172a" d="M6 6h4v4H6z"/></svg></div>
+                    <div class="hotbar-slot" onclick="promptLogout()" style="background: #7f1d1d; border-color: #ef4444 #450a0a #450a0a #ef4444;"><div class="hotbar-tooltip pixel-text">Logout</div><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M4 2h8v12H4z"/><path fill="#7f1d1d" d="M10 8h2v2h-2z"/></svg></div>
                 </div>
             </div>
         </div>
@@ -303,7 +313,7 @@
             <div class="modal-box mc-panel custom-scroll" style="width: 800px; padding: 20px; text-align: left;">
                 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 4px solid #333;">
-                    <h2 class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 3px 3px 0 #000; margin:0;">SELECT REALM</h2>
+                    <h2 class="pixel-text" style="font-size: 50px; color: #fff; margin:0;">SELECT REALM</h2>
                     <button class="mc-btn small" style="background:#ef4444;" onclick="hideModal('play-category-modal')">CLOSE</button>
                 </div>
                 
@@ -314,7 +324,7 @@
                             <div class="realm-title">CLASSIC BLACKJACK</div>
                             <div class="realm-desc">5-Seat Table • Dealer hits on soft 17 • Max 100k</div>
                         </div>
-                        <div class="realm-status pixel-text"><div class="status-dot"></div><span class="lobby-cnt-5seat">OPEN</span></div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div><span class="lobby-cnt-5seat">0 ACTIVE</span></div>
                     </div>
                     <div class="realm-card" onclick="joinRoom('3seat')">
                         <div class="realm-icon" style="color:var(--accent-glow);">💎</div>
@@ -322,7 +332,7 @@
                             <div class="realm-title">VIP BLACKJACK</div>
                             <div class="realm-desc">3-Seat Exclusive Table • Fast Paced</div>
                         </div>
-                        <div class="realm-status pixel-text"><div class="status-dot"></div><span class="lobby-cnt-3seat">OPEN</span></div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div><span class="lobby-cnt-3seat">0 ACTIVE</span></div>
                     </div>
 
                     <div class="realm-card" style="margin-top: 20px;" onclick="joinDerby()">
@@ -331,7 +341,7 @@
                             <div class="realm-title">8-BIT DERBY SPRINT</div>
                             <div class="realm-desc">High-Volatility 6-Lane Track • Underdog Boost Active</div>
                         </div>
-                        <div class="realm-status pixel-text"><div class="status-dot"></div> <span id="derby-player-count">0</span>/∞</div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div><span id="derby-player-count">0</span> ACTIVE</div>
                     </div>
                     <div class="realm-card" onclick="joinCups()">
                         <div class="realm-icon" style="color:#ea580c;">🔴</div>
@@ -339,7 +349,7 @@
                             <div class="realm-title">STREET HUSTLE: 3 CUPS</div>
                             <div class="realm-desc">Find the golden ball • 2.5x Payout • Single Bet Locked</div>
                         </div>
-                        <div class="realm-status pixel-text"><div class="status-dot"></div> <span id="cups-player-count">0</span>/∞</div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div><span id="cups-player-count">0</span> ACTIVE</div>
                     </div>
                     <div class="realm-card" onclick="joinDice()">
                         <div class="realm-icon" style="color:#a855f7;">🎲</div>
@@ -347,7 +357,7 @@
                             <div class="realm-title">HIGH-LOW DICE</div>
                             <div class="realm-desc">Classic 2-Die Roll • Jackpot 7s Pays 4:1</div>
                         </div>
-                        <div class="realm-status pixel-text"><div class="status-dot"></div> <span id="dice-player-count">0</span>/∞</div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div><span id="dice-player-count">0</span> ACTIVE</div>
                     </div>
                     <div class="realm-card" onclick="joinColorGame()">
                         <div class="realm-icon" style="color:var(--success);">🟩</div>
@@ -355,7 +365,7 @@
                             <div class="realm-title">PERYA COLOR GAME</div>
                             <div class="realm-desc">3 Color Dice • Multipliers stack on hits</div>
                         </div>
-                        <div class="realm-status pixel-text"><div class="status-dot"></div> <span id="color-player-count">0</span>/∞</div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div><span id="color-player-count">0</span> ACTIVE</div>
                     </div>
 
                     <div class="realm-card" style="margin-top: 20px; border-color: var(--danger);" onclick="joinPVP()">
@@ -364,7 +374,7 @@
                             <div class="realm-title" style="color: var(--danger);">THE ARENA (PVP)</div>
                             <div class="realm-desc">1v1 Custom Duels • Wheel Spin & Coin Flips</div>
                         </div>
-                        <div class="realm-status pixel-text"><div class="status-dot"></div> <span id="pvp-player-count">0</span> IN</div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div><span id="pvp-player-count">0</span> ACTIVE</div>
                     </div>
                 </div>
             </div>
@@ -463,8 +473,7 @@
                 <h2 class="pixel-text" style="color: #d946ef; margin-bottom: 20px; font-size: 60px;">REDEEM CODE</h2>
                 <input type="text" id="gift-code-main" class="retro-input pixel-text" placeholder="ENTER CODE" style="text-transform:uppercase; margin-bottom:15px;">
                 <button class="mc-btn" style="background: var(--success); color:#000; width: 100%;" onclick="redeemCodeMain()">REDEEM</button>
-                <p id="redeem-msg" class="pixel-text" style="font-size: 28px; margin: 15px 0; height: 30px;"></p>
-                <button class="mc-btn" style="background: var(--danger); width: 100%;" onclick="hideModal('redeem-modal')">CLOSE</button>
+                <button class="mc-btn" style="background: var(--danger); width: 100%; margin-top: 15px;" onclick="hideModal('redeem-modal')">CLOSE</button>
             </div>
         </div>
 
@@ -515,7 +524,6 @@
                 <div class="info-box pixel-text" style="text-align: center; background: #000; border: 4px solid #111; font-size: 20px;">
                     Notify Admin:<br>Discord: @ashley.gg<br>SNT: @AshleyChan
                 </div>
-                <div id="bank-confirm-msg" class="pixel-text" style="font-size: 26px; margin-bottom: 10px; height:30px;"></div>
                 <div id="bank-confirm-btn-row" style="display: flex; gap: 10px; margin-top: 15px;">
                     <button class="mc-btn" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button>
                     <button class="mc-btn" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>
@@ -528,18 +536,17 @@
                 <h2 class="pixel-text" style="color: var(--warning); font-size: 50px;">DAILY LOOT</h2>
                 <div id="reward-active-view">
                     <div class="rewards-grid" id="rewards-grid">
-                        <div class="reward-box" onclick="pickRewardBox(0)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-0"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(1)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-1"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(2)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-2"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(3)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-3"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(4)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-4"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(5)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-5"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(0)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-0"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(1)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-1"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(2)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-2"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(3)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-3"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(4)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-4"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(5)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-5"></div></div></div>
                     </div>
                 </div>
                 <div id="reward-cooldown-view" class="hidden">
                     <div class="pixel-text" id="reward-timer" style="font-size: 60px; color: var(--danger); margin: 20px 0; background:#000; border:4px solid #111; padding:10px;">00:00:00</div>
                 </div>
-                <p id="reward-msg" class="pixel-text" style="font-size: 28px; margin-top: 15px; height: 60px;"></p>
                 <div style="margin-top: 15px;"><button class="mc-btn" style="background: var(--danger); width:100%;" onclick="hideModal('reward-modal')">CLOSE</button></div>
             </div>
         </div>
@@ -571,12 +578,24 @@
                 <div class="top-hud">
                     <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('blackjack')">◄ LEAVE</button></div>
                     <div class="hud-center"><div style="font-size: 40px; color: var(--accent-glow-2); text-shadow: 3px 3px 0 #000;" id="phase-display" class="pixel-text">WAITING</div></div>
-                    <div class="hud-right" style="display: flex; align-items: center;">
-                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                    <div class="hud-right-dock">
+                        <div style="position:relative;">
                             <button class="mc-btn small" onclick="togglePlayerList('bj-players-list')">👥 <span id="player-count">0</span></button>
                             <div id="bj-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                         </div>
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="hud-credits"></span></div>
+                        <button class="mc-btn circular" onclick="toggleChat('blackjack')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-blackjack" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-blackjack" class="mc-btn circular" onmousedown="startPTT('blackjack')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        
+                        <div id="chat-container-blackjack" class="dropdown-panel chat-hidden">
+                            <div class="chat-panel display:flex; flex-direction:column;">
+                                <div id="blackjack-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                                <div class="mmo-chat-input-row">
+                                    <input type="text" id="blackjack-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
+                                    <button class="mmo-chat-btn pixel-text" onclick="actSendChat('blackjack')">►</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -588,23 +607,9 @@
                     <div id="timers-container">
                         <div id="global-timer" class="global-timer pixel-text hidden">BETS CLOSING: <span id="g-time">15</span>s</div>
                         <div id="next-round-timer" class="global-timer pixel-text blue hidden">NEXT ROUND: <span id="n-time">5</span>s</div>
-                        <div id="idle-timer" class="global-timer pixel-text warning hidden">PLACE BET OR LOSE SEAT: <span id="i-time">7</span>s</div>
+                        <div id="idle-timer" class="global-timer pixel-text warning hidden" style="background:#eab308; color:#000;">PLACE BET OR LOSE SEAT: <span id="i-time">7</span>s</div>
                     </div>
                     <div id="seats-area"></div>
-                </div>
-
-                <div class="chat-dock">
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('blackjack')" style="position:relative;">💬<div id="notif-blackjack" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-blackjack" class="mc-btn circular" onmousedown="startPTT('blackjack')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
-                    </div>
-                    <div id="chat-container-blackjack" class="mmo-chat-container chat-hidden">
-                        <div id="blackjack-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
-                        <div class="mmo-chat-input-row">
-                            <input type="text" id="blackjack-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
-                            <button class="mmo-chat-btn pixel-text" onclick="actSendChat('blackjack')">►</button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -614,12 +619,24 @@
                 <div class="top-hud">
                     <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('dice')">◄ LEAVE</button></div>
                     <div class="hud-center"><div style="font-size: 40px; color: var(--warning); text-shadow: 3px 3px 0 #000;" id="dice-phase-display" class="pixel-text">BETS OPEN</div></div>
-                    <div class="hud-right" style="display: flex; align-items: center;">
-                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                    <div class="hud-right-dock">
+                        <div style="position:relative;">
                             <button class="mc-btn small" onclick="togglePlayerList('dice-players-list')">👥 <span id="dice-player-count">0</span></button>
                             <div id="dice-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                         </div>
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="dice-credits"></span></div>
+                        <button class="mc-btn circular" onclick="toggleChat('dice')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-dice" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-dice" class="mc-btn circular" onmousedown="startPTT('dice')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        
+                        <div id="chat-container-dice" class="dropdown-panel chat-hidden">
+                            <div class="chat-panel display:flex; flex-direction:column;">
+                                <div id="dice-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                                <div class="mmo-chat-input-row">
+                                    <input type="text" id="dice-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
+                                    <button class="mmo-chat-btn pixel-text" onclick="actSendChat('dice')">►</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -627,7 +644,7 @@
                     <div class="dice-container"><div id="die1" class="dice">⚀</div><div id="die2" class="dice">⚀</div></div>
                     <div style="text-align: center; margin-bottom: 20px;">
                         <div id="dice-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
-                        <div id="dice-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 2px solid #333; display:inline-block;">15s REMAINING</div>
+                        <div id="dice-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 4px solid #333; display:inline-block;">15s REMAINING</div>
                     </div>
                 </div>
 
@@ -641,31 +658,17 @@
                         </select>
                     </div>
                     <div class="arcade-grid">
-                        <div id="dice-btn-under" class="arcade-bet-box color-bet-btn" onclick="placeDiceBet('under')">
+                        <div id="dice-btn-under" class="arcade-bet-box" onclick="placeDiceBet('under')">
                             <div class="bet-badge pixel-text hidden" id="badge-under">0</div><div class="payout-overlay hidden" id="payout-under"></div>
                             <div class="arcade-bet-title pixel-text">UNDER 7</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
                         </div>
-                        <div id="dice-btn-seven" class="arcade-bet-box color-bet-btn" onclick="placeDiceBet('seven')">
+                        <div id="dice-btn-seven" class="arcade-bet-box" onclick="placeDiceBet('seven')">
                             <div class="bet-badge pixel-text hidden" id="badge-seven">0</div><div class="payout-overlay hidden" id="payout-seven"></div>
                             <div class="arcade-bet-title pixel-text" style="color:#a855f7;">EXACTLY 7</div><div class="arcade-bet-payout pixel-text">PAYS 4:1</div>
                         </div>
-                        <div id="dice-btn-over" class="arcade-bet-box color-bet-btn" onclick="placeDiceBet('over')">
+                        <div id="dice-btn-over" class="arcade-bet-box" onclick="placeDiceBet('over')">
                             <div class="bet-badge pixel-text hidden" id="badge-over">0</div><div class="payout-overlay hidden" id="payout-over"></div>
                             <div class="arcade-bet-title pixel-text" style="color:var(--success);">OVER 7</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="chat-dock">
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('dice')" style="position:relative;">💬<div id="notif-dice" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-dice" class="mc-btn circular" onmousedown="startPTT('dice')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
-                    </div>
-                    <div id="chat-container-dice" class="mmo-chat-container chat-hidden">
-                        <div id="dice-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
-                        <div class="mmo-chat-input-row">
-                            <input type="text" id="dice-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
-                            <button class="mmo-chat-btn pixel-text" onclick="actSendChat('dice')">►</button>
                         </div>
                     </div>
                 </div>
@@ -677,16 +680,28 @@
                 <div class="top-hud">
                     <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('derby')">◄ LEAVE</button></div>
                     <div class="hud-center"><div style="font-size: 40px; color: var(--warning); text-shadow: 3px 3px 0 #000;" id="derby-phase-display" class="pixel-text">BETS OPEN</div></div>
-                    <div class="hud-right" style="display: flex; align-items: center;">
-                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                    <div class="hud-right-dock">
+                        <div style="position:relative;">
                             <button class="mc-btn small" onclick="togglePlayerList('derby-players-list')">👥 <span id="derby-player-count">0</span></button>
                             <div id="derby-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                         </div>
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="derby-credits"></span></div>
+                        <button class="mc-btn circular" onclick="toggleChat('derby')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-derby" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-derby" class="mc-btn circular" onmousedown="startPTT('derby')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        
+                        <div id="chat-container-derby" class="dropdown-panel chat-hidden">
+                            <div class="chat-panel display:flex; flex-direction:column;">
+                                <div id="derby-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                                <div class="mmo-chat-input-row">
+                                    <input type="text" id="derby-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
+                                    <button class="mmo-chat-btn pixel-text" onclick="actSendChat('derby')">►</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="center-focus" style="padding-bottom: 180px;">
+                <div class="center-focus">
                     <div class="derby-track-container" id="derby-track">
                         <div class="derby-finish-line"></div>
                         <div class="derby-lane"><div class="lane-indicator pixel-text" id="track-ind-0" style="color:#ef4444;">RED | ?x</div><div class="racer-sprite" id="racer-0" style="background-color:#ef4444;"></div></div>
@@ -699,12 +714,12 @@
                     
                     <div style="text-align: center; margin-top: 15px;">
                         <div id="derby-result-text" class="pixel-text" style="font-size: 50px; color: #fff; text-shadow: 3px 3px 0 #000;">NEXT SPRINT SOON</div>
-                        <div id="derby-timer" class="pixel-text" style="font-size: 28px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 2px solid #333; display:inline-block;">15s REMAINING</div>
+                        <div id="derby-timer" class="pixel-text" style="font-size: 28px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 4px solid #333; display:inline-block;">15s REMAINING</div>
                     </div>
                 </div>
                 
-                <div class="arcade-bet-area" style="padding-top: 0;">
-                    <div class="master-bet-row" style="margin-bottom: 10px;">
+                <div class="arcade-bet-area">
+                    <div style="margin-bottom: 10px;">
                         <select id="derby-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 20px; padding: 6px;">
                             <option value="1000" selected>1,000</option>
                             <option value="5000">5,000</option>
@@ -739,20 +754,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="chat-dock">
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('derby')" style="position:relative;">💬<div id="notif-derby" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-derby" class="mc-btn circular" onmousedown="startPTT('derby')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
-                    </div>
-                    <div id="chat-container-derby" class="mmo-chat-container chat-hidden">
-                        <div id="derby-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
-                        <div class="mmo-chat-input-row">
-                            <input type="text" id="derby-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
-                            <button class="mmo-chat-btn pixel-text" onclick="actSendChat('derby')">►</button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -761,12 +762,24 @@
                 <div class="top-hud">
                     <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('cups')">◄ LEAVE</button></div>
                     <div class="hud-center"><div style="font-size: 40px; color: #f59e0b; text-shadow: 3px 3px 0 #000;" id="cups-phase-display" class="pixel-text">WAITING</div></div>
-                    <div class="hud-right" style="display: flex; align-items: center;">
-                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                    <div class="hud-right-dock">
+                        <div style="position:relative;">
                             <button class="mc-btn small" onclick="togglePlayerList('cups-players-list')">👥 <span id="cups-player-count">0</span></button>
                             <div id="cups-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                         </div>
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="cups-credits"></span></div>
+                        <button class="mc-btn circular" onclick="toggleChat('cups')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-cups" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-cups" class="mc-btn circular" onmousedown="startPTT('cups')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        
+                        <div id="chat-container-cups" class="dropdown-panel chat-hidden">
+                            <div class="chat-panel display:flex; flex-direction:column;">
+                                <div id="cups-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                                <div class="mmo-chat-input-row">
+                                    <input type="text" id="cups-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
+                                    <button class="mmo-chat-btn pixel-text" onclick="actSendChat('cups')">►</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -779,7 +792,7 @@
                     
                     <div style="text-align: center; margin-top: 40px;">
                         <div id="cups-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">WHERE IS THE BALL?</div>
-                        <div id="cups-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 2px solid #333; display:inline-block;">WAITING FOR NEXT SHUFFLE</div>
+                        <div id="cups-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 4px solid #333; display:inline-block;">WAITING FOR NEXT SHUFFLE</div>
                     </div>
                 </div>
                 
@@ -807,20 +820,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="chat-dock">
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('cups')" style="position:relative;">💬<div id="notif-cups" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-cups" class="mc-btn circular" onmousedown="startPTT('cups')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
-                    </div>
-                    <div id="chat-container-cups" class="mmo-chat-container chat-hidden">
-                        <div id="cups-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
-                        <div class="mmo-chat-input-row">
-                            <input type="text" id="cups-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
-                            <button class="mmo-chat-btn pixel-text" onclick="actSendChat('cups')">►</button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -829,12 +828,24 @@
                 <div class="top-hud">
                     <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('color')">◄ LEAVE</button></div>
                     <div class="hud-center"><div style="font-size: 40px; color: var(--success); text-shadow: 3px 3px 0 #000;" id="color-phase-display" class="pixel-text">BETS OPEN</div></div>
-                    <div class="hud-right" style="display: flex; align-items: center;">
-                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                    <div class="hud-right-dock">
+                        <div style="position:relative;">
                             <button class="mc-btn small" onclick="togglePlayerList('color-players-list')">👥 <span id="color-player-count">0</span></button>
                             <div id="color-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                         </div>
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="color-credits"></span></div>
+                        <button class="mc-btn circular" onclick="toggleChat('color')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-color" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-color" class="mc-btn circular" onmousedown="startPTT('color')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        
+                        <div id="chat-container-color" class="dropdown-panel chat-hidden">
+                            <div class="chat-panel display:flex; flex-direction:column;">
+                                <div id="color-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                                <div class="mmo-chat-input-row">
+                                    <input type="text" id="color-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
+                                    <button class="mmo-chat-btn pixel-text" onclick="actSendChat('color')">►</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -846,7 +857,7 @@
                     </div>
                     <div style="text-align: center; margin-top: 20px;">
                         <div id="color-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div>
-                        <div id="color-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 2px solid #333; display:inline-block;">15s REMAINING</div>
+                        <div id="color-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 4px solid #333; display:inline-block;">15s REMAINING</div>
                     </div>
                 </div>
 
@@ -861,42 +872,28 @@
                     </div>
                     <div class="color-grid">
                         <div id="color-btn-red" class="arcade-bet-box color-bet-box br-red color-bet-btn" onclick="placeColorBet('red')">
-                            <div class="bet-badge pixel-text hidden" id="badge-red">0</div><div class="color-payout-overlay hidden" id="payout-red"></div>
-                            <div class="color-bet-title">RED</div>
+                            <div class="bet-badge pixel-text hidden" id="badge-red">0</div>
+                            <div class="color-bet-title pixel-text" style="color: #ef4444; text-shadow: 0 0 10px #ef4444;">RED</div>
                         </div>
                         <div id="color-btn-blue" class="arcade-bet-box color-bet-box br-blue color-bet-btn" onclick="placeColorBet('blue')">
-                            <div class="bet-badge pixel-text hidden" id="badge-blue">0</div><div class="color-payout-overlay hidden" id="payout-blue"></div>
-                            <div class="color-bet-title">BLUE</div>
+                            <div class="bet-badge pixel-text hidden" id="badge-blue">0</div>
+                            <div class="color-bet-title pixel-text" style="color: #3b82f6; text-shadow: 0 0 10px #3b82f6;">BLUE</div>
                         </div>
                         <div id="color-btn-yellow" class="arcade-bet-box color-bet-box br-yellow color-bet-btn" onclick="placeColorBet('yellow')">
-                            <div class="bet-badge pixel-text hidden" id="badge-yellow">0</div><div class="color-payout-overlay hidden" id="payout-yellow"></div>
-                            <div class="color-bet-title">YELLOW</div>
+                            <div class="bet-badge pixel-text hidden" id="badge-yellow">0</div>
+                            <div class="color-bet-title pixel-text" style="color: #eab308; text-shadow: 0 0 10px #eab308;">YELLOW</div>
                         </div>
                         <div id="color-btn-green" class="arcade-bet-box color-bet-box br-green color-bet-btn" onclick="placeColorBet('green')">
-                            <div class="bet-badge pixel-text hidden" id="badge-green">0</div><div class="color-payout-overlay hidden" id="payout-green"></div>
-                            <div class="color-bet-title">GREEN</div>
+                            <div class="bet-badge pixel-text hidden" id="badge-green">0</div>
+                            <div class="color-bet-title pixel-text" style="color: #10b981; text-shadow: 0 0 10px #10b981;">GREEN</div>
                         </div>
                         <div id="color-btn-pink" class="arcade-bet-box color-bet-box br-pink color-bet-btn" onclick="placeColorBet('pink')">
-                            <div class="bet-badge pixel-text hidden" id="badge-pink">0</div><div class="color-payout-overlay hidden" id="payout-pink"></div>
-                            <div class="color-bet-title">PINK</div>
+                            <div class="bet-badge pixel-text hidden" id="badge-pink">0</div>
+                            <div class="color-bet-title pixel-text" style="color: #ec4899; text-shadow: 0 0 10px #ec4899;">PINK</div>
                         </div>
                         <div id="color-btn-white" class="arcade-bet-box color-bet-box br-white color-bet-btn" onclick="placeColorBet('white')">
-                            <div class="bet-badge pixel-text hidden" id="badge-white">0</div><div class="color-payout-overlay hidden" id="payout-white"></div>
-                            <div class="color-bet-title" style="color:#f8fafc; text-shadow: 2px 2px 0 #555;">WHITE</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="chat-dock">
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('color')" style="position:relative;">💬<div id="notif-color" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-color" class="mc-btn circular" onmousedown="startPTT('color')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
-                    </div>
-                    <div id="chat-container-color" class="mmo-chat-container chat-hidden">
-                        <div id="color-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
-                        <div class="mmo-chat-input-row">
-                            <input type="text" id="color-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
-                            <button class="mmo-chat-btn pixel-text" onclick="actSendChat('color')">►</button>
+                            <div class="bet-badge pixel-text hidden" id="badge-white">0</div>
+                            <div class="color-bet-title pixel-text" style="color: #f8fafc; text-shadow: 0 0 10px #f8fafc;">WHITE</div>
                         </div>
                     </div>
                 </div>
@@ -908,12 +905,24 @@
                 <div class="top-hud">
                     <div class="hud-left"><button class="mc-btn small" onclick="exitToMenu('pvp')">◄ LEAVE</button></div>
                     <div class="hud-center"><div style="font-size: 40px; color: var(--danger); text-shadow: 3px 3px 0 #000;" id="pvp-phase-display" class="pixel-text">THE ARENA</div></div>
-                    <div class="hud-right" style="display: flex; align-items: center;">
-                        <div style="position:relative; display:inline-block; margin-right: 15px;">
+                    <div class="hud-right-dock">
+                        <div style="position:relative;">
                             <button class="mc-btn small" onclick="togglePlayerList('pvp-players-list')">👥 <span id="pvp-player-count">0</span></button>
                             <div id="pvp-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                         </div>
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="pvp-credits"></span></div>
+                        <button class="mc-btn circular" onclick="toggleChat('pvp')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-pvp" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-pvp" class="mc-btn circular" onmousedown="startPTT('pvp')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        
+                        <div id="chat-container-pvp" class="dropdown-panel chat-hidden">
+                            <div class="chat-panel display:flex; flex-direction:column;">
+                                <div id="pvp-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                                <div class="mmo-chat-input-row">
+                                    <input type="text" id="pvp-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
+                                    <button class="mmo-chat-btn pixel-text" onclick="actSendChat('pvp')">►</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -961,20 +970,6 @@
 
                         <div style="margin-top: 30px;">
                             <button class="mc-btn" style="background: var(--danger); width: 300px;" onclick="leavePvpSeat()">STAND UP FROM ARENA</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="chat-dock">
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('pvp')" style="position:relative;">💬<div id="notif-pvp" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-pvp" class="mc-btn circular" onmousedown="startPTT('pvp')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
-                    </div>
-                    <div id="chat-container-pvp" class="mmo-chat-container chat-hidden">
-                        <div id="pvp-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
-                        <div class="mmo-chat-input-row">
-                            <input type="text" id="pvp-chat-input" class="mmo-chat-input pixel-text" placeholder="Press Enter to chat..." maxlength="100">
-                            <button class="mmo-chat-btn pixel-text" onclick="actSendChat('pvp')">►</button>
                         </div>
                     </div>
                 </div>
@@ -1063,6 +1058,7 @@
                 audioChunks = [];
                 mediaRecorder.start();
                 document.getElementById(`ptt-btn-${gameType}`).classList.add('active');
+                document.getElementById('mic-live-banner').classList.remove('hidden');
             }
         };
 
@@ -1070,6 +1066,7 @@
             if(mediaRecorder && mediaRecorder.state !== 'inactive') {
                 mediaRecorder.stop();
                 document.querySelectorAll('.mc-btn.circular').forEach(btn => btn.classList.remove('active'));
+                document.getElementById('mic-live-banner').classList.add('hidden');
             }
         };
 
@@ -1196,6 +1193,7 @@
 
             socket.emit('place_bid', { id, username: currentUser.username, bidAmount: amt });
         }
+
 
         // --- INBOX SYSTEM LOGIC ---
         function openInbox() {
@@ -1542,7 +1540,6 @@
             if (visibleDealerCards.length > 0) { dBadge.innerText = calculateValue(visibleDealerCards); dBadge.classList.remove('hidden'); } else { dBadge.classList.add('hidden'); }
 
             const seatsArea = document.getElementById('seats-area');
-            const isMobile = window.innerWidth <= 768;
             let activeElements = [];
             
             if(currentUser) { const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if(mySeatData) { mySeatIndex = state.seats.indexOf(mySeatData);} else { mySeatIndex = -1; } }
@@ -1588,7 +1585,7 @@
                         if (seatData.hands[0].bet === 0) {
                             let startBet = window.lastBetAmount || 0; let opts = [1000, 5000, 20000, 50000, 100000]; if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
                             let optHTML = `<option value="1000" ${startBet === 1000 || startBet === 0 ? 'selected' : ''}>1,000</option>`; optHTML += [5000, 20000, 50000, 100000].map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
-                            html += `<div class="seat-bet-box"><div style="display: flex; gap: 8px;"><select id="inseat-bet-${index}" class="pixel-text" style="flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 2px solid var(--border-std); outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;">${optHTML}</select><button class="mc-btn small" style="background:var(--success); color:#000;" onclick="actPlaceBet(${index})">BET</button></div></div><div style="width: 100%; margin-top: 5px;"><button class="mc-btn small" style="background:var(--danger); width:100%;" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
+                            html += `<div class="seat-bet-box"><div style="display: flex; gap: 8px;"><select id="inseat-bet-${index}" class="pixel-text" style="flex: 1; padding: 6px; font-size: 24px; background: #0f172a; color: var(--warning); border: 4px solid #111; outline: none; font-weight: bold; text-align: center; cursor: pointer; appearance: none;">${optHTML}</select><button class="mc-btn small" style="background:var(--success); color:#000;" onclick="actPlaceBet(${index})">BET</button></div></div><div style="width: 100%; margin-top: 5px;"><button class="mc-btn small" style="background:var(--danger); width:100%;" onclick="actEjectSeat(${index})">STAND UP</button></div>`;
                         }
                     } else if (isMySeat && state.status === 'waiting') { html += `<div style="width: 100%; margin-top: 5px;"><button class="mc-btn small" style="background:var(--danger); width:100%;" onclick="actEjectSeat(${index})">STAND UP</button></div>`; }
 
@@ -1605,23 +1602,9 @@
             }
             
             seatsArea.innerHTML = ''; 
-            if (isMobile || state.status === 'playing' || state.status === 'dealerTurn' || state.status === 'resolving') { 
-                activeElements.forEach(el => { 
-                    el.style.position = 'relative'; 
-                    el.style.transform = 'none'; 
-                    el.style.left = 'auto'; 
-                    el.style.bottom = 'auto'; 
-                    seatsArea.appendChild(el); 
-                }); 
-            } else { 
-                activeElements.forEach((el, i) => { 
-                    el.style.position = 'absolute'; 
-                    el.style.transform = 'translate(-50%, 0)'; 
-                    if (state.seats.length === 3) { el.style.left = `${[25, 50, 75][i]}%`; el.style.bottom = `0px`; } 
-                    else if (state.seats.length === 5) { el.style.left = `${[12, 31, 50, 69, 88][i]}%`; el.style.bottom = `${[40, 20, 10, 20, 40][i]}px`; } 
-                    seatsArea.appendChild(el); 
-                }); 
-            }
+            activeElements.forEach(el => { 
+                seatsArea.appendChild(el); 
+            }); 
         }
 
         function manageTimers(state) {
