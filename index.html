@@ -38,8 +38,8 @@
         #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100dvh; background: var(--bg-dark); border-radius: 0; border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
 
         /* --- TOAST SYSTEM --- */
-        #toast-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 600px; z-index: 9999; pointer-events: none; }
-        .toast { background: rgba(0,0,0,0.95); border: 4px solid #fff; padding: 15px 30px; font-size: 28px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.8); transition: opacity 0.3s, transform 0.3s; pointer-events: auto; }
+        #toast-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 9999; pointer-events: none; width: 100%; max-width: 600px; align-items: center; }
+        .toast { background: rgba(0,0,0,0.95); border: 4px solid #fff; padding: 15px 30px; font-size: 28px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.8); transition: opacity 0.3s, transform 0.3s; pointer-events: auto; width: auto; }
         .toast-error { border-color: var(--danger); color: var(--danger); }
         .toast-success { border-color: var(--success); color: var(--success); }
         .toast-warning { border-color: var(--warning); color: var(--warning); }
@@ -92,13 +92,9 @@
         .hotbar-slot:active { border-color: #383838 #A8A8A8 #A8A8A8 #383838; transform: translateY(0); padding-top: 2px; padding-bottom: 0; }
         .notif-badge { position: absolute; top: -8px; right: -8px; background: var(--danger); border: 2px solid #fff; border-radius: 50%; width: 20px; height: 20px; font-size: 14px; line-height: 16px; text-align: center; box-shadow: 2px 2px 0 #000; font-family: Arial; text-shadow: none; color: #fff;}
 
-        /* Custom Pixel SVGs for Hotbar */
-        .svg-icon { width: 32px; height: 32px; }
-
         /* --- REALM SELECTOR --- */
-        .realm-card { display: flex; align-items: center; background: rgba(0,0,0,0.6); border: 4px solid #444; margin-bottom: 12px; padding: 10px; cursor: pointer; transition: 0.1s; text-align: left;}
+        .realm-card { display: flex; align-items: center; background: rgba(0,0,0,0.6); border: 4px solid #444; margin-bottom: 12px; padding: 15px 20px; cursor: pointer; transition: 0.1s; text-align: left;}
         .realm-card:hover { border-color: var(--success); background: rgba(16, 185, 129, 0.15); transform: translateX(5px); }
-        .realm-icon { width: 70px; height: 70px; font-size: 48px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; background: #0f172a; border: 4px solid; border-color: #333 #111 #111 #333; margin-right: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
         .realm-info { flex: 1; }
         .realm-title { font-size: 32px; color: #fff; font-weight: bold; margin-bottom: 4px; line-height: 1;}
         .realm-desc { font-size: 20px; color: #94a3b8; line-height: 1;}
@@ -113,7 +109,6 @@
         .game-area.coin-bg { background: radial-gradient(circle at center, #111827 0%, #000 100%); }
         .game-area.color-bg { background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
 
-        /* Top HUD & DOCKED CHAT */
         .top-hud { flex-shrink: 0; position: relative; z-index: 100; width: 100%; padding: 15px 30px; display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(to bottom, rgba(0,0,0,0.95), transparent);}
         .hud-center { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; top: 15px;}
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border: 4px solid; border-color: #555 #111 #111 #555; color: #fff; font-size: 26px; display: flex; align-items: center; gap: 10px; height: 50px;}
@@ -121,20 +116,22 @@
         .player-dropdown-list { position: absolute; top: calc(100% + 10px); right: 0; width: 250px; background: rgba(0,0,0,0.95); border: 4px solid #555; max-height: 300px; overflow-y: auto; z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.9); padding: 5px; }
         .lobby-player { padding: 5px 10px; border-bottom: 1px dashed #333; text-align: left; font-size: 24px; }
         
-        /* Dropdown Chat */
-        .dropdown-panel { position: absolute; top: calc(100% + 10px); right: 0; width: 350px; background: rgba(0,0,0,0.95); border: 4px solid #555; z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.9); display: flex; flex-direction: column; }
-        .chat-panel { height: 350px; }
-        .mmo-chat-messages { flex: 1; overflow-y: auto; padding: 10px; color: #fff; font-size: 22px; border-bottom: 4px solid #333;}
-        .mmo-chat-input-row { display: flex; height: 40px;}
-        .mmo-chat-input { flex: 1; background: #000; border: none; color: #fff; padding: 0 10px; font-family: 'VT323'; font-size: 22px; outline: none; margin: 0;}
-        .mmo-chat-btn { background: var(--success); color: #000; border: none; padding: 0 15px; font-family: 'VT323'; font-size: 20px; cursor: pointer; font-weight: bold;}
-        .chat-notif { position: absolute; top: -5px; right: -5px; background: var(--danger); width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; pointer-events: none; }
-
         /* Middle Game Board */
         .center-focus { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 10; min-height: 0;}
         
         /* Bottom Control Deck */
         .arcade-bet-area { flex-shrink: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(0,0,0,0.95) 70%, transparent); display: flex; flex-direction: column; align-items: center; z-index: 50;}
+
+        /* --- DOCKED CHAT & PTT (BOTTOM LEFT CORNER) --- */
+        .chat-dock { position: absolute; bottom: 20px; left: 20px; z-index: 150; display: flex; flex-direction: column-reverse; align-items: flex-start; pointer-events: none;}
+        .floating-chat-controls { display: flex; gap: 10px; margin-top: 10px; pointer-events: auto;}
+        .mmo-chat-container { width: 350px; height: 250px; display: flex; flex-direction: column; opacity: 0.9; transition: opacity 0.2s, transform 0.2s; transform-origin: bottom left; pointer-events: auto; background: rgba(0,0,0,0.85); border: 4px solid #333; }
+        .mmo-chat-container.chat-hidden { opacity: 0; transform: scale(0); pointer-events: none; }
+        .mmo-chat-messages { flex: 1; overflow-y: auto; padding: 10px; text-shadow: 1px 1px 0 #000; color: #fff; font-size: 22px; border-bottom: 4px solid #333;}
+        .mmo-chat-input-row { display: flex; height: 40px;}
+        .mmo-chat-input { flex: 1; background: #000; border: none; color: #fff; padding: 0 10px; font-family: 'VT323'; font-size: 22px; outline: none; margin: 0;}
+        .mmo-chat-btn { background: var(--success); color: #000; border: none; padding: 0 15px; font-family: 'VT323'; font-size: 24px; cursor: pointer; font-weight: bold;}
+        .chat-notif { position: absolute; top: -5px; right: -5px; background: var(--danger); width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; pointer-events: none; }
 
         /* General Elements */
         .info-box { background: rgba(0,0,0,0.5); border: 4px solid #334155; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
@@ -173,9 +170,6 @@
         .card.dealer-hidden { background: repeating-linear-gradient(45deg, #222, #222 5px, #444 5px, #444 10px); color: transparent; }
         .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.8); z-index: 10; font-family: Arial; padding-top: 1px;}
         
-        /* 2x2 Grid for Blackjack Controls */
-        .seat-controls { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 6px; width: 100%; margin-top: 10px;}
-
         /* Arcade Area Grid Items */
         .arcade-grid { display: flex; justify-content: center; gap: 15px; margin-bottom: 5px; flex-wrap: wrap;}
         .arcade-bet-box { background: #2d2d2d; border: 4px solid; border-color: #555 #111 #111 #555; padding: 15px; text-align: center; width: 200px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
@@ -192,7 +186,7 @@
         .dice.shake { animation: subtleShake 0.1s infinite; color: var(--warning); }
         @keyframes subtleShake { 0% { transform: translate(2px, 2px) rotate(0deg); } 50% { transform: translate(-2px, -2px) rotate(-2deg); } 100% { transform: translate(2px, -2px) rotate(2deg); } }
 
-        /* Derby */
+        /* Derby Fix: Visible Horses */
         .derby-track-container { width: 90%; max-width: 1000px; height: 280px; background: #111; border: 6px solid #333; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: inset 0 0 40px #000, 0 20px 40px rgba(0,0,0,0.8);}
         .derby-lane { flex: 1; border-bottom: 2px dashed #444; position: relative; display: flex; align-items: center; padding: 0 10px; overflow: visible; background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 60px 100%; }
         .derby-lane.scrolling { animation: trackScroll 0.4s linear infinite; }
@@ -267,8 +261,7 @@
     <div id="arcade-cabinet">
         <div id="toast-container"></div>
         <div id="mic-live-banner" class="hidden pixel-text">🔴 MIC LIVE</div>
-
-        <!-- AUTH VIEW -->
+        
         <div id="auth-view" class="full-menu">
             <h1 class="pixel-text" style="font-size: 100px; text-shadow: 6px 6px 0px #000, 0 0 40px var(--accent-glow); margin-bottom: 20px; text-align: center;">CASINO ROYALE</h1>
             
@@ -295,7 +288,6 @@
             </div>
         </div>
 
-        <!-- MAIN DASHBOARD -->
         <div id="main-menu-view" class="full-menu hidden" style="background: url('https://www.transparenttextures.com/patterns/stardust.png'), linear-gradient(to bottom, #1e293b, #000);">
             
             <h1 class="pixel-text" style="font-size: 120px; margin-bottom: 50px; text-shadow: 6px 6px 0px #000, 0 0 50px rgba(59, 130, 246, 0.5); text-align: center; letter-spacing: 4px;">ARCADE HUB</h1>
@@ -303,7 +295,6 @@
             <button class="mc-btn" style="background: var(--success); color:#000; font-size: 60px; padding: 20px 80px; box-shadow: 0 10px 30px rgba(16,185,129,0.4);" onclick="showModal('play-category-modal')">▶ PLAY NOW</button>
             <button class="mc-btn" style="background: #3b82f6; margin-top: 20px; font-size: 32px;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
 
-            <!-- MMO HOTBAR (BOTTOM HUD) -->
             <div class="hotbar-wrapper">
                 <div class="hotbar">
                     <div class="hotbar-slot pixel-text" onclick="showProfile()">PROFILE</div>
@@ -318,7 +309,6 @@
             </div>
         </div>
 
-        <!-- REALM SELECTOR (SERVER BROWSER) -->
         <div id="play-category-modal" class="overlay-menu hidden">
             <div class="modal-box mc-panel custom-scroll" style="width: 800px; padding: 20px; text-align: left;">
                 
@@ -328,9 +318,7 @@
                 </div>
                 
                 <div style="max-height: 60dvh; overflow-y: auto; padding-right: 10px;" class="custom-scroll">
-                    <!-- TABLE GAMES -->
                     <div class="realm-card" onclick="joinRoom('5seat')">
-                        <div class="realm-icon" style="color:var(--success);">♠️</div>
                         <div class="realm-info pixel-text">
                             <div class="realm-title">CLASSIC BLACKJACK</div>
                             <div class="realm-desc">5-Seat Table • Dealer hits on soft 17 • Max 100k</div>
@@ -338,7 +326,6 @@
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span class="lobby-cnt-5seat">0 ACTIVE</span></div>
                     </div>
                     <div class="realm-card" onclick="joinRoom('3seat')">
-                        <div class="realm-icon" style="color:var(--accent-glow);">💎</div>
                         <div class="realm-info pixel-text">
                             <div class="realm-title">VIP BLACKJACK</div>
                             <div class="realm-desc">3-Seat Exclusive Table • Fast Paced</div>
@@ -346,9 +333,7 @@
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span class="lobby-cnt-3seat">0 ACTIVE</span></div>
                     </div>
 
-                    <!-- ARCADE -->
                     <div class="realm-card" style="margin-top: 20px;" onclick="joinDerby()">
-                        <div class="realm-icon" style="color:var(--warning);">🐎</div>
                         <div class="realm-info pixel-text">
                             <div class="realm-title">8-BIT DERBY SPRINT</div>
                             <div class="realm-desc">High-Volatility 6-Lane Track • Underdog Boost Active</div>
@@ -356,7 +341,6 @@
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="derby-player-count">0</span> ACTIVE</div>
                     </div>
                     <div class="realm-card" onclick="joinCups()">
-                        <div class="realm-icon" style="color:#ea580c;">🔴</div>
                         <div class="realm-info pixel-text">
                             <div class="realm-title">STREET HUSTLE: 3 CUPS</div>
                             <div class="realm-desc">Find the golden ball • 2.5x Payout • Single Bet Locked</div>
@@ -364,7 +348,6 @@
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="cups-player-count">0</span> ACTIVE</div>
                     </div>
                     <div class="realm-card" onclick="joinDice()">
-                        <div class="realm-icon" style="color:#a855f7;">🎲</div>
                         <div class="realm-info pixel-text">
                             <div class="realm-title">HIGH-LOW DICE</div>
                             <div class="realm-desc">Classic 2-Die Roll • Jackpot 7s Pays 4:1</div>
@@ -372,7 +355,6 @@
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="dice-player-count">0</span> ACTIVE</div>
                     </div>
                     <div class="realm-card" onclick="joinColorGame()">
-                        <div class="realm-icon" style="color:var(--success);">🟩</div>
                         <div class="realm-info pixel-text">
                             <div class="realm-title">PERYA COLOR GAME</div>
                             <div class="realm-desc">3 Color Dice • Multipliers stack on hits</div>
@@ -380,9 +362,7 @@
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="color-player-count">0</span> ACTIVE</div>
                     </div>
 
-                    <!-- PVP -->
                     <div class="realm-card" style="margin-top: 20px; border-color: var(--danger);" onclick="joinPVP()">
-                        <div class="realm-icon" style="color:var(--danger);">⚔️</div>
                         <div class="realm-info pixel-text">
                             <div class="realm-title" style="color: var(--danger);">THE ARENA (PVP)</div>
                             <div class="realm-desc">1v1 Custom Duels • Wheel Spin & Coin Flips</div>
@@ -393,10 +373,6 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- SYSTEM MODALS                              -->
-        <!-- ========================================== -->
-
         <div id="market-modal" class="overlay-menu hidden" style="z-index: 400;">
             <div class="modal-box mc-panel custom-scroll" style="width: 1000px; max-width: 95vw;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 4px solid #333;">
@@ -405,12 +381,10 @@
                 </div>
                 
                 <div class="market-split">
-                    <!-- Global Auctions -->
                     <div class="market-col custom-scroll">
                         <h3 class="pixel-text" style="font-size: 32px; color: #fff; text-align: center; margin-bottom: 10px;">LIVE AUCTIONS</h3>
                         <div id="market-auctions-list"></div>
                     </div>
-                    <!-- My Inventory -->
                     <div class="market-col custom-scroll">
                         <h3 class="pixel-text" style="font-size: 32px; color: #fff; text-align: center; margin-bottom: 10px;">MY INVENTORY</h3>
                         <div id="market-inventory-list"></div>
@@ -543,6 +517,7 @@
                 <div class="info-box pixel-text" style="text-align: center; background: #000; border: 4px solid #111; font-size: 20px;">
                     Notify Admin:<br>Discord: @ashley.gg<br>SNT: @AshleyChan
                 </div>
+                <div id="bank-confirm-msg" class="pixel-text" style="font-size: 26px; margin-bottom: 10px; height:30px;"></div>
                 <div id="bank-confirm-btn-row" style="display: flex; gap: 10px; margin-top: 15px;">
                     <button class="mc-btn" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button>
                     <button class="mc-btn" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>
@@ -555,12 +530,12 @@
                 <h2 class="pixel-text" style="color: var(--warning); font-size: 50px;">DAILY LOOT</h2>
                 <div id="reward-active-view">
                     <div class="rewards-grid" id="rewards-grid">
-                        <div class="reward-box" onclick="pickRewardBox(0)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-0"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(1)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-1"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(2)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-2"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(3)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-3"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(4)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-4"></div></div></div>
-                        <div class="reward-box" onclick="pickRewardBox(5)"><div class="inner"><div class="front"><svg viewBox="0 0 16 16" fill="#fcd34d"><path d="M2 4h12v8H2z"/><path fill="#b45309" d="M7 8h2v2H7z"/></svg></div><div class="back pixel-text" id="box-val-5"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(0)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-0"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(1)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-1"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(2)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-2"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(3)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-3"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(4)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-4"></div></div></div>
+                        <div class="reward-box" onclick="pickRewardBox(5)"><div class="inner"><div class="front">📦</div><div class="back pixel-text" id="box-val-5"></div></div></div>
                     </div>
                 </div>
                 <div id="reward-cooldown-view" class="hidden">
@@ -592,11 +567,6 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- 4. GAME INTERFACES (FULL SCREEN BOARDS)    -->
-        <!-- ========================================== -->
-
-        <!-- BLACKJACK -->
         <div id="game-interface" class="game-interface hidden">
             <div class="game-area">
                 <div class="top-hud">
@@ -610,10 +580,9 @@
                     <div class="hud-center"><div style="font-size: 40px; color: var(--accent-glow-2); text-shadow: 3px 3px 0 #000;" id="phase-display" class="pixel-text">WAITING</div></div>
                     <div class="hud-right-dock" style="display: flex; gap: 10px; align-items: center;">
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="hud-credits"></span></div>
-                        <button class="mc-btn circular" onclick="toggleChat('blackjack')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-blackjack" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-blackjack" class="mc-btn circular" onmousedown="startPTT('blackjack')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        <button class="mc-btn circular" onclick="toggleChat('blackjack')" style="position:relative;">💬<div id="notif-blackjack" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-blackjack" class="mc-btn circular" onmousedown="startPTT('blackjack')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                         
-                        <!-- DOCKED CHAT -->
                         <div id="chat-container-blackjack" class="dropdown-panel chat-hidden">
                             <div class="chat-panel display:flex; flex-direction:column;">
                                 <div id="blackjack-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
@@ -641,7 +610,6 @@
             </div>
         </div>
 
-        <!-- HIGH LOW DICE -->
         <div id="dice-interface" class="game-interface hidden">
             <div class="game-area dice-bg">
                 <div class="top-hud">
@@ -652,11 +620,13 @@
                             <div id="dice-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                         </div>
                     </div>
+                    
                     <div class="hud-center"><div style="font-size: 40px; color: var(--warning); text-shadow: 3px 3px 0 #000;" id="dice-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    
                     <div class="hud-right-dock" style="display: flex; gap: 10px; align-items: center;">
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="dice-credits"></span></div>
-                        <button class="mc-btn circular" onclick="toggleChat('dice')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-dice" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-dice" class="mc-btn circular" onmousedown="startPTT('dice')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        <button class="mc-btn circular" onclick="toggleChat('dice')" style="position:relative;">💬<div id="notif-dice" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-dice" class="mc-btn circular" onmousedown="startPTT('dice')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                         
                         <div id="chat-container-dice" class="dropdown-panel chat-hidden">
                             <div class="chat-panel display:flex; flex-direction:column;">
@@ -705,7 +675,6 @@
             </div>
         </div>
 
-        <!-- 8-BIT DERBY SPRINT -->
         <div id="derby-interface" class="game-interface hidden">
             <div class="game-area coin-bg">
                 <div class="top-hud">
@@ -716,11 +685,13 @@
                             <div id="derby-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                         </div>
                     </div>
+                    
                     <div class="hud-center"><div style="font-size: 40px; color: var(--warning); text-shadow: 3px 3px 0 #000;" id="derby-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    
                     <div class="hud-right-dock" style="display: flex; gap: 10px; align-items: center;">
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="derby-credits"></span></div>
-                        <button class="mc-btn circular" onclick="toggleChat('derby')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-derby" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-derby" class="mc-btn circular" onmousedown="startPTT('derby')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        <button class="mc-btn circular" onclick="toggleChat('derby')" style="position:relative;">💬<div id="notif-derby" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-derby" class="mc-btn circular" onmousedown="startPTT('derby')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                         
                         <div id="chat-container-derby" class="dropdown-panel chat-hidden">
                             <div class="chat-panel display:flex; flex-direction:column;">
@@ -763,34 +734,33 @@
                     <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 100%; max-width: 1200px;">
                         <div id="derby-btn-0" class="arcade-bet-box derby-bet-box lane-1-color" onclick="placeDerbyBet(0)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-0">0</div>
-                            <div class="arcade-bet-title pixel-text" style="color:#ef4444;">RED</div><div id="bet-mult-0" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="derby-bet-title pixel-text" style="color:#ef4444;">RED</div><div id="bet-mult-0" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
                         <div id="derby-btn-1" class="arcade-bet-box derby-bet-box lane-2-color" onclick="placeDerbyBet(1)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-1">0</div>
-                            <div class="arcade-bet-title pixel-text" style="color:#3b82f6;">BLUE</div><div id="bet-mult-1" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="derby-bet-title pixel-text" style="color:#3b82f6;">BLUE</div><div id="bet-mult-1" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
                         <div id="derby-btn-2" class="arcade-bet-box derby-bet-box lane-3-color" onclick="placeDerbyBet(2)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-2">0</div>
-                            <div class="arcade-bet-title pixel-text" style="color:#10b981;">GREEN</div><div id="bet-mult-2" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="derby-bet-title pixel-text" style="color:#10b981;">GREEN</div><div id="bet-mult-2" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
                         <div id="derby-btn-3" class="arcade-bet-box derby-bet-box lane-4-color" onclick="placeDerbyBet(3)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-3">0</div>
-                            <div class="arcade-bet-title pixel-text" style="color:#a855f7;">PURPLE</div><div id="bet-mult-3" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="derby-bet-title pixel-text" style="color:#a855f7;">PURPLE</div><div id="bet-mult-3" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
                         <div id="derby-btn-4" class="arcade-bet-box derby-bet-box lane-5-color" onclick="placeDerbyBet(4)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-4">0</div>
-                            <div class="arcade-bet-title pixel-text" style="color:#ec4899;">PINK</div><div id="bet-mult-4" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="derby-bet-title pixel-text" style="color:#ec4899;">PINK</div><div id="bet-mult-4" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
                         <div id="derby-btn-5" class="arcade-bet-box derby-bet-box lane-6-color" onclick="placeDerbyBet(5)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-5">0</div>
-                            <div class="arcade-bet-title pixel-text" style="color:#fbbf24;">GOLD</div><div id="bet-mult-5" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="derby-bet-title pixel-text" style="color:#fbbf24;">GOLD</div><div id="bet-mult-5" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 3 CUPS GAME -->
         <div id="cups-interface" class="game-interface hidden">
             <div class="game-area coin-bg">
                 <div class="top-hud">
@@ -801,11 +771,13 @@
                             <div id="cups-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                         </div>
                     </div>
+                    
                     <div class="hud-center"><div style="font-size: 40px; color: #f59e0b; text-shadow: 3px 3px 0 #000;" id="cups-phase-display" class="pixel-text">WAITING</div></div>
+                    
                     <div class="hud-right-dock" style="display: flex; gap: 10px; align-items: center;">
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="cups-credits"></span></div>
-                        <button class="mc-btn circular" onclick="toggleChat('cups')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-cups" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-cups" class="mc-btn circular" onmousedown="startPTT('cups')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        <button class="mc-btn circular" onclick="toggleChat('cups')" style="position:relative;">💬<div id="notif-cups" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-cups" class="mc-btn circular" onmousedown="startPTT('cups')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                         
                         <div id="chat-container-cups" class="dropdown-panel chat-hidden">
                             <div class="chat-panel display:flex; flex-direction:column;">
@@ -859,7 +831,6 @@
             </div>
         </div>
 
-        <!-- CLASSIC COLOR GAME -->
         <div id="color-interface" class="game-interface hidden">
             <div class="game-area color-bg">
                 <div class="top-hud">
@@ -870,11 +841,13 @@
                             <div id="color-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                         </div>
                     </div>
+                    
                     <div class="hud-center"><div style="font-size: 40px; color: var(--success); text-shadow: 3px 3px 0 #000;" id="color-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    
                     <div class="hud-right-dock" style="display: flex; gap: 10px; align-items: center;">
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="color-credits"></span></div>
-                        <button class="mc-btn circular" onclick="toggleChat('color')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-color" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-color" class="mc-btn circular" onmousedown="startPTT('color')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        <button class="mc-btn circular" onclick="toggleChat('color')" style="position:relative;">💬<div id="notif-color" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-color" class="mc-btn circular" onmousedown="startPTT('color')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                         
                         <div id="chat-container-color" class="dropdown-panel chat-hidden">
                             <div class="chat-panel display:flex; flex-direction:column;">
@@ -939,7 +912,6 @@
             </div>
         </div>
 
-        <!-- PVP ARENA -->
         <div id="pvp-interface" class="game-interface hidden">
             <div class="game-area coin-bg">
                 <div class="top-hud">
@@ -950,11 +922,13 @@
                             <div id="pvp-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
                         </div>
                     </div>
+                    
                     <div class="hud-center"><div style="font-size: 40px; color: var(--danger); text-shadow: 3px 3px 0 #000;" id="pvp-phase-display" class="pixel-text">THE ARENA</div></div>
+                    
                     <div class="hud-right-dock" style="display: flex; gap: 10px; align-items: center;">
                         <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="pvp-credits"></span></div>
-                        <button class="mc-btn circular" onclick="toggleChat('pvp')" style="position:relative;"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M2 2h12v8H8l-4 4v-4H2z"/></svg><div id="notif-pvp" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-pvp" class="mc-btn circular" onmousedown="startPTT('pvp')" onmouseup="stopPTT()" onmouseleave="stopPTT()"><svg class="svg-icon" viewBox="0 0 16 16" fill="#fff"><path d="M6 2h4v6H6zM4 8h2v2h4V8h2v4H8v2H6v-2H4z"/></svg></button>
+                        <button class="mc-btn circular" onclick="toggleChat('pvp')" style="position:relative;">💬<div id="notif-pvp" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-pvp" class="mc-btn circular" onmousedown="startPTT('pvp')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                         
                         <div id="chat-container-pvp" class="dropdown-panel chat-hidden">
                             <div class="chat-panel display:flex; flex-direction:column;">
@@ -975,7 +949,6 @@
                     <div class="duel-arena-wrapper">
                         <div class="duel-arena">
                             
-                            <!-- SEAT 1 -->
                             <div class="duel-seat" id="duel-seat-0">
                                 <div class="duel-seat-empty" id="duel-empty-0" onclick="joinPvpSeat(0)">
                                     <div class="pixel-text" style="font-size:32px; color:#94a3b8;">CLICK TO SIT</div>
@@ -988,7 +961,6 @@
                                 </div>
                             </div>
 
-                            <!-- CENTER STAGE (WHEEL OR COIN) -->
                             <div class="duel-center">
                                 <div class="duel-center-vs pixel-text">VS</div>
                                 <div id="duel-match-visual-container" style="position:relative;">
@@ -998,7 +970,6 @@
                                 </div>
                             </div>
 
-                            <!-- SEAT 2 -->
                             <div class="duel-seat" id="duel-seat-1">
                                 <div class="duel-seat-empty" id="duel-empty-1" onclick="joinPvpSeat(1)">
                                     <div class="pixel-text" style="font-size:32px; color:#94a3b8;">CLICK TO SIT</div>
@@ -1013,7 +984,6 @@
 
                         </div>
 
-                        <!-- STAND UP BUTTON -->
                         <div style="margin-top: 30px; display:flex; justify-content:center;">
                             <button class="mc-btn" style="background: var(--danger); width: 300px;" onclick="leavePvpSeat()">STAND UP FROM ARENA</button>
                         </div>
@@ -1031,7 +1001,7 @@
         // --- TOAST SYSTEM ---
         function showToast(msg, type = 'error') {
             const container = document.getElementById('toast-container');
-            container.innerHTML = ''; // This kills spam, enforcing 1 active toast.
+            container.innerHTML = '';
             
             const toast = document.createElement('div');
             toast.className = `toast toast-${type} pixel-text`;
@@ -1580,6 +1550,7 @@
 
         function updateLobby(state) {
             const list = document.getElementById('bj-players-list'); list.innerHTML = ''; document.getElementById('player-count').innerText = state.lobby.length;
+            document.querySelector('.lobby-cnt-5seat').innerText = state.lobby.length + " ACTIVE"; 
             state.lobby.forEach(p => { list.innerHTML += `<div class="lobby-player" style="color:${p.color}">▶ ${p.username}</div>`; });
         }
 
