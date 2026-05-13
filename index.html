@@ -39,7 +39,7 @@
 
         /* --- TOAST SYSTEM --- */
         #toast-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 9999; pointer-events: none; width: 100%; max-width: 600px; align-items: center; }
-        .toast { background: rgba(0,0,0,0.95); border: 4px solid #fff; padding: 15px 30px; font-size: 28px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.8); transition: opacity 0.3s, transform 0.3s; pointer-events: auto; width: auto; }
+        .toast { background: rgba(0,0,0,0.95); border: 4px solid #fff; padding: 15px 30px; font-size: 28px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.8); transition: opacity 0.3s, transform 0.3s; pointer-events: auto; width: auto; font-family: 'VT323'; }
         .toast-error { border-color: var(--danger); color: var(--danger); }
         .toast-success { border-color: var(--success); color: var(--success); }
         .toast-warning { border-color: var(--warning); color: var(--warning); }
@@ -92,14 +92,18 @@
         .hotbar-slot:active { border-color: #383838 #A8A8A8 #A8A8A8 #383838; transform: translateY(0); padding-top: 2px; padding-bottom: 0; }
         .notif-badge { position: absolute; top: -8px; right: -8px; background: var(--danger); border: 2px solid #fff; border-radius: 50%; width: 20px; height: 20px; font-size: 14px; line-height: 16px; text-align: center; box-shadow: 2px 2px 0 #000; font-family: Arial; text-shadow: none; color: #fff;}
 
-        /* --- REALM SELECTOR --- */
-        .realm-card { display: flex; align-items: center; background: rgba(0,0,0,0.6); border: 4px solid #444; margin-bottom: 12px; padding: 15px 20px; cursor: pointer; transition: 0.1s; text-align: left;}
-        .realm-card:hover { border-color: var(--success); background: rgba(16, 185, 129, 0.15); transform: translateX(5px); }
-        .realm-info { flex: 1; }
+        /* Custom Pixel SVGs for Hotbar */
+        .svg-icon { width: 32px; height: 32px; }
+
+        /* --- REALM GRID (NEW NETFLIX/STEAM STYLE) --- */
+        .realm-grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; width: 100%; max-height: 60dvh; overflow-y: auto; padding-right: 10px; }
+        .realm-card { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.6); border: 4px solid #444; padding: 15px; cursor: pointer; transition: 0.1s; text-align: center;}
+        .realm-card:hover { border-color: var(--success); background: rgba(16, 185, 129, 0.15); transform: translateY(-5px); }
+        .realm-icon { width: 100%; height: 120px; font-size: 60px; display: flex; justify-content: center; align-items: center; background: #0f172a; border: 4px solid; border-color: #333 #111 #111 #333; margin-bottom: 10px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
         .realm-title { font-size: 32px; color: #fff; font-weight: bold; margin-bottom: 4px; line-height: 1;}
-        .realm-desc { font-size: 20px; color: #94a3b8; line-height: 1;}
-        .realm-status { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 80px;}
-        .status-dot { width: 14px; height: 14px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); margin-bottom: 4px; animation: pulse 2s infinite;}
+        .realm-desc { font-size: 18px; color: #94a3b8; line-height: 1.2; margin-bottom: 10px; flex: 1;}
+        .realm-status { font-size: 20px; display: flex; align-items: center; justify-content: center; background: #000; padding: 4px 10px; border: 2px solid #333; width: 100%;}
+        .status-dot { width: 12px; height: 12px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); margin-right: 8px; animation: pulse 2s infinite;}
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
         /* --- FLEXBOX SAFE ZONES --- */
@@ -108,11 +112,24 @@
         .game-area.dice-bg { background: radial-gradient(circle at center, #7e22ce 0%, #4c1d95 100%); }
         .game-area.coin-bg { background: radial-gradient(circle at center, #111827 0%, #000 100%); }
         .game-area.color-bg { background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
+        .game-area.crash-bg { background: radial-gradient(circle at bottom, #020617 0%, #000 100%); } /* Dark space background */
 
+        /* Top HUD & DOCKED CHAT */
         .top-hud { flex-shrink: 0; position: relative; z-index: 100; width: 100%; padding: 15px 30px; display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(to bottom, rgba(0,0,0,0.95), transparent);}
         .hud-center { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; top: 15px;}
         .wallet-display { background: rgba(0,0,0,0.8); padding: 5px 20px; border: 4px solid; border-color: #555 #111 #111 #555; color: #fff; font-size: 26px; display: flex; align-items: center; gap: 10px; height: 50px;}
         
+        .hud-right-dock { display: flex; gap: 10px; position: relative; }
+        
+        /* Dropdown Chat */
+        .dropdown-panel { position: absolute; top: calc(100% + 10px); right: 0; width: 350px; background: rgba(0,0,0,0.95); border: 4px solid #555; z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.9); display: flex; flex-direction: column; }
+        .chat-panel { height: 350px; }
+        .mmo-chat-messages { flex: 1; overflow-y: auto; padding: 10px; color: #fff; font-size: 22px; border-bottom: 4px solid #333;}
+        .mmo-chat-input-row { display: flex; height: 40px;}
+        .mmo-chat-input { flex: 1; background: #000; border: none; color: #fff; padding: 0 10px; font-family: 'VT323'; font-size: 22px; outline: none; margin: 0;}
+        .mmo-chat-btn { background: var(--success); color: #000; border: none; padding: 0 15px; font-family: 'VT323'; font-size: 20px; cursor: pointer; font-weight: bold;}
+        .chat-notif { position: absolute; top: -5px; right: -5px; background: var(--danger); width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; pointer-events: none; }
+
         .player-dropdown-list { position: absolute; top: calc(100% + 10px); right: 0; width: 250px; background: rgba(0,0,0,0.95); border: 4px solid #555; max-height: 300px; overflow-y: auto; z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.9); padding: 5px; }
         .lobby-player { padding: 5px 10px; border-bottom: 1px dashed #333; text-align: left; font-size: 24px; }
         
@@ -122,16 +139,18 @@
         /* Bottom Control Deck */
         .arcade-bet-area { flex-shrink: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(0,0,0,0.95) 70%, transparent); display: flex; flex-direction: column; align-items: center; z-index: 50;}
 
-        /* --- DOCKED CHAT & PTT (BOTTOM LEFT CORNER) --- */
-        .chat-dock { position: absolute; bottom: 20px; left: 20px; z-index: 150; display: flex; flex-direction: column-reverse; align-items: flex-start; pointer-events: none;}
-        .floating-chat-controls { display: flex; gap: 10px; margin-top: 10px; pointer-events: auto;}
-        .mmo-chat-container { width: 350px; height: 250px; display: flex; flex-direction: column; opacity: 0.9; transition: opacity 0.2s, transform 0.2s; transform-origin: bottom left; pointer-events: auto; background: rgba(0,0,0,0.85); border: 4px solid #333; }
-        .mmo-chat-container.chat-hidden { opacity: 0; transform: scale(0); pointer-events: none; }
-        .mmo-chat-messages { flex: 1; overflow-y: auto; padding: 10px; text-shadow: 1px 1px 0 #000; color: #fff; font-size: 22px; border-bottom: 4px solid #333;}
-        .mmo-chat-input-row { display: flex; height: 40px;}
-        .mmo-chat-input { flex: 1; background: #000; border: none; color: #fff; padding: 0 10px; font-family: 'VT323'; font-size: 22px; outline: none; margin: 0;}
-        .mmo-chat-btn { background: var(--success); color: #000; border: none; padding: 0 15px; font-family: 'VT323'; font-size: 24px; cursor: pointer; font-weight: bold;}
-        .chat-notif { position: absolute; top: -5px; right: -5px; background: var(--danger); width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; pointer-events: none; }
+        /* --- THE CHIP RACK --- */
+        .chip-rack { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.8); border: 4px solid #333; border-radius: 8px; box-shadow: inset 0 0 15px rgba(0,0,0,0.9); }
+        .casino-chip { width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; font-family: Arial; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; cursor: pointer; border: 6px dashed #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.5); transition: 0.1s; position: relative; }
+        .casino-chip::before { content: ''; position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); pointer-events: none; }
+        .casino-chip:hover { transform: translateY(-4px); }
+        .casino-chip.selected { transform: translateY(-8px) scale(1.1); box-shadow: 0 10px 15px rgba(0,0,0,0.8), inset 0 0 10px rgba(0,0,0,0.5), 0 0 15px var(--accent-glow-2); border-color: var(--warning); }
+        
+        .chip-1k { background: #64748b; } /* Gray */
+        .chip-5k { background: #ef4444; } /* Red */
+        .chip-20k { background: #10b981; } /* Green */
+        .chip-50k { background: #3b82f6; } /* Blue */
+        .chip-100k { background: #000; color: var(--warning); border-color: var(--warning); } /* Black/Gold */
 
         /* General Elements */
         .info-box { background: rgba(0,0,0,0.5); border: 4px solid #334155; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
@@ -170,6 +189,9 @@
         .card.dealer-hidden { background: repeating-linear-gradient(45deg, #222, #222 5px, #444 5px, #444 10px); color: transparent; }
         .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.8); z-index: 10; font-family: Arial; padding-top: 1px;}
         
+        /* 2x2 Grid for Blackjack Controls */
+        .seat-controls { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 6px; width: 100%; margin-top: 10px;}
+
         /* Arcade Area Grid Items */
         .arcade-grid { display: flex; justify-content: center; gap: 15px; margin-bottom: 5px; flex-wrap: wrap;}
         .arcade-bet-box { background: #2d2d2d; border: 4px solid; border-color: #555 #111 #111 #555; padding: 15px; text-align: center; width: 200px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
@@ -242,6 +264,17 @@
         
         .duel-status-box { background: rgba(0,0,0,0.8); border: 4px solid var(--accent-glow-2); padding: 10px 30px; font-size: 32px; color: #fff; margin-bottom: 20px; text-align: center; width: 100%; max-width: 800px; box-shadow: 0 10px 20px rgba(0,0,0,0.8);}
 
+        /* 8-BIT CRASH GAME */
+        .crash-graph-container { width: 100%; max-width: 800px; height: 350px; background: rgba(0,0,0,0.8); border: 6px solid #333; position: relative; overflow: hidden; box-shadow: inset 0 0 30px rgba(0,0,0,1); display: flex; justify-content: center; align-items: center; flex-direction: column;}
+        .crash-multiplier-text { font-size: 100px; font-weight: bold; color: #fff; text-shadow: 4px 4px 0 #000; z-index: 10; font-family: Arial;}
+        .crash-multiplier-text.crashed { color: var(--danger); animation: subtleShake 0.1s infinite; }
+        .crash-rocket { width: 60px; height: 60px; font-size: 50px; position: absolute; bottom: 20px; left: 20px; transition: transform 0.1s linear; z-index: 5; text-shadow: 0 0 15px rgba(255,255,255,0.8);}
+        .crash-rocket.crashed { filter: grayscale(1) brightness(0.5); transform: scale(1.5) rotate(45deg) !important; transition: transform 0.5s; opacity: 0; }
+        .crash-player-list { width: 100%; max-width: 800px; max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.6); border: 4px solid #444; margin-top: 15px; padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;}
+        .crash-bet-item { display: flex; justify-content: space-between; font-size: 24px; padding: 4px 10px; background: rgba(0,0,0,0.8); border-left: 4px solid #555; }
+        .crash-bet-item.cashed { border-left-color: var(--success); color: var(--success); }
+        .crash-bet-item.lost { border-left-color: var(--danger); opacity: 0.5; }
+        
         /* Market */
         .market-split { display: flex; gap: 20px; text-align: left; max-height: 500px; }
         .market-col { flex: 1; display: flex; flex-direction: column; background: #000; border: 4px solid #333; padding: 15px; overflow-y: auto; }
@@ -310,63 +343,63 @@
         </div>
 
         <div id="play-category-modal" class="overlay-menu hidden">
-            <div class="modal-box mc-panel custom-scroll" style="width: 800px; padding: 20px; text-align: left;">
+            <div class="modal-box mc-panel custom-scroll" style="width: 1000px; padding: 20px; text-align: left;">
                 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 4px solid #333;">
                     <h2 class="pixel-text" style="font-size: 50px; color: #fff; margin:0;">SELECT REALM</h2>
                     <button class="mc-btn small" style="background:#ef4444;" onclick="hideModal('play-category-modal')">CLOSE</button>
                 </div>
                 
-                <div style="max-height: 60dvh; overflow-y: auto; padding-right: 10px;" class="custom-scroll">
+                <div class="realm-grid-container custom-scroll">
+                    <div class="realm-card" onclick="joinCrash()" style="border-color: var(--accent-glow);">
+                        <div class="realm-icon" style="color:var(--accent-glow);">🚀</div>
+                        <div class="realm-title">8-BIT CRASH</div>
+                        <div class="realm-desc">Ride the multiplier to the moon. Cash out before it explodes!</div>
+                        <div class="realm-status pixel-text"><div class="status-dot"></div><span id="crash-player-count">0</span> ACTIVE</div>
+                    </div>
+                    
                     <div class="realm-card" onclick="joinRoom('5seat')">
-                        <div class="realm-info pixel-text">
-                            <div class="realm-title">CLASSIC BLACKJACK</div>
-                            <div class="realm-desc">5-Seat Table • Dealer hits on soft 17 • Max 100k</div>
-                        </div>
+                        <div class="realm-icon" style="color:var(--success);">♠️</div>
+                        <div class="realm-title">CLASSIC BLACKJACK</div>
+                        <div class="realm-desc">5-Seat Table • Dealer hits on soft 17 • Max 100k</div>
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span class="lobby-cnt-5seat">0 ACTIVE</span></div>
                     </div>
                     <div class="realm-card" onclick="joinRoom('3seat')">
-                        <div class="realm-info pixel-text">
-                            <div class="realm-title">VIP BLACKJACK</div>
-                            <div class="realm-desc">3-Seat Exclusive Table • Fast Paced</div>
-                        </div>
+                        <div class="realm-icon" style="color:var(--accent-glow-2);">💎</div>
+                        <div class="realm-title">VIP BLACKJACK</div>
+                        <div class="realm-desc">3-Seat Exclusive Table • Fast Paced Action</div>
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span class="lobby-cnt-3seat">0 ACTIVE</span></div>
                     </div>
 
-                    <div class="realm-card" style="margin-top: 20px;" onclick="joinDerby()">
-                        <div class="realm-info pixel-text">
-                            <div class="realm-title">8-BIT DERBY SPRINT</div>
-                            <div class="realm-desc">High-Volatility 6-Lane Track • Underdog Boost Active</div>
-                        </div>
+                    <div class="realm-card" onclick="joinDerby()">
+                        <div class="realm-icon" style="color:var(--warning);">🐎</div>
+                        <div class="realm-title">8-BIT DERBY SPRINT</div>
+                        <div class="realm-desc">High-Volatility 6-Lane Track • Underdog Boost Active</div>
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="derby-player-count">0</span> ACTIVE</div>
                     </div>
                     <div class="realm-card" onclick="joinCups()">
-                        <div class="realm-info pixel-text">
-                            <div class="realm-title">STREET HUSTLE: 3 CUPS</div>
-                            <div class="realm-desc">Find the golden ball • 2.5x Payout • Single Bet Locked</div>
-                        </div>
+                        <div class="realm-icon" style="color:#ea580c;">🔴</div>
+                        <div class="realm-title">STREET HUSTLE: 3 CUPS</div>
+                        <div class="realm-desc">Find the golden ball • 2.5x Payout • Single Bet Locked</div>
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="cups-player-count">0</span> ACTIVE</div>
                     </div>
                     <div class="realm-card" onclick="joinDice()">
-                        <div class="realm-info pixel-text">
-                            <div class="realm-title">HIGH-LOW DICE</div>
-                            <div class="realm-desc">Classic 2-Die Roll • Jackpot 7s Pays 4:1</div>
-                        </div>
+                        <div class="realm-icon" style="color:#a855f7;">🎲</div>
+                        <div class="realm-title">HIGH-LOW DICE</div>
+                        <div class="realm-desc">Classic 2-Die Roll • Jackpot 7s Pays 4:1</div>
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="dice-player-count">0</span> ACTIVE</div>
                     </div>
                     <div class="realm-card" onclick="joinColorGame()">
-                        <div class="realm-info pixel-text">
-                            <div class="realm-title">PERYA COLOR GAME</div>
-                            <div class="realm-desc">3 Color Dice • Multipliers stack on hits</div>
-                        </div>
+                        <div class="realm-icon" style="color:var(--success);">🟩</div>
+                        <div class="realm-title">PERYA COLOR GAME</div>
+                        <div class="realm-desc">3 Color Dice • Multipliers stack on hits</div>
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="color-player-count">0</span> ACTIVE</div>
                     </div>
 
-                    <div class="realm-card" style="margin-top: 20px; border-color: var(--danger);" onclick="joinPVP()">
-                        <div class="realm-info pixel-text">
-                            <div class="realm-title" style="color: var(--danger);">THE ARENA (PVP)</div>
-                            <div class="realm-desc">1v1 Custom Duels • Wheel Spin & Coin Flips</div>
-                        </div>
+                    <div class="realm-card" style="border-color: var(--danger);" onclick="joinPVP()">
+                        <div class="realm-icon" style="color:var(--danger);">⚔️</div>
+                        <div class="realm-title" style="color: var(--danger);">THE ARENA (PVP)</div>
+                        <div class="realm-desc">1v1 Custom Duels • Wheel Spin & Coin Flips</div>
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="pvp-player-count">0</span> ACTIVE</div>
                     </div>
                 </div>
@@ -393,7 +426,7 @@
                             <div class="pixel-text" style="font-size: 24px; color: var(--accent-glow-2); margin-bottom: 5px;">SELL: <span id="auction-item-name" style="color:#fff;"></span></div>
                             <input type="number" id="auction-start-bid" class="retro-input pixel-text" placeholder="STARTING BID (CR)" style="margin-bottom: 10px;">
                             <div style="display: flex; gap: 10px;">
-                                <button class="mc-btn small" style="flex:1; background: var(--success);" onclick="postAuction()">LIST ITEM</button>
+                                <button class="mc-btn small" style="flex:1; background: var(--success); color:#000;" onclick="postAuction()">LIST ITEM</button>
                                 <button class="mc-btn small" style="flex:1; background: #555;" onclick="document.getElementById('auction-creator').classList.add('hidden')">CANCEL</button>
                             </div>
                         </div>
@@ -440,9 +473,18 @@
         <div id="how-to-play-modal" class="overlay-menu hidden" style="z-index: 400;">
             <div class="modal-box mc-panel custom-scroll" style="width: 750px; padding: 25px;">
                 <h2 class="pixel-text" style="margin-bottom: 15px; font-size: 40px; color: var(--accent-glow-2);">RULES & MECHANICS</h2>
-                <div style="display: flex; justify-content: center; margin-bottom: 15px;"><select class="retro-input pixel-text" style="width: 100%; max-width: 350px;" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');"><option value="rule-bj">BLACKJACK</option><option value="rule-dice">HIGH-LOW DICE</option><option value="rule-derby">8-BIT DERBY SPRINT</option><option value="rule-cups">3 CUPS AND A BALL</option><option value="rule-color">CLASSIC COLOR GAME</option><option value="rule-pvp">PVP ARENA</option></select></div>
+                <div style="display: flex; justify-content: center; margin-bottom: 15px;"><select class="retro-input pixel-text" style="width: 100%; max-width: 350px;" onchange="document.querySelectorAll('.rule-content').forEach(el=>el.classList.add('hidden')); document.getElementById(this.value).classList.remove('hidden');">
+                    <option value="rule-crash">8-BIT CRASH</option>
+                    <option value="rule-bj">BLACKJACK</option>
+                    <option value="rule-dice">HIGH-LOW DICE</option>
+                    <option value="rule-derby">8-BIT DERBY SPRINT</option>
+                    <option value="rule-cups">3 CUPS AND A BALL</option>
+                    <option value="rule-color">CLASSIC COLOR GAME</option>
+                    <option value="rule-pvp">PVP ARENA</option>
+                </select></div>
                 <div class="info-box custom-scroll" style="text-align: left; height: 320px; overflow-y: auto; margin-bottom: 15px; background: #000; border: 4px solid #111;">
-                    <div id="rule-bj" class="rule-content pixel-text" style="font-size:24px; color:#ccc;">Beat the Dealer without going over 21. Max 100k bet. Ties push. Blackjack pays 3:2.</div>
+                    <div id="rule-crash" class="rule-content pixel-text" style="font-size:24px; color:#ccc;">Ride the multiplier to the moon! Cash out before the rocket explodes. If it crashes before you click cash out, you lose your bet.</div>
+                    <div id="rule-bj" class="rule-content hidden pixel-text" style="font-size:24px; color:#ccc;">Beat the Dealer without going over 21. Max 100k bet. Ties push. Blackjack pays 3:2.</div>
                     <div id="rule-dice" class="rule-content hidden pixel-text" style="font-size:24px; color:#ccc;">Bet Under 7, Over 7, or Exactly 7. 7 pays 4:1. Max 50k per tile.</div>
                     <div id="rule-derby" class="rule-content hidden pixel-text" style="font-size:24px; color:#ccc;">Classic sprint. Horses jostle for position for 11s, then sprint for 4s. Underdogs have a chance to hit nitro at the end. Max 50k per lane.</div>
                     <div id="rule-cups" class="rule-content hidden pixel-text" style="font-size:24px; color:#ccc;">Find the ball. <strong>You may only bet on ONE cup per round.</strong> Pays 2.5x. Max 50k.</div>
@@ -517,7 +559,6 @@
                 <div class="info-box pixel-text" style="text-align: center; background: #000; border: 4px solid #111; font-size: 20px;">
                     Notify Admin:<br>Discord: @ashley.gg<br>SNT: @AshleyChan
                 </div>
-                <div id="bank-confirm-msg" class="pixel-text" style="font-size: 26px; margin-bottom: 10px; height:30px;"></div>
                 <div id="bank-confirm-btn-row" style="display: flex; gap: 10px; margin-top: 15px;">
                     <button class="mc-btn" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button>
                     <button class="mc-btn" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>
@@ -563,6 +604,59 @@
                 <div style="display: flex; gap: 10px; margin-top: 30px;">
                     <button id="btn-confirm-yes" class="mc-btn" style="flex: 1; background: var(--danger);">YES</button>
                     <button class="mc-btn" style="flex: 1;" onclick="hideModal('logout-modal')">CANCEL</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="crash-interface" class="game-interface hidden">
+            <div class="game-area crash-bg">
+                <div class="top-hud">
+                    <div class="hud-left" style="display: flex; gap: 15px; align-items: center;">
+                        <button class="mc-btn small" onclick="exitToMenu('crash')">◄ LEAVE</button>
+                        <div style="position:relative;">
+                            <button class="mc-btn small" onclick="togglePlayerList('crash-players-list')">👥 <span id="crash-player-count">0</span></button>
+                            <div id="crash-players-list" class="player-dropdown-list hidden custom-scroll pixel-text"></div>
+                        </div>
+                    </div>
+                    <div class="hud-center"><div style="font-size: 40px; color: var(--accent-glow); text-shadow: 3px 3px 0 #000;" id="crash-phase-display" class="pixel-text">BETS OPEN</div></div>
+                    <div class="hud-right-dock" style="display: flex; gap: 10px; align-items: center;">
+                        <div class="wallet-display pixel-text"><span class="coin-icon">🪙</span> <span id="crash-credits"></span></div>
+                        <button class="mc-btn circular" onclick="toggleChat('crash')" style="position:relative;">💬<div id="notif-crash" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-crash" class="mc-btn circular" onmousedown="startPTT('crash')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
+                        
+                        <div id="chat-container-crash" class="dropdown-panel chat-hidden">
+                            <div class="chat-panel display:flex; flex-direction:column;">
+                                <div id="crash-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
+                                <div class="mmo-chat-input-row">
+                                    <input type="text" id="crash-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
+                                    <button class="mmo-chat-btn pixel-text" onclick="actSendChat('crash')">►</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="center-focus">
+                    <div class="crash-graph-container">
+                        <div id="crash-mult-display" class="crash-multiplier-text">1.00x</div>
+                        <div id="crash-rocket" class="crash-rocket">🚀</div>
+                        <div id="crash-timer" class="pixel-text" style="font-size: 24px; position:absolute; bottom: 10px; right: 10px; color: #94a3b8;">WAITING...</div>
+                    </div>
+                    <div class="crash-player-list custom-scroll" id="crash-bet-list"></div>
+                </div>
+
+                <div class="arcade-bet-area">
+                    <div class="chip-rack">
+                        <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
+                        <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
+                        <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
+                        <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
+                        <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-top: 10px;">
+                        <button id="btn-crash-bet" class="mc-btn" style="background: var(--accent-glow-2); width: 200px;" onclick="placeCrashBet()">PLACE BET</button>
+                        <button id="btn-crash-cashout" class="mc-btn" style="background: var(--success); width: 200px; display: none; color: #000;" onclick="crashCashout()">CASH OUT</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -649,13 +743,12 @@
                 </div>
 
                 <div class="arcade-bet-area">
-                    <div class="master-bet-row" style="margin-bottom: 15px;">
-                        <select id="dice-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
-                            <option value="1000" selected>1,000</option>
-                            <option value="5000">5,000</option>
-                            <option value="20000">20,000</option>
-                            <option value="50000">50,000</option>
-                        </select>
+                    <div class="chip-rack">
+                        <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
+                        <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
+                        <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
+                        <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
+                        <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
                     </div>
                     <div class="arcade-grid">
                         <div id="dice-btn-under" class="arcade-bet-box" onclick="placeDiceBet('under')">
@@ -722,14 +815,13 @@
                     </div>
                 </div>
                 
-                <div class="arcade-bet-area">
-                    <div class="master-bet-row" style="margin-bottom: 10px;">
-                        <select id="derby-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 20px; padding: 6px;">
-                            <option value="1000" selected>1,000</option>
-                            <option value="5000">5,000</option>
-                            <option value="20000">20,000</option>
-                            <option value="50000">50,000</option>
-                        </select>
+                <div class="arcade-bet-area" style="padding-top: 0;">
+                    <div class="chip-rack">
+                        <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
+                        <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
+                        <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
+                        <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
+                        <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 100%; max-width: 1200px;">
                         <div id="derby-btn-0" class="arcade-bet-box derby-bet-box lane-1-color" onclick="placeDerbyBet(0)">
@@ -805,13 +897,12 @@
                 </div>
                 
                 <div class="arcade-bet-area">
-                    <div class="master-bet-row" style="margin-bottom: 15px;">
-                        <select id="cups-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
-                            <option value="1000" selected>1,000</option>
-                            <option value="5000">5,000</option>
-                            <option value="20000">20,000</option>
-                            <option value="50000">50,000</option>
-                        </select>
+                    <div class="chip-rack">
+                        <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
+                        <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
+                        <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
+                        <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
+                        <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
                     </div>
                     <div class="arcade-grid">
                         <div id="cups-btn-0" class="arcade-bet-box cup-bet-box" onclick="placeCupsBet(0)">
@@ -874,13 +965,12 @@
                 </div>
 
                 <div class="arcade-bet-area">
-                    <div style="display:flex; justify-content: center; margin-bottom: 15px;">
-                        <select id="color-master-bet" class="retro-input pixel-text" style="max-width: 250px; font-size: 24px; padding: 8px;">
-                            <option value="1000" selected>1,000</option>
-                            <option value="5000">5,000</option>
-                            <option value="20000">20,000</option>
-                            <option value="50000">50,000</option>
-                        </select>
+                    <div class="chip-rack">
+                        <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
+                        <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
+                        <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
+                        <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
+                        <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
                     </div>
                     <div class="color-grid">
                         <div id="color-btn-red" class="arcade-bet-box color-bet-box br-red" onclick="placeColorBet('red')">
@@ -998,6 +1088,16 @@
         function formatNumber(num) { return num.toLocaleString(); }
         function formatInput(el) { let val = el.value.replace(/\D/g, ''); el.value = val ? parseInt(val).toLocaleString() : ''; }
 
+        // --- GLOBAL STATE ---
+        let currentChipValue = 1000;
+        
+        function selectChip(val) {
+            currentChipValue = val;
+            document.querySelectorAll('.casino-chip').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll(`#chip-${val}`).forEach(c => c.classList.add('selected'));
+            playSfx('bet');
+        }
+
         // --- TOAST SYSTEM ---
         function showToast(msg, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -1041,10 +1141,8 @@
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
         let myDerbyBets = [0, 0, 0, 0, 0, 0];
         let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
-        
         let myCupsBets = [0, 0, 0];
         let currentCupsBetChoice = -1; 
-        
         let currentPvpDuelState = null; 
         let myDuelSeatIndex = -1;
         
@@ -1118,6 +1216,7 @@
                 else if (document.activeElement.id === 'color-chat-input') actSendChat('color');
                 else if (document.activeElement.id === 'pvp-chat-input') actSendChat('pvp');
                 else if (document.activeElement.id === 'cups-chat-input') actSendChat('cups');
+                else if (document.activeElement.id === 'crash-chat-input') actSendChat('crash');
             }
         });
 
@@ -1147,6 +1246,7 @@
             if(document.getElementById('dice-player-count')) document.getElementById('dice-player-count').innerText = counts['dice'];
             if(document.getElementById('color-player-count')) document.getElementById('color-player-count').innerText = counts['color'];
             if(document.getElementById('pvp-player-count')) document.getElementById('pvp-player-count').innerText = counts['pvp'];
+            if(document.getElementById('crash-player-count')) document.getElementById('crash-player-count').innerText = counts['crash'];
         });
 
         // --- MARKETPLACE SYSTEM LOGIC ---
@@ -1460,7 +1560,7 @@
 
         function updateAllCredits() {
             if(!currentUser) return; const creds = formatNumber(currentUser.credits);
-            ['hud-credits', 'dice-credits', 'derby-credits', 'color-credits', 'pvp-credits', 'cups-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
+            ['hud-credits', 'dice-credits', 'derby-credits', 'color-credits', 'pvp-credits', 'cups-credits', 'crash-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
         }
         function logout() { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); location.reload(); }
 
@@ -1484,6 +1584,9 @@
             } else if (game === 'color') {
                 let totalColorBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
                 if (totalColorBet > 0) return showToast("You cannot leave while you have active bets!");
+            } else if (game === 'crash') {
+                const btnCashout = document.getElementById('btn-crash-cashout');
+                if (btnCashout && btnCashout.style.display !== 'none') return showToast("You must cashout before leaving!");
             }
 
             document.getElementById('main-menu-view').classList.remove('hidden'); 
@@ -1493,7 +1596,7 @@
                 if (currentGameState) { const seatIdx = currentGameState.seats.findIndex(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if (seatIdx !== -1) window.actEjectSeat(seatIdx); } 
                 socket.emit('leave_room', { username: currentUser.username, roomId: currentRoomId }); currentRoomId = null; 
             }
-            if(['dice', 'derby', 'color', 'pvp', 'cups'].includes(game)) { 
+            if(['dice', 'derby', 'color', 'pvp', 'cups', 'crash'].includes(game)) { 
                 document.getElementById(game+'-interface').classList.add('hidden'); 
                 socket.emit('leave_arcade', { username: currentUser.username, game }); currentRoomId = null; 
             }
@@ -1504,6 +1607,7 @@
         function joinDerby() { currentRoomId = 'derby'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); }
         function joinColorGame() { currentRoomId = 'color'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
         function joinCups() { currentRoomId = 'cups'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('cups-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'cups' }); socket.emit('get_cups_state'); playSfx('deal'); }
+        function joinCrash() { currentRoomId = 'crash'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('crash-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'crash' }); socket.emit('get_crash_state'); playSfx('deal'); }
 
         function joinPVP() { 
             currentRoomId = 'pvp'; 
@@ -1548,9 +1652,10 @@
             if(currentUser && currentRoomId && !document.getElementById('game-interface').classList.contains('hidden')) { updateLobby(state); renderTable(state); manageTimers(state); }
         });
 
-        function updateLobby(state) {
+       function updateLobby(state) {
             const list = document.getElementById('bj-players-list'); list.innerHTML = ''; document.getElementById('player-count').innerText = state.lobby.length;
-            document.querySelector('.lobby-cnt-5seat').innerText = state.lobby.length + " ACTIVE"; 
+            if(currentRoomId === '5seat') document.querySelector('.lobby-cnt-5seat').innerText = state.lobby.length + " ACTIVE";
+            if(currentRoomId === '3seat') document.querySelector('.lobby-cnt-3seat').innerText = state.lobby.length + " ACTIVE";
             state.lobby.forEach(p => { list.innerHTML += `<div class="lobby-player" style="color:${p.color}">▶ ${p.username}</div>`; });
         }
 
@@ -1606,9 +1711,13 @@
 
                     if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
                         if (seatData.hands[0].bet === 0) {
-                            let startBet = window.lastBetAmount || 0; let opts = [1000, 5000, 20000, 50000, 100000]; if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
-                            let optHTML = `<option value="1000" ${startBet === 1000 || startBet === 0 ? 'selected' : ''}>1,000</option>`; optHTML += [5000, 20000, 50000, 100000].map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
-                            html += `<div class="seat-bet-box" style="display:flex; flex-direction:column; gap:6px; width:100%; margin-top:5px;"><select id="inseat-bet-${index}" class="pixel-text retro-input" style="padding:4px; font-size:24px; text-align:center; appearance: none;">${optHTML}</select><div style="display:flex; gap:6px; width:100%;"><button class="mc-btn small" style="flex:1; background:var(--success); color:#000;" onclick="actPlaceBet(${index})">BET</button><button class="mc-btn small" style="flex:1; background:var(--danger);" onclick="actEjectSeat(${index})">LEAVE</button></div></div>`;
+                            html += `<div class="seat-bet-box" style="display:flex; flex-direction:column; gap:6px; width:100%; margin-top:5px;">
+                                        <div style="font-size: 24px; color: var(--warning); font-weight: bold; background: #000; border: 2px solid #555; padding: 4px;">BET: ${formatNumber(currentChipValue)}</div>
+                                        <div style="display:flex; gap:6px; width:100%;">
+                                            <button class="mc-btn small" style="flex:1; background:var(--success); color:#000;" onclick="actPlaceBet(${index})">PLACE</button>
+                                            <button class="mc-btn small" style="flex:1; background:var(--danger);" onclick="actEjectSeat(${index})">LEAVE</button>
+                                        </div>
+                                     </div>`;
                         }
                     } else if (isMySeat && state.status === 'waiting') { html += `<div style="width: 100%; margin-top: 5px;"><button class="mc-btn small" style="background:var(--danger); width:100%;" onclick="actEjectSeat(${index})">STAND UP</button></div>`; }
 
@@ -1628,7 +1737,41 @@
             activeElements.forEach(el => { 
                 seatsArea.appendChild(el); 
             }); 
+            
+            // Re-render chip rack specific to BJ
+            if(currentUser && state.status === 'betting' && mySeatIndex !== -1 && state.seats[mySeatIndex] && state.seats[mySeatIndex].hands[0].bet === 0) {
+                 if(!document.getElementById('bj-chip-rack')) {
+                     const rack = document.createElement('div');
+                     rack.id = 'bj-chip-rack';
+                     rack.className = 'chip-rack';
+                     rack.style.position = 'absolute'; rack.style.bottom = '10px'; rack.style.left = '50%'; rack.style.transform = 'translateX(-50%)'; rack.style.zIndex = '50';
+                     rack.innerHTML = `
+                        <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
+                        <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
+                        <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
+                        <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
+                        <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
+                     `;
+                     document.getElementById('game-interface').appendChild(rack);
+                 }
+                 // Sync visual
+                 document.querySelectorAll('.casino-chip').forEach(c => c.classList.remove('selected'));
+                 document.querySelectorAll(`#chip-${currentChipValue}`).forEach(c => c.classList.add('selected'));
+            } else {
+                 const existingRack = document.getElementById('bj-chip-rack');
+                 if(existingRack) existingRack.remove();
+            }
         }
+
+        // --- OVERRIDE actPlaceBet to use currentChipValue ---
+        window.actPlaceBet = function(idx) { 
+            if(gameLocks[currentRoomId]) return showToast('Table is offline for maintenance.');
+            if(actionLocked) return; 
+            const amt = currentChipValue;
+            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); if (amt > 100000) return showToast("Maximum limit is 100,000 credits."); if (amt > currentUser.credits) return showToast("Insufficient credits!");
+            actionLocked = true; window.lastBetAmount = amt; socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet');
+        }
+
 
         function manageTimers(state) {
             const gTimerUI = document.getElementById('global-timer'); const nTimerUI = document.getElementById('next-round-timer'); const iTimerUI = document.getElementById('idle-timer');
@@ -1650,8 +1793,8 @@
 
         // --- ARCADE LOBBIES ---
         socket.on('arcade_lobby_update', (data) => {
-            const countId = data.game === 'dice' ? 'dice-player-count' : (data.game === 'color' ? 'color-player-count' : (data.game === 'derby' ? 'derby-player-count' : (data.game === 'cups' ? 'cups-player-count' : 'pvp-player-count')));
-            const popId = data.game === 'dice' ? 'dice-players-list' : (data.game === 'color' ? 'color-players-list' : (data.game === 'derby' ? 'derby-players-list' : (data.game === 'cups' ? 'cups-players-list' : 'pvp-players-list')));
+            const countId = data.game === 'dice' ? 'dice-player-count' : (data.game === 'color' ? 'color-player-count' : (data.game === 'derby' ? 'derby-player-count' : (data.game === 'cups' ? 'cups-player-count' : (data.game === 'crash' ? 'crash-player-count' : 'pvp-player-count'))));
+            const popId = data.game === 'dice' ? 'dice-players-list' : (data.game === 'color' ? 'color-players-list' : (data.game === 'derby' ? 'derby-players-list' : (data.game === 'cups' ? 'cups-players-list' : (data.game === 'crash' ? 'crash-players-list' : 'pvp-players-list'))));
             const countEl = document.getElementById(countId); const popEl = document.getElementById(popId);
             if(countEl) countEl.innerText = data.lobby.length;
             if(popEl) popEl.innerHTML = data.lobby.map(p => `<div class="lobby-player" style="color:${p.color};">▶ ${p.username}</div>`).join('');
@@ -1661,6 +1804,124 @@
         function applyThrottle() {
             isBetting = true; clearTimeout(betThrottleTimeout); betThrottleTimeout = setTimeout(() => { isBetting = false; }, 250);
         }
+
+        // --- CRASH LOGIC ---
+        socket.on('crash_state_update', (data) => {
+            const display = document.getElementById('crash-mult-display');
+            const rocket = document.getElementById('crash-rocket');
+            const timerText = document.getElementById('crash-timer');
+            const phaseDisplay = document.getElementById('crash-phase-display');
+            const btnBet = document.getElementById('btn-crash-bet');
+            const btnCashout = document.getElementById('btn-crash-cashout');
+
+            if(data.multiplier) display.innerText = data.multiplier.toFixed(2) + 'x';
+            
+            if(data.status === 'betting') {
+                phaseDisplay.innerText = "BETS OPEN";
+                phaseDisplay.style.color = "var(--accent-glow)";
+                display.classList.remove('crashed');
+                display.innerText = '1.00x';
+                rocket.classList.remove('crashed');
+                rocket.style.transform = 'translateY(0px)';
+                
+                btnBet.style.display = 'block';
+                btnCashout.style.display = 'none';
+
+                let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000));
+                timerText.innerText = `LAUNCHING IN ${left}s`;
+            }
+            else if(data.status === 'flying') {
+                phaseDisplay.innerText = "FLYING!";
+                phaseDisplay.style.color = "var(--success)";
+                timerText.innerText = "";
+                
+                // Animate rocket upward slightly
+                let yOffset = Math.min(200, (data.multiplier - 1) * 50);
+                rocket.style.transform = `translateY(-${yOffset}px)`;
+
+                // Hide bet button. Only show cashout if they have an active bet.
+                btnBet.style.display = 'none';
+                let myBetUI = Array.from(document.querySelectorAll('.crash-bet-item')).find(el => el.innerText.includes(currentUser.username));
+                if (myBetUI && !myBetUI.classList.contains('cashed')) {
+                    btnCashout.style.display = 'block';
+                }
+            }
+            else if(data.status === 'crashed') {
+                phaseDisplay.innerText = "CRASHED!";
+                phaseDisplay.style.color = "var(--danger)";
+                display.classList.add('crashed');
+                rocket.classList.add('crashed');
+                timerText.innerText = "PREPARING NEXT ROUND...";
+                
+                btnBet.style.display = 'none';
+                btnCashout.style.display = 'none';
+                playSfx('lose');
+                
+                // Mark uncashed bets as lost visually
+                document.querySelectorAll('.crash-bet-item').forEach(el => {
+                    if(!el.classList.contains('cashed')) {
+                        el.classList.add('lost');
+                        el.querySelector('.status').innerText = 'LOST';
+                    }
+                });
+            }
+
+            if(data.history) {
+                // Not displaying history for crash right now
+            }
+        });
+
+        socket.on('crash_tick', (data) => {
+            const display = document.getElementById('crash-mult-display');
+            const rocket = document.getElementById('crash-rocket');
+            if(display) display.innerText = data.multiplier.toFixed(2) + 'x';
+            if(rocket) {
+                let yOffset = Math.min(200, (data.multiplier - 1) * 50);
+                rocket.style.transform = `translateY(-${yOffset}px) scale(${1 + (data.multiplier * 0.05)})`;
+            }
+            
+            // Update cashout button text to show live win amount
+            const btnCashout = document.getElementById('btn-crash-cashout');
+            if (btnCashout && btnCashout.style.display === 'block') {
+                btnCashout.innerText = `CASH OUT ${formatNumber(currentChipValue * data.multiplier)}`;
+            }
+        });
+
+        socket.on('crash_bet_placed', (data) => {
+            const list = document.getElementById('crash-bet-list');
+            list.innerHTML += `
+                <div class="crash-bet-item" id="c-bet-${currentUser.username}">
+                    <span class="pixel-text">${currentUser.username}</span>
+                    <span class="pixel-text status" style="color:var(--warning);">${formatNumber(data.amount)}</span>
+                </div>
+            `;
+            playSfx('bet');
+        });
+
+        socket.on('crash_cashout_success', (data) => {
+            const myBetUI = document.getElementById(`c-bet-${currentUser.username}`);
+            if(myBetUI) {
+                myBetUI.classList.add('cashed');
+                myBetUI.querySelector('.status').innerText = `+${formatNumber(data.winAmount)} (${data.multiplier.toFixed(2)}x)`;
+            }
+            document.getElementById('btn-crash-cashout').style.display = 'none';
+            playSfx('win');
+        });
+
+        window.placeCrashBet = function() {
+            if(gameLocks.crash) return showToast('This game is offline.');
+            if(isBetting) return;
+            const amt = currentChipValue;
+            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); 
+            if (amt > currentUser.credits) return showToast("Insufficient credits!");
+            
+            applyThrottle(); socket.emit('place_crash_bet', { username: currentUser.username, amount: amt });
+        };
+
+        window.crashCashout = function() {
+            socket.emit('crash_cashout', { username: currentUser.username });
+        };
+
 
         // --- DICE LOGIC ---
         const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']; let diceInterval = null;
@@ -1697,8 +1958,8 @@
         window.placeDiceBet = function(choice) {
             if(gameLocks.dice) return showToast('This game is offline for maintenance.');
             if(isBetting) return; const box = document.getElementById(`dice-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`dice-master-bet`).value);
-            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount at the top!"); 
+            const amt = currentChipValue;
+            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); 
             if (myDiceBets[choice] + amt > 50000) return showToast("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
             
             applyThrottle(); myDiceBets[choice] += amt; socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt });
@@ -1784,8 +2045,8 @@
         window.placeDerbyBet = function(choice) {
             if(gameLocks.derby) return showToast('This game is offline for maintenance.');
             if(isBetting) return; const box = document.getElementById(`derby-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`derby-master-bet`).value);
-            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount at the top!"); 
+            const amt = currentChipValue;
+            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); 
             if (myDerbyBets[choice] + amt > 50000) return showToast("Maximum limit is 50,000 per lane!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
             
             applyThrottle(); myDerbyBets[choice] += amt; socket.emit('place_derby_bet', { username: currentUser.username, choice, amount: amt }); 
@@ -1852,8 +2113,8 @@
             if(currentCupsBetChoice !== -1 && currentCupsBetChoice !== choice) return showToast('You can only bet on ONE cup per round!');
             
             const box = document.getElementById(`cups-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`cups-master-bet`).value);
-            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount at the top!"); 
+            const amt = currentChipValue;
+            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); 
             if (myCupsBets[choice] + amt > 50000) return showToast("Maximum limit is 50,000 per cup!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
             
             applyThrottle(); 
@@ -2122,8 +2383,8 @@
         window.placeColorBet = function(choice) {
             if(gameLocks.color) return showToast('This game is offline for maintenance.');
             if(isBetting) return; const box = document.getElementById(`color-btn-${choice}`); if(box && box.classList.contains('locked')) return;
-            const amt = parseInt(document.getElementById(`color-master-bet`).value);
-            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount at the top!"); 
+            const amt = currentChipValue;
+            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); 
             if (myColorBets[choice] + amt > 50000) return showToast("Maximum limit is 50,000 per color!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
             
             applyThrottle(); myColorBets[choice] += amt; socket.emit('place_color_bet', { username: currentUser.username, choice, amount: amt }); 
