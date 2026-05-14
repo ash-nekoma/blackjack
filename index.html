@@ -45,10 +45,6 @@
         .toast-warning { border-color: var(--warning); color: var(--warning); }
         .toast.fade-out { opacity: 0; transform: translateY(-20px); }
 
-        /* --- MIC LIVE BANNER --- */
-        #mic-live-banner { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: var(--danger); border: 4px solid #fff; color: #fff; font-size: 28px; padding: 5px 20px; z-index: 9000; font-weight: bold; animation: pulseMic 1s infinite; pointer-events: none;}
-        @keyframes pulseMic { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
         /* --- MINECRAFT / MMO CHUNKY UI --- */
         .mc-btn {
             background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8;
@@ -62,7 +58,7 @@
         .mc-btn:disabled { filter: grayscale(1); opacity: 0.7; cursor: not-allowed; }
         .mc-btn.small { padding: 4px 12px; font-size: 24px; }
         .mc-btn.small:active:not(:disabled) { padding-top: 6px; padding-bottom: 2px; }
-        .mc-btn.circular { width: 60px; height: 60px; border-radius: 50%; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 4px 8px rgba(0,0,0,0.6); }
+        .mc-btn.circular { width: 60px; height: 60px; border-radius: 50%; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 4px 8px rgba(0,0,0,0.6); transition: background 0.2s;}
         .mc-btn.circular:active:not(:disabled) { padding-top: 2px; padding-bottom: 0; }
         .mc-btn.active { background: var(--success); border-color: #fff; text-shadow: none; color: #000; }
 
@@ -143,7 +139,7 @@
         .arcade-bet-area { flex-shrink: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(0,0,0,0.95) 70%, transparent); display: flex; flex-direction: column; align-items: center; z-index: 50;}
 
         /* --- PREMIUM CHIP RACK --- */
-        .chip-rack { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; padding: 8px 15px; background: rgba(0,0,0,0.3); backdrop-filter: blur(3px); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .chip-rack { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 15px; padding: 8px 15px; background: rgba(0,0,0,0.3); backdrop-filter: blur(3px); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
         .casino-chip {
             width: 50px; height: 50px; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
@@ -172,6 +168,9 @@
         .chip-50k { background: radial-gradient(circle, #60a5fa 40%, #1d4ed8 100%); }
         .chip-100k { background: radial-gradient(circle, #555 40%, #000 100%); color: var(--warning); border-color: rgba(251,191,36,0.6); }
         .chip-100k::before { border-color: var(--warning); }
+        
+        .chip-action-btn { width: 50px; height: 50px; border-radius: 50%; font-family: 'VT323'; font-size: 16px; background: #333; color: #fff; border: 3px solid #666; cursor: pointer; display:flex; justify-content:center; align-items:center; box-shadow: 0 4px 6px rgba(0,0,0,0.6); transition: 0.1s;}
+        .chip-action-btn:active { transform: translateY(2px); box-shadow: 0 2px 3px rgba(0,0,0,0.6); }
 
         /* General Elements */
         .info-box { background: rgba(0,0,0,0.5); border: 4px solid #334155; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
@@ -183,7 +182,7 @@
         .reward-box .front:hover { filter: brightness(1.2); }
         .reward-box .back { background: #000; border: 4px solid var(--warning); transform: rotateY(180deg); font-size: 24px; color: var(--warning); flex-direction: column; cursor: default;}
 
-        /* WIDER Blackjack Seats & 2x2 Grid */
+        /* BLACKJACK STYLES & SYNCED TEXTS */
         .table-surface { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; position: relative; padding: 20px 0; min-height: 0; margin-top: 50px;}
         .banker-station { display: flex; flex-direction: column; align-items: center; z-index: 10;}
         #timers-container { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 20; pointer-events: none;}
@@ -209,6 +208,18 @@
         .card.dealer-hidden { background: repeating-linear-gradient(45deg, #222, #222 5px, #444 5px, #444 10px); color: transparent; }
         .hd-badge { position: absolute; top: 50%; left: -15px; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; border: 2px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.8); z-index: 10; font-family: Arial; padding-top: 1px;}
         
+        .hand-status-label { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-5deg); font-size: 28px; font-weight: bold; color: #fff; text-shadow: 2px 2px 0 #000; background: rgba(0,0,0,0.85); border: 3px solid; padding: 4px 10px; border-radius: 4px; z-index: 30; pointer-events: none; white-space: nowrap;}
+        .hand-status-bust { border-color: var(--danger); color: var(--danger); }
+        .hand-status-win { border-color: var(--success); color: var(--success); }
+        .hand-status-lose { border-color: #94a3b8; color: #94a3b8; }
+        .hand-status-push { border-color: var(--warning); color: var(--warning); }
+        .hand-status-blackjack { border-color: var(--accent-glow-2); color: var(--accent-glow-2); transform: translate(-50%, -50%) rotate(-10deg) scale(1.1); }
+        
+        .player-bet-text { font-size: 22px; font-weight: bold; color: var(--warning); text-shadow: 1px 1px 0 #000; background: rgba(0,0,0,0.8); border: 2px solid var(--warning); border-radius: 10px; padding: 2px 10px; margin-top: -15px; z-index: 25; position: relative; }
+        .anim-win { animation: betWinPop 0.5s ease forwards; border-color: var(--success); color: var(--success); }
+        .anim-lose { opacity: 0.4; border-color: var(--danger); color: var(--danger); }
+        @keyframes betWinPop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+
         /* Arcade Area Grid Items */
         .arcade-grid { display: flex; justify-content: center; gap: 15px; margin-bottom: 5px; flex-wrap: wrap;}
         .arcade-bet-box { background: #2d2d2d; border: 4px solid; border-color: #555 #111 #111 #555; padding: 15px; text-align: center; width: 200px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
@@ -304,7 +315,6 @@
 
     <div id="arcade-cabinet">
         <div id="toast-container"></div>
-        <div id="mic-live-banner" class="hidden pixel-text">🔴 MIC LIVE</div>
         
         <!-- --- UNIFIED GLOBAL COMMUNICATION WIDGET --- -->
         <div id="comm-widget" class="global-comm-widget hidden">
@@ -313,7 +323,7 @@
                 <button class="mc-btn circular" onclick="toggleCommPanel('chat')" style="position:relative; background: var(--accent-glow-2); border-color: #fff;">
                     💬<div id="notif-chat" class="chat-notif hidden"></div>
                 </button>
-                <button id="master-mic-toggle" class="mc-btn circular" onclick="toggleCommPanel('voice')" style="background: #555;">🎤</button>
+                <button id="master-mic-toggle" class="mc-btn circular" onmousedown="handleMicDown()" onmouseup="handleMicUp()" onmouseleave="handleMicUp()" style="background: #555;">🎤</button>
             </div>
             
             <!-- Panel Body -->
@@ -329,24 +339,6 @@
                     <div class="mmo-chat-input-row">
                         <input type="text" id="master-chat-input" class="mmo-chat-input pixel-text" placeholder="Type message..." maxlength="100">
                         <button class="mmo-chat-btn pixel-text" onclick="actSendMasterChat()">►</button>
-                    </div>
-                </div>
-
-                <!-- VOICE VIEW -->
-                <div id="comm-voice-view" class="hidden" style="flex-direction:column; height: 100%; padding: 20px;">
-                    <h3 class="pixel-text" style="color:var(--warning); text-align:center; margin-bottom: 20px; font-size: 32px;">VOICE COMMS</h3>
-                    <div class="pixel-text" style="font-size: 24px; color: #ccc; margin-bottom: 5px;">TRANSMISSION MODE:</div>
-                    <select id="voice-mode-select" class="retro-input pixel-text" style="font-size: 24px; padding: 10px; margin-bottom: 25px;" onchange="changeVoiceMode()">
-                        <option value="ptt" selected>PUSH TO TALK</option>
-                        <option value="auto">AUTOMATIC (VOICE ACTIVATION)</option>
-                    </select>
-                    
-                    <div id="ptt-controls" style="text-align:center; flex:1; display:flex; flex-direction:column; justify-content:center;">
-                        <button id="master-ptt-btn" class="mc-btn" style="width:100%; height: 100px; font-size: 36px; background: #555; color:#fff;" onmousedown="startPTTMaster()" onmouseup="stopPTTMaster()" onmouseleave="stopPTTMaster()">HOLD TO TALK</button>
-                    </div>
-                    
-                    <div id="auto-controls" class="hidden" style="text-align:center; flex:1; display:flex; flex-direction:column; justify-content:center;">
-                        <button id="auto-mic-btn" class="mc-btn" style="width:100%; height: 100px; font-size: 36px; background: var(--success); color:#000;" onclick="toggleAutoMic()">ENABLE MIC</button>
                     </div>
                 </div>
             </div>
@@ -415,7 +407,7 @@
                 
                 <div class="realm-grid-container custom-scroll">
                     <!-- CRASH (NEW) -->
-                    <div class="realm-card" onclick="joinCrash()">
+                    <div class="realm-card" onclick="joinCrash()" style="border-color: var(--accent-glow);">
                         <div class="realm-title" style="color: var(--accent-glow);">8-BIT CRASH</div>
                         <div class="realm-desc">Ride the multiplier to the moon. Cash out before it explodes!</div>
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="crash-player-count">0</span>&nbsp;ACTIVE</div>
@@ -709,11 +701,13 @@
 
                 <div class="arcade-bet-area">
                     <div class="chip-rack">
+                        <button class="chip-action-btn" onclick="actUndoBet()">UNDO</button>
                         <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
                         <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
                         <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
                         <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
                         <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
+                        <button class="chip-action-btn" onclick="actRebet()">REBET</button>
                     </div>
                     <div style="display: flex; gap: 15px; margin-top: 10px;">
                         <button id="btn-crash-bet" class="mc-btn" style="background: var(--accent-glow-2); width: 200px;" onclick="placeCrashBet()">PLACE BET</button>
@@ -790,11 +784,13 @@
 
                 <div class="arcade-bet-area">
                     <div class="chip-rack">
+                        <button class="chip-action-btn" onclick="actUndoBet()">UNDO</button>
                         <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
                         <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
                         <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
                         <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
                         <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
+                        <button class="chip-action-btn" onclick="actRebet()">REBET</button>
                     </div>
                     <div class="arcade-grid">
                         <div id="dice-btn-under" class="arcade-bet-box" onclick="placeDiceBet('under')">
@@ -855,11 +851,13 @@
                 
                 <div class="arcade-bet-area" style="padding-top: 0;">
                     <div class="chip-rack">
+                        <button class="chip-action-btn" onclick="actUndoBet()">UNDO</button>
                         <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
                         <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
                         <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
                         <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
                         <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
+                        <button class="chip-action-btn" onclick="actRebet()">REBET</button>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 100%; max-width: 1200px;">
                         <div id="derby-btn-0" class="arcade-bet-box derby-bet-box lane-1-color" onclick="placeDerbyBet(0)">
@@ -928,11 +926,13 @@
                 
                 <div class="arcade-bet-area">
                     <div class="chip-rack">
+                        <button class="chip-action-btn" onclick="actUndoBet()">UNDO</button>
                         <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
                         <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
                         <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
                         <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
                         <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
+                        <button class="chip-action-btn" onclick="actRebet()">REBET</button>
                     </div>
                     <div class="arcade-grid">
                         <div id="cups-btn-0" class="arcade-bet-box cup-bet-box" onclick="placeCupsBet(0)">
@@ -988,13 +988,15 @@
 
                 <div class="arcade-bet-area">
                     <div class="chip-rack">
+                        <button class="chip-action-btn" onclick="actUndoBet()">UNDO</button>
                         <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
                         <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
                         <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
                         <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
                         <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
+                        <button class="chip-action-btn" onclick="actRebet()">REBET</button>
                     </div>
-                    <div class="color-grid">
+                    <div class="color-grid" style="margin: 0 auto;">
                         <div id="color-btn-red" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('red')">
                             <div class="bet-badge pixel-text hidden" id="badge-red">0</div>
                             <div class="arcade-bet-title c-red pixel-text">RED</div>
@@ -1106,8 +1108,9 @@
         function formatNumber(num) { return num.toLocaleString(); }
         function formatInput(el) { let val = el.value.replace(/\D/g, ''); el.value = val ? parseInt(val).toLocaleString() : ''; }
 
-        // --- GLOBAL STATE ---
+        // --- GLOBAL STATE & BET MEMORY ---
         let currentChipValue = 1000;
+        let lastBetAction = null;
         
         function selectChip(val) {
             currentChipValue = val;
@@ -1116,35 +1119,36 @@
             playSfx('bet');
         }
 
+        window.actRebet = function() {
+            if(!lastBetAction) return showToast("No previous bet to repeat.");
+            if(lastBetAction.game === 'dice') placeDiceBet(lastBetAction.choice);
+            if(lastBetAction.game === 'derby') placeDerbyBet(lastBetAction.choice);
+            if(lastBetAction.game === 'color') placeColorBet(lastBetAction.choice);
+            if(lastBetAction.game === 'cups') placeCupsBet(lastBetAction.choice);
+            if(lastBetAction.game === 'crash') placeCrashBet();
+        }
+
+        window.actUndoBet = function() {
+            showToast("Server upgrade required to refund active bets.", "warning");
+        }
+
         // --- COMMUNICATION WIDGET (CHAT + VOICE) ---
         let currentChatTab = 'room';
         let voiceMode = 'ptt';
         let autoMicActive = false;
+        let micPressTime = 0;
 
         function toggleCommPanel(view) {
             const panel = document.getElementById('comm-panel');
             const chatView = document.getElementById('comm-chat-view');
-            const voiceView = document.getElementById('comm-voice-view');
             const notif = document.getElementById('notif-chat');
             
             if(panel.classList.contains('hidden')) {
                 panel.classList.remove('hidden');
-            } else {
-                if ((view === 'chat' && !chatView.classList.contains('hidden')) || 
-                    (view === 'voice' && !voiceView.classList.contains('hidden'))) {
-                    panel.classList.add('hidden');
-                    return;
-                }
-            }
-
-            if(view === 'chat') {
-                chatView.classList.remove('hidden'); chatView.style.display = 'flex';
-                voiceView.classList.add('hidden'); voiceView.style.display = 'none';
                 if(notif) notif.classList.add('hidden');
                 document.getElementById('master-chat-input').focus();
             } else {
-                chatView.classList.add('hidden'); chatView.style.display = 'none';
-                voiceView.classList.remove('hidden'); voiceView.style.display = 'flex';
+                panel.classList.add('hidden');
             }
         }
 
@@ -1166,9 +1170,14 @@
             const input = document.getElementById('master-chat-input');
             const msg = input.value.trim();
             if(msg && currentUser) {
-                const targetRoom = currentChatTab === 'global' ? 'global' : currentRoomId;
-                if(!targetRoom && currentChatTab === 'room') return showToast("You are not in a room.");
-                socket.emit('send_chat', { roomId: targetRoom, username: currentUser.username, message: msg });
+                if (currentChatTab === 'global') {
+                    // Global hack: Route message into every arcade room simultaneously
+                    const allRooms = ['3seat', '5seat', 'dice', 'derby', 'color', 'pvp', 'cups', 'crash'];
+                    allRooms.forEach(r => socket.emit('send_chat', { roomId: r, username: currentUser.username, message: '[GLOBAL] ' + msg }));
+                } else {
+                    if(!currentRoomId) return showToast("You are not in a room.");
+                    socket.emit('send_chat', { roomId: currentRoomId, username: currentUser.username, message: msg });
+                }
                 input.value = '';
             }
         }
@@ -1203,7 +1212,7 @@
             if(confirmActionCallback) confirmActionCallback();
             hideModal('logout-modal');
         });
-        function promptLogout() { showConfirm("Are you sure you want to return to the real world?", () => logout()); }
+        function promptLogout() { showConfirm("Are you sure you want to log out?", () => logout()); }
 
         const socket = io();
         let currentUser = null; let currentGameState = null; let currentRoomId = null; let mySeatIndex = -1;
@@ -1236,61 +1245,37 @@
         let mediaRecorder = null;
         let audioChunks = [];
 
-        function changeVoiceMode() {
-            voiceMode = document.getElementById('voice-mode-select').value;
-            if(voiceMode === 'auto') {
-                document.getElementById('ptt-controls').classList.add('hidden');
-                document.getElementById('auto-controls').classList.remove('hidden');
-            } else {
-                document.getElementById('ptt-controls').classList.remove('hidden');
-                document.getElementById('auto-controls').classList.add('hidden');
-                if(autoMicActive) toggleAutoMic(); 
-            }
-        }
-
-        window.startPTTMaster = function() {
-            if(voiceMode !== 'ptt' || !currentRoomId) return;
-            if(mediaRecorder && mediaRecorder.state === 'inactive') {
-                audioChunks = [];
-                mediaRecorder.start();
-                document.getElementById('master-ptt-btn').style.background = 'var(--accent-glow)';
-                document.getElementById('mic-live-banner').classList.remove('hidden');
-                document.getElementById('master-mic-toggle').style.background = 'var(--danger)';
-            }
-        };
-
-        window.stopPTTMaster = function() {
-            if(voiceMode !== 'ptt') return;
-            if(mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-                document.getElementById('master-ptt-btn').style.background = '#555';
-                document.getElementById('mic-live-banner').classList.add('hidden');
-                document.getElementById('master-mic-toggle').style.background = '#555';
-            }
-        };
-
-        window.toggleAutoMic = function() {
-            if(!currentRoomId) return showToast("Join a room first to enable comms.");
-            const btn = document.getElementById('auto-mic-btn');
+        window.handleMicDown = function() {
+            if(!currentRoomId) return;
+            micPressTime = Date.now();
             if(!autoMicActive) {
-                autoMicActive = true;
-                btn.innerText = "MIC LIVE (CLICK TO STOP)";
-                btn.style.background = "var(--danger)";
-                btn.style.color = "#fff";
-                document.getElementById('mic-live-banner').classList.remove('hidden');
-                document.getElementById('master-mic-toggle').style.background = 'var(--danger)';
                 if(mediaRecorder && mediaRecorder.state === 'inactive') {
-                    mediaRecorder.start(1500); // Send chunks every 1.5s
+                    audioChunks = [];
+                    mediaRecorder.start();
+                    document.getElementById('master-mic-toggle').style.background = 'var(--success)';
+                }
+            }
+        };
+
+        window.handleMicUp = function() {
+            if(!currentRoomId) return;
+            let heldTime = Date.now() - micPressTime;
+            
+            if(heldTime < 250) {
+                autoMicActive = !autoMicActive;
+                if(autoMicActive) {
+                    document.getElementById('master-mic-toggle').style.background = 'var(--danger)';
+                    showToast("Automatic Mic ENABLED", "warning");
+                    if(mediaRecorder && mediaRecorder.state === 'inactive') mediaRecorder.start(1500);
+                } else {
+                    document.getElementById('master-mic-toggle').style.background = '#555';
+                    showToast("Automatic Mic DISABLED", "warning");
+                    if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
                 }
             } else {
-                autoMicActive = false;
-                btn.innerText = "ENABLE MIC";
-                btn.style.background = "var(--success)";
-                btn.style.color = "#000";
-                document.getElementById('mic-live-banner').classList.add('hidden');
-                document.getElementById('master-mic-toggle').style.background = '#555';
-                if(mediaRecorder && mediaRecorder.state !== 'inactive') {
-                    mediaRecorder.stop();
+                if(!autoMicActive) {
+                    document.getElementById('master-mic-toggle').style.background = '#555';
+                    if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
                 }
             }
         };
@@ -1326,20 +1311,21 @@
         });
 
         socket.on('receive_chat', data => { 
-            let boxId = data.roomId === 'global' ? 'global-chat-box' : 'room-chat-box';
+            const isGlobal = data.message.startsWith('[GLOBAL] ');
+            const cleanMsg = isGlobal ? data.message.substring(9) : data.message;
             
-            if(data.roomId !== 'global') {
-                let mappedRoom = currentRoomId;
-                if(currentRoomId === '3seat' || currentRoomId === '5seat') mappedRoom = 'blackjack';
-                let incomingMapped = data.roomId;
-                if(data.roomId === '3seat' || data.roomId === '5seat') incomingMapped = 'blackjack';
-                if(incomingMapped !== mappedRoom && !incomingMapped.startsWith('arcade_')) return;
+            const globalBox = document.getElementById('global-chat-box');
+            if(globalBox) {
+                globalBox.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:${isGlobal ? 'var(--warning)' : 'var(--accent-glow-2)'}; font-weight:bold;">${data.username} ${isGlobal ? '(Global)' : ''}:</span> <span>${cleanMsg}</span></div>`;
+                globalBox.scrollTop = globalBox.scrollHeight;
             }
 
-            const msgs = document.getElementById(boxId);
-            if(msgs) { 
-                msgs.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2); font-weight:bold;">${data.username}:</span> <span>${data.message}</span></div>`; 
-                msgs.scrollTop = msgs.scrollHeight; 
+            if(!isGlobal) {
+                const roomBox = document.getElementById('room-chat-box');
+                if(roomBox) {
+                    roomBox.innerHTML += `<div style="margin-bottom: 8px;"><span style="color:var(--accent-glow-2); font-weight:bold;">${data.username}:</span> <span>${cleanMsg}</span></div>`;
+                    roomBox.scrollTop = roomBox.scrollHeight;
+                }
             }
             
             const panel = document.getElementById('comm-panel');
@@ -1896,11 +1882,11 @@
         }
 
         function joinRoom(roomId) { currentRoomId = roomId; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
-        function joinDice() { currentRoomId = 'dice'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); }
-        function joinDerby() { currentRoomId = 'derby'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); }
-        function joinColorGame() { currentRoomId = 'color'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); }
-        function joinCups() { currentRoomId = 'cups'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('cups-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'cups' }); socket.emit('get_cups_state'); playSfx('deal'); }
-        function joinCrash() { currentRoomId = 'crash'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('crash-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'crash' }); socket.emit('get_crash_state'); playSfx('deal'); }
+        function joinDice() { currentRoomId = 'dice'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); lastBetAction = null; }
+        function joinDerby() { currentRoomId = 'derby'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); lastBetAction = null; }
+        function joinColorGame() { currentRoomId = 'color'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); lastBetAction = null; }
+        function joinCups() { currentRoomId = 'cups'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('cups-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'cups' }); socket.emit('get_cups_state'); playSfx('deal'); lastBetAction = null; }
+        function joinCrash() { currentRoomId = 'crash'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('crash-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'crash' }); socket.emit('get_crash_state'); playSfx('deal'); lastBetAction = null; }
 
         function joinPVP() { 
             currentRoomId = 'pvp'; 
@@ -1989,11 +1975,11 @@
                         html += `<div class="hand-box ${activeHandClass}"><div class="hand-container">`;
                         hand.cards.forEach(c => { html += formatCardHTML(c, false); }); if (hand.cards.length > 0) html += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
                         
-                        if (hand.status === 'bust' || hand.result === 'bust') html += `<div class="hand-status-label hand-status-bust">BUST</div>`;
+                        if (hand.status === 'bust' || hand.result === 'bust') html += `<div class="hand-status-label hand-status-bust">BUST!</div>`;
                         else if (hand.result) {
-                            if(hand.result === 'win' || hand.result === 'win-bj') html += `<div class="hand-status-label hand-status-win">${hand.result==='win-bj'?'BLACKJACK':'WIN'}</div>`;
+                            if(hand.result === 'win' || hand.result === 'win-bj') html += `<div class="hand-status-label hand-status-win">${hand.result==='win-bj'?'BLACKJACK!':'WIN'}</div>`;
                             else if(hand.result === 'lose') html += `<div class="hand-status-label hand-status-lose">LOSE</div>`; else if(hand.result === 'push') html += `<div class="hand-status-label hand-status-push">PUSH</div>`;
-                        } else if (hand.status === 'blackjack' && state.status !== 'resolving') html += `<div class="hand-status-label hand-status-blackjack">21!</div>`;
+                        } else if (hand.status === 'blackjack' && state.status !== 'resolving') html += `<div class="hand-status-label hand-status-blackjack">BLACKJACK!</div>`;
                         html += `</div>`; 
                         
                         let handBet = hand.bet > 0 ? hand.bet : 0; let betAnimClass = '';
@@ -2095,9 +2081,11 @@
                 phaseDisplay.style.color = "var(--success)";
                 timerText.innerText = "";
                 
+                // Animate rocket upward slightly
                 let yOffset = Math.min(200, (data.multiplier - 1) * 50);
                 rocket.style.transform = `translateY(-${yOffset}px)`;
 
+                // Hide bet button. Only show cashout if they have an active bet.
                 btnBet.style.display = 'none';
                 let myBetUI = Array.from(document.querySelectorAll('.crash-bet-item')).find(el => el.innerText.includes(currentUser.username));
                 if (myBetUI && !myBetUI.classList.contains('cashed')) {
@@ -2115,6 +2103,7 @@
                 btnCashout.style.display = 'none';
                 playSfx('lose');
                 
+                // Mark uncashed bets as lost visually
                 document.querySelectorAll('.crash-bet-item').forEach(el => {
                     if(!el.classList.contains('cashed')) {
                         el.classList.add('lost');
@@ -2133,6 +2122,7 @@
                 rocket.style.transform = `translateY(-${yOffset}px) scale(${1 + (data.multiplier * 0.05)})`;
             }
             
+            // Update cashout button text to show live win amount
             const btnCashout = document.getElementById('btn-crash-cashout');
             if (btnCashout && btnCashout.style.display === 'block') {
                 btnCashout.innerText = `CASH OUT ${formatNumber(currentChipValue * data.multiplier)}`;
@@ -2168,6 +2158,7 @@
             if (amt > currentUser.credits) return showToast("Insufficient credits!");
             
             applyThrottle(); socket.emit('place_crash_bet', { username: currentUser.username, amount: amt });
+            lastBetAction = { game: 'crash' };
         };
 
         window.crashCashout = function() {
@@ -2215,6 +2206,7 @@
             if (myDiceBets[choice] + amt > 50000) return showToast("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
             
             applyThrottle(); myDiceBets[choice] += amt; socket.emit('place_dice_bet', { username: currentUser.username, choice, amount: amt });
+            lastBetAction = { game: 'dice', choice: choice };
         };
 
         // --- 8-BIT DERBY SPRINT LOGIC ---
@@ -2302,11 +2294,14 @@
             if (myDerbyBets[choice] + amt > 50000) return showToast("Maximum limit is 50,000 per lane!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
             
             applyThrottle(); myDerbyBets[choice] += amt; socket.emit('place_derby_bet', { username: currentUser.username, choice, amount: amt }); 
+            lastBetAction = { game: 'derby', choice: choice };
         };
 
         // --- 3 CUPS GAME LOGIC ---
         let cupsInterval = null; 
         let shuffleAnim = null;
+        let finalCupPositions = [0, 1, 2]; // Map: Index = Cup ID, Value = Visual Position (0=Left, 1=Mid, 2=Right)
+
         socket.on('cups_state_update', (data) => {
             const statusText = document.getElementById('cups-result-text'); const timerText = document.getElementById('cups-timer');
             
@@ -2317,14 +2312,13 @@
                 document.querySelectorAll('.cup-wrapper').forEach(w => w.classList.remove('reveal'));
                 document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('cups')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
                 
-                let shuffleCount = 0;
                 clearInterval(shuffleAnim);
                 shuffleAnim = setInterval(() => {
-                    let pos = ['0%', '33.33%', '66.66%'].sort(() => Math.random() - 0.5);
-                    document.getElementById('cup-wrap-0').style.left = pos[0];
-                    document.getElementById('cup-wrap-1').style.left = pos[1];
-                    document.getElementById('cup-wrap-2').style.left = pos[2];
-                    shuffleCount++;
+                    let posArr = [0, 1, 2].sort(() => Math.random() - 0.5);
+                    document.getElementById('cup-wrap-0').style.left = (posArr[0] * 33.33) + '%';
+                    document.getElementById('cup-wrap-1').style.left = (posArr[1] * 33.33) + '%';
+                    document.getElementById('cup-wrap-2').style.left = (posArr[2] * 33.33) + '%';
+                    finalCupPositions = posArr;
                 }, 200);
             }
             else if (data.status === 'betting') {
@@ -2337,7 +2331,9 @@
                 setTimeout(() => {
                     const winCupWrap = document.getElementById(`cup-wrap-${data.winningCup}`);
                     if(winCupWrap) winCupWrap.classList.add('reveal');
-                    statusText.innerText = `CUP ${data.winningCup + 1} HAS THE BALL!`;
+                    
+                    let visualWinPosition = finalCupPositions[data.winningCup] + 1;
+                    statusText.innerText = `CUP ${visualWinPosition} HAS THE BALL!`;
                     
                     let totalCupsBet = myCupsBets.reduce((a,b)=>a+b, 0);
                     if (totalCupsBet > 0) {
@@ -2349,7 +2345,8 @@
                         
                         for(let i=0; i<3; i++) {
                             if(myCupsBets[i] > 0) {
-                                const badge = document.getElementById(`badge-cups-${i}`); let winData = myWins.find(w=>w.choice===i);
+                                let uiPos = finalCupPositions[i];
+                                const badge = document.getElementById(`badge-cups-${uiPos}`); let winData = myWins.find(w=>w.choice===i);
                                 if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
                                 else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
                             }
@@ -2359,20 +2356,25 @@
             }
         });
 
-        window.placeCupsBet = function(choice) {
+        window.placeCupsBet = function(uiPosition) {
             if(gameLocks.cups) return showToast('This game is offline for maintenance.');
             if(isBetting) return; 
-            if(currentCupsBetChoice !== -1 && currentCupsBetChoice !== choice) return showToast('You can only bet on ONE cup per round!');
             
-            const box = document.getElementById(`cups-btn-${choice}`); if(box && box.classList.contains('locked')) return;
+            // Map UI position click to the actual physical Cup ID currently sitting there
+            let actualCupChoiceId = finalCupPositions.indexOf(uiPosition);
+            
+            if(currentCupsBetChoice !== -1 && currentCupsBetChoice !== actualCupChoiceId) return showToast('You can only bet on ONE cup per round!');
+            
+            const box = document.getElementById(`cups-btn-${uiPosition}`); if(box && box.classList.contains('locked')) return;
             const amt = currentChipValue;
             if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); 
-            if (myCupsBets[choice] + amt > 50000) return showToast("Maximum limit is 50,000 per cup!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
+            if (myCupsBets[actualCupChoiceId] + amt > 50000) return showToast("Maximum limit is 50,000 per cup!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
             
             applyThrottle(); 
-            currentCupsBetChoice = choice; // Lock choice
-            myCupsBets[choice] += amt; 
-            socket.emit('place_cups_bet', { username: currentUser.username, choice, amount: amt }); 
+            currentCupsBetChoice = actualCupChoiceId; 
+            myCupsBets[actualCupChoiceId] += amt; 
+            socket.emit('place_cups_bet', { username: currentUser.username, choice: actualCupChoiceId, amount: amt }); 
+            lastBetAction = { game: 'cups', choice: uiPosition };
         };
 
         // --- NEW PVP ARENA (MODALS + COIN & WHEEL) LOGIC ---
@@ -2640,6 +2642,7 @@
             if (myColorBets[choice] + amt > 50000) return showToast("Maximum limit is 50,000 per color!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
             
             applyThrottle(); myColorBets[choice] += amt; socket.emit('place_color_bet', { username: currentUser.username, choice, amount: amt }); 
+            lastBetAction = { game: 'color', choice: choice };
         };
 
         socket.on('arcade_bet_placed', (data) => { 
