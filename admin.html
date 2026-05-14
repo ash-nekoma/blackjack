@@ -162,7 +162,7 @@
         </div>
 
         <div id="player-modal" class="overlay-modal hidden">
-            <div class="modal-content" style="max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="modal-content" style="max-height: 90vh; display: flex; flex-direction: column;">
                 <div class="modal-header" style="flex-shrink: 0;">
                     <span id="pm-name" style="color:#fff;">PLAYER</span>
                     <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('player-modal')">CLOSE</button>
@@ -193,8 +193,12 @@
                             <div id="pm-promo" style="font-size:28px; color:var(--accent-glow-2);">0</div>
                         </div>
                     </div>
-                    <div style="color:var(--warning); font-size:28px; margin-bottom:10px; flex-shrink: 0;">TRANSACTION LEDGER (LATEST 50)</div>
                     
+                    <div style="color:var(--warning); font-size:28px; margin-bottom:10px; flex-shrink: 0;">PLAYER INVENTORY</div>
+                    <div id="pm-inventory" class="custom-scroll" style="background:#000; border:2px solid #334155; padding:15px; font-size:24px; color:#10b981; margin-bottom:20px; max-height:120px; overflow-y:auto; display:flex; flex-wrap:wrap; gap:10px;">
+                    </div>
+
+                    <div style="color:var(--warning); font-size:28px; margin-bottom:10px; flex-shrink: 0;">TRANSACTION LEDGER (LATEST 50)</div>
                     <div class="table-wrapper custom-scroll" style="display:block; max-height: 200px;">
                         <table class="admin-table">
                             <thead>
@@ -232,6 +236,24 @@
                     <button class="wood-btn small" style="background:var(--danger);" onclick="closeWatchModal()">CLOSE MONITOR</button>
                 </div>
                 <div id="watch-matrix-log" class="custom-scroll"></div>
+            </div>
+        </div>
+
+        <div id="ticket-modal" class="overlay-modal hidden">
+            <div class="modal-content" style="width: 750px; height: 750px; max-height: 90vh;">
+                <div class="modal-header">
+                    <span><span id="tm-name" style="color:#fff;">-</span></span>
+                    <button class="wood-btn small" style="background:var(--danger);" onclick="hideModal('ticket-modal')">CLOSE</button>
+                </div>
+                <div style="font-size:24px; color:var(--warning); margin-bottom:15px; border-bottom:1px dashed #555; padding-bottom:10px;">SUBJ: <span id="tm-subject" style="color:#fff;">-</span></div>
+                
+                <div id="tm-messages" class="custom-scroll" style="flex:1; background:#000; border:2px solid #334155; padding:15px; overflow-y:auto; margin-bottom:15px;"></div>
+                
+                <div id="tm-reply-box" style="display:flex; gap:10px; flex-shrink:0;">
+                    <input type="text" id="tm-input" class="retro-input" placeholder="TYPE RESPONSE..." style="flex:1;">
+                    <button class="wood-btn" style="background:var(--success); color:#000;" onclick="adminSendReply()">SEND</button>
+                </div>
+                <button id="tm-close-btn" class="wood-btn" style="background:var(--danger); width:100%; margin-top:10px;" onclick="adminCloseTicket()">MARK AS RESOLVED</button>
             </div>
         </div>
 
@@ -1089,6 +1111,24 @@
                 netEl.style.color = net > 0 ? 'var(--success)' : (net < 0 ? 'var(--danger)' : '#fff');
 
                 document.getElementById('pm-promo').innerText = formatNumber(totalPromo);
+                
+                // INVENTORY LOGIC
+                let invHtml = '';
+                if(!data.user.inventory || data.user.inventory.length === 0) {
+                    invHtml = '<span style="color:#64748b;">INVENTORY IS EMPTY</span>';
+                } else {
+                    let counts = {};
+                    data.user.inventory.forEach(i => counts[i] = (counts[i] || 0) + 1);
+                    invHtml = Object.keys(counts).map(item => `
+                        <div style="background:#1e293b; border:2px solid var(--border-std); border-radius:4px; padding:5px 10px; display:flex; align-items:center; gap:10px;">
+                            <span>📦</span>
+                            <span style="color:#fff;">${item.toUpperCase()}</span>
+                            <span style="color:var(--accent-glow-2); font-weight:bold;">x${counts[item]}</span>
+                        </div>
+                    `).join('');
+                }
+                document.getElementById('pm-inventory').innerHTML = invHtml;
+
                 document.getElementById('pm-ledger').innerHTML = ledgerHTML || '<tr><td colspan="5" style="color:#475569;">NO TRANSACTIONS FOUND</td></tr>';
                 
                 showModal('player-modal');
