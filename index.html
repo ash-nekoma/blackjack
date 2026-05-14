@@ -313,7 +313,12 @@
         .trade-inventory-item:hover { transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
         .trade-inventory-item .qty { position: absolute; bottom: 2px; right: 4px; font-size: 20px; color: #fff; font-weight: bold; text-shadow: 1px 1px 0 #000; }
         .trade-offer-card { background: #111; border: 4px solid #333; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-
+        
+        .locked-trade-area { border-color: var(--danger) !important; pointer-events: none; }
+        .locked-trade-area #trade-lock-icon { display: block !important; color: var(--danger); }
+        .trade-item-slot.mini { width: 30px; height: 30px; font-size: 14px; border-width: 1px;}
+        .mini-confirm-slot { width: 40px; height: 40px; border: 2px solid #555; background: #000; display:flex; justify-content:center; align-items:center; font-size: 20px; }
+        .mini-confirm-slot.occ { border-color: var(--accent-glow-2); }
     </style>
 </head>
 <body>
@@ -390,6 +395,7 @@
             <h1 class="pixel-text" style="font-size: 120px; margin-bottom: 50px; text-shadow: 6px 6px 0px #000, 0 0 50px rgba(236, 72, 153, 0.8); text-align: center; letter-spacing: 4px;">ARCADE HUB</h1>
             
             <button class="mc-btn" style="background: var(--success); color:#000; font-size: 60px; padding: 20px 80px; box-shadow: 0 10px 30px rgba(16,185,129,0.4);" onclick="showModal('play-category-modal')">▶ PLAY NOW</button>
+            <button class="mc-btn" style="background: #f59e0b; color:#000; font-size: 45px; padding: 15px 60px; margin-top: 20px; box-shadow: 0 10px 30px rgba(245,158,11,0.4);" onclick="openTradeHub()">🤝 TRADE HUB</button>
             <button class="mc-btn" style="background: #3b82f6; margin-top: 20px; font-size: 32px;" onclick="showModal('how-to-play-modal')">HOW TO PLAY</button>
 
             <!-- MMO HOTBAR (BOTTOM HUD) -->
@@ -398,7 +404,6 @@
                     <div class="hotbar-slot pixel-text" onclick="showProfile()">PROFILE</div>
                     <div class="hotbar-slot pixel-text" onclick="showBank()">BANK</div>
                     <div class="hotbar-slot pixel-text" onclick="showRewards()">REWARDS</div>
-                    <div class="hotbar-slot pixel-text" onclick="openTradeHub()">TRADE</div>
                     <div class="hotbar-slot pixel-text" onclick="showModal('redeem-modal')">REDEEM</div>
                     <div class="hotbar-slot pixel-text" onclick="openMarket()">MARKET</div>
                     <div class="hotbar-slot pixel-text" onclick="openInbox()">INBOX <div id="notif-badge" class="notif-badge hidden">0</div></div>
@@ -419,7 +424,7 @@
                 
                 <div class="realm-grid-container custom-scroll">
                     <!-- CRASH -->
-                    <div class="realm-card" onclick="joinCrash()">
+                    <div class="realm-card" onclick="joinCrash()" style="border-color: var(--accent-glow);">
                         <div class="realm-title" style="color: var(--accent-glow);">8-BIT CRASH</div>
                         <div class="realm-desc">Ride the multiplier to the moon. Cash out before it explodes!</div>
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="crash-player-count">0</span>&nbsp;ACTIVE</div>
@@ -523,13 +528,21 @@
                     <!-- Partner Item -->
                     <div style="text-align: center;">
                         <div class="pixel-text" style="font-size: 24px; color: #fff; margin-bottom: 5px;">Item:</div>
-                        <div id="trade-partner-item" class="trade-item-slot occupied">📦</div>
+                        <div id="trade-partner-items-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;">
+                            <div class="trade-item-slot empty mini">❌</div>
+                            <div class="trade-item-slot empty mini">❌</div>
+                            <div class="trade-item-slot empty mini">❌</div>
+                            <div class="trade-item-slot empty mini">❌</div>
+                            <div class="trade-item-slot empty mini">❌</div>
+                            <div class="trade-item-slot empty mini">❌</div>
+                        </div>
                         <div id="trade-partner-coins" class="pixel-text" style="color: var(--warning); margin-top: 5px; font-size: 24px;">+ 0 Coins</div>
                     </div>
                 </div>
 
-                <!-- My Area -->
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                <!-- My Area (Lockable) -->
+                <div id="my-trade-area" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding: 10px; border: 4px solid transparent; border-radius: 12px; position: relative;">
+                    <div id="trade-lock-icon" class="hidden pixel-text" style="font-size: 40px; margin-right: 10px;">🔒</div>
                     <div class="pixel-text" style="font-size: 32px; color: #fff;">You give:</div>
                     
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
@@ -552,9 +565,39 @@
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px;">
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-top: 20px;">
+                    <div id="trade-waiting-text" class="hidden pixel-text" style="font-size: 20px; color: #fff; width: 140px; line-height: 1.1;">Waiting for partner to accept deal...</div>
                     <button id="btn-trade-ready" class="mc-btn" style="background: var(--success); color: #000;" onclick="toggleTradeReady()">OK, COOL!</button>
                     <button class="mc-btn" style="background: var(--danger);" onclick="actLeaveTrade()">Leave</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINAL CONFIRMATION MODAL -->
+        <div id="trade-confirm-modal" class="overlay-menu hidden" style="z-index: 700;">
+            <div class="modal-box mc-panel" style="width: 550px; background: #0a0a0a; border-color: #333; padding: 25px;">
+                
+                <div class="pixel-text" style="font-size: 32px; color: #fff; margin-bottom: 5px;">You give</div>
+                <div style="display:flex; justify-content:center; align-items:center; gap: 10px; background: #1a1a1a; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                    <div style="display:flex; gap:4px;" id="confirm-give-items"></div>
+                    <div class="pixel-text" style="color:var(--warning); font-size:28px; margin-left:15px;">🪙 <span id="confirm-give-coins">0</span></div>
+                </div>
+
+                <div class="pixel-text" style="font-size: 32px; color: #fff; margin-bottom: 5px;">You get</div>
+                <div style="display:flex; justify-content:center; align-items:center; gap: 10px; background: #1a1a1a; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                    <div style="display:flex; gap:4px;" id="confirm-get-items"></div>
+                    <div class="pixel-text" style="color:var(--warning); font-size:28px; margin-left:15px;">🪙 <span id="confirm-get-coins">0</span></div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div style="text-align:left;">
+                        <div class="pixel-text" style="color:#64748b; font-size:20px;">About your trade partner</div>
+                        <div class="pixel-text" style="color:#3b82f6; font-size:20px;">Getting Info...<br>🟦🟦🟦</div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="mc-btn" style="background:var(--success); color:#000;" onclick="actConfirmFinalTrade()">OK, COOL!</button>
+                        <button class="mc-btn" style="background:var(--danger);" onclick="actCancelFinalTrade()">NO!</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1234,6 +1277,7 @@
         let activeTradeSessionId = null;
         let myTradeItems = [null, null, null, null, null, null]; // 6 slots
         let isTradeReady = false;
+        let activeTradeSlot = -1;
 
         function openTradeHub() {
             if(!currentUser) return showToast("Log in first!");
@@ -1262,7 +1306,23 @@
             socket.emit('req_market', { username: currentUser.username }); // Re-use inventory fetch
         }
 
+        function openTradeInvSelect(idx) {
+            if(isTradeReady) return;
+            activeTradeSlot = idx;
+            document.getElementById('trade-session-modal').classList.add('hidden');
+            document.getElementById('trade-hub-modal').classList.remove('hidden');
+            switchTradeTab('inv');
+        }
+
         function actCreateTradeOffer(item) {
+            if (activeTradeSessionId) {
+                myTradeItems[activeTradeSlot] = item;
+                activeTradeSlot = -1;
+                hideModal('trade-hub-modal');
+                showModal('trade-session-modal');
+                updateMyTradeOffer();
+                return;
+            }
             socket.emit('create_trade_offer', { username: currentUser.username, item });
             hideModal('trade-hub-modal');
             showModal('trade-waiting-modal');
@@ -1289,15 +1349,14 @@
             
             document.getElementById('trade-partner-coins').innerText = `+ ${formatNumber(partner.coins)} Coins`;
             
-            // Partner items display
-            const pItemUI = document.getElementById('trade-partner-item');
-            if(partner.items.length > 0) {
-                pItemUI.className = 'trade-item-slot occupied';
-                pItemUI.innerHTML = `<span style="font-size:12px; line-height:1; text-align:center;">${partner.items[0]}</span>`;
-            } else {
-                pItemUI.className = 'trade-item-slot empty';
-                pItemUI.innerHTML = '❌';
+            // Partner items display (Mini Grid)
+            const pItemsContainer = document.getElementById('trade-partner-items-container');
+            let pItemsHtml = '';
+            for(let i=0; i<6; i++) {
+                if(partner.items[i]) pItemsHtml += `<div class="trade-item-slot occupied mini" title="${partner.items[i]}">📦</div>`;
+                else pItemsHtml += `<div class="trade-item-slot empty mini">❌</div>`;
             }
+            pItemsContainer.innerHTML = pItemsHtml;
 
             // My slots
             const mySlots = document.getElementById('my-trade-slots').children;
@@ -1305,10 +1364,33 @@
                 if(me.items[i]) {
                     mySlots[i].className = 'trade-item-slot occupied';
                     mySlots[i].innerHTML = '📦';
+                    mySlots[i].title = me.items[i];
                 } else {
                     mySlots[i].className = 'trade-item-slot empty';
                     mySlots[i].innerHTML = '❌';
+                    mySlots[i].title = '';
                 }
+            }
+
+            // Toggle Locked Visuals based on MY ready state
+            const myArea = document.getElementById('my-trade-area');
+            const lockIcon = document.getElementById('trade-lock-icon');
+            const btnReady = document.getElementById('btn-trade-ready');
+            const waitingText = document.getElementById('trade-waiting-text');
+            const coinInput = document.getElementById('trade-my-coins');
+
+            if(me.ready) {
+                myArea.classList.add('locked-trade-area');
+                lockIcon.classList.remove('hidden');
+                btnReady.classList.add('hidden');
+                waitingText.classList.remove('hidden');
+                coinInput.disabled = true;
+            } else {
+                myArea.classList.remove('locked-trade-area');
+                lockIcon.classList.add('hidden');
+                btnReady.classList.remove('hidden');
+                waitingText.classList.add('hidden');
+                coinInput.disabled = false;
             }
         }
 
@@ -1328,18 +1410,53 @@
 
         function toggleTradeReady() {
             if(!activeTradeSessionId) return;
-            isTradeReady = !isTradeReady;
-            
-            const btn = document.getElementById('btn-trade-ready');
-            if(isTradeReady) {
-                btn.style.background = 'var(--warning)';
-                btn.innerText = 'WAITING...';
-            } else {
-                btn.style.background = 'var(--success)';
-                btn.innerText = 'OK, COOL!';
+            socket.emit('set_trade_ready', { sessionId: activeTradeSessionId, username: currentUser.username, ready: true });
+        }
+
+        socket.on('trade_final_confirm', (data) => {
+            const isHost = data.p1.username === currentUser.username;
+            const me = isHost ? data.p1 : data.p2;
+            const partner = isHost ? data.p2 : data.p1;
+
+            // Render Give Items (Horizontal row of 6)
+            let giveHtml = '';
+            for(let i=0; i<6; i++) {
+                if(me.items[i]) giveHtml += `<div class="mini-confirm-slot occ" title="${me.items[i]}">📦</div>`;
+                else giveHtml += `<div class="mini-confirm-slot"><span style="color:#ef4444;">❌</span></div>`;
             }
+            document.getElementById('confirm-give-items').innerHTML = giveHtml;
+            document.getElementById('confirm-give-coins').innerText = formatNumber(me.coins);
+
+            // Render Get Items (Horizontal row of 6)
+            let getHtml = '';
+            for(let i=0; i<6; i++) {
+                if(partner.items[i]) getHtml += `<div class="mini-confirm-slot occ" title="${partner.items[i]}">📦</div>`;
+                else getHtml += `<div class="mini-confirm-slot"><span style="color:#ef4444;">❌</span></div>`;
+            }
+            document.getElementById('confirm-get-items').innerHTML = getHtml;
+            document.getElementById('confirm-get-coins').innerText = formatNumber(partner.coins);
+
+            // Remove any loading overlays if we had them
+            const existingOverlay = document.getElementById('trade-confirm-modal').querySelector('.payout-overlay');
+            if(existingOverlay) existingOverlay.remove();
+
+            showModal('trade-confirm-modal');
+        });
+
+        function actConfirmFinalTrade() {
+            socket.emit('confirm_final_trade', { sessionId: activeTradeSessionId, username: currentUser.username });
             
-            socket.emit('set_trade_ready', { sessionId: activeTradeSessionId, username: currentUser.username, ready: isTradeReady });
+            // Add waiting overlay over the confirm modal
+            const overlay = document.createElement('div');
+            overlay.className = 'payout-overlay pixel-text';
+            overlay.innerText = 'WAITING FOR PARTNER...';
+            overlay.style.borderRadius = '8px';
+            document.getElementById('trade-confirm-modal').querySelector('.modal-box').appendChild(overlay);
+        }
+
+        function actCancelFinalTrade() {
+            socket.emit('cancel_final_trade', { sessionId: activeTradeSessionId });
+            hideModal('trade-confirm-modal');
         }
 
         function actLeaveTrade() {
@@ -1598,9 +1715,15 @@
         socket.on('trade_success', () => {
             activeTradeSessionId = null;
             hideModal('trade-session-modal');
+            hideModal('trade-confirm-modal');
             showToast('TRADE COMPLETED SUCCESSFULLY!', 'success');
             playSfx('win');
             socket.emit('req_market', { username: currentUser.username }); 
+        });
+
+        socket.on('trade_confirm_canceled', () => {
+            hideModal('trade-confirm-modal');
+            showToast('Partner modified or canceled the confirmation.', 'warning');
         });
 
         // --- MARKET OVERRIDE FOR TRADE INV ---
@@ -2572,7 +2695,7 @@
         // --- 3 CUPS GAME LOGIC ---
         let cupsInterval = null; 
         let shuffleAnim = null;
-        let finalCupPositions = [0, 1, 2]; // Map: Index = Cup ID, Value = Visual Position (0=Left, 1=Mid, 2=Right)
+        let finalCupPositions = [0, 1, 2];
 
         socket.on('cups_state_update', (data) => {
             const statusText = document.getElementById('cups-result-text'); const timerText = document.getElementById('cups-timer');
