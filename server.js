@@ -395,7 +395,9 @@ io.on('connection', (socket) => {
     
     // PUSH TO TALK RELAY
     socket.on('voice_message', (data) => {
-        if (data.room && data.audio) { socket.to(data.room).emit('voice_broadcast', { username: socketUserMap[socket.id]?.username || 'Unknown', audio: data.audio }); }
+        if (data.room && data.room !== 'global') { 
+            socket.to(data.room).emit('voice_broadcast', { username: socketUserMap[socket.id]?.username || 'Unknown', audio: data.audio }); 
+        }
     });
 
     // MARKET & INVENTORY
@@ -492,6 +494,49 @@ io.on('connection', (socket) => {
                 io.to(roomId).emit('receive_chat', { roomId, username, message }); 
             }
         }
+    });
+
+    // --- UNDO BET SYSTEM ---
+    socket.on('undo_bet', async ({ username, game }) => {
+        try {
+            if(gameLocks[game]) return socket.emit('arcade_error', 'Game is currently offline.');
+            
+            let targetGame;
+            if (game === 'dice') targetGame = diceGame;
+            else if (game === 'derby') targetGame = derbyGame;
+            else if (game === 'color') targetGame = colorGame;
+            else if (game === 'cups') targetGame = cupsGame;
+            else if (game === 'crash') targetGame = crashGame;
+            else return;
+
+            if (targetGame.status !== 'betting') return socket.emit('arcade_error', 'Cannot undo: Bets are closed!');
+            
+            let betIndex = -1;
+            for(let i = targetGame.bets.length - 1; i >= 0; i--) {
+                if(targetGame.bets[i].username.toLowerCase() === username.toLowerCase()) {
+                    betIndex = i;
+                    break;
+                }
+            }
+
+            if(betIndex === -1) return socket.emit('arcade_error', 'No bets to undo.');
+
+            let removedBet = targetGame.bets.splice(betIndex, 1)[0];
+            
+            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i') }, { $inc: { credits: removedBet.amount } }, { new: true });
+            if(user) {
+                await new Transaction({ username: user.username, type: `${game.toUpperCase()} UNDO`, amount: removedBet.amount }).save();
+                io.emit('credit_update', { username: user.username, credits: user.credits });
+                
+                let remainingBetAmt = 0;
+                if(game !== 'crash') {
+                    remainingBetAmt = targetGame.bets.filter(b => b.username.toLowerCase() === username.toLowerCase() && b.choice === removedBet.choice).reduce((sum, b) => sum + b.amount, 0);
+                    socket.emit('arcade_bet_placed', { game, choice: removedBet.choice, totalChoiceBet: remainingBetAmt });
+                } else {
+                    socket.emit('arcade_error', 'Bet undone successfully!');
+                }
+            }
+        } catch(e) {}
     });
 
     // --- ARCADE BETS ---
