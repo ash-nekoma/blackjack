@@ -76,6 +76,8 @@ const crashGame = { status: 'betting', betEndTime: Date.now() + 10000, multiplie
 let pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null };
 
 let activeAuctions = []; 
+let liveTradeOffers = []; 
+let activeTradeSessions = {};
 
 const socketUserMap = {}; 
 let diceLobby = []; let derbyLobby = []; let colorLobby = []; let pvpLobby = []; let cupsLobby = []; let crashLobby = [];
@@ -393,11 +395,130 @@ app.get('/api/profile/ledger/:username', async (req, res) => {
 // --- SOCKET SYSTEM ---
 io.on('connection', (socket) => {
     
-    // PUSH TO TALK RELAY
+    // PUSH TO TALK RELAY (Isolated to non-global rooms)
     socket.on('voice_message', (data) => {
         if (data.room && data.room !== 'global') { 
             socket.to(data.room).emit('voice_broadcast', { username: socketUserMap[socket.id]?.username || 'Unknown', audio: data.audio }); 
         }
+    });
+
+    // P2P TRADING SYSTEM
+    socket.on('req_trade_board', () => {
+        socket.emit('trade_board_update', liveTradeOffers);
+    });
+
+    socket.on('create_trade_offer', async ({ username, item }) => {
+        try {
+            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
+            if(!user || !user.inventory.includes(item)) return;
+            
+            // Remove old offers
+            liveTradeOffers = liveTradeOffers.filter(o => o.username !== user.username);
+            liveTradeOffers.push({ username: user.username, item, socketId: socket.id });
+            io.emit('trade_board_update', liveTradeOffers);
+        } catch(e) {}
+    });
+
+    socket.on('cancel_trade_offer', ({ username }) => {
+        liveTradeOffers = liveTradeOffers.filter(o => o.username !== username);
+        io.emit('trade_board_update', liveTradeOffers);
+    });
+
+    socket.on('join_trade', async ({ requester, target }) => {
+        const offerIndex = liveTradeOffers.findIndex(o => o.username === target);
+        if(offerIndex === -1) return socket.emit('arcade_error', 'Offer no longer available.');
+        
+        const offer = liveTradeOffers[offerIndex];
+        liveTradeOffers.splice(offerIndex, 1);
+        io.emit('trade_board_update', liveTradeOffers);
+
+        const sessionId = 'trade_' + Math.random().toString(36).substr(2, 9);
+        activeTradeSessions[sessionId] = {
+            p1: { username: offer.username, items: [offer.item], coins: 0, ready: false, socketId: offer.socketId },
+            p2: { username: requester, items: [], coins: 0, ready: false, socketId: socket.id }
+        };
+
+        io.to(offer.socketId).emit('trade_session_start', { sessionId, ...activeTradeSessions[sessionId] });
+        socket.emit('trade_session_start', { sessionId, ...activeTradeSessions[sessionId] });
+    });
+
+    socket.on('update_trade_offer', ({ sessionId, username, items, coins }) => {
+        const session = activeTradeSessions[sessionId];
+        if(!session) return;
+
+        const player = session.p1.username === username ? session.p1 : (session.p2.username === username ? session.p2 : null);
+        if(!player) return;
+
+        player.items = items;
+        player.coins = coins;
+        player.ready = false; // Auto un-ready on change
+
+        io.to(session.p1.socketId).emit('trade_session_update', session);
+        io.to(session.p2.socketId).emit('trade_session_update', session);
+    });
+
+    socket.on('set_trade_ready', async ({ sessionId, username, ready }) => {
+        const session = activeTradeSessions[sessionId];
+        if(!session) return;
+
+        const player = session.p1.username === username ? session.p1 : (session.p2.username === username ? session.p2 : null);
+        if(!player) return;
+
+        player.ready = ready;
+        io.to(session.p1.socketId).emit('trade_session_update', session);
+        io.to(session.p2.socketId).emit('trade_session_update', session);
+
+        // EXECUTE TRADE IF BOTH READY
+        if(session.p1.ready && session.p2.ready) {
+            try {
+                const u1 = await User.findOne({ username: new RegExp('^' + session.p1.username + '$', 'i') });
+                const u2 = await User.findOne({ username: new RegExp('^' + session.p2.username + '$', 'i') });
+
+                if(u1 && u2 && u1.credits >= session.p1.coins && u2.credits >= session.p2.coins) {
+                    // Verify items exist
+                    let u1Valid = session.p1.items.every(i => u1.inventory.includes(i));
+                    let u2Valid = session.p2.items.every(i => u2.inventory.includes(i));
+
+                    if(u1Valid && u2Valid) {
+                        // Swap Coins
+                        u1.credits = (u1.credits - session.p1.coins) + session.p2.coins;
+                        u2.credits = (u2.credits - session.p2.coins) + session.p1.coins;
+
+                        // Swap Items (Remove)
+                        session.p1.items.forEach(i => u1.inventory.splice(u1.inventory.indexOf(i), 1));
+                        session.p2.items.forEach(i => u2.inventory.splice(u2.inventory.indexOf(i), 1));
+
+                        // Swap Items (Add)
+                        session.p1.items.forEach(i => u2.inventory.push(i));
+                        session.p2.items.forEach(i => u1.inventory.push(i));
+
+                        await u1.save();
+                        await u2.save();
+
+                        io.to(session.p1.socketId).emit('trade_success');
+                        io.to(session.p2.socketId).emit('trade_success');
+                        
+                        io.emit('credit_update', { username: u1.username, credits: u1.credits });
+                        io.emit('credit_update', { username: u2.username, credits: u2.credits });
+                    } else {
+                        io.to(session.p1.socketId).emit('trade_closed', 'Trade failed. Missing items.');
+                        io.to(session.p2.socketId).emit('trade_closed', 'Trade failed. Missing items.');
+                    }
+                } else {
+                    io.to(session.p1.socketId).emit('trade_closed', 'Trade failed. Insufficient credits.');
+                    io.to(session.p2.socketId).emit('trade_closed', 'Trade failed. Insufficient credits.');
+                }
+            } catch(e) { console.error("Trade Error", e); }
+            delete activeTradeSessions[sessionId];
+        }
+    });
+
+    socket.on('leave_trade', ({ sessionId, username }) => {
+        const session = activeTradeSessions[sessionId];
+        if(!session) return;
+        io.to(session.p1.socketId).emit('trade_closed', 'Partner canceled the trade.');
+        io.to(session.p2.socketId).emit('trade_closed', 'Partner canceled the trade.');
+        delete activeTradeSessions[sessionId];
     });
 
     // MARKET & INVENTORY
@@ -966,126 +1087,6 @@ async function resolveBets(roomId, dealerValue) {
         }
     }, 1000);
 }
-
-// --- P2P TRADING SYSTEM ---
-let liveTradeOffers = []; // { username, item, socketId }
-let activeTradeSessions = {}; // sessionId -> { p1: {}, p2: {} }
-
-socket.on('req_trade_board', () => {
-    socket.emit('trade_board_update', liveTradeOffers);
-});
-
-socket.on('create_trade_offer', async ({ username, item }) => {
-    const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
-    if(!user || !user.inventory.includes(item)) return;
-    
-    // Remove old offers
-    liveTradeOffers = liveTradeOffers.filter(o => o.username !== user.username);
-    liveTradeOffers.push({ username: user.username, item, socketId: socket.id });
-    io.emit('trade_board_update', liveTradeOffers);
-});
-
-socket.on('cancel_trade_offer', ({ username }) => {
-    liveTradeOffers = liveTradeOffers.filter(o => o.username !== username);
-    io.emit('trade_board_update', liveTradeOffers);
-});
-
-socket.on('join_trade', async ({ requester, target }) => {
-    const offerIndex = liveTradeOffers.findIndex(o => o.username === target);
-    if(offerIndex === -1) return socket.emit('arcade_error', 'Offer no longer available.');
-    
-    const offer = liveTradeOffers[offerIndex];
-    liveTradeOffers.splice(offerIndex, 1);
-    io.emit('trade_board_update', liveTradeOffers);
-
-    const sessionId = 'trade_' + Math.random().toString(36).substr(2, 9);
-    activeTradeSessions[sessionId] = {
-        p1: { username: offer.username, items: [offer.item], coins: 0, ready: false, socketId: offer.socketId },
-        p2: { username: requester, items: [], coins: 0, ready: false, socketId: socket.id }
-    };
-
-    io.to(offer.socketId).emit('trade_session_start', { sessionId, ...activeTradeSessions[sessionId] });
-    socket.emit('trade_session_start', { sessionId, ...activeTradeSessions[sessionId] });
-});
-
-socket.on('update_trade_offer', ({ sessionId, username, items, coins }) => {
-    const session = activeTradeSessions[sessionId];
-    if(!session) return;
-
-    const player = session.p1.username === username ? session.p1 : (session.p2.username === username ? session.p2 : null);
-    if(!player) return;
-
-    player.items = items;
-    player.coins = coins;
-    player.ready = false; // Auto un-ready on change
-
-    io.to(session.p1.socketId).emit('trade_session_update', session);
-    io.to(session.p2.socketId).emit('trade_session_update', session);
-});
-
-socket.on('set_trade_ready', async ({ sessionId, username, ready }) => {
-    const session = activeTradeSessions[sessionId];
-    if(!session) return;
-
-    const player = session.p1.username === username ? session.p1 : (session.p2.username === username ? session.p2 : null);
-    if(!player) return;
-
-    player.ready = ready;
-    io.to(session.p1.socketId).emit('trade_session_update', session);
-    io.to(session.p2.socketId).emit('trade_session_update', session);
-
-    // EXECUTE TRADE IF BOTH READY
-    if(session.p1.ready && session.p2.ready) {
-        try {
-            const u1 = await User.findOne({ username: new RegExp('^' + session.p1.username + '$', 'i') });
-            const u2 = await User.findOne({ username: new RegExp('^' + session.p2.username + '$', 'i') });
-
-            if(u1 && u2 && u1.credits >= session.p1.coins && u2.credits >= session.p2.coins) {
-                // Verify items exist
-                let u1Valid = session.p1.items.every(i => u1.inventory.includes(i));
-                let u2Valid = session.p2.items.every(i => u2.inventory.includes(i));
-
-                if(u1Valid && u2Valid) {
-                    // Swap Coins
-                    u1.credits = (u1.credits - session.p1.coins) + session.p2.coins;
-                    u2.credits = (u2.credits - session.p2.coins) + session.p1.coins;
-
-                    // Swap Items (Remove)
-                    session.p1.items.forEach(i => u1.inventory.splice(u1.inventory.indexOf(i), 1));
-                    session.p2.items.forEach(i => u2.inventory.splice(u2.inventory.indexOf(i), 1));
-
-                    // Swap Items (Add)
-                    session.p1.items.forEach(i => u2.inventory.push(i));
-                    session.p2.items.forEach(i => u1.inventory.push(i));
-
-                    await u1.save();
-                    await u2.save();
-
-                    io.to(session.p1.socketId).emit('trade_success');
-                    io.to(session.p2.socketId).emit('trade_success');
-                    
-                    io.emit('credit_update', { username: u1.username, credits: u1.credits });
-                    io.emit('credit_update', { username: u2.username, credits: u2.credits });
-                } else {
-                    io.to(session.p1.socketId).emit('trade_closed', 'Trade failed. Missing items.');
-                    io.to(session.p2.socketId).emit('trade_closed', 'Trade failed. Missing items.');
-                }
-            } else {
-                io.to(session.p1.socketId).emit('trade_closed', 'Trade failed. Insufficient credits.');
-                io.to(session.p2.socketId).emit('trade_closed', 'Trade failed. Insufficient credits.');
-            }
-        } catch(e) { console.error("Trade Error", e); }
-        delete activeTradeSessions[sessionId];
-    }
-});
-
-socket.on('leave_trade', ({ sessionId, username }) => {
-    const session = activeTradeSessions[sessionId];
-    if(!session) return;
-    io.to(session.p1.socketId).emit('trade_closed', 'Partner canceled the trade.');
-    io.to(session.p2.socketId).emit('trade_closed', 'Partner canceled the trade.');
-    delete activeTradeSessions[sessionId];
-});
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Casino Server Live on ${PORT}`));
