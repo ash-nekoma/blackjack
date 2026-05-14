@@ -107,7 +107,6 @@
         .realm-desc { font-size: 18px; color: #94a3b8; line-height: 1.2; margin-bottom: 15px; flex: 1;}
         .realm-status { font-size: 20px; display: flex; align-items: center; justify-content: center; background: #000; padding: 4px 10px; border: 2px solid #111; width: 100%; color: var(--success); font-weight: bold;}
         .status-dot { width: 12px; height: 12px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); margin-right: 8px; animation: pulse 2s infinite;}
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
         /* --- FLEXBOX SAFE ZONES --- */
         .game-interface { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 0; background: #000; overflow: hidden; position: relative;}
@@ -151,22 +150,21 @@
         .casino-chip:hover { transform: translateY(-4px); }
         .casino-chip.selected { transform: translateY(-8px) scale(1.1); box-shadow: 0 10px 15px rgba(0,0,0,0.8), inset 0 0 10px rgba(0,0,0,0.5), 0 0 15px var(--accent-glow-2); border-color: var(--warning); }
         
-        .chip-1k { background: #64748b; } /* Gray */
-        .chip-5k { background: #ef4444; } /* Red */
-        .chip-20k { background: #10b981; } /* Green */
-        .chip-50k { background: #3b82f6; } /* Blue */
-        .chip-100k { background: #000; color: var(--warning); border-color: var(--warning); } /* Black/Gold */
+        .chip-1k { background: #64748b; } 
+        .chip-5k { background: #ef4444; } 
+        .chip-20k { background: #10b981; } 
+        .chip-50k { background: #3b82f6; } 
+        .chip-100k { background: #000; color: var(--warning); border-color: var(--warning); }
 
         /* General Elements */
         .info-box { background: rgba(0,0,0,0.5); border: 4px solid #334155; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
         .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
-        .reward-box { height: 100px; background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
-        .reward-box:hover { filter: brightness(1.2); transform: translateY(-5px); }
+        .reward-box { height: 100px; background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
         .reward-box .inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; }
         .reward-box.open .inner { transform: rotateY(180deg); }
-        .reward-box .front, .reward-box .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; }
-        .reward-box .front svg { width: 50px; height: 50px; fill: #fff; }
-        .reward-box .back { background: #000; border: 4px solid var(--warning); transform: rotateY(180deg); font-size: 24px; color: var(--warning); flex-direction: column; }
+        .reward-box .front, .reward-box .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; cursor: pointer;}
+        .reward-box .front:hover { filter: brightness(1.2); }
+        .reward-box .back { background: #000; border: 4px solid var(--warning); transform: rotateY(180deg); font-size: 24px; color: var(--warning); flex-direction: column; cursor: default;}
 
         /* WIDER Blackjack Seats & 2x2 Grid */
         .table-surface { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; position: relative; padding: 20px 0; min-height: 0; margin-top: 50px;}
@@ -199,8 +197,8 @@
         .arcade-bet-box { background: #2d2d2d; border: 4px solid; border-color: #555 #111 #111 #555; padding: 15px; text-align: center; width: 200px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
         .arcade-bet-box:active:not(.locked) { border-color: #111 #555 #555 #111; transform: translateY(2px); }
         .arcade-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
-        .arcade-bet-title { font-size: 34px; color: #fff; margin-bottom: 5px; font-weight: bold;}
-        .arcade-bet-payout { font-size: 20px; color: var(--success); font-weight: bold;}
+        .arcade-bet-title { font-size: 34px; color: #fff; margin-bottom: 5px; font-weight: bold; line-height:1;}
+        .arcade-bet-payout { font-size: 20px; color: var(--success); font-weight: bold; line-height:1;}
         .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); display: flex; justify-content: center; align-items: center; font-size: 35px; font-weight: bold; z-index: 30;}
         .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); color: #fff; padding: 4px 10px; border: 2px solid #fff; font-size: 20px; z-index: 40; font-weight: bold; box-shadow: 2px 2px 0 #000;}
 
@@ -220,9 +218,6 @@
         @keyframes gallop { 0% { transform: scaleX(-1) translateY(0px) rotate(-3deg); } 50% { transform: scaleX(-1) translateY(-4px) rotate(4deg); } 100% { transform: scaleX(-1) translateY(0px) rotate(-3deg); } }
         .racer-running { animation: gallop 0.25s infinite; filter: brightness(1.2); }
         .lane-indicator { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 24px; color: rgba(255,255,255,0.4); font-weight: bold; z-index: 5; text-shadow: 1px 1px 0 #000; }
-        .derby-bet-box { height: 90px; width: 150px; border-left-width: 15px; padding: 5px; } 
-
-        .lane-1-color { border-left-color: #ef4444; } .lane-2-color { border-left-color: #3b82f6; } .lane-3-color { border-left-color: #10b981; } .lane-4-color { border-left-color: #a855f7; } .lane-5-color { border-left-color: #ec4899; } .lane-6-color { border-left-color: #fbbf24; }
 
         /* Cups */
         .cups-container { position: relative; width: 500px; height: 200px; display: flex; justify-content: center; align-items: center;}
@@ -231,23 +226,19 @@
         .cup-ball { font-size: 60px; position: absolute; bottom: -5px; z-index: 5; opacity: 0; transition: opacity 0.1s; text-shadow: 0 5px 10px #000;}
         .cup-wrapper.reveal .cup-shape { transform: translateY(-90px) rotate(15deg); }
         .cup-wrapper.reveal .cup-ball { opacity: 1; }
-        .cup-bet-box { border-top-color: #f59e0b; border-top-width: 12px;}
 
         /* Neon Color Game */
-        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 600px; width: 100%;}
         .color-die-container { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 30px; margin-bottom: 20px; flex-wrap: nowrap;}
         .color-die { width: 110px; height: 110px; border: 6px solid #222; border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 15px 30px rgba(0,0,0,0.8); transition: 0.1s;}
         .color-die.bg-white { background-color: #f8fafc !important; box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 15px 30px rgba(0,0,0,0.8) !important; }
-        .color-bet-box { height: 90px; width: 100%; padding: 10px; border-top-width: 12px;}
         .bg-red { background-color: #ef4444 !important; } .bg-blue { background-color: #3b82f6 !important; } .bg-yellow { background-color: #eab308 !important; } .bg-green { background-color: #10b981 !important; } .bg-pink { background-color: #ec4899 !important; } .bg-white { background-color: #f8fafc !important; }
-        .br-red { border-top-color: #ef4444; } .br-blue { border-top-color: #3b82f6; } .br-yellow { border-top-color: #eab308; } .br-green { border-top-color: #10b981; } .br-pink { border-top-color: #ec4899; } .br-white { border-top-color: #f8fafc; }
         
-        .color-bet-title.c-red { color: #ef4444; text-shadow: 0 0 10px #ef4444; }
-        .color-bet-title.c-blue { color: #3b82f6; text-shadow: 0 0 10px #3b82f6; }
-        .color-bet-title.c-yellow { color: #eab308; text-shadow: 0 0 10px #eab308; }
-        .color-bet-title.c-green { color: #10b981; text-shadow: 0 0 10px #10b981; }
-        .color-bet-title.c-pink { color: #ec4899; text-shadow: 0 0 10px #ec4899; }
-        .color-bet-title.c-white { color: #f8fafc; text-shadow: 0 0 10px #f8fafc; }
+        .c-red { color: #ef4444 !important; text-shadow: 0 0 10px #ef4444 !important; }
+        .c-blue { color: #3b82f6 !important; text-shadow: 0 0 10px #3b82f6 !important; }
+        .c-yellow { color: #eab308 !important; text-shadow: 0 0 10px #eab308 !important; }
+        .c-green { color: #10b981 !important; text-shadow: 0 0 10px #10b981 !important; }
+        .c-pink { color: #ec4899 !important; text-shadow: 0 0 10px #ec4899 !important; }
+        .c-white { color: #f8fafc !important; text-shadow: 0 0 10px #f8fafc !important; }
 
         /* PVP Specific */
         .duel-arena { display: flex; justify-content: center; align-items: center; width: 100%; max-width: 900px; gap: 20px;}
@@ -401,7 +392,7 @@
                     </div>
 
                     <!-- PVP -->
-                    <div class="realm-card" onclick="joinPVP()">
+                    <div class="realm-card" style="border-color: var(--danger);" onclick="joinPVP()">
                         <div class="realm-title" style="color: var(--danger);">THE ARENA (PVP)</div>
                         <div class="realm-desc">1v1 Custom Duels • Wheel Spin & Coin Flips</div>
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="pvp-player-count">0</span>&nbsp;ACTIVE</div>
@@ -569,7 +560,6 @@
                 <div class="info-box pixel-text" style="text-align: center; background: #000; border: 4px solid #111; font-size: 20px;">
                     Notify Admin:<br>Discord: @ashley.gg<br>SNT: @AshleyChan
                 </div>
-                <div id="bank-confirm-msg" class="pixel-text" style="font-size: 26px; margin-bottom: 10px; height:30px;"></div>
                 <div id="bank-confirm-btn-row" style="display: flex; gap: 10px; margin-top: 15px;">
                     <button class="mc-btn" style="flex:1; background: var(--success); color:#000;" onclick="executeBankRequest()">CONFIRM</button>
                     <button class="mc-btn" style="flex:1; background: var(--danger);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">CANCEL</button>
@@ -667,16 +657,16 @@
                 </div>
 
                 <div class="chat-dock">
+                    <div class="floating-chat-controls">
+                        <button class="mc-btn circular" onclick="toggleChat('crash')" style="position:relative;">💬<div id="notif-crash" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-crash" class="mc-btn circular" onmousedown="startPTT('crash')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
+                    </div>
                     <div id="chat-container-crash" class="mmo-chat-container chat-hidden">
                         <div id="crash-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
                         <div class="mmo-chat-input-row">
                             <input type="text" id="crash-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
                             <button class="mmo-chat-btn pixel-text" onclick="actSendChat('crash')">►</button>
                         </div>
-                    </div>
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('crash')" style="position:relative;">💬<div id="notif-crash" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-crash" class="mc-btn circular" onmousedown="startPTT('crash')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                     </div>
                 </div>
             </div>
@@ -716,16 +706,16 @@
                 </div>
 
                 <div class="chat-dock">
+                    <div class="floating-chat-controls">
+                        <button class="mc-btn circular" onclick="toggleChat('blackjack')" style="position:relative;">💬<div id="notif-blackjack" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-blackjack" class="mc-btn circular" onmousedown="startPTT('blackjack')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
+                    </div>
                     <div id="chat-container-blackjack" class="mmo-chat-container chat-hidden">
                         <div id="blackjack-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
                         <div class="mmo-chat-input-row">
                             <input type="text" id="blackjack-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
                             <button class="mmo-chat-btn pixel-text" onclick="actSendChat('blackjack')">►</button>
                         </div>
-                    </div>
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('blackjack')" style="position:relative;">💬<div id="notif-blackjack" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-blackjack" class="mc-btn circular" onmousedown="startPTT('blackjack')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                     </div>
                 </div>
             </div>
@@ -786,16 +776,16 @@
                 </div>
 
                 <div class="chat-dock">
+                    <div class="floating-chat-controls">
+                        <button class="mc-btn circular" onclick="toggleChat('dice')" style="position:relative;">💬<div id="notif-dice" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-dice" class="mc-btn circular" onmousedown="startPTT('dice')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
+                    </div>
                     <div id="chat-container-dice" class="mmo-chat-container chat-hidden">
                         <div id="dice-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
                         <div class="mmo-chat-input-row">
                             <input type="text" id="dice-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
                             <button class="mmo-chat-btn pixel-text" onclick="actSendChat('dice')">►</button>
                         </div>
-                    </div>
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('dice')" style="position:relative;">💬<div id="notif-dice" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-dice" class="mc-btn circular" onmousedown="startPTT('dice')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                     </div>
                 </div>
             </div>
@@ -849,44 +839,44 @@
                         <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 100%; max-width: 1200px;">
-                        <div id="derby-btn-0" class="arcade-bet-box derby-bet-box lane-1-color" onclick="placeDerbyBet(0)">
+                        <div id="derby-btn-0" class="arcade-bet-box" onclick="placeDerbyBet(0)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-0">0</div>
-                            <div class="derby-bet-title pixel-text" style="color:#ef4444;">RED</div><div id="bet-mult-0" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="arcade-bet-title pixel-text" style="color:#ef4444;">RED</div><div id="bet-mult-0" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
-                        <div id="derby-btn-1" class="arcade-bet-box derby-bet-box lane-2-color" onclick="placeDerbyBet(1)">
+                        <div id="derby-btn-1" class="arcade-bet-box" onclick="placeDerbyBet(1)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-1">0</div>
-                            <div class="derby-bet-title pixel-text" style="color:#3b82f6;">BLUE</div><div id="bet-mult-1" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="arcade-bet-title pixel-text" style="color:#3b82f6;">BLUE</div><div id="bet-mult-1" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
-                        <div id="derby-btn-2" class="arcade-bet-box derby-bet-box lane-3-color" onclick="placeDerbyBet(2)">
+                        <div id="derby-btn-2" class="arcade-bet-box" onclick="placeDerbyBet(2)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-2">0</div>
-                            <div class="derby-bet-title pixel-text" style="color:#10b981;">GREEN</div><div id="bet-mult-2" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="arcade-bet-title pixel-text" style="color:#10b981;">GREEN</div><div id="bet-mult-2" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
-                        <div id="derby-btn-3" class="arcade-bet-box derby-bet-box lane-4-color" onclick="placeDerbyBet(3)">
+                        <div id="derby-btn-3" class="arcade-bet-box" onclick="placeDerbyBet(3)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-3">0</div>
-                            <div class="derby-bet-title pixel-text" style="color:#a855f7;">PURPLE</div><div id="bet-mult-3" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="arcade-bet-title pixel-text" style="color:#a855f7;">PURPLE</div><div id="bet-mult-3" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
-                        <div id="derby-btn-4" class="arcade-bet-box derby-bet-box lane-5-color" onclick="placeDerbyBet(4)">
+                        <div id="derby-btn-4" class="arcade-bet-box" onclick="placeDerbyBet(4)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-4">0</div>
-                            <div class="derby-bet-title pixel-text" style="color:#ec4899;">PINK</div><div id="bet-mult-4" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="arcade-bet-title pixel-text" style="color:#ec4899;">PINK</div><div id="bet-mult-4" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
-                        <div id="derby-btn-5" class="arcade-bet-box derby-bet-box lane-6-color" onclick="placeDerbyBet(5)">
+                        <div id="derby-btn-5" class="arcade-bet-box" onclick="placeDerbyBet(5)">
                             <div class="bet-badge pixel-text hidden" id="badge-derby-5">0</div>
-                            <div class="derby-bet-title pixel-text" style="color:#fbbf24;">GOLD</div><div id="bet-mult-5" class="arcade-bet-payout pixel-text">PAYS ?x</div>
+                            <div class="arcade-bet-title pixel-text" style="color:#fbbf24;">GOLD</div><div id="bet-mult-5" class="arcade-bet-payout pixel-text">PAYS ?x</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="chat-dock">
+                    <div class="floating-chat-controls">
+                        <button class="mc-btn circular" onclick="toggleChat('derby')" style="position:relative;">💬<div id="notif-derby" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-derby" class="mc-btn circular" onmousedown="startPTT('derby')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
+                    </div>
                     <div id="chat-container-derby" class="mmo-chat-container chat-hidden">
                         <div id="derby-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
                         <div class="mmo-chat-input-row">
                             <input type="text" id="derby-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
                             <button class="mmo-chat-btn pixel-text" onclick="actSendChat('derby')">►</button>
                         </div>
-                    </div>
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('derby')" style="position:relative;">💬<div id="notif-derby" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-derby" class="mc-btn circular" onmousedown="startPTT('derby')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                     </div>
                 </div>
             </div>
@@ -936,15 +926,15 @@
                         <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
                     </div>
                     <div class="arcade-grid">
-                        <div id="cups-btn-0" class="arcade-bet-box cup-bet-box" onclick="placeCupsBet(0)">
+                        <div id="cups-btn-0" class="arcade-bet-box" onclick="placeCupsBet(0)">
                             <div class="bet-badge pixel-text hidden" id="badge-cups-0">0</div>
                             <div class="arcade-bet-title pixel-text" style="color:#f59e0b;">CUP 1</div><div class="arcade-bet-payout pixel-text">PAYS 2.5x</div>
                         </div>
-                        <div id="cups-btn-1" class="arcade-bet-box cup-bet-box" onclick="placeCupsBet(1)">
+                        <div id="cups-btn-1" class="arcade-bet-box" onclick="placeCupsBet(1)">
                             <div class="bet-badge pixel-text hidden" id="badge-cups-1">0</div>
                             <div class="arcade-bet-title pixel-text" style="color:#f59e0b;">CUP 2</div><div class="arcade-bet-payout pixel-text">PAYS 2.5x</div>
                         </div>
-                        <div id="cups-btn-2" class="arcade-bet-box cup-bet-box" onclick="placeCupsBet(2)">
+                        <div id="cups-btn-2" class="arcade-bet-box" onclick="placeCupsBet(2)">
                             <div class="bet-badge pixel-text hidden" id="badge-cups-2">0</div>
                             <div class="arcade-bet-title pixel-text" style="color:#f59e0b;">CUP 3</div><div class="arcade-bet-payout pixel-text">PAYS 2.5x</div>
                         </div>
@@ -952,16 +942,16 @@
                 </div>
 
                 <div class="chat-dock">
+                    <div class="floating-chat-controls">
+                        <button class="mc-btn circular" onclick="toggleChat('cups')" style="position:relative;">💬<div id="notif-cups" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-cups" class="mc-btn circular" onmousedown="startPTT('cups')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
+                    </div>
                     <div id="chat-container-cups" class="mmo-chat-container chat-hidden">
                         <div id="cups-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
                         <div class="mmo-chat-input-row">
                             <input type="text" id="cups-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
                             <button class="mmo-chat-btn pixel-text" onclick="actSendChat('cups')">►</button>
                         </div>
-                    </div>
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('cups')" style="position:relative;">💬<div id="notif-cups" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-cups" class="mc-btn circular" onmousedown="startPTT('cups')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                     </div>
                 </div>
             </div>
@@ -1009,45 +999,45 @@
                         <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div>
                         <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
                     </div>
-                    <div class="color-grid">
-                        <div id="color-btn-red" class="arcade-bet-box color-bet-box br-red" onclick="placeColorBet('red')">
+                    <div class="color-grid" style="margin: 0 auto;">
+                        <div id="color-btn-red" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('red')">
                             <div class="bet-badge pixel-text hidden" id="badge-red">0</div>
-                            <div class="color-bet-title c-red pixel-text">RED</div>
+                            <div class="arcade-bet-title c-red pixel-text">RED</div>
                         </div>
-                        <div id="color-btn-blue" class="arcade-bet-box color-bet-box br-blue" onclick="placeColorBet('blue')">
+                        <div id="color-btn-blue" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('blue')">
                             <div class="bet-badge pixel-text hidden" id="badge-blue">0</div>
-                            <div class="color-bet-title c-blue pixel-text">BLUE</div>
+                            <div class="arcade-bet-title c-blue pixel-text">BLUE</div>
                         </div>
-                        <div id="color-btn-yellow" class="arcade-bet-box color-bet-box br-yellow" onclick="placeColorBet('yellow')">
+                        <div id="color-btn-yellow" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('yellow')">
                             <div class="bet-badge pixel-text hidden" id="badge-yellow">0</div>
-                            <div class="color-bet-title c-yellow pixel-text">YELLOW</div>
+                            <div class="arcade-bet-title c-yellow pixel-text">YELLOW</div>
                         </div>
-                        <div id="color-btn-green" class="arcade-bet-box color-bet-box br-green" onclick="placeColorBet('green')">
+                        <div id="color-btn-green" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('green')">
                             <div class="bet-badge pixel-text hidden" id="badge-green">0</div>
-                            <div class="color-bet-title c-green pixel-text">GREEN</div>
+                            <div class="arcade-bet-title c-green pixel-text">GREEN</div>
                         </div>
-                        <div id="color-btn-pink" class="arcade-bet-box color-bet-box br-pink" onclick="placeColorBet('pink')">
+                        <div id="color-btn-pink" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('pink')">
                             <div class="bet-badge pixel-text hidden" id="badge-pink">0</div>
-                            <div class="color-bet-title c-pink pixel-text">PINK</div>
+                            <div class="arcade-bet-title c-pink pixel-text">PINK</div>
                         </div>
-                        <div id="color-btn-white" class="arcade-bet-box color-bet-box br-white" onclick="placeColorBet('white')">
+                        <div id="color-btn-white" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('white')">
                             <div class="bet-badge pixel-text hidden" id="badge-white">0</div>
-                            <div class="color-bet-title c-white pixel-text">WHITE</div>
+                            <div class="arcade-bet-title c-white pixel-text">WHITE</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="chat-dock">
+                    <div class="floating-chat-controls">
+                        <button class="mc-btn circular" onclick="toggleChat('color')" style="position:relative;">💬<div id="notif-color" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-color" class="mc-btn circular" onmousedown="startPTT('color')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
+                    </div>
                     <div id="chat-container-color" class="mmo-chat-container chat-hidden">
                         <div id="color-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
                         <div class="mmo-chat-input-row">
                             <input type="text" id="color-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
                             <button class="mmo-chat-btn pixel-text" onclick="actSendChat('color')">►</button>
                         </div>
-                    </div>
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('color')" style="position:relative;">💬<div id="notif-color" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-color" class="mc-btn circular" onmousedown="startPTT('color')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                     </div>
                 </div>
             </div>
@@ -1128,16 +1118,16 @@
                 </div>
 
                 <div class="chat-dock">
+                    <div class="floating-chat-controls">
+                        <button class="mc-btn circular" onclick="toggleChat('pvp')" style="position:relative;">💬<div id="notif-pvp" class="chat-notif hidden"></div></button>
+                        <button id="ptt-btn-pvp" class="mc-btn circular" onmousedown="startPTT('pvp')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
+                    </div>
                     <div id="chat-container-pvp" class="mmo-chat-container chat-hidden">
                         <div id="pvp-chat-messages" class="mmo-chat-messages custom-scroll pixel-text"></div>
                         <div class="mmo-chat-input-row">
                             <input type="text" id="pvp-chat-input" class="mmo-chat-input pixel-text" placeholder="Type here..." maxlength="100">
                             <button class="mmo-chat-btn pixel-text" onclick="actSendChat('pvp')">►</button>
                         </div>
-                    </div>
-                    <div class="floating-chat-controls">
-                        <button class="mc-btn circular" onclick="toggleChat('pvp')" style="position:relative;">💬<div id="notif-pvp" class="chat-notif hidden"></div></button>
-                        <button id="ptt-btn-pvp" class="mc-btn circular" onmousedown="startPTT('pvp')" onmouseup="stopPTT()" onmouseleave="stopPTT()">🎤</button>
                     </div>
                 </div>
             </div>
@@ -1185,7 +1175,7 @@
             if(confirmActionCallback) confirmActionCallback();
             hideModal('logout-modal');
         });
-        function promptLogout() { showConfirm("Are you sure you want to return to the real world?", () => logout()); }
+        function promptLogout() { showConfirm("Are you sure you want to log out?", () => logout()); }
 
         const socket = io();
         let currentUser = null; let currentGameState = null; let currentRoomId = null; let mySeatIndex = -1;
@@ -1318,7 +1308,6 @@
             if(!currentUser) return showToast("Please log in first!");
             showModal('reward-modal');
             
-            // Check if cooldown is active
             if(rewardCooldownSeconds > 0) {
                 document.getElementById('reward-active-view').classList.add('hidden');
                 document.getElementById('reward-cooldown-view').classList.remove('hidden');
@@ -1421,28 +1410,42 @@
             }
         }
 
+        let lastPickedBoxIndex = -1;
         function pickRewardBox(idx) {
             if(rewardCooldownSeconds > 0) return showToast("Your cooldown is still active!");
+            if(lastPickedBoxIndex !== -1) return; 
+            lastPickedBoxIndex = idx;
             socket.emit('claim_daily_reward_box', { username: currentUser.username, boxIndex: idx });
         }
 
         socket.on('reward_box_opened', (data) => {
-            if(!data.success) return showToast(data.message);
+            if(!data.success) { lastPickedBoxIndex = -1; return showToast(data.message); }
             
-            if (data.wonAmount > 0) {
-                showToast(`Loot Acquired: ${formatNumber(data.wonAmount)} CR!`, "success");
-                playSfx('win');
-            } else {
-                showToast("The box was empty. Better luck tomorrow!", "warning");
-                playSfx('lose');
-            }
+            data.allPrizes.forEach((prize, i) => {
+                const el = document.getElementById(`box-val-${i}`);
+                el.innerText = prize > 0 ? `+${formatNumber(prize)}` : 'EMPTY';
+                el.style.color = prize > 0 ? 'var(--success)' : 'var(--danger)';
+            });
+
+            document.querySelectorAll('.reward-box')[lastPickedBoxIndex].classList.add('open');
             
-            if (data.wonItem) {
-                setTimeout(() => showToast(`Bonus Item Found: ${data.wonItem}`, "success"), 1500);
-            }
+            if (data.wonAmount > 0) { setTimeout(() => { playSfx('win'); showToast(`Loot Acquired: ${formatNumber(data.wonAmount)} CR!`, "success"); }, 400); } 
+            else { setTimeout(() => { playSfx('lose'); showToast("The box was empty. Better luck tomorrow!", "warning"); }, 400); }
             
-            rewardCooldownSeconds = data.cooldownSeconds;
-            setTimeout(showRewards, 1500);
+            if (data.wonItem) { setTimeout(() => showToast(`Bonus Item Found: ${data.wonItem}`, "success"), 1500); }
+            
+            setTimeout(() => {
+                document.querySelectorAll('.reward-box').forEach((box, i) => {
+                    if(i !== lastPickedBoxIndex) box.classList.add('open');
+                });
+            }, 1200);
+
+            setTimeout(() => {
+                rewardCooldownSeconds = data.cooldownSeconds;
+                lastPickedBoxIndex = -1;
+                document.querySelectorAll('.reward-box').forEach(box => box.classList.remove('open'));
+                showRewards(); 
+            }, 4500);
         });
 
         // --- GLOBAL COUNTS LOGIC ---
