@@ -330,6 +330,14 @@ function startTurnTimer(roomId) {
 function getGameTitle(roomId) { return roomId === '3seat' ? '3-SEAT BLACKJACK' : '5-SEAT BLACKJACK'; }
 
 // --- ADMIN APIs ---
+const getAdminAuth = async (pass) => {
+    const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
+    const mConf = await SystemConfig.findOne({ configName: 'mod_password' });
+    if (aConf && pass === aConf.configValue) return 'admin';
+    if (mConf && pass === mConf.configValue) return 'mod';
+    return null;
+};
+
 app.post('/api/admin/login', async (req, res) => {
     try {
         const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
@@ -338,6 +346,108 @@ app.post('/api/admin/login', async (req, res) => {
         else if (mConf && req.body.password === mConf.configValue) { adminLog("MODERATOR successfully logged in."); res.json({ success: true, role: 'mod' }); } 
         else { res.status(401).json({ error: 'Invalid password.' }); }
     } catch(e) { res.status(500).json({ error: 'Database error.' }); }
+});
+
+app.get('/api/admin/economy', async (req, res) => {
+    const role = await getAdminAuth(req.headers['x-admin-pass']);
+    if (!role) return res.status(401).json({ error: 'Unauthorized' });
+
+    const users = await User.find({}, '-password');
+    const txs = await Transaction.find({});
+    const bankReqs = await Transaction.find({ type: { $in: ['BANK DEPOSIT', 'BANK WITHDRAWAL'] }, status: 'pending' });
+    const codes = await GiftCode.find({});
+
+    let baseVault = 1000000000; // 1 Billion Base
+    let deposits = 0; let withdrawals = 0; let totalBets = 0;
+    let totalWins = 0; let promoIssued = 0; let circulating = 0;
+
+    users.forEach(u => circulating += u.credits);
+    txs.forEach(t => {
+        if (t.status === 'completed') {
+            if (t.type === 'BANK DEPOSIT') deposits += Math.abs(t.amount);
+            if (t.type === 'BANK WITHDRAWAL') withdrawals += Math.abs(t.amount);
+            if (['DAILY REWARD', 'GIFT CODE'].includes(t.type)) promoIssued += t.amount;
+            if (t.amount < 0 && !t.type.includes('BANK') && !t.type.includes('WAGER')) totalBets += Math.abs(t.amount);
+            if (t.amount > 0 && !t.type.includes('BANK') && !t.type.includes('REFUND')) totalWins += Math.abs(t.amount);
+        }
+    });
+
+    const ggr = totalBets - totalWins;
+    const vault = baseVault + deposits - withdrawals;
+    const onlineUsers = Object.values(socketUserMap).map(s => s.username);
+
+    res.json({ economy: { baseVault, deposits, withdrawals, vault, totalBets, totalWins, ggr, promoIssued, circulating }, users, onlineUsers: [...new Set(onlineUsers)], bankRequests: bankReqs, codes, strictHouseEdge, gameLocks });
+});
+
+app.post('/api/admin/change_password', async (req, res) => {
+    const role = await getAdminAuth(req.headers['x-admin-pass']);
+    if (role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
+    const { targetRole, newPassword } = req.body;
+    const configName = targetRole === 'admin' ? 'admin_password' : 'mod_password';
+    await SystemConfig.findOneAndUpdate({ configName }, { configValue: newPassword }, { upsert: true });
+    adminLog(`${targetRole.toUpperCase()} password changed.`);
+    res.json({ success: true });
+});
+
+app.post('/api/admin/tx/resolve', async (req, res) => {
+    const role = await getAdminAuth(req.headers['x-admin-pass']);
+    if (role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
+    const { id, action } = req.body;
+    const tx = await Transaction.findById(id);
+    if(!tx || tx.status !== 'pending') return res.json({ success: false });
+
+    if (action === 'approve') {
+        tx.status = 'completed';
+        if (tx.type === 'BANK DEPOSIT') await User.findOneAndUpdate({ username: new RegExp('^' + tx.username + '$', 'i') }, { $inc: { credits: tx.amount } });
+        sendSystemMail(tx.username, 'BANK REQUEST APPROVED', `Your ${tx.type} of ${tx.amount} CR was approved.`);
+    } else {
+        tx.status = 'denied';
+        if (tx.type === 'BANK WITHDRAWAL') await User.findOneAndUpdate({ username: new RegExp('^' + tx.username + '$', 'i') }, { $inc: { credits: tx.amount } });
+        sendSystemMail(tx.username, 'BANK REQUEST DENIED', `Your ${tx.type} of ${tx.amount} CR was denied. Funds reversed.`);
+    }
+    await tx.save(); res.json({ success: true });
+});
+
+app.post('/api/admin/user/status', async (req, res) => {
+    const role = await getAdminAuth(req.headers['x-admin-pass']);
+    if (!role) return res.status(401).json({ error: 'Unauthorized' });
+    const { username, status } = req.body;
+    await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i') }, { status });
+    if(status === 'banned') io.emit('force_disconnect'); 
+    res.json({ success: true });
+});
+
+app.get('/api/admin/player_full/:username', async (req, res) => {
+    const role = await getAdminAuth(req.headers['x-admin-pass']);
+    if (!role) return res.status(401).json({ error: 'Unauthorized' });
+    const user = await User.findOne({ username: new RegExp('^' + req.params.username + '$', 'i') }, '-password');
+    const txs = await Transaction.find({ username: new RegExp('^' + req.params.username + '$', 'i') }).sort({ date: -1 }).limit(50);
+    res.json({ user, txs });
+});
+
+app.get('/api/admin/game_rounds', async (req, res) => {
+    const role = await getAdminAuth(req.headers['x-admin-pass']);
+    if (!role) return res.status(401).json({ error: 'Unauthorized' });
+    const rounds = await GameRound.find({}).sort({ timestamp: -1 }).limit(100);
+    res.json(rounds);
+});
+
+app.post('/api/admin/giftcode', async (req, res) => {
+    const role = await getAdminAuth(req.headers['x-admin-pass']);
+    if (role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
+    const { batchName, amount, quantity } = req.body;
+    for(let i=0; i<quantity; i++) {
+        const code = 'CR-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        await new GiftCode({ code, amount, usesLeft: 1, batchName }).save();
+    }
+    res.json({ success: true });
+});
+
+app.post('/api/admin/settings', async (req, res) => {
+    const role = await getAdminAuth(req.headers['x-admin-pass']);
+    if (role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
+    if(req.body.strictHouseEdge !== undefined) strictHouseEdge = req.body.strictHouseEdge;
+    res.json({ success: true });
 });
 
 // --- PLAYER APIs ---
@@ -395,6 +505,43 @@ app.get('/api/profile/ledger/:username', async (req, res) => {
 // --- SOCKET SYSTEM ---
 io.on('connection', (socket) => {
     
+    // --- ADMIN SOCKETS ---
+    socket.on('admin_join', () => { socket.join('admin_room'); });
+
+    socket.on('admin_action', ({ action, game, room, locked }) => {
+        if(action === 'toggle_game') {
+            gameLocks[game] = !locked; io.emit('game_lock_state', gameLocks); adminLog(`KILL SWITCH: ${game.toUpperCase()} set to ${gameLocks[game] ? 'OFFLINE' : 'ONLINE'}`);
+        } else if (action === 'wipe_chat') {
+            io.to('arcade_' + room).emit('chat_wiped'); adminLog(`CHAT WIPED: ${room.toUpperCase()}`);
+        }
+    });
+
+    socket.on('admin_notify', async ({ target, username, type, subject, message }) => {
+        let actualTarget = target === 'specific_online' || target === 'specific_all' ? username : target;
+        let actualUser = actualTarget === 'all' || actualTarget === 'active' ? 'GLOBAL' : actualTarget;
+        const t = new Ticket({ username: actualUser, target: actualTarget, type, subject, messages: [{ sender: 'ADMIN', text: message }], unreadPlayer: true, unreadAdmin: false });
+        await t.save(); io.emit('system_notification', { target: actualTarget, type }); adminLog(`SENT ${type.toUpperCase()} to ${actualTarget.toUpperCase()}`);
+    });
+
+    socket.on('req_admin_inbox', async () => {
+        const tickets = await Ticket.find({}).sort({ updatedAt: -1 }); socket.emit('admin_inbox_data', tickets);
+    });
+
+    socket.on('admin_read_ticket', async ({ id }) => { await Ticket.findByIdAndUpdate(id, { unreadAdmin: false }); });
+
+    socket.on('admin_reply', async ({ id, text }) => {
+        const t = await Ticket.findById(id);
+        if(t && t.status === 'open') {
+            t.messages.push({ sender: 'ADMIN', text }); t.unreadPlayer = true; t.updatedAt = Date.now(); await t.save();
+            const tickets = await Ticket.find({}).sort({ updatedAt: -1 }); io.to('admin_room').emit('admin_inbox_data', tickets); io.emit('new_mail', { username: t.username, target: t.target });
+        }
+    });
+
+    socket.on('admin_close_ticket', async ({ id }) => {
+        await Ticket.findByIdAndUpdate(id, { status: 'closed' });
+        const tickets = await Ticket.find({}).sort({ updatedAt: -1 }); io.to('admin_room').emit('admin_inbox_data', tickets);
+    });
+
     // PUSH TO TALK RELAY (Isolated to non-global rooms)
     socket.on('voice_message', (data) => {
         if (data.room && data.room !== 'global') { 
@@ -434,8 +581,8 @@ io.on('connection', (socket) => {
 
         const sessionId = 'trade_' + Math.random().toString(36).substr(2, 9);
         activeTradeSessions[sessionId] = {
-            p1: { username: offer.username, items: [offer.item], coins: 0, ready: false, socketId: offer.socketId },
-            p2: { username: requester, items: [], coins: 0, ready: false, socketId: socket.id }
+            p1: { username: offer.username, items: [offer.item], coins: 0, ready: false, finalReady: false, socketId: offer.socketId },
+            p2: { username: requester, items: [], coins: 0, ready: false, finalReady: false, socketId: socket.id }
         };
 
         io.to(offer.socketId).emit('trade_session_start', { sessionId, ...activeTradeSessions[sessionId] });
@@ -468,8 +615,25 @@ io.on('connection', (socket) => {
         io.to(session.p1.socketId).emit('trade_session_update', session);
         io.to(session.p2.socketId).emit('trade_session_update', session);
 
-        // EXECUTE TRADE IF BOTH READY
+        // If both locked in, trigger the Final Confirm Phase
         if(session.p1.ready && session.p2.ready) {
+            session.p1.finalReady = false;
+            session.p2.finalReady = false;
+            io.to(session.p1.socketId).emit('trade_final_confirm', session);
+            io.to(session.p2.socketId).emit('trade_final_confirm', session);
+        }
+    });
+
+    socket.on('confirm_final_trade', async ({ sessionId, username }) => {
+        const session = activeTradeSessions[sessionId];
+        if(!session) return;
+        const player = session.p1.username === username ? session.p1 : (session.p2.username === username ? session.p2 : null);
+        if(!player) return;
+        
+        player.finalReady = true;
+
+        // EXECUTE TRADE IF BOTH FINALLY CONFIRMED
+        if(session.p1.finalReady && session.p2.finalReady) {
             try {
                 const u1 = await User.findOne({ username: new RegExp('^' + session.p1.username + '$', 'i') });
                 const u2 = await User.findOne({ username: new RegExp('^' + session.p2.username + '$', 'i') });
@@ -511,6 +675,23 @@ io.on('connection', (socket) => {
             } catch(e) { console.error("Trade Error", e); }
             delete activeTradeSessions[sessionId];
         }
+    });
+
+    socket.on('cancel_final_trade', ({ sessionId }) => {
+        const session = activeTradeSessions[sessionId];
+        if(!session) return;
+        
+        // Revert both players back to the editing phase
+        session.p1.ready = false;
+        session.p1.finalReady = false;
+        session.p2.ready = false;
+        session.p2.finalReady = false;
+
+        io.to(session.p1.socketId).emit('trade_confirm_canceled');
+        io.to(session.p2.socketId).emit('trade_confirm_canceled');
+        
+        io.to(session.p1.socketId).emit('trade_session_update', session);
+        io.to(session.p2.socketId).emit('trade_session_update', session);
     });
 
     socket.on('leave_trade', ({ sessionId, username }) => {
