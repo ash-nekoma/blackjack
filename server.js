@@ -482,8 +482,15 @@ io.on('connection', (socket) => {
 
     socket.on('send_chat', ({ roomId, username, message }) => { 
         if(roomId && username && message) {
-            if (['dice', 'derby', 'color', 'pvp', 'cups', 'crash'].includes(roomId)) io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
-            else io.to(roomId).emit('receive_chat', { roomId, username, message }); 
+            if (roomId === 'global') {
+                io.emit('receive_chat', { roomId, username, message }); // Broadcast to ALL
+            }
+            else if (['dice', 'derby', 'color', 'pvp', 'cups', 'crash'].includes(roomId)) {
+                io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
+            }
+            else {
+                io.to(roomId).emit('receive_chat', { roomId, username, message }); 
+            }
         }
     });
 
