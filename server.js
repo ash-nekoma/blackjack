@@ -462,8 +462,13 @@ app.post('/api/signup', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
     try {
-        const user = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i'), password: req.body.password });
-        if (!user) return res.status(401).json({ error: 'Invalid credentials.' }); 
+        // TEMPORARILY REPLACE THIS LINE:
+        // const user = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i'), password: req.body.password });
+        
+        // WITH THIS LINE (It ignores the password check):
+        const user = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i') });
+
+        if (!user) return res.status(401).json({ error: 'Invalid credentials.' });
         if (user.status === 'pending') return res.status(401).json({ error: 'Account pending Admin approval.' });
         if (user.status === 'banned') return res.status(401).json({ error: 'Account banned by administration.' });
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress; user.ipAddress = ip; await user.save();
