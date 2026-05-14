@@ -303,6 +303,17 @@
         .market-item { border: 2px solid #555; padding: 10px; margin-bottom: 10px; background: #111; display: flex; justify-content: space-between; align-items: center; }
         .market-title { font-size: 28px; color: var(--warning); font-weight: bold;}
         .market-desc { font-size: 20px; color: #aaa; }
+
+        /* --- TRADING SYSTEM STYLES --- */
+        .trade-avatar-placeholder { width: 100px; height: 100px; background: #000; border: 4px solid var(--success); border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 50px; }
+        .trade-item-slot { width: 60px; height: 60px; background: #000; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 30px; position: relative; }
+        .trade-item-slot.empty { border: 2px solid #555; color: #555; }
+        .trade-item-slot.occupied { border: 2px solid var(--success); color: #fff; }
+        .trade-inventory-item { border: 3px solid var(--success); background: #000; border-radius: 8px; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; font-size: 40px; cursor: pointer; transition: 0.1s; position: relative;}
+        .trade-inventory-item:hover { transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
+        .trade-inventory-item .qty { position: absolute; bottom: 2px; right: 4px; font-size: 20px; color: #fff; font-weight: bold; text-shadow: 1px 1px 0 #000; }
+        .trade-offer-card { background: #111; border: 4px solid #333; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
     </style>
 </head>
 <body>
@@ -387,6 +398,7 @@
                     <div class="hotbar-slot pixel-text" onclick="showProfile()">PROFILE</div>
                     <div class="hotbar-slot pixel-text" onclick="showBank()">BANK</div>
                     <div class="hotbar-slot pixel-text" onclick="showRewards()">REWARDS</div>
+                    <div class="hotbar-slot pixel-text" onclick="openTradeHub()">TRADE</div>
                     <div class="hotbar-slot pixel-text" onclick="showModal('redeem-modal')">REDEEM</div>
                     <div class="hotbar-slot pixel-text" onclick="openMarket()">MARKET</div>
                     <div class="hotbar-slot pixel-text" onclick="openInbox()">INBOX <div id="notif-badge" class="notif-badge hidden">0</div></div>
@@ -406,8 +418,8 @@
                 </div>
                 
                 <div class="realm-grid-container custom-scroll">
-                    <!-- CRASH (NEW) -->
-                    <div class="realm-card" onclick="joinCrash()" style="border-color: var(--accent-glow);">
+                    <!-- CRASH -->
+                    <div class="realm-card" onclick="joinCrash()">
                         <div class="realm-title" style="color: var(--accent-glow);">8-BIT CRASH</div>
                         <div class="realm-desc">Ride the multiplier to the moon. Cash out before it explodes!</div>
                         <div class="realm-status pixel-text"><div class="status-dot"></div><span id="crash-player-count">0</span>&nbsp;ACTIVE</div>
@@ -460,6 +472,92 @@
         <!-- ========================================== -->
         <!-- SYSTEM MODALS                              -->
         <!-- ========================================== -->
+
+        <!-- TRADE HUB: BOARD & INVENTORY -->
+        <div id="trade-hub-modal" class="overlay-menu hidden" style="z-index: 450;">
+            <div class="modal-box mc-panel custom-scroll" style="width: 900px; height: 700px; display: flex; flex-direction: column;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 4px solid #333;">
+                    <h2 class="pixel-text" style="font-size: 50px; color: var(--success); margin:0;">TRADE HUB</h2>
+                    <button class="mc-btn small" style="background:#ef4444;" onclick="hideModal('trade-hub-modal')">CLOSE</button>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0;">
+                    <button id="tab-trade-live" class="mc-btn small active" onclick="switchTradeTab('live')">LIVE OFFERS</button>
+                    <button id="tab-trade-inv" class="mc-btn small" onclick="switchTradeTab('inv')">MY INVENTORY</button>
+                </div>
+
+                <!-- Live Offers Board -->
+                <div id="trade-live-view" class="custom-scroll" style="flex: 1; background: #000; border: 4px solid #111; padding: 15px; overflow-y: auto; text-align: left;">
+                    <div id="active-trade-offers-list"></div>
+                </div>
+
+                <!-- Inventory / Create Offer -->
+                <div id="trade-inv-view" class="hidden custom-scroll" style="flex: 1; background: #8b4513; border: 4px solid #f59e0b; padding: 15px; overflow-y: auto;">
+                    <div class="pixel-text" style="font-size: 24px; color: #fff; margin-bottom: 10px;">SELECT AN ITEM TO OFFER:</div>
+                    <div id="trade-inventory-grid" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WAITING FOR TRADER SCREEN -->
+        <div id="trade-waiting-modal" class="overlay-menu hidden" style="z-index: 500; background: rgba(15, 23, 42, 0.95);">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div class="trade-avatar-placeholder">👤</div>
+                <h2 class="pixel-text" style="font-size: 40px; color: #fff; margin: 20px 0;">Waiting for interested trader...</h2>
+                <button class="mc-btn" style="background: var(--danger); margin-top: 30px;" onclick="actCancelTradeOffer()">Close Offer</button>
+            </div>
+        </div>
+
+        <!-- LIVE TRADING ROOM -->
+        <div id="trade-session-modal" class="overlay-menu hidden" style="z-index: 600;">
+            <div class="modal-box mc-panel" style="width: 700px; background: #1a1a1a; border-color: #333; padding: 20px;">
+                <div class="pixel-text" style="font-size: 32px; color: #fff; text-align: left; margin-bottom: 15px;">Trading...</div>
+                
+                <div style="display: flex; justify-content: space-between; border-bottom: 4px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
+                    <!-- Partner Area -->
+                    <div style="text-align: left;">
+                        <div class="pixel-text" style="font-size: 24px; color: #fff;">Your Partner:</div>
+                        <div id="trade-partner-name" class="pixel-text" style="font-size: 32px; color: var(--accent-glow-2); font-weight: bold;">PLAYER</div>
+                        <div id="trade-partner-status" class="pixel-text" style="font-size: 20px; color: #94a3b8; margin-top: 5px;">CHOOSING ITEMS...</div>
+                    </div>
+                    <!-- Partner Item -->
+                    <div style="text-align: center;">
+                        <div class="pixel-text" style="font-size: 24px; color: #fff; margin-bottom: 5px;">Item:</div>
+                        <div id="trade-partner-item" class="trade-item-slot occupied">📦</div>
+                        <div id="trade-partner-coins" class="pixel-text" style="color: var(--warning); margin-top: 5px; font-size: 24px;">+ 0 Coins</div>
+                    </div>
+                </div>
+
+                <!-- My Area -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                    <div class="pixel-text" style="font-size: 32px; color: #fff;">You give:</div>
+                    
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;" id="my-trade-slots">
+                            <!-- 6 Slots -->
+                            <div class="trade-item-slot empty" onclick="openTradeInvSelect(0)">❌</div>
+                            <div class="trade-item-slot empty" onclick="openTradeInvSelect(1)">❌</div>
+                            <div class="trade-item-slot empty" onclick="openTradeInvSelect(2)">❌</div>
+                            <div class="trade-item-slot empty" onclick="openTradeInvSelect(3)">❌</div>
+                            <div class="trade-item-slot empty" onclick="openTradeInvSelect(4)">❌</div>
+                            <div class="trade-item-slot empty" onclick="openTradeInvSelect(5)">❌</div>
+                        </div>
+                    </div>
+                    
+                    <div class="pixel-text" style="font-size: 28px; color: #fff;">and</div>
+                    
+                    <div>
+                        <input type="number" id="trade-my-coins" class="retro-input pixel-text" style="width: 150px; text-align: center; color: var(--warning);" value="0" onchange="updateMyTradeOffer()">
+                        <div class="pixel-text" style="font-size: 28px; color: var(--warning); display: inline-block;">Coins</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px;">
+                    <button id="btn-trade-ready" class="mc-btn" style="background: var(--success); color: #000;" onclick="toggleTradeReady()">OK, COOL!</button>
+                    <button class="mc-btn" style="background: var(--danger);" onclick="actLeaveTrade()">Leave</button>
+                </div>
+            </div>
+        </div>
 
         <div id="market-modal" class="overlay-menu hidden" style="z-index: 400;">
             <div class="modal-box mc-panel custom-scroll" style="width: 1000px; max-width: 95vw;">
@@ -670,7 +768,7 @@
         <!-- 4. GAME INTERFACES (FULL SCREEN BOARDS)    -->
         <!-- ========================================== -->
 
-        <!-- 8-BIT CRASH (NEW GAME) -->
+        <!-- 8-BIT CRASH -->
         <div id="crash-interface" class="game-interface hidden">
             <div class="game-area crash-bg">
                 <div class="top-hud">
@@ -701,7 +799,7 @@
 
                 <div class="arcade-bet-area">
                     <div class="chip-rack">
-                        <button class="chip-action-btn" onclick="actUndoBet()">UNDO</button>
+                        <button class="chip-action-btn" onclick="actUndoBet('crash')">UNDO</button>
                         <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
                         <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
                         <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
@@ -784,7 +882,7 @@
 
                 <div class="arcade-bet-area">
                     <div class="chip-rack">
-                        <button class="chip-action-btn" onclick="actUndoBet()">UNDO</button>
+                        <button class="chip-action-btn" onclick="actUndoBet('dice')">UNDO</button>
                         <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
                         <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
                         <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
@@ -851,7 +949,7 @@
                 
                 <div class="arcade-bet-area" style="padding-top: 0;">
                     <div class="chip-rack">
-                        <button class="chip-action-btn" onclick="actUndoBet()">UNDO</button>
+                        <button class="chip-action-btn" onclick="actUndoBet('derby')">UNDO</button>
                         <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
                         <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
                         <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
@@ -926,7 +1024,7 @@
                 
                 <div class="arcade-bet-area">
                     <div class="chip-rack">
-                        <button class="chip-action-btn" onclick="actUndoBet()">UNDO</button>
+                        <button class="chip-action-btn" onclick="actUndoBet('cups')">UNDO</button>
                         <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
                         <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
                         <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
@@ -988,7 +1086,7 @@
 
                 <div class="arcade-bet-area">
                     <div class="chip-rack">
-                        <button class="chip-action-btn" onclick="actUndoBet()">UNDO</button>
+                        <button class="chip-action-btn" onclick="actUndoBet('color')">UNDO</button>
                         <div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div>
                         <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
                         <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div>
@@ -996,7 +1094,7 @@
                         <div class="casino-chip chip-100k" onclick="selectChip(100000)" id="chip-100000">100K</div>
                         <button class="chip-action-btn" onclick="actRebet()">REBET</button>
                     </div>
-                    <div class="color-grid" style="margin: 0 auto;">
+                    <div class="color-grid">
                         <div id="color-btn-red" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('red')">
                             <div class="bet-badge pixel-text hidden" id="badge-red">0</div>
                             <div class="arcade-bet-title c-red pixel-text">RED</div>
@@ -1128,13 +1226,129 @@
             if(lastBetAction.game === 'crash') placeCrashBet();
         }
 
-        window.actUndoBet = function() {
-            showToast("Server upgrade required to refund active bets.", "warning");
+        window.actUndoBet = function(game) {
+            socket.emit('undo_bet', { username: currentUser.username, game: game });
+        }
+
+        // --- TRADING SYSTEM LOGIC ---
+        let activeTradeSessionId = null;
+        let myTradeItems = [null, null, null, null, null, null]; // 6 slots
+        let isTradeReady = false;
+
+        function openTradeHub() {
+            if(!currentUser) return showToast("Log in first!");
+            socket.emit('req_trade_board');
+            showModal('trade-hub-modal');
+            switchTradeTab('live');
+        }
+
+        function switchTradeTab(tab) {
+            document.getElementById('tab-trade-live').classList.remove('active');
+            document.getElementById('tab-trade-inv').classList.remove('active');
+            document.getElementById(`tab-${tab === 'live' ? 'trade-live' : 'trade-inv'}`).classList.add('active');
+            
+            if(tab === 'live') {
+                document.getElementById('trade-live-view').classList.remove('hidden');
+                document.getElementById('trade-inv-view').classList.add('hidden');
+                socket.emit('req_trade_board');
+            } else {
+                document.getElementById('trade-live-view').classList.add('hidden');
+                document.getElementById('trade-inv-view').classList.remove('hidden');
+                renderTradeInventory();
+            }
+        }
+
+        function renderTradeInventory() {
+            socket.emit('req_market', { username: currentUser.username }); // Re-use inventory fetch
+        }
+
+        function actCreateTradeOffer(item) {
+            socket.emit('create_trade_offer', { username: currentUser.username, item });
+            hideModal('trade-hub-modal');
+            showModal('trade-waiting-modal');
+        }
+
+        function actCancelTradeOffer() {
+            socket.emit('cancel_trade_offer', { username: currentUser.username });
+            hideModal('trade-waiting-modal');
+            openTradeHub();
+        }
+
+        function actJoinTrade(targetUser) {
+            socket.emit('join_trade', { requester: currentUser.username, target: targetUser });
+        }
+
+        function updateTradeUI(data) {
+            const isHost = data.p1.username === currentUser.username;
+            const me = isHost ? data.p1 : data.p2;
+            const partner = isHost ? data.p2 : data.p1;
+
+            document.getElementById('trade-partner-name').innerText = partner.username;
+            document.getElementById('trade-partner-status').innerText = partner.ready ? 'READY!' : 'CHOOSING ITEMS...';
+            document.getElementById('trade-partner-status').style.color = partner.ready ? 'var(--success)' : '#94a3b8';
+            
+            document.getElementById('trade-partner-coins').innerText = `+ ${formatNumber(partner.coins)} Coins`;
+            
+            // Partner items display
+            const pItemUI = document.getElementById('trade-partner-item');
+            if(partner.items.length > 0) {
+                pItemUI.className = 'trade-item-slot occupied';
+                pItemUI.innerHTML = `<span style="font-size:12px; line-height:1; text-align:center;">${partner.items[0]}</span>`;
+            } else {
+                pItemUI.className = 'trade-item-slot empty';
+                pItemUI.innerHTML = '❌';
+            }
+
+            // My slots
+            const mySlots = document.getElementById('my-trade-slots').children;
+            for(let i=0; i<6; i++) {
+                if(me.items[i]) {
+                    mySlots[i].className = 'trade-item-slot occupied';
+                    mySlots[i].innerHTML = '📦';
+                } else {
+                    mySlots[i].className = 'trade-item-slot empty';
+                    mySlots[i].innerHTML = '❌';
+                }
+            }
+        }
+
+        function updateMyTradeOffer() {
+            if(!activeTradeSessionId) return;
+            const coins = parseInt(document.getElementById('trade-my-coins').value) || 0;
+            if(coins > currentUser.credits) {
+                document.getElementById('trade-my-coins').value = currentUser.credits;
+                return showToast("You don't have that many coins.");
+            }
+            
+            if(isTradeReady) toggleTradeReady();
+            
+            const cleanItems = myTradeItems.filter(i => i !== null);
+            socket.emit('update_trade_offer', { sessionId: activeTradeSessionId, username: currentUser.username, items: cleanItems, coins });
+        }
+
+        function toggleTradeReady() {
+            if(!activeTradeSessionId) return;
+            isTradeReady = !isTradeReady;
+            
+            const btn = document.getElementById('btn-trade-ready');
+            if(isTradeReady) {
+                btn.style.background = 'var(--warning)';
+                btn.innerText = 'WAITING...';
+            } else {
+                btn.style.background = 'var(--success)';
+                btn.innerText = 'OK, COOL!';
+            }
+            
+            socket.emit('set_trade_ready', { sessionId: activeTradeSessionId, username: currentUser.username, ready: isTradeReady });
+        }
+
+        function actLeaveTrade() {
+            if(!activeTradeSessionId) return;
+            socket.emit('leave_trade', { sessionId: activeTradeSessionId, username: currentUser.username });
         }
 
         // --- COMMUNICATION WIDGET (CHAT + VOICE) ---
         let currentChatTab = 'room';
-        let voiceMode = 'ptt';
         let autoMicActive = false;
         let micPressTime = 0;
 
@@ -1171,7 +1385,6 @@
             const msg = input.value.trim();
             if(msg && currentUser) {
                 if (currentChatTab === 'global') {
-                    // Global hack: Route message into every arcade room simultaneously
                     const allRooms = ['3seat', '5seat', 'dice', 'derby', 'color', 'pvp', 'cups', 'crash'];
                     allRooms.forEach(r => socket.emit('send_chat', { roomId: r, username: currentUser.username, message: '[GLOBAL] ' + msg }));
                 } else {
@@ -1337,6 +1550,107 @@
 
         socket.on('chat_wiped', (data) => {
             document.getElementById('room-chat-box').innerHTML = `<div style="color:var(--danger); text-align:center; margin-top:20px;">[CHAT CLEARED BY ADMIN]</div>`;
+        });
+
+        // --- TRADING SOCKET LISTENERS ---
+        socket.on('trade_board_update', (offers) => {
+            const list = document.getElementById('active-trade-offers-list');
+            if(offers.length === 0) {
+                list.innerHTML = '<div class="pixel-text" style="color:#64748b; font-size:28px; text-align:center; margin-top:20px;">No active trade offers.</div>';
+                return;
+            }
+            list.innerHTML = offers.map(o => `
+                <div class="trade-offer-card">
+                    <div>
+                        <div class="pixel-text" style="font-size: 28px; color: var(--accent-glow-2);">${o.username}</div>
+                        <div class="pixel-text" style="font-size: 20px; color: #fff;">Offering: ${o.item.toUpperCase()}</div>
+                    </div>
+                    ${o.username !== currentUser.username ? `<button class="mc-btn small" style="background:var(--success); color:#000;" onclick="actJoinTrade('${o.username}')">TRADE</button>` : `<div class="pixel-text" style="color:var(--warning);">YOUR OFFER</div>`}
+                </div>
+            `).join('');
+        });
+
+        socket.on('trade_session_start', (data) => {
+            hideModal('trade-hub-modal');
+            hideModal('trade-waiting-modal');
+            showModal('trade-session-modal');
+            
+            activeTradeSessionId = data.sessionId;
+            isTradeReady = false;
+            myTradeItems = [null, null, null, null, null, null];
+            document.getElementById('trade-my-coins').value = "0";
+            document.getElementById('btn-trade-ready').style.background = 'var(--success)';
+            document.getElementById('btn-trade-ready').innerText = 'OK, COOL!';
+            
+            updateTradeUI(data);
+        });
+
+        socket.on('trade_session_update', (data) => {
+            updateTradeUI(data);
+        });
+
+        socket.on('trade_closed', (msg) => {
+            activeTradeSessionId = null;
+            hideModal('trade-session-modal');
+            showToast(msg, 'warning');
+        });
+
+        socket.on('trade_success', () => {
+            activeTradeSessionId = null;
+            hideModal('trade-session-modal');
+            showToast('TRADE COMPLETED SUCCESSFULLY!', 'success');
+            playSfx('win');
+            socket.emit('req_market', { username: currentUser.username }); 
+        });
+
+        // --- MARKET OVERRIDE FOR TRADE INV ---
+        const originalMarketDataHandler = socket._callbacks['market_data'];
+        socket.on('market_data', (data) => {
+            if(!document.getElementById('trade-hub-modal').classList.contains('hidden')) {
+                let counts = {}; data.inventory.forEach(i => counts[i] = (counts[i] || 0) + 1);
+                const grid = document.getElementById('trade-inventory-grid');
+                grid.innerHTML = Object.keys(counts).map(item => `
+                    <div class="trade-inventory-item pixel-text" onclick="actCreateTradeOffer('${item}')">
+                        📦 <div class="qty">${counts[item]}</div>
+                    </div>
+                `).join('');
+            }
+            
+            const auctionList = document.getElementById('market-auctions-list');
+            if(auctionList) {
+                if(data.auctions.length === 0) {
+                    auctionList.innerHTML = '<div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">MARKET IS EMPTY</div>';
+                } else {
+                    auctionList.innerHTML = data.auctions.map(a => {
+                        let timeLeft = Math.max(0, Math.floor((a.endTime - Date.now()) / 1000));
+                        return `
+                        <div class="market-item">
+                            <div>
+                                <div class="market-title pixel-text">${a.item.toUpperCase()}</div>
+                                <div class="market-desc pixel-text">Seller: ${a.seller} | Bid: ${a.highestBidder || 'None'}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="pixel-text" style="color: var(--success); font-size: 24px; font-weight: bold;">${formatNumber(a.currentBid)} CR</div>
+                                <div class="pixel-text" style="color: #ccc; font-size: 18px; margin-bottom: 5px;">${timeLeft}s left</div>
+                                <button class="mc-btn small" style="background: var(--accent-glow-2);" onclick="promptBid('${a.id}', ${a.currentBid})">BID</button>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+
+                const invList = document.getElementById('market-inventory-list');
+                if(data.inventory.length === 0) {
+                    invList.innerHTML = '<div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">INVENTORY EMPTY</div>';
+                } else {
+                    let counts = {}; data.inventory.forEach(i => counts[i] = (counts[i] || 0) + 1);
+                    invList.innerHTML = Object.keys(counts).map(item => `
+                        <div class="market-item">
+                            <div class="market-title pixel-text">${item.toUpperCase()} <span style="color:#fff;">(x${counts[item]})</span></div>
+                            <button class="mc-btn small" style="background: var(--success); color:#000;" onclick="setupAuction('${item}')">SELL</button>
+                        </div>
+                    `).join('');
+                }
+            }
         });
 
         function showModal(id) { 
@@ -1535,42 +1849,6 @@
             socket.emit('req_market', { username: currentUser.username });
         }
 
-        socket.on('market_data', (data) => {
-            const auctionList = document.getElementById('market-auctions-list');
-            if(data.auctions.length === 0) {
-                auctionList.innerHTML = '<div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">MARKET IS EMPTY</div>';
-            } else {
-                auctionList.innerHTML = data.auctions.map(a => {
-                    let timeLeft = Math.max(0, Math.floor((a.endTime - Date.now()) / 1000));
-                    return `
-                    <div class="market-item">
-                        <div>
-                            <div class="market-title pixel-text">${a.item.toUpperCase()}</div>
-                            <div class="market-desc pixel-text">Seller: ${a.seller} | Bid: ${a.highestBidder || 'None'}</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div class="pixel-text" style="color: var(--success); font-size: 24px; font-weight: bold;">${formatNumber(a.currentBid)} CR</div>
-                            <div class="pixel-text" style="color: #ccc; font-size: 18px; margin-bottom: 5px;">${timeLeft}s left</div>
-                            <button class="mc-btn small" style="background: var(--accent-glow-2);" onclick="promptBid('${a.id}', ${a.currentBid})">BID</button>
-                        </div>
-                    </div>`;
-                }).join('');
-            }
-
-            const invList = document.getElementById('market-inventory-list');
-            if(data.inventory.length === 0) {
-                invList.innerHTML = '<div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">INVENTORY EMPTY</div>';
-            } else {
-                let counts = {}; data.inventory.forEach(i => counts[i] = (counts[i] || 0) + 1);
-                invList.innerHTML = Object.keys(counts).map(item => `
-                    <div class="market-item">
-                        <div class="market-title pixel-text">${item.toUpperCase()} <span style="color:#fff;">(x${counts[item]})</span></div>
-                        <button class="mc-btn small" style="background: var(--success); color:#000;" onclick="setupAuction('${item}')">SELL</button>
-                    </div>
-                `).join('');
-            }
-        });
-
         socket.on('market_update', (auctions) => {
             if(!document.getElementById('market-modal').classList.contains('hidden')) {
                 socket.emit('req_market', { username: currentUser.username });
@@ -1601,7 +1879,6 @@
 
             socket.emit('place_bid', { id, username: currentUser.username, bidAmount: amt });
         }
-
 
         // --- INBOX SYSTEM LOGIC ---
         function openInbox() {
@@ -2081,11 +2358,9 @@
                 phaseDisplay.style.color = "var(--success)";
                 timerText.innerText = "";
                 
-                // Animate rocket upward slightly
                 let yOffset = Math.min(200, (data.multiplier - 1) * 50);
                 rocket.style.transform = `translateY(-${yOffset}px)`;
 
-                // Hide bet button. Only show cashout if they have an active bet.
                 btnBet.style.display = 'none';
                 let myBetUI = Array.from(document.querySelectorAll('.crash-bet-item')).find(el => el.innerText.includes(currentUser.username));
                 if (myBetUI && !myBetUI.classList.contains('cashed')) {
@@ -2103,7 +2378,6 @@
                 btnCashout.style.display = 'none';
                 playSfx('lose');
                 
-                // Mark uncashed bets as lost visually
                 document.querySelectorAll('.crash-bet-item').forEach(el => {
                     if(!el.classList.contains('cashed')) {
                         el.classList.add('lost');
@@ -2122,7 +2396,6 @@
                 rocket.style.transform = `translateY(-${yOffset}px) scale(${1 + (data.multiplier * 0.05)})`;
             }
             
-            // Update cashout button text to show live win amount
             const btnCashout = document.getElementById('btn-crash-cashout');
             if (btnCashout && btnCashout.style.display === 'block') {
                 btnCashout.innerText = `CASH OUT ${formatNumber(currentChipValue * data.multiplier)}`;
@@ -2164,7 +2437,6 @@
         window.crashCashout = function() {
             socket.emit('crash_cashout', { username: currentUser.username });
         };
-
 
         // --- DICE LOGIC ---
         const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']; let diceInterval = null;
@@ -2307,7 +2579,7 @@
             
             if (data.status === 'shuffling') { 
                 statusText.innerText = "SHUFFLING..."; timerText.innerText = "NO MORE BETS"; 
-                myCupsBets = [0,0,0]; currentCupsBetChoice = -1; // Reset bets and unlock choice
+                myCupsBets = [0,0,0]; currentCupsBetChoice = -1; 
                 playSfx('deal'); 
                 document.querySelectorAll('.cup-wrapper').forEach(w => w.classList.remove('reveal'));
                 document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('cups')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
@@ -2360,7 +2632,6 @@
             if(gameLocks.cups) return showToast('This game is offline for maintenance.');
             if(isBetting) return; 
             
-            // Map UI position click to the actual physical Cup ID currently sitting there
             let actualCupChoiceId = finalCupPositions.indexOf(uiPosition);
             
             if(currentCupsBetChoice !== -1 && currentCupsBetChoice !== actualCupChoiceId) return showToast('You can only bet on ONE cup per round!');
@@ -2389,7 +2660,6 @@
             }
         };
 
-        // HOST FLOW
         socket.on('open_pvp_host_modal', () => {
             showModal('pvp-host-modal');
         });
@@ -2413,13 +2683,11 @@
             hideModal('pvp-host-modal');
         };
 
-        // CHALLENGER FLOW
         socket.on('open_pvp_accept_modal', (data) => {
             document.getElementById('accept-host-name').innerText = data.hostName.toUpperCase();
             document.getElementById('accept-game-type').innerText = data.type === 'wheel' ? `WHEEL SPIN (${data.slices} Slices)` : 'COIN FLIP';
             document.getElementById('accept-format').innerText = data.format === 1 ? '1 ROUND' : `FIRST TO ${data.format}`;
             document.getElementById('accept-wager').innerText = data.betAmount === 0 ? 'ITEM WAGER (0 CR)' : `${formatNumber(data.betAmount)} CR`;
-            
             showModal('pvp-accept-modal');
         });
 
@@ -2431,11 +2699,6 @@
         window.declinePvpDuel = function() {
             hideModal('pvp-accept-modal');
             leavePvpSeat();
-        };
-
-        window.readyDuel = function() {
-            if(!currentUser || myDuelSeatIndex === -1) return;
-            socket.emit('ready_pvp_duel', { username: currentUser.username });
         };
 
         socket.on('pvp_duel_state_update', (state) => {
@@ -2540,7 +2803,6 @@
             }
         });
 
-        // HTML5 CANVAS WHEEL DRAWING
         function drawWheel(canvas, numSlices, p1Name, p2Name) {
             if(!canvas.getContext) return;
             const ctx = canvas.getContext('2d');
@@ -2551,7 +2813,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             const sliceAngle = (2 * Math.PI) / numSlices;
-            const colors = ['#ef4444', '#3b82f6']; // Red and Blue
+            const colors = ['#ef4444', '#3b82f6']; 
             
             for (let i = 0; i < numSlices; i++) {
                 const startAngle = i * sliceAngle - (Math.PI / 2); 
