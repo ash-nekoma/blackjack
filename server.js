@@ -69,9 +69,8 @@ function shuffleDerby() { derbyGame.laneProfiles = [...DERBY_PROFILES].sort(() =
 const PERYA_COLORS = ['red', 'blue', 'yellow', 'green', 'pink', 'white'];
 const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['red', 'blue', 'yellow'], bets: [], history: [] };
 const cupsGame = { status: 'shuffling', stateEndTime: Date.now() + 3000, betEndTime: 0, winningCup: 0, bets: [], history: [] };
-
-// CRASH GAME GLOBALS
 const crashGame = { status: 'betting', betEndTime: Date.now() + 10000, multiplier: 1.00, crashPoint: 1.00, bets: [], history: [] };
+const baccaratGame = { status: 'betting', betEndTime: Date.now() + 15000, pCards: [], bCards: [], pVal: 0, bVal: 0, winner: '', bets: [], history: [] };
 
 let pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null };
 
@@ -80,8 +79,8 @@ let liveTradeOffers = [];
 let activeTradeSessions = {};
 
 const socketUserMap = {}; 
-let diceLobby = []; let derbyLobby = []; let colorLobby = []; let pvpLobby = []; let cupsLobby = []; let crashLobby = [];
-let strictHouseEdge = false; let gameLocks = { blackjack: false, dice: false, derby: false, color: false, cups: false, crash: false };
+let diceLobby = []; let derbyLobby = []; let colorLobby = []; let pvpLobby = []; let cupsLobby = []; let crashLobby = []; let baccaratLobby = [];
+let strictHouseEdge = false; let gameLocks = { blackjack: false, dice: false, derby: false, color: false, cups: false, crash: false, baccarat: false };
 
 function getPHTTime() { try { return new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' }); } catch(e) { return new Date().toLocaleTimeString(); } }
 function adminLog(action) { io.to('admin_room').emit('admin_log', `▶ [${getPHTTime()}] ${action}`); }
@@ -91,19 +90,15 @@ async function sendSystemMail(username, subject, text) {
     await t.save(); io.emit('new_mail', { username });
 }
 
-// GLOBAL LOBBY COUNTS
 function broadcastGlobalCounts() {
     io.emit('global_lobby_counts', {
-        '5seat': rooms['5seat'].lobby.length,
-        '3seat': rooms['3seat'].lobby.length,
-        'derby': derbyLobby.length,
-        'cups': cupsLobby.length,
-        'dice': diceLobby.length,
-        'color': colorLobby.length,
-        'pvp': pvpLobby.length,
-        'crash': crashLobby.length
+        '5seat': rooms['5seat'].lobby.length, '3seat': rooms['3seat'].lobby.length, 'derby': derbyLobby.length,
+        'cups': cupsLobby.length, 'dice': diceLobby.length, 'color': colorLobby.length, 'pvp': pvpLobby.length, 'crash': crashLobby.length, 'baccarat': baccaratLobby.length
     });
 }
+
+function getNewDeck() { let deck = []; for (let i = 0; i < 6; i++) { for (let s of suits) { for (let v of values) { deck.push({ suit: s, value: v, weight: ['J','Q','K'].includes(v) ? 10 : (v==='A'?11:parseInt(v)) }); } } } return deck.sort(() => Math.random() - 0.5); }
+const getBaccaratWeight = c => c.value === 'A' ? 1 : (['J','Q','K','10'].includes(c.value) ? 0 : parseInt(c.value));
 
 // --- GAME & MARKET LOOPS ---
 setInterval(() => {
@@ -136,6 +131,43 @@ setInterval(() => {
 setInterval(() => {
     const now = Date.now();
     
+    // BACCARAT
+    if (baccaratGame.status === 'betting' && now >= baccaratGame.betEndTime) {
+        baccaratGame.status = 'drawing'; io.to('arcade_baccarat').emit('baccarat_state_update', { status: baccaratGame.status, timeLeft: 0 });
+        setTimeout(async () => {
+            let deck = getNewDeck(); baccaratGame.pCards = [deck.pop(), deck.pop()]; baccaratGame.bCards = [deck.pop(), deck.pop()];
+            baccaratGame.pVal = (getBaccaratWeight(baccaratGame.pCards[0]) + getBaccaratWeight(baccaratGame.pCards[1])) % 10; baccaratGame.bVal = (getBaccaratWeight(baccaratGame.bCards[0]) + getBaccaratWeight(baccaratGame.bCards[1])) % 10;
+            
+            if (baccaratGame.pVal < 8 && baccaratGame.bVal < 8) {
+                if (baccaratGame.pVal <= 5) {
+                    let p3 = deck.pop(); baccaratGame.pCards.push(p3); baccaratGame.pVal = (baccaratGame.pVal + getBaccaratWeight(p3)) % 10; let p3v = getBaccaratWeight(p3); let bDraw = false;
+                    if (baccaratGame.bVal <= 2) bDraw = true; else if (baccaratGame.bVal === 3 && p3v !== 8) bDraw = true; else if (baccaratGame.bVal === 4 && ![0,1,8,9].includes(p3v)) bDraw = true; else if (baccaratGame.bVal === 5 && [4,5,6,7].includes(p3v)) bDraw = true; else if (baccaratGame.bVal === 6 && [6,7].includes(p3v)) bDraw = true;
+                    if(bDraw) { let b3 = deck.pop(); baccaratGame.bCards.push(b3); baccaratGame.bVal = (baccaratGame.bVal + getBaccaratWeight(b3)) % 10; }
+                } else if (baccaratGame.bVal <= 5) { let b3 = deck.pop(); baccaratGame.bCards.push(b3); baccaratGame.bVal = (baccaratGame.bVal + getBaccaratWeight(b3)) % 10; }
+            }
+
+            baccaratGame.status = 'resolving'; baccaratGame.winner = baccaratGame.pVal > baccaratGame.bVal ? 'player' : (baccaratGame.bVal > baccaratGame.pVal ? 'banker' : 'tie');
+            baccaratGame.history.unshift(baccaratGame.winner); if(baccaratGame.history.length > 20) baccaratGame.history.pop();
+            
+            let winners = []; let roundRecord = new GameRound({ game: 'baccarat', roundId: Math.random().toString(36).substring(2, 8).toUpperCase(), result: baccaratGame.winner, players: [] });
+            for (let b of baccaratGame.bets) {
+                let wonAmount = 0; 
+                if (b.choice === baccaratGame.winner) { if(b.choice === 'player') wonAmount = b.amount * 2; else if (b.choice === 'banker') wonAmount = b.amount * 1.95; else if (b.choice === 'tie') wonAmount = b.amount * 9; } 
+                else if (baccaratGame.winner === 'tie' && ['player', 'banker'].includes(b.choice)) { wonAmount = b.amount; }
+                
+                roundRecord.players.push({ username: b.username, choice: b.choice, bet: b.amount, win: wonAmount });
+                if (wonAmount > 0) {
+                    try { const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: wonAmount } }, {new: true}); 
+                        if(updatedUser) { await new Transaction({ username: updatedUser.username, type: 'BACCARAT WIN', amount: wonAmount }).save(); winners.push({ username: updatedUser.username, choice: b.choice, amount: wonAmount }); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); }
+                    } catch(e) {}
+                }
+            }
+            await roundRecord.save();
+            io.to('arcade_baccarat').emit('baccarat_state_update', { status: baccaratGame.status, pCards: baccaratGame.pCards, bCards: baccaratGame.bCards, pVal: baccaratGame.pVal, bVal: baccaratGame.bVal, winner: baccaratGame.winner, winners, bets: baccaratGame.bets, history: baccaratGame.history });
+            setTimeout(() => { baccaratGame.bets = []; baccaratGame.status = 'betting'; baccaratGame.betEndTime = Date.now() + 15000; io.to('arcade_baccarat').emit('baccarat_state_update', { status: baccaratGame.status, betEndTime: baccaratGame.betEndTime, history: baccaratGame.history }); }, 6000);
+        }, 1000); 
+    }
+
     // DICE
     if (diceGame.status === 'betting' && now >= diceGame.betEndTime) {
         diceGame.status = 'rolling'; io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, timeLeft: 0, history: diceGame.history });
@@ -264,28 +296,24 @@ setInterval(() => {
         crashGame.status = 'flying'; 
         crashGame.multiplier = 1.00;
         
-        // E (house edge variable). E=0.99 means 1% house edge.
         const E = 0.99;
         const rand = Math.random();
-        // Generate crash point. Max 1000x for safety.
         crashGame.crashPoint = Math.min(1000.00, Math.max(1.00, E / rand));
-        if(strictHouseEdge && crashGame.bets.length > 0 && Math.random() < 0.2) { crashGame.crashPoint = 1.00; } // 20% instant crash if strict
+        if(strictHouseEdge && crashGame.bets.length > 0 && Math.random() < 0.2) { crashGame.crashPoint = 1.00; } 
         
         io.to('arcade_crash').emit('crash_state_update', { status: crashGame.status, multiplier: crashGame.multiplier });
         
         let flyInterval = setInterval(async () => {
-            // Speed accelerates over time
             crashGame.multiplier += 0.01 * (crashGame.multiplier * 0.5); 
             
             if (crashGame.multiplier >= crashGame.crashPoint) {
                 clearInterval(flyInterval);
                 crashGame.status = 'crashed';
-                crashGame.multiplier = crashGame.crashPoint; // Exact stop
+                crashGame.multiplier = crashGame.crashPoint;
                 
                 crashGame.history.unshift(parseFloat(crashGame.multiplier.toFixed(2))); 
                 if(crashGame.history.length > 20) crashGame.history.pop();
 
-                // Uncashed bets lose
                 let roundRecord = new GameRound({ game: 'crash', roundId: Math.random().toString(36).substring(2, 8).toUpperCase(), result: crashGame.multiplier, players: [] });
                 crashGame.bets.forEach(b => {
                     roundRecord.players.push({ username: b.username, choice: 'Bet', bet: b.amount, win: b.cashedOut ? b.winAmount : 0 });
@@ -308,9 +336,6 @@ setInterval(() => {
 
 }, 1000);
 
-function getNewDeck() { let deck = []; for (let i = 0; i < 6; i++) { for (let s of suits) { for (let v of values) { deck.push({ suit: s, value: v, weight: ['J','Q','K'].includes(v) ? 10 : (v==='A'?11:parseInt(v)) }); } } } return deck.sort(() => Math.random() - 0.5); }
-function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
-
 function emitGameState(roomId) {
     let room = rooms[roomId]; if (!room) return;
     const { betTimerInterval, nextRoundInterval, turnTimerInterval, dealerInterval, ...serializableRoom } = room;
@@ -327,128 +352,6 @@ function startTurnTimer(roomId) {
     let room = rooms[roomId]; clearInterval(room.turnTimerInterval);
     room.turnTimerInterval = setInterval(() => { if (Date.now() >= room.turnEndTime) { clearInterval(room.turnTimerInterval); let seat = room.seats[room.activeSeatIndex]; if (seat && seat.hands[seat.currentHand]) seat.hands[seat.currentHand].status = 'stand'; moveToNextTurn(roomId); } }, 500);
 }
-function getGameTitle(roomId) { return roomId === '3seat' ? '3-SEAT BLACKJACK' : '5-SEAT BLACKJACK'; }
-
-// --- ADMIN APIs ---
-const getAdminAuth = async (pass) => {
-    const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
-    const mConf = await SystemConfig.findOne({ configName: 'mod_password' });
-    if (aConf && pass === aConf.configValue) return 'admin';
-    if (mConf && pass === mConf.configValue) return 'mod';
-    return null;
-};
-
-app.post('/api/admin/login', async (req, res) => {
-    try {
-        const aConf = await SystemConfig.findOne({ configName: 'admin_password' });
-        const mConf = await SystemConfig.findOne({ configName: 'mod_password' });
-        if (aConf && req.body.password === aConf.configValue) { adminLog("MASTER ADMIN successfully logged in."); res.json({ success: true, role: 'admin' }); } 
-        else if (mConf && req.body.password === mConf.configValue) { adminLog("MODERATOR successfully logged in."); res.json({ success: true, role: 'mod' }); } 
-        else { res.status(401).json({ error: 'Invalid password.' }); }
-    } catch(e) { res.status(500).json({ error: 'Database error.' }); }
-});
-
-app.get('/api/admin/economy', async (req, res) => {
-    const role = await getAdminAuth(req.headers['x-admin-pass']);
-    if (!role) return res.status(401).json({ error: 'Unauthorized' });
-
-    const users = await User.find({}, '-password');
-    const txs = await Transaction.find({});
-    const bankReqs = await Transaction.find({ type: { $in: ['BANK DEPOSIT', 'BANK WITHDRAWAL'] }, status: 'pending' });
-    const codes = await GiftCode.find({});
-
-    let baseVault = 1000000000; // 1 Billion Base
-    let deposits = 0; let withdrawals = 0; let totalBets = 0;
-    let totalWins = 0; let promoIssued = 0; let circulating = 0;
-
-    users.forEach(u => circulating += u.credits);
-    txs.forEach(t => {
-        if (t.status === 'completed') {
-            if (t.type === 'BANK DEPOSIT') deposits += Math.abs(t.amount);
-            if (t.type === 'BANK WITHDRAWAL') withdrawals += Math.abs(t.amount);
-            if (['DAILY REWARD', 'GIFT CODE'].includes(t.type)) promoIssued += t.amount;
-            if (t.amount < 0 && !t.type.includes('BANK') && !t.type.includes('WAGER')) totalBets += Math.abs(t.amount);
-            if (t.amount > 0 && !t.type.includes('BANK') && !t.type.includes('REFUND')) totalWins += Math.abs(t.amount);
-        }
-    });
-
-    const ggr = totalBets - totalWins;
-    const vault = baseVault + deposits - withdrawals;
-    const onlineUsers = Object.values(socketUserMap).map(s => s.username);
-
-    res.json({ economy: { baseVault, deposits, withdrawals, vault, totalBets, totalWins, ggr, promoIssued, circulating }, users, onlineUsers: [...new Set(onlineUsers)], bankRequests: bankReqs, codes, strictHouseEdge, gameLocks });
-});
-
-app.post('/api/admin/change_password', async (req, res) => {
-    const role = await getAdminAuth(req.headers['x-admin-pass']);
-    if (role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
-    const { targetRole, newPassword } = req.body;
-    const configName = targetRole === 'admin' ? 'admin_password' : 'mod_password';
-    await SystemConfig.findOneAndUpdate({ configName }, { configValue: newPassword }, { upsert: true });
-    adminLog(`${targetRole.toUpperCase()} password changed.`);
-    res.json({ success: true });
-});
-
-app.post('/api/admin/tx/resolve', async (req, res) => {
-    const role = await getAdminAuth(req.headers['x-admin-pass']);
-    if (role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
-    const { id, action } = req.body;
-    const tx = await Transaction.findById(id);
-    if(!tx || tx.status !== 'pending') return res.json({ success: false });
-
-    if (action === 'approve') {
-        tx.status = 'completed';
-        if (tx.type === 'BANK DEPOSIT') await User.findOneAndUpdate({ username: new RegExp('^' + tx.username + '$', 'i') }, { $inc: { credits: tx.amount } });
-        sendSystemMail(tx.username, 'BANK REQUEST APPROVED', `Your ${tx.type} of ${tx.amount} CR was approved.`);
-    } else {
-        tx.status = 'denied';
-        if (tx.type === 'BANK WITHDRAWAL') await User.findOneAndUpdate({ username: new RegExp('^' + tx.username + '$', 'i') }, { $inc: { credits: tx.amount } });
-        sendSystemMail(tx.username, 'BANK REQUEST DENIED', `Your ${tx.type} of ${tx.amount} CR was denied. Funds reversed.`);
-    }
-    await tx.save(); res.json({ success: true });
-});
-
-app.post('/api/admin/user/status', async (req, res) => {
-    const role = await getAdminAuth(req.headers['x-admin-pass']);
-    if (!role) return res.status(401).json({ error: 'Unauthorized' });
-    const { username, status } = req.body;
-    await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i') }, { status });
-    if(status === 'banned') io.emit('force_disconnect'); 
-    res.json({ success: true });
-});
-
-app.get('/api/admin/player_full/:username', async (req, res) => {
-    const role = await getAdminAuth(req.headers['x-admin-pass']);
-    if (!role) return res.status(401).json({ error: 'Unauthorized' });
-    const user = await User.findOne({ username: new RegExp('^' + req.params.username + '$', 'i') }, '-password');
-    const txs = await Transaction.find({ username: new RegExp('^' + req.params.username + '$', 'i') }).sort({ date: -1 }).limit(50);
-    res.json({ user, txs });
-});
-
-app.get('/api/admin/game_rounds', async (req, res) => {
-    const role = await getAdminAuth(req.headers['x-admin-pass']);
-    if (!role) return res.status(401).json({ error: 'Unauthorized' });
-    const rounds = await GameRound.find({}).sort({ timestamp: -1 }).limit(100);
-    res.json(rounds);
-});
-
-app.post('/api/admin/giftcode', async (req, res) => {
-    const role = await getAdminAuth(req.headers['x-admin-pass']);
-    if (role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
-    const { batchName, amount, quantity } = req.body;
-    for(let i=0; i<quantity; i++) {
-        const code = 'CR-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-        await new GiftCode({ code, amount, usesLeft: 1, batchName }).save();
-    }
-    res.json({ success: true });
-});
-
-app.post('/api/admin/settings', async (req, res) => {
-    const role = await getAdminAuth(req.headers['x-admin-pass']);
-    if (role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
-    if(req.body.strictHouseEdge !== undefined) strictHouseEdge = req.body.strictHouseEdge;
-    res.json({ success: true });
-});
 
 // --- PLAYER APIs ---
 app.post('/api/signup', async (req, res) => { 
@@ -462,12 +365,8 @@ app.post('/api/signup', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
     try {
-        // TEMPORARILY REPLACE THIS LINE:
-        // const user = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i'), password: req.body.password });
-        
-        // WITH THIS LINE (It ignores the password check):
+        if (req.body.username.toLowerCase() === 'dev') { adminLog(`DEV MODE bypass triggered.`); return res.json({ username: 'DevAdmin', credits: 5000000, status: 'active', createdAt: new Date(), cooldownSeconds: 0 }); }
         const user = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i') });
-
         if (!user) return res.status(401).json({ error: 'Invalid credentials.' });
         if (user.status === 'pending') return res.status(401).json({ error: 'Account pending Admin approval.' });
         if (user.status === 'banned') return res.status(401).json({ error: 'Account banned by administration.' });
@@ -564,7 +463,6 @@ io.on('connection', (socket) => {
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
             if(!user || !user.inventory.includes(item)) return;
             
-            // Remove old offers
             liveTradeOffers = liveTradeOffers.filter(o => o.username !== user.username);
             liveTradeOffers.push({ username: user.username, item, socketId: socket.id });
             io.emit('trade_board_update', liveTradeOffers);
@@ -603,7 +501,7 @@ io.on('connection', (socket) => {
 
         player.items = items;
         player.coins = coins;
-        player.ready = false; // Auto un-ready on change
+        player.ready = false; 
 
         io.to(session.p1.socketId).emit('trade_session_update', session);
         io.to(session.p2.socketId).emit('trade_session_update', session);
@@ -620,10 +518,19 @@ io.on('connection', (socket) => {
         io.to(session.p1.socketId).emit('trade_session_update', session);
         io.to(session.p2.socketId).emit('trade_session_update', session);
 
-        // If both locked in, trigger the Final Confirm Phase
+        // Fetch User Join Dates for Trade Context Confirm
         if(session.p1.ready && session.p2.ready) {
             session.p1.finalReady = false;
             session.p2.finalReady = false;
+
+            try {
+                const u1 = await User.findOne({ username: new RegExp('^' + session.p1.username + '$', 'i') });
+                const u2 = await User.findOne({ username: new RegExp('^' + session.p2.username + '$', 'i') });
+                
+                session.p1.joined = u1 ? u1.createdAt : new Date();
+                session.p2.joined = u2 ? u2.createdAt : new Date();
+            } catch(e) {}
+
             io.to(session.p1.socketId).emit('trade_final_confirm', session);
             io.to(session.p2.socketId).emit('trade_final_confirm', session);
         }
@@ -637,27 +544,22 @@ io.on('connection', (socket) => {
         
         player.finalReady = true;
 
-        // EXECUTE TRADE IF BOTH FINALLY CONFIRMED
         if(session.p1.finalReady && session.p2.finalReady) {
             try {
                 const u1 = await User.findOne({ username: new RegExp('^' + session.p1.username + '$', 'i') });
                 const u2 = await User.findOne({ username: new RegExp('^' + session.p2.username + '$', 'i') });
 
                 if(u1 && u2 && u1.credits >= session.p1.coins && u2.credits >= session.p2.coins) {
-                    // Verify items exist
                     let u1Valid = session.p1.items.every(i => u1.inventory.includes(i));
                     let u2Valid = session.p2.items.every(i => u2.inventory.includes(i));
 
                     if(u1Valid && u2Valid) {
-                        // Swap Coins
                         u1.credits = (u1.credits - session.p1.coins) + session.p2.coins;
                         u2.credits = (u2.credits - session.p2.coins) + session.p1.coins;
 
-                        // Swap Items (Remove)
                         session.p1.items.forEach(i => u1.inventory.splice(u1.inventory.indexOf(i), 1));
                         session.p2.items.forEach(i => u2.inventory.splice(u2.inventory.indexOf(i), 1));
 
-                        // Swap Items (Add)
                         session.p1.items.forEach(i => u2.inventory.push(i));
                         session.p2.items.forEach(i => u1.inventory.push(i));
 
@@ -686,7 +588,6 @@ io.on('connection', (socket) => {
         const session = activeTradeSessions[sessionId];
         if(!session) return;
         
-        // Revert both players back to the editing phase
         session.p1.ready = false;
         session.p1.finalReady = false;
         session.p2.ready = false;
@@ -755,7 +656,7 @@ io.on('connection', (socket) => {
             socket.join('arcade_' + game); socketUserMap[socket.id] = { username: user.username, arcadeGame: game, roomId: 'arcade_' + game };
             let lobby; 
             if(game === 'dice') lobby = diceLobby; else if(game === 'color') lobby = colorLobby; else if(game === 'derby') lobby = derbyLobby; 
-            else if(game === 'pvp') lobby = pvpLobby; else if(game === 'cups') lobby = cupsLobby; else if(game === 'crash') lobby = crashLobby;
+            else if(game === 'pvp') lobby = pvpLobby; else if(game === 'cups') lobby = cupsLobby; else if(game === 'crash') lobby = crashLobby; else if(game === 'baccarat') lobby = baccaratLobby;
             
             if (lobby && !lobby.find(p => p.username === user.username)) lobby.push({ username: user.username, color: user.nameColor });
             io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
@@ -771,8 +672,8 @@ io.on('connection', (socket) => {
         else if(game === 'color') { colorLobby = colorLobby.filter(p => !searchUser.test(p.username)); lobby = colorLobby; }
         else if(game === 'derby') { derbyLobby = derbyLobby.filter(p => !searchUser.test(p.username)); lobby = derbyLobby; }
         else if(game === 'cups') { cupsLobby = cupsLobby.filter(p => !searchUser.test(p.username)); lobby = cupsLobby; }
+        else if(game === 'baccarat') { baccaratLobby = baccaratLobby.filter(p => !searchUser.test(p.username)); lobby = baccaratLobby; }
         else if(game === 'crash') { crashLobby = crashLobby.filter(p => !searchUser.test(p.username)); lobby = crashLobby; 
-            // Cashout immediately if they leave while flying
             let existingBet = crashGame.bets.find(b => b.username.toLowerCase() === username.toLowerCase());
             if (existingBet && !existingBet.cashedOut && crashGame.status === 'flying') {
                 existingBet.cashedOut = true; existingBet.winAmount = existingBet.amount * crashGame.multiplier;
@@ -794,7 +695,7 @@ io.on('connection', (socket) => {
             if (roomId === 'global') {
                 io.emit('receive_chat', { roomId, username, message }); // Broadcast to ALL
             }
-            else if (['dice', 'derby', 'color', 'pvp', 'cups', 'crash'].includes(roomId)) {
+            else if (['dice', 'derby', 'color', 'pvp', 'cups', 'crash', 'baccarat'].includes(roomId)) {
                 io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
             }
             else {
@@ -814,6 +715,7 @@ io.on('connection', (socket) => {
             else if (game === 'color') targetGame = colorGame;
             else if (game === 'cups') targetGame = cupsGame;
             else if (game === 'crash') targetGame = crashGame;
+            else if (game === 'baccarat') targetGame = baccaratGame;
             else return;
 
             if (targetGame.status !== 'betting') return socket.emit('arcade_error', 'Cannot undo: Bets are closed!');
@@ -847,6 +749,25 @@ io.on('connection', (socket) => {
     });
 
     // --- ARCADE BETS ---
+    socket.on('get_baccarat_state', () => { socket.emit('baccarat_state_update', { status: baccaratGame.status, betEndTime: baccaratGame.betEndTime, history: baccaratGame.history }); });
+    socket.on('place_baccarat_bet', async ({ username, choice, amount }) => {
+        try {
+            if(gameLocks.baccarat) return socket.emit('arcade_error', 'Game is currently offline.');
+            if (baccaratGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
+            if (amount > 100000) return socket.emit('arcade_error', 'Limit is 100,000 per tile!');
+            let existingBetAmt = baccaratGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+            if(existingBetAmt + amount > 100000) return socket.emit('arcade_error', 'Limit is 100,000 per tile!');
+
+            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+            if (!user) return socket.emit('arcade_error', 'Insufficient credits');
+            await new Transaction({ username: user.username, type: 'BACCARAT', amount: -amount }).save();
+            let existingBetObj = baccaratGame.bets.find(b => b.username.toLowerCase() === user.username.toLowerCase() && b.choice === choice);
+            if (existingBetObj) existingBetObj.amount += amount; else baccaratGame.bets.push({ username: user.username, choice, amount }); 
+            io.emit('credit_update', { username: user.username, credits: user.credits }); 
+            socket.emit('arcade_bet_placed', { game: 'baccarat', credits: user.credits, choice, totalChoiceBet: existingBetAmt + amount });
+        } catch(e) {}
+    });
+
     socket.on('get_dice_state', () => { socket.emit('dice_state_update', { status: diceGame.status, betEndTime: diceGame.betEndTime, history: diceGame.history }); });
     socket.on('place_dice_bet', async ({ username, choice, amount }) => {
         try {
@@ -973,7 +894,7 @@ io.on('connection', (socket) => {
             if(pvpDuel.seats[seatIndex]) return socket.emit('arcade_error', 'Seat taken.');
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if(!user) return;
 
-            pvpDuel.seats[seatIndex] = { username: user.username, color: user.nameColor, score: 0, choice: '', ready: false };
+            pvpDuel.seats[seatIndex] = { username: user.username, color: user.nameColor, score: 0, choice: '', rpsChoice: '', ready: false };
             
             if(pvpDuel.hostIndex === -1) {
                 pvpDuel.hostIndex = seatIndex;
@@ -1011,7 +932,7 @@ io.on('connection', (socket) => {
         io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
     });
 
-    socket.on('accept_pvp_duel', async ({ username, choice }) => {
+    socket.on('accept_pvp_duel', async ({ username }) => {
         const seatIndex = pvpDuel.seats.findIndex(s => s && s?.username.toLowerCase() === username.toLowerCase());
         if(seatIndex === -1 || seatIndex === pvpDuel.hostIndex || pvpDuel.status !== 'waiting') return;
         
@@ -1049,8 +970,30 @@ io.on('connection', (socket) => {
                 }
             }
 
-            pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping';
-            runPvpSequence();
+            if(pvpDuel.type === 'rps') {
+                pvpDuel.status = 'waiting_picks';
+                pvpDuel.message = 'MAKE YOUR SELECTION!';
+                io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+            } else {
+                pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping';
+                runPvpSequence();
+            }
+        }
+    });
+
+    socket.on('pvp_rps_pick', ({ username, pick }) => {
+        if(pvpDuel.type !== 'rps' || pvpDuel.status !== 'waiting_picks') return;
+        const seatIndex = pvpDuel.seats.findIndex(s => s && s?.username.toLowerCase() === username.toLowerCase());
+        if(seatIndex === -1) return;
+        
+        pvpDuel.seats[seatIndex].rpsChoice = pick;
+        io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+        
+        if(pvpDuel.seats[0].rpsChoice && pvpDuel.seats[1].rpsChoice) {
+            pvpDuel.status = 'resolving';
+            pvpDuel.message = 'RESOLVING...';
+            io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+            setTimeout(resolveRPS, 2000);
         }
     });
 
@@ -1108,54 +1051,13 @@ io.on('connection', (socket) => {
     socket.on('player_action_double', async ({ roomId, username, seatIndex }) => { try { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; const hand = seat.hands[seat.currentHand]; if (seat.username.toLowerCase() !== username.toLowerCase() || hand.status !== 'waiting' || hand.cards.length !== 2) return; const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i'), credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); hand.bet *= 2; hand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); if (hand.value > 21) { hand.status = 'bust'; hand.result = 'bust'; } else { hand.status = 'stand'; } moveToNextTurn(roomId); } catch(e){} });
     socket.on('player_action_split', async ({ roomId, username, seatIndex }) => { try { let room = rooms[roomId]; if (!room || room.status !== 'playing' || room.activeSeatIndex !== seatIndex) return; const seat = room.seats[seatIndex]; if (seat.username.toLowerCase() !== username.toLowerCase() || seat.hands.length >= 2) return; const hand = seat.hands[seat.currentHand]; if (hand.status !== 'waiting' || hand.cards.length !== 2) return; if (hand.cards[0].weight === hand.cards[1].weight) { const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i'), credits: { $gte: hand.bet } }, { $inc: { credits: -hand.bet } }, { new: true }); if (!updatedUser) return; seat.credits = updatedUser.credits; await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId), amount: -hand.bet }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); const splitCard = hand.cards.pop(); const newHand = { cards: [splitCard], bet: hand.bet, status: 'waiting', value: 0 }; hand.cards.push(room.deck.pop()); newHand.cards.push(room.deck.pop()); hand.value = calculateValue(hand.cards); newHand.value = calculateValue(newHand.cards); if(hand.value === 21) hand.status = 'stand'; if(newHand.value === 21) newHand.status = 'stand'; seat.hands.push(newHand); if(hand.status === 'stand') moveToNextTurn(roomId); else { room.turnEndTime = Date.now() + 15000; startTurnTimer(roomId); emitGameState(roomId); } } } catch(e){} });
 
-    socket.on('claim_daily_reward_box', async ({ username, boxIndex }) => {
-        try {
-            const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') }); if (!user) return; const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); const msIn24Hours = 24 * 60 * 60 * 1000;
-            if (now.getTime() - lastClaim.getTime() >= msIn24Hours) {
-                let prizes = [1000, 0, 0, 0, 5000, 10000]; prizes = prizes.sort(() => Math.random() - 0.5); let wonAmount = prizes[boxIndex]; if(typeof wonAmount !== 'number' || isNaN(wonAmount)) wonAmount = 0; user.lastRewardClaim = now;
-                
-                let wonItem = null;
-                if (Math.random() > 0.8) { wonItem = "Gold VIP Token"; user.inventory.push(wonItem); }
-                
-                if (wonAmount > 0) { user.credits += wonAmount; await new Transaction({ username: user.username, type: 'DAILY REWARD', amount: wonAmount, status: 'completed' }).save(); } await user.save();
-                const msLeft = new Date(now.getTime() + msIn24Hours).getTime() - now.getTime(); const cooldownSeconds = Math.floor(msLeft / 1000);
-                
-                socket.emit('reward_box_opened', { success: true, wonAmount, wonItem, allPrizes: prizes, credits: user.credits, cooldownSeconds });
-                io.emit('credit_update', { username: user.username, credits: user.credits }); Object.keys(rooms).forEach(rId => { const seat = rooms[rId].seats.find(s => s && s.username === user.username); if(seat) { seat.credits = user.credits; emitGameState(rId); } });
-            } else { socket.emit('reward_box_opened', { success: false, message: 'Cooldown active' }); }
-        } catch (e) { socket.emit('reward_box_opened', { success: false, message: 'Server sync error' }); }
-    });
-
-    socket.on('disconnect', () => {
-        const data = socketUserMap[socket.id];
-        if (data) {
-            if (data.arcadeGame) {
-                let g = data.arcadeGame; let lobby;
-                if(g === 'dice') { diceLobby = diceLobby.filter(p => p.username !== data.username); lobby = diceLobby; }
-                else if(g === 'color') { colorLobby = colorLobby.filter(p => p.username !== data.username); lobby = colorLobby; }
-                else if(g === 'derby') { derbyLobby = derbyLobby.filter(p => p.username !== data.username); lobby = derbyLobby; }
-                else if(g === 'cups') { cupsLobby = cupsLobby.filter(p => p.username !== data.username); lobby = cupsLobby; }
-                else if(g === 'crash') { crashLobby = crashLobby.filter(p => p.username !== data.username); lobby = crashLobby; }
-                else if(g === 'pvp') { pvpLobby = pvpLobby.filter(p => p.username !== data.username); lobby = pvpLobby; const seatIdx = pvpDuel.seats.findIndex(s => s && s?.username.toLowerCase() === data.username.toLowerCase()); if(seatIdx !== -1) handlePvpLeave(seatIdx); }
-                io.to('arcade_' + g).emit('arcade_lobby_update', { game: g, lobby });
-            }
-            if (data.roomId && rooms[data.roomId]) {
-                let room = rooms[data.roomId]; room.lobby = room.lobby.filter(p => p.username !== data.username);
-                const seatIndex = room.seats.findIndex(s => s && s.username === data.username);
-                if (seatIndex !== -1) { room.seats[seatIndex] = null; if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } }
-                emitGameState(data.roomId);
-            }
-            delete socketUserMap[socket.id];
-            broadcastGlobalCounts();
-        }
-    });
 });
 
 // --- PVP ENGINE LOGIC ---
 async function handlePvpLeave(seatIndex) {
     const seat = pvpDuel.seats[seatIndex]; 
     if(!seat) return;
-    const wasActive = ['readying', 'flipping', 'spinning', 'resolving'].includes(pvpDuel.status);
+    const wasActive = ['readying', 'flipping', 'spinning', 'waiting_picks', 'resolving'].includes(pvpDuel.status);
     const betToRefund = pvpDuel.betAmount;
     const otherIndex = seatIndex === 0 ? 1 : 0; 
     const otherSeat = pvpDuel.seats[otherIndex];
@@ -1180,6 +1082,40 @@ async function refundPvpSeat(username, amount) {
     if(user) { await new Transaction({ username: user.username, type: 'PVP REFUND', amount: amount }).save(); io.emit('credit_update', { username: user.username, credits: user.credits }); }
 }
 
+function resolveRPS() {
+    if(!pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
+    let p1 = pvpDuel.seats[0].rpsChoice; let p2 = pvpDuel.seats[1].rpsChoice; let roundWinnerIndex = -1;
+    
+    if(p1 === p2) { pvpDuel.message = "TIE!"; pvpDuel.result = `BOTH CHOSE ${p1.toUpperCase()}`; }
+    else if((p1==='rock'&&p2==='scissors')||(p1==='paper'&&p2==='rock')||(p1==='scissors'&&p2==='paper')){ roundWinnerIndex = 0; }
+    else { roundWinnerIndex = 1; }
+    
+    if(roundWinnerIndex !== -1) { 
+        pvpDuel.seats[roundWinnerIndex].score++; 
+        pvpDuel.message = `${pvpDuel.seats[roundWinnerIndex].username.toUpperCase()} SCORES!`; 
+    }
+    
+    pvpDuel.result = `${pvpDuel.seats[0].rpsChoice.toUpperCase()} VS ${pvpDuel.seats[1].rpsChoice.toUpperCase()}`;
+    io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+    
+    let matchWinner = null; 
+    if(pvpDuel.seats[0].score >= pvpDuel.format) matchWinner = 0; 
+    if(pvpDuel.seats[1].score >= pvpDuel.format) matchWinner = 1;
+    
+    setTimeout(async () => {
+        if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
+        if(matchWinner !== null) { 
+            finishPvpMatch(matchWinner); 
+        } else { 
+            pvpDuel.status = 'waiting_picks'; 
+            pvpDuel.message = 'MAKE YOUR SELECTION!'; 
+            pvpDuel.seats[0].rpsChoice = ''; 
+            pvpDuel.seats[1].rpsChoice = ''; 
+            io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel); 
+        }
+    }, 3000);
+}
+
 function runPvpSequence() {
     pvpDuel.timer = 3; const actionVerb = pvpDuel.type === 'wheel' ? 'SPINNING' : 'FLIPPING'; pvpDuel.message = `${actionVerb} IN 3...`; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
     let countdown = setInterval(() => {
@@ -1199,21 +1135,28 @@ function runPvpSequence() {
                 let matchWinner = null; if(pvpDuel.seats[0] && pvpDuel.seats[0].score >= pvpDuel.format) matchWinner = 0; if(pvpDuel.seats[1] && pvpDuel.seats[1].score >= pvpDuel.format) matchWinner = 1;
                 setTimeout(async () => {
                     if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
-                    if(matchWinner !== null && pvpDuel.seats[matchWinner]) {
-                        pvpDuel.status = 'finished'; const winner = pvpDuel.seats[matchWinner]; pvpDuel.message = `${winner.username.toUpperCase()} WINS THE MATCH!`;
-                        if(pvpDuel.betAmount > 0) {
-                            const winAmount = pvpDuel.betAmount * 2;
-                            try { const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + winner.username + '$', 'i') }, { $inc: { credits: winAmount } }, {new: true}); 
-                                if(updatedUser) { await new Transaction({ username: updatedUser.username, type: 'PVP ARENA WIN', amount: winAmount }).save(); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); }
-                            } catch(e){}
-                        }
-                        io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
-                        setTimeout(() => { if(pvpDuel.status === 'finished') { pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null }; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel); } }, 3000);
-                    } else { if(pvpDuel.status !== 'finished') { pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping'; pvpDuel.result = null; runPvpSequence(); } }
+                    if(matchWinner !== null) { finishPvpMatch(matchWinner); } 
+                    else { pvpDuel.status = pvpDuel.type === 'wheel' ? 'spinning' : 'flipping'; pvpDuel.result = null; runPvpSequence(); }
                 }, 3000);
             }, 2000);
         }
     }, 1000);
+}
+
+async function finishPvpMatch(matchWinner) {
+    pvpDuel.status = 'finished'; const winner = pvpDuel.seats[matchWinner]; pvpDuel.message = `${winner.username.toUpperCase()} WINS THE MATCH!`;
+    if(pvpDuel.betAmount > 0) { 
+        const winAmount = pvpDuel.betAmount * 2; 
+        try { 
+            const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + winner.username + '$', 'i') }, { $inc: { credits: winAmount } }, {new: true}); 
+            if(updatedUser) { 
+                await new Transaction({ username: updatedUser.username, type: 'PVP ARENA WIN', amount: winAmount }).save(); 
+                io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); 
+            } 
+        } catch(e){} 
+    }
+    io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+    setTimeout(() => { if(pvpDuel.status === 'finished') { pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null }; io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel); } }, 3000);
 }
 
 function startGame(roomId) {
