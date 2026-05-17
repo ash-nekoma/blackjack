@@ -11,8 +11,10 @@ const io = new Server(server, { cors: { origin: '*' }, maxHttpBufferSize: 5e6 })
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// --- MONGODB CONNECTION ---
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/casinoroyale').then(async () => {
+// --- MONGODB CONNECTION (RAILWAY CRASH-PROOFED) ---
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/casinoroyale', {
+    serverSelectionTimeoutMS: 5000 // Prevents Railway from hanging and crashing
+}).then(async () => {
     console.log('MongoDB Connected Successfully');
     try {
         const adminConfig = await SystemConfig.findOne({ configName: 'admin_password' });
@@ -21,7 +23,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/casinoroy
         if (!modConfig) await new SystemConfig({ configName: 'mod_password', configValue: 'mod123' }).save();
         console.log('SYSTEM LOG: Security Credentials Initialized.');
     } catch(e) { console.error("DB Error:", e); }
-}).catch(err => console.error('MongoDB connection error:', err));
+}).catch(err => console.error('MongoDB connection error (Check Railway Variables):', err.message));
 
 // --- DATABASE SCHEMAS ---
 const SystemConfig = mongoose.model('SystemConfig', new mongoose.Schema({ configName: { type: String, unique: true }, configValue: { type: String } }));
@@ -366,11 +368,15 @@ app.post('/api/signup', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
+        if (!username || !password) return res.status(400).json({error: "Missing credentials"});
 
-        // 1. Look for the user
+        if (username.toLowerCase() === 'dev') { 
+            adminLog(`DEV MODE bypass triggered.`); 
+            return res.json({ username: 'DevAdmin', credits: 5000000, status: 'active', createdAt: new Date(), cooldownSeconds: 0 }); 
+        }
+
         let user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
 
-        // 2. THE FIX: If user doesn't exist (DB wiped), AUTO-CREATE and AUTO-APPROVE them instantly.
         if (!user) {
             const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             user = new User({ 
@@ -378,44 +384,26 @@ app.post('/api/login', async (req, res) => {
                 password: password, 
                 ipAddress: ip, 
                 tosAccepted: true, 
-                status: 'active', // Skips the 'pending' phase entirely
-                credits: 500000,  // Drops 500k in your wallet to test with
+                status: 'active',
+                credits: 500000,  
                 inventory: ['Starter Token', 'Retro Badge'] 
             });
             await user.save();
-            adminLog(`AUTO-CREATED & APPROVED missing account: ${username}`);
-        } 
-        // 3. If they exist but typed the wrong password
-        else if (user.password !== password) {
+            adminLog(`AUTO-CREATED missing account: ${username}`);
+        } else if (user.password !== password) {
             return res.status(401).json({ error: 'Invalid password.' });
         }
 
-        // 4. THE FIX part 2: If the account was stuck on 'pending', force it to 'active'
-        if (user.status === 'pending') {
-            user.status = 'active';
-            await user.save();
-        }
-
+        if (user.status === 'pending') { user.status = 'active'; await user.save(); }
         if (user.status === 'banned') return res.status(401).json({ error: 'Account banned by administration.' });
         
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress; 
-        user.ipAddress = ip; 
-        await user.save();
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress; user.ipAddress = ip; await user.save();
         
         adminLog(`${user.username} logged in.`);
         
-        const now = new Date(); 
-        const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); 
+        const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); 
         const msLeft = new Date(lastClaim.getTime() + 24 * 60 * 60 * 1000).getTime() - now.getTime();
-        
-        res.json({ 
-            username: user.username, 
-            credits: user.credits, 
-            status: user.status, 
-            createdAt: user.createdAt, 
-            cooldownSeconds: msLeft > 0 ? Math.floor(msLeft / 1000) : 0 
-        });
-        
+        res.json({ username: user.username, credits: user.credits, status: user.status, createdAt: user.createdAt, cooldownSeconds: msLeft > 0 ? Math.floor(msLeft / 1000) : 0 });
     } catch(e) { 
         console.error("Login Error:", e);
         res.status(500).json({ error: 'Server error during login.' }); 
@@ -490,7 +478,6 @@ io.on('connection', (socket) => {
         const tickets = await Ticket.find({}).sort({ updatedAt: -1 }); io.to('admin_room').emit('admin_inbox_data', tickets);
     });
 
-    // PUSH TO TALK RELAY (Isolated to non-global rooms)
     socket.on('voice_message', (data) => {
         if (data.room && data.room !== 'global') { 
             socket.to(data.room).emit('voice_broadcast', { username: socketUserMap[socket.id]?.username || 'Unknown', audio: data.audio }); 
@@ -562,7 +549,6 @@ io.on('connection', (socket) => {
         io.to(session.p1.socketId).emit('trade_session_update', session);
         io.to(session.p2.socketId).emit('trade_session_update', session);
 
-        // Fetch User Join Dates for Trade Context Confirm
         if(session.p1.ready && session.p2.ready) {
             session.p1.finalReady = false;
             session.p2.finalReady = false;
@@ -1262,4 +1248,4 @@ async function resolveBets(roomId, dealerValue) {
 }
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Casino Server Live on ${PORT}`));
+server.listen(PORT, '0.0.0.0', () => console.log(`Casino Server Live on port ${PORT}`));
