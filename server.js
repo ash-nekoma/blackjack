@@ -8,12 +8,21 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' }, maxHttpBufferSize: 5e6 });
 
+// --- MANUAL CORS MIDDLEWARE TO PREVENT BROWSER BLOCKS ---
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    if (req.method === 'OPTIONS') return res.sendStatus(200);
+    next();
+});
+
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// --- MONGODB CONNECTION (RAILWAY CRASH-PROOFED) ---
+// --- MONGODB CONNECTION ---
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/casinoroyale', {
-    serverSelectionTimeoutMS: 5000 // Prevents Railway from hanging and crashing
+    serverSelectionTimeoutMS: 5000 
 }).then(async () => {
     console.log('MongoDB Connected Successfully');
     try {
@@ -358,6 +367,7 @@ function startTurnTimer(roomId) {
 // --- PLAYER APIs ---
 app.post('/api/signup', async (req, res) => { 
     try { 
+        if (mongoose.connection.readyState !== 1) { return res.status(500).json({ error: 'DATABASE DISCONNECTED. Check MONGODB_URI.' }); }
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const existing = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i') }); if(existing) return res.status(400).json({ error: 'Username taken.' });
         await new User({ username: req.body.username, password: req.body.password, ipAddress: ip, tosAccepted: true, status: 'pending', inventory: ['Starter Token', 'Retro Badge'] }).save(); 
@@ -367,6 +377,8 @@ app.post('/api/signup', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
     try {
+        if (mongoose.connection.readyState !== 1) { return res.status(500).json({ error: 'DATABASE DISCONNECTED. Check MONGODB_URI.' }); }
+        
         const { username, password } = req.body;
         if (!username || !password) return res.status(400).json({error: "Missing credentials"});
 
@@ -398,7 +410,6 @@ app.post('/api/login', async (req, res) => {
         if (user.status === 'banned') return res.status(401).json({ error: 'Account banned by administration.' });
         
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress; user.ipAddress = ip; await user.save();
-        
         adminLog(`${user.username} logged in.`);
         
         const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); 
