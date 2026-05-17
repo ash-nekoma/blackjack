@@ -694,12 +694,63 @@
     </div>
 
     <script>
+        const socket = io();
+
+        // System state variables
+        let currentUser = null; 
+        let currentGameState = null; 
+        let currentRoomId = null; 
+        let mySeatIndex = -1;
+        let globalTimerInt = null; 
+        let nextRoundTimerInt = null; 
+        let idleTimerInt = null; 
+        let turnTimerVisualInt = null;
+        let rewardTimerInt = null; 
+        let actionLocked = false; 
+        window.lastBetAmount = 0; 
+        let pendingBankAction = null; 
+        let rewardCooldownSeconds = 0; 
+        let unreadNotifs = 0; 
+        let gameLocks = {}; 
+        let currentOpenTicketId = null; 
+        let currentInboxTab = 'announcement'; 
+        let allMyTickets = [];
+        let myDiceBets = { under: 0, seven: 0, over: 0 }; 
+        let myDerbyBets = [0, 0, 0, 0, 0, 0]; 
+        let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
+        let myCupsBets = [0, 0, 0]; 
+        let myBaccaratBets = { player: 0, banker: 0, tie: 0 }; 
+        let currentCupsBetChoice = -1; 
+        let currentPvpDuelState = null; 
+        let myDuelSeatIndex = -1;
+        let activeTradeSessionId = null; 
+        let myTradeItems = [null, null, null, null, null, null]; 
+        let isTradeReady = false; 
+        let activeTradeSlot = -1;
+        
+        let currentChipValue = 1000;
+        let lastBetAction = null;
+        let currentChatTab = 'room'; 
+        let autoMicActive = false; 
+        let micPressTime = 0;
+
+        let lastPickedBoxIndex = -1;
+        let isBetting = false;
+        let betThrottleTimeout = null;
+        let confirmActionCallback = null;
+
+        const audioNodes = { bgm: document.getElementById('sfx-bgm'), deal: document.getElementById('sfx-deal'), bet: document.getElementById('sfx-bet'), win: document.getElementById('sfx-win'), lose: document.getElementById('sfx-lose') };
+        audioNodes.bgm.volume = 0;
+
         function formatNumber(num) { return num ? num.toLocaleString() : '0'; }
         function formatInput(el) { let val = el.value.replace(/\D/g, ''); el.value = val ? parseInt(val).toLocaleString() : ''; }
 
-        let currentChipValue = 1000;
-        let lastBetAction = null;
-        
+        function applyThrottle() { 
+            isBetting = true; 
+            clearTimeout(betThrottleTimeout); 
+            betThrottleTimeout = setTimeout(() => { isBetting = false; }, 250); 
+        }
+
         function selectChip(val) {
             currentChipValue = val;
             document.querySelectorAll('.casino-chip').forEach(c => c.classList.remove('selected'));
@@ -718,8 +769,6 @@
         }
 
         window.actUndoBet = function(game) { socket.emit('undo_bet', { username: currentUser.username, game: game }); }
-
-        let activeTradeSessionId = null; let myTradeItems = [null, null, null, null, null, null]; let isTradeReady = false; let activeTradeSlot = -1;
 
         function openTradeHub() { if(!currentUser) return showToast("Log in first!"); socket.emit('req_trade_board'); showModal('trade-hub-modal'); switchTradeTab('live'); }
         function switchTradeTab(tab) { document.getElementById('tab-trade-live').classList.remove('active'); document.getElementById('tab-trade-inv').classList.remove('active'); document.getElementById(`tab-${tab === 'live' ? 'trade-live' : 'trade-inv'}`).classList.add('active'); if(tab === 'live') { document.getElementById('trade-live-view').classList.remove('hidden'); document.getElementById('trade-inv-view').classList.add('hidden'); socket.emit('req_trade_board'); } else { document.getElementById('trade-live-view').classList.add('hidden'); document.getElementById('trade-inv-view').classList.remove('hidden'); renderTradeInventory(); } }
@@ -745,9 +794,7 @@
             const isHost = data.p1.username === currentUser.username; const me = isHost ? data.p1 : data.p2; const partner = isHost ? data.p2 : data.p1;
             let giveHtml = ''; for(let i=0; i<6; i++) { if(me.items[i]) giveHtml += `<div class="mini-confirm-slot occ" title="${me.items[i]}">📦</div>`; else giveHtml += `<div class="mini-confirm-slot"><span style="color:#ef4444;">❌</span></div>`; } document.getElementById('confirm-give-items').innerHTML = giveHtml; document.getElementById('confirm-give-coins').innerText = formatNumber(me.coins);
             let getHtml = ''; for(let i=0; i<6; i++) { if(partner.items[i]) getHtml += `<div class="mini-confirm-slot occ" title="${partner.items[i]}">📦</div>`; else getHtml += `<div class="mini-confirm-slot"><span style="color:#ef4444;">❌</span></div>`; } document.getElementById('confirm-get-items').innerHTML = getHtml; document.getElementById('confirm-get-coins').innerText = formatNumber(partner.coins);
-            
             document.getElementById('confirm-partner-info').innerHTML = `USER: ${partner.username.toUpperCase()}<br>JOINED: ${new Date(partner.joined).toLocaleDateString()}`;
-            
             const existingOverlay = document.getElementById('trade-confirm-modal').querySelector('.payout-overlay'); if(existingOverlay) existingOverlay.remove(); showModal('trade-confirm-modal');
         });
 
@@ -755,7 +802,6 @@
         function actCancelFinalTrade() { socket.emit('cancel_final_trade', { sessionId: activeTradeSessionId }); hideModal('trade-confirm-modal'); }
         function actLeaveTrade() { if(!activeTradeSessionId) return; socket.emit('leave_trade', { sessionId: activeTradeSessionId, username: currentUser.username }); }
 
-        let currentChatTab = 'room'; let autoMicActive = false; let micPressTime = 0;
         function toggleCommPanel(view) { const panel = document.getElementById('comm-panel'); const notif = document.getElementById('notif-chat'); if(panel.classList.contains('hidden')) { panel.classList.remove('hidden'); if(notif) notif.classList.add('hidden'); document.getElementById('master-chat-input').focus(); } else { panel.classList.add('hidden'); } }
         function switchChatTab(tab) { currentChatTab = tab; document.getElementById('tab-btn-room').classList.remove('active'); document.getElementById('tab-btn-global').classList.remove('active'); document.getElementById(`tab-btn-${tab}`).classList.add('active'); document.getElementById('room-chat-box').classList.add('hidden'); document.getElementById('global-chat-box').classList.add('hidden'); document.getElementById(`${tab}-chat-box`).classList.remove('hidden'); const box = document.getElementById(`${tab}-chat-box`); box.scrollTop = box.scrollHeight; }
 
@@ -764,24 +810,13 @@
 
         function showToast(msg, type = 'error') { const container = document.getElementById('toast-container'); container.innerHTML = ''; const toast = document.createElement('div'); toast.className = `toast toast-${type} pixel-text`; toast.innerText = msg; container.appendChild(toast); setTimeout(() => { toast.classList.add('fade-out'); setTimeout(() => toast.remove(), 300); }, 3000); }
 
-        let confirmActionCallback = null; function showConfirm(msg, callback) { document.getElementById('confirm-action-msg').innerText = msg; confirmActionCallback = callback; showModal('logout-modal'); }
+        function showConfirm(msg, callback) { document.getElementById('confirm-action-msg').innerText = msg; confirmActionCallback = callback; showModal('logout-modal'); }
         document.getElementById('btn-confirm-yes').addEventListener('click', () => { if(confirmActionCallback) confirmActionCallback(); hideModal('logout-modal'); });
         function promptLogout() { showConfirm("Are you sure you want to log out?", () => logout()); }
 
-        const socket = io();
-        let currentUser = null; let currentGameState = null; let currentRoomId = null; let mySeatIndex = -1;
-        let globalTimerInt = null; let nextRoundTimerInt = null; let idleTimerInt = null; let turnTimerVisualInt = null;
-        let rewardTimerInt = null; let actionLocked = false; window.lastBetAmount = 0; let pendingBankAction = null; 
-        let rewardCooldownSeconds = 0; let unreadNotifs = 0; let gameLocks = {}; let currentOpenTicketId = null; let currentInboxTab = 'announcement'; let allMyTickets = [];
-        let myDiceBets = { under: 0, seven: 0, over: 0 }; let myDerbyBets = [0, 0, 0, 0, 0, 0]; let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
-        let myCupsBets = [0, 0, 0]; let myBaccaratBets = { player: 0, banker: 0, tie: 0 }; let currentCupsBetChoice = -1; let currentPvpDuelState = null; let myDuelSeatIndex = -1;
-        let isBetting = false; let betThrottleTimeout = null;
-
-        const audioNodes = { bgm: document.getElementById('sfx-bgm'), deal: document.getElementById('sfx-deal'), bet: document.getElementById('sfx-bet'), win: document.getElementById('sfx-win'), lose: document.getElementById('sfx-lose') };
-        audioNodes.bgm.volume = 0; function updateVol(type, val) { if (type === 'bgm') { audioNodes.bgm.volume = val; if(val > 0 && audioNodes.bgm.paused) audioNodes.bgm.play().catch(()=>{}); } else { ['deal', 'bet', 'win', 'lose'].forEach(id => { if(audioNodes[id]) audioNodes[id].volume = val; }); } }
+        function updateVol(type, val) { if (type === 'bgm') { audioNodes.bgm.volume = val; if(val > 0 && audioNodes.bgm.paused) audioNodes.bgm.play().catch(()=>{}); } else { ['deal', 'bet', 'win', 'lose'].forEach(id => { if(audioNodes[id]) audioNodes[id].volume = val; }); } }
         function playSfx(id) { if(audioNodes[id] && audioNodes[id].volume > 0) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } }
 
-        let mediaRecorder = null; let audioChunks = [];
         window.handleMicDown = function() { if(!currentRoomId) return; micPressTime = Date.now(); if(!autoMicActive && mediaRecorder && mediaRecorder.state === 'inactive') { audioChunks = []; mediaRecorder.start(); document.getElementById('master-mic-toggle').style.background = 'var(--success)'; } };
         window.handleMicUp = function() { if(!currentRoomId) return; let heldTime = Date.now() - micPressTime; if(heldTime < 250) { autoMicActive = !autoMicActive; if(autoMicActive) { document.getElementById('master-mic-toggle').style.background = 'var(--danger)'; showToast("Automatic Mic ENABLED", "warning"); if(mediaRecorder && mediaRecorder.state === 'inactive') mediaRecorder.start(1500); } else { document.getElementById('master-mic-toggle').style.background = '#555'; showToast("Automatic Mic DISABLED", "warning"); if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop(); } } else { if(!autoMicActive) { document.getElementById('master-mic-toggle').style.background = '#555'; if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop(); } } };
         
@@ -919,6 +954,8 @@
             try {
                 const u = document.getElementById('login-user').value.trim(); 
                 const p = document.getElementById('login-pass').value.trim();
+                if(!u || !p) return showToast("Enter credentials."); 
+
                 const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
                 const data = await res.json();
                 
