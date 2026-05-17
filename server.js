@@ -549,6 +549,7 @@ io.on('connection', (socket) => {
         io.to(session.p1.socketId).emit('trade_session_update', session);
         io.to(session.p2.socketId).emit('trade_session_update', session);
 
+        // Fetch User Join Dates for Trade Context Confirm
         if(session.p1.ready && session.p2.ready) {
             session.p1.finalReady = false;
             session.p2.finalReady = false;
