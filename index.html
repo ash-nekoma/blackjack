@@ -892,27 +892,58 @@
 
         async function signup() {
             try {
-                const u = document.getElementById('signup-user').value.trim(); const p = document.getElementById('signup-pass').value.trim();
-                if(!u || !p) return showToast("Enter credentials."); if(!document.getElementById('tos-checkbox').checked) return showToast("Must accept terms.");
+                const u = document.getElementById('signup-user').value.trim(); 
+                const p = document.getElementById('signup-pass').value.trim();
+                if(!u || !p) return showToast("Enter credentials."); 
+                if(!document.getElementById('tos-checkbox').checked) return showToast("Must accept terms.");
+                
                 const res = await fetch('/api/signup', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
-                const data = await res.json(); if(res.ok) { showToast("REQUEST SENT! PENDING APPROVAL.", "success"); setTimeout(() => toggleAuth('login'), 3500); } else { showToast(data.error); }
-            } catch(e) { showToast("Network Error."); }
+                const data = await res.json(); 
+                if(res.ok) { 
+                    showToast("REQUEST SENT! PENDING APPROVAL.", "success"); 
+                    setTimeout(() => toggleAuth('login'), 3500); 
+                } else { 
+                    showToast(data.error); 
+                }
+            } catch(e) { 
+                console.error(e);
+                if(window.location.protocol === 'file:') {
+                    showToast("ERROR: Do not double-click the HTML file! You must open http://localhost:3000 in your browser.");
+                } else {
+                    showToast("SERVER OFFLINE: Please run 'node server.js' in your terminal.");
+                }
+            }
         }
 
         async function login() {
             try {
-                const u = document.getElementById('login-user').value.trim(); const p = document.getElementById('login-pass').value.trim();
+                const u = document.getElementById('login-user').value.trim(); 
+                const p = document.getElementById('login-pass').value.trim();
                 const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
                 const data = await res.json();
+                
                 if(res.ok) {
                     currentUser = data; 
                     try { localStorage.setItem('cr_user', u); localStorage.setItem('cr_pass', p); } catch(e) {}
-                    document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
-                    updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; 
-                    const userPreview = document.getElementById('profile-username-preview'); if(userPreview) userPreview.innerText = currentUser.username;
-                    playSfx('deal'); socket.emit('req_inbox', { username: currentUser.username }); 
-                } else showToast(data.error);
-            } catch(e) { console.error(e); showToast("Client Error: Could not connect to server."); }
+                    document.getElementById('auth-view').classList.add('hidden'); 
+                    document.getElementById('main-menu-view').classList.remove('hidden');
+                    updateAllCredits(); 
+                    rewardCooldownSeconds = data.cooldownSeconds; 
+                    const userPreview = document.getElementById('profile-username-preview'); 
+                    if(userPreview) userPreview.innerText = currentUser.username;
+                    playSfx('deal'); 
+                    socket.emit('req_inbox', { username: currentUser.username }); 
+                } else {
+                    showToast(data.error);
+                }
+            } catch(e) { 
+                console.error(e);
+                if(window.location.protocol === 'file:') {
+                    showToast("ERROR: Do not double-click the HTML file! You must open http://localhost:3000 in your browser.");
+                } else {
+                    showToast("SERVER OFFLINE: Please run 'node server.js' in your terminal.");
+                }
+            }
         }
 
         window.onload = () => { try { const savedU = localStorage.getItem('cr_user'); const savedP = localStorage.getItem('cr_pass'); if(savedU && savedP) { document.getElementById('login-user').value = savedU; document.getElementById('login-pass').value = savedP; login(); } } catch(e){} };
