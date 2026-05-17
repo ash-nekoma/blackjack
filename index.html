@@ -890,13 +890,10 @@
         function togglePlayerList(id) { const list = document.getElementById(id); if(list) { document.querySelectorAll('.player-dropdown-list').forEach(l => { if(l.id !== id) l.classList.add('hidden'); }); list.classList.toggle('hidden'); } }
         function toggleAuth(panel) { document.getElementById('panel-login').classList.toggle('hidden', panel !== 'login'); document.getElementById('panel-signup').classList.toggle('hidden', panel !== 'signup'); }
 
-        async function signup() {
+       async function signup() {
             try {
-                const u = document.getElementById('signup-user').value.trim(); 
-                const p = document.getElementById('signup-pass').value.trim();
-                if(!u || !p) return showToast("Enter credentials."); 
-                if(!document.getElementById('tos-checkbox').checked) return showToast("Must accept terms.");
-                
+                const u = document.getElementById('signup-user').value.trim(); const p = document.getElementById('signup-pass').value.trim();
+                if(!u || !p) return showToast("Enter credentials."); if(!document.getElementById('tos-checkbox').checked) return showToast("Must accept terms.");
                 const res = await fetch('/api/signup', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
                 const data = await res.json(); 
                 if(res.ok) { 
@@ -906,43 +903,29 @@
                     showToast(data.error); 
                 }
             } catch(e) { 
-                console.error(e);
-                if(window.location.protocol === 'file:') {
-                    showToast("ERROR: Do not double-click the HTML file! You must open http://localhost:3000 in your browser.");
-                } else {
-                    showToast("SERVER OFFLINE: Please run 'node server.js' in your terminal.");
-                }
+                console.error("Signup Fetch Error:", e); 
+                showToast("NETWORK ERROR: Backend API unreachable. Check Railway Deploy Logs."); 
             }
         }
 
         async function login() {
             try {
-                const u = document.getElementById('login-user').value.trim(); 
-                const p = document.getElementById('login-pass').value.trim();
+                const u = document.getElementById('login-user').value.trim(); const p = document.getElementById('login-pass').value.trim();
                 const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
                 const data = await res.json();
-                
                 if(res.ok) {
                     currentUser = data; 
                     try { localStorage.setItem('cr_user', u); localStorage.setItem('cr_pass', p); } catch(e) {}
-                    document.getElementById('auth-view').classList.add('hidden'); 
-                    document.getElementById('main-menu-view').classList.remove('hidden');
-                    updateAllCredits(); 
-                    rewardCooldownSeconds = data.cooldownSeconds; 
-                    const userPreview = document.getElementById('profile-username-preview'); 
-                    if(userPreview) userPreview.innerText = currentUser.username;
-                    playSfx('deal'); 
-                    socket.emit('req_inbox', { username: currentUser.username }); 
-                } else {
-                    showToast(data.error);
+                    document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
+                    updateAllCredits(); rewardCooldownSeconds = data.cooldownSeconds; 
+                    const userPreview = document.getElementById('profile-username-preview'); if(userPreview) userPreview.innerText = currentUser.username;
+                    playSfx('deal'); socket.emit('req_inbox', { username: currentUser.username }); 
+                } else { 
+                    showToast(data.error); 
                 }
             } catch(e) { 
-                console.error(e);
-                if(window.location.protocol === 'file:') {
-                    showToast("ERROR: Do not double-click the HTML file! You must open http://localhost:3000 in your browser.");
-                } else {
-                    showToast("SERVER OFFLINE: Please run 'node server.js' in your terminal.");
-                }
+                console.error("Login Fetch Error:", e); 
+                showToast("NETWORK ERROR: Backend API unreachable."); 
             }
         }
 
