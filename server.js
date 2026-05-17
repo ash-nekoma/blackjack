@@ -365,17 +365,61 @@ app.post('/api/signup', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
     try {
-        if (req.body.username.toLowerCase() === 'dev') { adminLog(`DEV MODE bypass triggered.`); return res.json({ username: 'DevAdmin', credits: 5000000, status: 'active', createdAt: new Date(), cooldownSeconds: 0 }); }
-        const user = await User.findOne({ username: new RegExp('^' + req.body.username + '$', 'i') });
-        if (!user) return res.status(401).json({ error: 'Invalid credentials.' });
-        if (user.status === 'pending') return res.status(401).json({ error: 'Account pending Admin approval.' });
+        const { username, password } = req.body;
+
+        // 1. Look for the user
+        let user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
+
+        // 2. THE FIX: If user doesn't exist (DB wiped), AUTO-CREATE and AUTO-APPROVE them instantly.
+        if (!user) {
+            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            user = new User({ 
+                username: username, 
+                password: password, 
+                ipAddress: ip, 
+                tosAccepted: true, 
+                status: 'active', // Skips the 'pending' phase entirely
+                credits: 500000,  // Drops 500k in your wallet to test with
+                inventory: ['Starter Token', 'Retro Badge'] 
+            });
+            await user.save();
+            adminLog(`AUTO-CREATED & APPROVED missing account: ${username}`);
+        } 
+        // 3. If they exist but typed the wrong password
+        else if (user.password !== password) {
+            return res.status(401).json({ error: 'Invalid password.' });
+        }
+
+        // 4. THE FIX part 2: If the account was stuck on 'pending', force it to 'active'
+        if (user.status === 'pending') {
+            user.status = 'active';
+            await user.save();
+        }
+
         if (user.status === 'banned') return res.status(401).json({ error: 'Account banned by administration.' });
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress; user.ipAddress = ip; await user.save();
+        
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress; 
+        user.ipAddress = ip; 
+        await user.save();
+        
         adminLog(`${user.username} logged in.`);
-        const now = new Date(); const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); 
+        
+        const now = new Date(); 
+        const lastClaim = user.lastRewardClaim ? new Date(user.lastRewardClaim) : new Date(0); 
         const msLeft = new Date(lastClaim.getTime() + 24 * 60 * 60 * 1000).getTime() - now.getTime();
-        res.json({ username: user.username, credits: user.credits, status: user.status, createdAt: user.createdAt, cooldownSeconds: msLeft > 0 ? Math.floor(msLeft / 1000) : 0 });
-    } catch(e) { res.status(500).json({ error: 'Server error.' }); }
+        
+        res.json({ 
+            username: user.username, 
+            credits: user.credits, 
+            status: user.status, 
+            createdAt: user.createdAt, 
+            cooldownSeconds: msLeft > 0 ? Math.floor(msLeft / 1000) : 0 
+        });
+        
+    } catch(e) { 
+        console.error("Login Error:", e);
+        res.status(500).json({ error: 'Server error during login.' }); 
+    }
 });
 
 app.post('/api/bank/request', async (req, res) => {
