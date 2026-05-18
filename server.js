@@ -10,7 +10,6 @@ const io = new Server(server, { cors: { origin: '*' }, maxHttpBufferSize: 5e6 })
 
 // --- LOGGING & CORS MIDDLEWARE ---
 app.use((req, res, next) => {
-    console.log(`[HTTP] ${req.method} ${req.url}`);
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -78,7 +77,6 @@ function createRoom(numSeats) {
     return { seats: Array(numSeats).fill(null), dealerCards: [], deck: [], status: 'waiting', activeSeatIndex: -1, betEndTime: 0, nextRoundTime: 0, turnEndTime: 0, lobby: [], betTimerInterval: null, nextRoundInterval: null, turnTimerInterval: null, dealerInterval: null };
 }
 
-// HELPER FOR BLACKJACK
 function getGameTitle(roomId) {
     if (roomId === '5seat') return 'CLASSIC BLACKJACK';
     if (roomId === '3seat') return 'VIP BLACKJACK';
@@ -95,6 +93,7 @@ const colorGame = { status: 'betting', betEndTime: Date.now() + 15000, dice: ['r
 const cupsGame = { status: 'shuffling', stateEndTime: Date.now() + 3000, betEndTime: 0, winningCup: 0, bets: [], history: [] };
 const crashGame = { status: 'betting', betEndTime: Date.now() + 10000, multiplier: 1.00, crashPoint: 1.00, bets: [], history: [] };
 const baccaratGame = { status: 'betting', betEndTime: Date.now() + 15000, pCards: [], bCards: [], pVal: 0, bVal: 0, winner: '', bets: [], history: [] };
+const dvtGame = { status: 'betting', betEndTime: Date.now() + 12000, dragonCard: null, tigerCard: null, winner: '', bets: [], history: [] };
 
 let pvpDuel = { seats: [null, null], status: 'waiting', type: 'coin', format: 1, betAmount: 0, slices: 4, hostIndex: -1, result: null, winSliceIndex: 0, message: 'WAITING FOR PLAYERS', timerInterval: null };
 
@@ -103,8 +102,8 @@ let liveTradeOffers = [];
 let activeTradeSessions = {};
 
 const socketUserMap = {}; 
-let diceLobby = []; let derbyLobby = []; let colorLobby = []; let pvpLobby = []; let cupsLobby = []; let crashLobby = []; let baccaratLobby = [];
-let strictHouseEdge = false; let gameLocks = { blackjack: false, dice: false, derby: false, color: false, cups: false, crash: false, baccarat: false };
+let diceLobby = []; let derbyLobby = []; let colorLobby = []; let pvpLobby = []; let cupsLobby = []; let crashLobby = []; let baccaratLobby = []; let dvtLobby = []; let slotsLobby = [];
+let strictHouseEdge = false; let gameLocks = { blackjack: false, dice: false, derby: false, color: false, cups: false, crash: false, baccarat: false, dvt: false, slots: false };
 
 function getPHTTime() { try { return new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' }); } catch(e) { return new Date().toLocaleTimeString(); } }
 function adminLog(action) { io.to('admin_room').emit('admin_log', `▶ [${getPHTTime()}] ${action}`); }
@@ -117,23 +116,35 @@ async function sendSystemMail(username, subject, text) {
 function broadcastGlobalCounts() {
     io.emit('global_lobby_counts', {
         '5seat': rooms['5seat'].lobby.length, '3seat': rooms['3seat'].lobby.length, 'derby': derbyLobby.length,
-        'cups': cupsLobby.length, 'dice': diceLobby.length, 'color': colorLobby.length, 'pvp': pvpLobby.length, 'crash': crashLobby.length, 'baccarat': baccaratLobby.length
+        'cups': cupsLobby.length, 'dice': diceLobby.length, 'color': colorLobby.length, 'pvp': pvpLobby.length, 
+        'crash': crashLobby.length, 'baccarat': baccaratLobby.length, 'dvt': dvtLobby.length, 'slots': slotsLobby.length
     });
 }
 
 function getNewDeck() { let deck = []; for (let i = 0; i < 6; i++) { for (let s of suits) { for (let v of values) { deck.push({ suit: s, value: v, weight: ['J','Q','K'].includes(v) ? 10 : (v==='A'?11:parseInt(v)) }); } } } return deck.sort(() => Math.random() - 0.5); }
 const getBaccaratWeight = c => c.value === 'A' ? 1 : (['J','Q','K','10'].includes(c.value) ? 0 : parseInt(c.value));
 
+// Special DVT Weighting (A=1, K=13)
+const getDvtWeight = c => {
+    if(c.value === 'A') return 1;
+    if(c.value === 'J') return 11;
+    if(c.value === 'Q') return 12;
+    if(c.value === 'K') return 13;
+    return parseInt(c.value);
+};
+
 // --- GAME & MARKET LOOPS ---
 setInterval(() => {
     const now = Date.now();
     
+    // Auto-Kick Blackjack Idle Players
     Object.keys(rooms).forEach(roomId => {
         let room = rooms[roomId]; let changed = false;
         room.seats.forEach((seat, i) => { if (seat && seat.kickAt && now >= seat.kickAt) { room.seats[i] = null; changed = true; } });
         if (changed) { if (room.seats.every(s => s === null)) { room.status = 'waiting'; clearInterval(room.betTimerInterval); } emitGameState(roomId); }
     });
 
+    // Auction Cleanup
     for (let i = activeAuctions.length - 1; i >= 0; i--) {
         let auc = activeAuctions[i];
         if (now >= auc.endTime) {
@@ -152,22 +163,67 @@ setInterval(() => {
     }
 }, 1000);
 
+// CORE GAME LOOPS
 setInterval(() => {
     const now = Date.now();
     
-    // BACCARAT
+    // --- DRAGON VS TIGER ---
+    if (dvtGame.status === 'betting' && now >= dvtGame.betEndTime) {
+        dvtGame.status = 'drawing'; 
+        io.to('arcade_dvt').emit('dvt_state_update', { status: dvtGame.status, timeLeft: 0 });
+        
+        setTimeout(async () => {
+            let deck = getNewDeck(); 
+            dvtGame.dragonCard = deck.pop(); 
+            dvtGame.tigerCard = deck.pop();
+            
+            let dVal = getDvtWeight(dvtGame.dragonCard);
+            let tVal = getDvtWeight(dvtGame.tigerCard);
+            
+            dvtGame.status = 'resolving'; 
+            dvtGame.winner = dVal > tVal ? 'dragon' : (tVal > dVal ? 'tiger' : 'tie');
+            dvtGame.history.unshift(dvtGame.winner); if(dvtGame.history.length > 20) dvtGame.history.pop();
+            
+            let winners = []; let roundRecord = new GameRound({ game: 'dvt', roundId: Math.random().toString(36).substring(2, 8).toUpperCase(), result: dvtGame.winner, players: [] });
+            for (let b of dvtGame.bets) {
+                let wonAmount = 0; 
+                if (b.choice === dvtGame.winner) { 
+                    if(b.choice === 'dragon' || b.choice === 'tiger') wonAmount = b.amount * 2; 
+                    else if (b.choice === 'tie') wonAmount = b.amount * 9; // 8:1 payout returns 9x total
+                } else if (dvtGame.winner === 'tie' && (b.choice === 'dragon' || b.choice === 'tiger')) {
+                    wonAmount = b.amount / 2; // Half bet returned on tie
+                }
+                
+                roundRecord.players.push({ username: b.username, choice: b.choice, bet: b.amount, win: wonAmount });
+                if (wonAmount > 0) {
+                    try { const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + b.username + '$', 'i') }, { $inc: { credits: wonAmount } }, {new: true}); 
+                        if(updatedUser) { await new Transaction({ username: updatedUser.username, type: 'DVT WIN', amount: wonAmount }).save(); winners.push({ username: updatedUser.username, choice: b.choice, amount: wonAmount }); io.emit('credit_update', { username: updatedUser.username, credits: updatedUser.credits }); }
+                    } catch(e) {}
+                }
+            }
+            await roundRecord.save();
+            io.to('arcade_dvt').emit('dvt_state_update', { status: dvtGame.status, dragonCard: dvtGame.dragonCard, tigerCard: dvtGame.tigerCard, winner: dvtGame.winner, winners, bets: dvtGame.bets, history: dvtGame.history });
+            
+            // Allow 6 seconds for the frontend to show the staggered reveal and win animation
+            setTimeout(() => { dvtGame.bets = []; dvtGame.status = 'betting'; dvtGame.betEndTime = Date.now() + 12000; io.to('arcade_dvt').emit('dvt_state_update', { status: dvtGame.status, betEndTime: dvtGame.betEndTime, history: dvtGame.history }); }, 6000);
+        }, 1000); 
+    }
+
+    // --- BACCARAT ---
     if (baccaratGame.status === 'betting' && now >= baccaratGame.betEndTime) {
         baccaratGame.status = 'drawing'; io.to('arcade_baccarat').emit('baccarat_state_update', { status: baccaratGame.status, timeLeft: 0 });
         setTimeout(async () => {
             let deck = getNewDeck(); baccaratGame.pCards = [deck.pop(), deck.pop()]; baccaratGame.bCards = [deck.pop(), deck.pop()];
             baccaratGame.pVal = (getBaccaratWeight(baccaratGame.pCards[0]) + getBaccaratWeight(baccaratGame.pCards[1])) % 10; baccaratGame.bVal = (getBaccaratWeight(baccaratGame.bCards[0]) + getBaccaratWeight(baccaratGame.bCards[1])) % 10;
             
+            let thirdCardTarget = null;
             if (baccaratGame.pVal < 8 && baccaratGame.bVal < 8) {
                 if (baccaratGame.pVal <= 5) {
                     let p3 = deck.pop(); baccaratGame.pCards.push(p3); baccaratGame.pVal = (baccaratGame.pVal + getBaccaratWeight(p3)) % 10; let p3v = getBaccaratWeight(p3); let bDraw = false;
+                    thirdCardTarget = 'player';
                     if (baccaratGame.bVal <= 2) bDraw = true; else if (baccaratGame.bVal === 3 && p3v !== 8) bDraw = true; else if (baccaratGame.bVal === 4 && ![0,1,8,9].includes(p3v)) bDraw = true; else if (baccaratGame.bVal === 5 && [4,5,6,7].includes(p3v)) bDraw = true; else if (baccaratGame.bVal === 6 && [6,7].includes(p3v)) bDraw = true;
-                    if(bDraw) { let b3 = deck.pop(); baccaratGame.bCards.push(b3); baccaratGame.bVal = (baccaratGame.bVal + getBaccaratWeight(b3)) % 10; }
-                } else if (baccaratGame.bVal <= 5) { let b3 = deck.pop(); baccaratGame.bCards.push(b3); baccaratGame.bVal = (baccaratGame.bVal + getBaccaratWeight(b3)) % 10; }
+                    if(bDraw) { let b3 = deck.pop(); baccaratGame.bCards.push(b3); baccaratGame.bVal = (baccaratGame.bVal + getBaccaratWeight(b3)) % 10; thirdCardTarget = 'both'; }
+                } else if (baccaratGame.bVal <= 5) { let b3 = deck.pop(); baccaratGame.bCards.push(b3); baccaratGame.bVal = (baccaratGame.bVal + getBaccaratWeight(b3)) % 10; thirdCardTarget = 'banker'; }
             }
 
             baccaratGame.status = 'resolving'; baccaratGame.winner = baccaratGame.pVal > baccaratGame.bVal ? 'player' : (baccaratGame.bVal > baccaratGame.pVal ? 'banker' : 'tie');
@@ -187,12 +243,16 @@ setInterval(() => {
                 }
             }
             await roundRecord.save();
-            io.to('arcade_baccarat').emit('baccarat_state_update', { status: baccaratGame.status, pCards: baccaratGame.pCards, bCards: baccaratGame.bCards, pVal: baccaratGame.pVal, bVal: baccaratGame.bVal, winner: baccaratGame.winner, winners, bets: baccaratGame.bets, history: baccaratGame.history });
-            setTimeout(() => { baccaratGame.bets = []; baccaratGame.status = 'betting'; baccaratGame.betEndTime = Date.now() + 15000; io.to('arcade_baccarat').emit('baccarat_state_update', { status: baccaratGame.status, betEndTime: baccaratGame.betEndTime, history: baccaratGame.history }); }, 6000);
+            
+            // We tell the frontend if a 3rd card was drawn so it knows to add an extra animation pause
+            let timeToResolve = thirdCardTarget ? 9000 : 7000;
+            io.to('arcade_baccarat').emit('baccarat_state_update', { status: baccaratGame.status, pCards: baccaratGame.pCards, bCards: baccaratGame.bCards, pVal: baccaratGame.pVal, bVal: baccaratGame.bVal, winner: baccaratGame.winner, winners, bets: baccaratGame.bets, history: baccaratGame.history, thirdCardTarget });
+            
+            setTimeout(() => { baccaratGame.bets = []; baccaratGame.status = 'betting'; baccaratGame.betEndTime = Date.now() + 15000; io.to('arcade_baccarat').emit('baccarat_state_update', { status: baccaratGame.status, betEndTime: baccaratGame.betEndTime, history: baccaratGame.history }); }, timeToResolve);
         }, 1000); 
     }
 
-    // DICE
+    // --- DICE ---
     if (diceGame.status === 'betting' && now >= diceGame.betEndTime) {
         diceGame.status = 'rolling'; io.to('arcade_dice').emit('dice_state_update', { status: diceGame.status, timeLeft: 0, history: diceGame.history });
         setTimeout(async () => {
@@ -220,7 +280,7 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // DERBY 
+    // --- DERBY --- 
     if (derbyGame.status === 'betting' && now >= derbyGame.betEndTime) {
         derbyGame.status = 'racing'; derbyGame.distances = [0,0,0,0,0,0]; derbyGame.speeds = derbyGame.laneProfiles.map(p => p.s);
         io.to('arcade_derby').emit('derby_state_update', { status: derbyGame.status, timeLeft: 0, distances: derbyGame.distances, history: derbyGame.history, laneProfiles: derbyGame.laneProfiles });
@@ -267,7 +327,7 @@ setInterval(() => {
         }, 100); 
     }
 
-    // COLOR
+    // --- COLOR GAME ---
     if (colorGame.status === 'betting' && now >= colorGame.betEndTime) {
         colorGame.status = 'rolling'; io.to('arcade_color').emit('color_state_update', { status: colorGame.status, timeLeft: 0, history: colorGame.history });
         setTimeout(async () => {
@@ -289,7 +349,7 @@ setInterval(() => {
         }, 3000); 
     }
 
-    // CUPS
+    // --- CUPS ---
     if (cupsGame.status === 'shuffling' && now >= cupsGame.stateEndTime) {
         cupsGame.status = 'betting'; cupsGame.betEndTime = now + 7000; cupsGame.stateEndTime = cupsGame.betEndTime;
         io.to('arcade_cups').emit('cups_state_update', { status: cupsGame.status, betEndTime: cupsGame.betEndTime, history: cupsGame.history });
@@ -315,7 +375,7 @@ setInterval(() => {
         })();
     }
 
-    // 8-BIT CRASH LOOP
+    // --- 8-BIT CRASH LOOP ---
     if (crashGame.status === 'betting' && now >= crashGame.betEndTime) {
         crashGame.status = 'flying'; 
         crashGame.multiplier = 1.00;
@@ -734,7 +794,8 @@ io.on('connection', (socket) => {
             socket.join('arcade_' + game); socketUserMap[socket.id] = { username: user.username, arcadeGame: game, roomId: 'arcade_' + game };
             let lobby; 
             if(game === 'dice') lobby = diceLobby; else if(game === 'color') lobby = colorLobby; else if(game === 'derby') lobby = derbyLobby; 
-            else if(game === 'pvp') lobby = pvpLobby; else if(game === 'cups') lobby = cupsLobby; else if(game === 'crash') lobby = crashLobby; else if(game === 'baccarat') lobby = baccaratLobby;
+            else if(game === 'pvp') lobby = pvpLobby; else if(game === 'cups') lobby = cupsLobby; else if(game === 'crash') lobby = crashLobby; 
+            else if(game === 'baccarat') lobby = baccaratLobby; else if(game === 'dvt') lobby = dvtLobby; else if(game === 'slots') lobby = slotsLobby;
             
             if (lobby && !lobby.find(p => p.username === user.username)) lobby.push({ username: user.username, color: user.nameColor });
             io.to('arcade_' + game).emit('arcade_lobby_update', { game, lobby });
@@ -752,6 +813,8 @@ io.on('connection', (socket) => {
             else if(game === 'derby') { derbyLobby = derbyLobby.filter(p => !searchUser.test(p.username)); lobby = derbyLobby; }
             else if(game === 'cups') { cupsLobby = cupsLobby.filter(p => !searchUser.test(p.username)); lobby = cupsLobby; }
             else if(game === 'baccarat') { baccaratLobby = baccaratLobby.filter(p => !searchUser.test(p.username)); lobby = baccaratLobby; }
+            else if(game === 'dvt') { dvtLobby = dvtLobby.filter(p => !searchUser.test(p.username)); lobby = dvtLobby; }
+            else if(game === 'slots') { slotsLobby = slotsLobby.filter(p => !searchUser.test(p.username)); lobby = slotsLobby; }
             else if(game === 'crash') { crashLobby = crashLobby.filter(p => !searchUser.test(p.username)); lobby = crashLobby; 
                 let existingBet = crashGame.bets.find(b => b.username.toLowerCase() === username.toLowerCase());
                 if (existingBet && !existingBet.cashedOut && crashGame.status === 'flying') {
@@ -776,7 +839,7 @@ io.on('connection', (socket) => {
                 if (roomId === 'global') {
                     io.emit('receive_chat', { roomId, username, message }); // Broadcast to ALL
                 }
-                else if (['dice', 'derby', 'color', 'pvp', 'cups', 'crash', 'baccarat'].includes(roomId)) {
+                else if (['dice', 'derby', 'color', 'pvp', 'cups', 'crash', 'baccarat', 'dvt', 'slots'].includes(roomId)) {
                     io.to('arcade_' + roomId).emit('receive_chat', { roomId, username, message });
                 }
                 else {
@@ -798,6 +861,7 @@ io.on('connection', (socket) => {
             else if (game === 'cups') targetGame = cupsGame;
             else if (game === 'crash') targetGame = crashGame;
             else if (game === 'baccarat') targetGame = baccaratGame;
+            else if (game === 'dvt') targetGame = dvtGame;
             else return;
 
             if (targetGame.status !== 'betting') return socket.emit('arcade_error', 'Cannot undo: Bets are closed!');
@@ -831,14 +895,74 @@ io.on('connection', (socket) => {
     });
 
     // --- ARCADE BETS ---
+    
+    // DRAGON VS TIGER
+    socket.on('get_dvt_state', () => { try { socket.emit('dvt_state_update', { status: dvtGame.status, betEndTime: dvtGame.betEndTime, history: dvtGame.history }); } catch(e){} });
+    socket.on('place_dvt_bet', async ({ username, choice, amount }) => {
+        try {
+            if(gameLocks.dvt) return socket.emit('arcade_error', 'Game is currently offline.');
+            if (dvtGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
+            if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+            let existingBetAmt = dvtGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
+            if(existingBetAmt + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
+
+            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+            if (!user) return socket.emit('arcade_error', 'Insufficient credits');
+            await new Transaction({ username: user.username, type: 'DRAGON VS TIGER', amount: -amount }).save();
+            let existingBetObj = dvtGame.bets.find(b => b.username.toLowerCase() === user.username.toLowerCase() && b.choice === choice);
+            if (existingBetObj) existingBetObj.amount += amount; else dvtGame.bets.push({ username: user.username, choice, amount }); 
+            io.emit('credit_update', { username: user.username, credits: user.credits }); 
+            socket.emit('arcade_bet_placed', { game: 'dvt', credits: user.credits, choice, totalChoiceBet: existingBetAmt + amount });
+        } catch(e) {}
+    });
+
+    // SLOTS (SINGLE PLAYER SOCKET)
+    const slotSymbols = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎', '7️⃣'];
+    socket.on('spin_slots', async ({ username, betAmount }) => {
+        try {
+            if(gameLocks.slots) return socket.emit('arcade_error', 'Game is currently offline.');
+            if(betAmount < 100 || betAmount > 50000) return socket.emit('arcade_error', 'Invalid bet amount.');
+            
+            const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
+            if (!user) return socket.emit('arcade_error', 'Insufficient credits');
+            
+            let r1 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+            let r2 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+            let r3 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+            
+            // House Edge override
+            if (strictHouseEdge && Math.random() < 0.3) {
+                r3 = '🍒'; // Break a potential match
+            }
+
+            let payout = 0;
+            if (r1 === r2 && r2 === r3) {
+                if (r1 === '7️⃣') payout = betAmount * 50;
+                else if (r1 === '💎') payout = betAmount * 25;
+                else payout = betAmount * 10;
+            } else if (r1 === r2 || r2 === r3 || r1 === r3) {
+                payout = betAmount * 2;
+            }
+
+            if (payout > 0) {
+                user.credits += payout;
+                await user.save();
+                await new Transaction({ username: user.username, type: 'SLOTS WIN', amount: payout }).save();
+                io.emit('credit_update', { username: user.username, credits: user.credits });
+            }
+
+            socket.emit('slots_result', { reels: [r1, r2, r3], winAmount: payout });
+        } catch(e) {}
+    });
+
     socket.on('get_baccarat_state', () => { try { socket.emit('baccarat_state_update', { status: baccaratGame.status, betEndTime: baccaratGame.betEndTime, history: baccaratGame.history }); } catch(e){} });
     socket.on('place_baccarat_bet', async ({ username, choice, amount }) => {
         try {
             if(gameLocks.baccarat) return socket.emit('arcade_error', 'Game is currently offline.');
             if (baccaratGame.status !== 'betting') return socket.emit('arcade_error', 'Bets are currently closed!');
-            if (amount > 100000) return socket.emit('arcade_error', 'Limit is 100,000 per tile!');
+            if (amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
             let existingBetAmt = baccaratGame.bets.filter(b=>b.username.toLowerCase()===username.toLowerCase() && b.choice===choice).reduce((sum,b)=>sum+b.amount,0);
-            if(existingBetAmt + amount > 100000) return socket.emit('arcade_error', 'Limit is 100,000 per tile!');
+            if(existingBetAmt + amount > 50000) return socket.emit('arcade_error', 'Limit is 50,000 per tile!');
 
             const user = await User.findOneAndUpdate({ username: new RegExp('^' + username + '$', 'i'), credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
             if (!user) return socket.emit('arcade_error', 'Insufficient credits');
@@ -1004,7 +1128,7 @@ io.on('connection', (socket) => {
         try {
             const seatIndex = pvpDuel.seats.findIndex(s => s && s?.username.toLowerCase() === username.toLowerCase());
             if(seatIndex === -1 || seatIndex !== pvpDuel.hostIndex || pvpDuel.status !== 'waiting') return;
-            if(betAmount < 0 || betAmount > 100000) return socket.emit('arcade_error', 'Invalid bet limits (0-100k).');
+            if(betAmount < 0 || betAmount > 50000) return socket.emit('arcade_error', 'Invalid bet limits (0-50k).');
             if(![1, 3, 5].includes(format)) return;
 
             const user = await User.findOne({ username: new RegExp('^' + username + '$', 'i') });
@@ -1128,7 +1252,7 @@ io.on('connection', (socket) => {
         try {
             if(gameLocks[roomId]) return socket.emit('arcade_error', 'Table is currently offline.');
             let room = rooms[roomId]; if (!room) return; const seat = room.seats[seatIndex]; if (!seat || seat.username.toLowerCase() !== username.toLowerCase() || room.status !== 'betting') return;
-            if (betAmount >= 1000 && betAmount <= 100000) {
+            if (betAmount >= 1000 && betAmount <= 50000) {
                 const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i'), credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
                 if (!updatedUser) return; seat.credits = updatedUser.credits; seat.hands[0].bet = betAmount; seat.kickAt = null; 
                 await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId), amount: -betAmount }).save();
@@ -1226,11 +1350,36 @@ function runPvpSequence() {
                 setTimeout(async () => {
                     if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
                     let res; 
-                    if(pvpDuel.type === 'coin') { res = Math.random() < 0.5 ? 'heads' : 'tails'; } else { pvpDuel.winSliceIndex = Math.floor(Math.random() * pvpDuel.slices); res = pvpDuel.winSliceIndex % 2 === 0 ? pvpDuel.seats[0].username : pvpDuel.seats[1].username; }
-                    pvpDuel.result = res; pvpDuel.status = 'resolving';
-                    let roundWinnerIndex = -1; if(pvpDuel.seats[0]?.choice === res) roundWinnerIndex = 0; if(pvpDuel.seats[1]?.choice === res) roundWinnerIndex = 1;
+                    if(pvpDuel.type === 'coin') { 
+                        res = Math.random() < 0.5 ? 'heads' : 'tails'; 
+                    } else if (pvpDuel.type === 'wheel') { 
+                        pvpDuel.winSliceIndex = Math.floor(Math.random() * pvpDuel.slices); 
+                        res = pvpDuel.winSliceIndex % 2 === 0 ? pvpDuel.seats[0].username : pvpDuel.seats[1].username; 
+                    } else if (pvpDuel.type === 'deathroll') {
+                        pvpDuel.winSliceIndex = -1; // Not used
+                        let p1Roll = Math.floor(Math.random() * 100) + 1;
+                        let p2Roll = Math.floor(Math.random() * 100) + 1;
+                        while(p1Roll === p2Roll) p2Roll = Math.floor(Math.random() * 100) + 1; // force win
+                        res = p1Roll > p2Roll ? pvpDuel.seats[0].username : pvpDuel.seats[1].username;
+                        pvpDuel.result = `${p1Roll} - ${p2Roll}`;
+                    }
+
+                    if(pvpDuel.type !== 'deathroll') pvpDuel.result = res; 
+                    
+                    pvpDuel.status = 'resolving';
+                    let roundWinnerIndex = -1; 
+                    
+                    if(pvpDuel.type === 'deathroll') {
+                        if(res === pvpDuel.seats[0].username) roundWinnerIndex = 0;
+                        if(res === pvpDuel.seats[1].username) roundWinnerIndex = 1;
+                    } else {
+                        if(pvpDuel.seats[0]?.choice === res) roundWinnerIndex = 0; 
+                        if(pvpDuel.seats[1]?.choice === res) roundWinnerIndex = 1;
+                    }
+
                     if(roundWinnerIndex !== -1 && pvpDuel.seats[roundWinnerIndex]) { pvpDuel.seats[roundWinnerIndex].score++; pvpDuel.message = `${pvpDuel.seats[roundWinnerIndex].username.toUpperCase()} SCORES!`; }
                     io.to('arcade_pvp').emit('pvp_duel_state_update', pvpDuel);
+                    
                     let matchWinner = null; if(pvpDuel.seats[0] && pvpDuel.seats[0].score >= pvpDuel.format) matchWinner = 0; if(pvpDuel.seats[1] && pvpDuel.seats[1].score >= pvpDuel.format) matchWinner = 1;
                     setTimeout(async () => {
                         if (pvpDuel.status === 'waiting' || !pvpDuel.seats[0] || !pvpDuel.seats[1]) return;
@@ -1294,7 +1443,7 @@ async function processDealerTurn(roomId) {
 
 async function resolveBets(roomId, dealerValue) {
     try {
-        let room = rooms[roomId]; if (!room) return; room.status = 'resolving'; room.nextRoundTime = Date.now() + 5000; 
+        let room = rooms[roomId]; if (!room) return; room.status = 'resolving'; room.nextRoundTime = Date.now() + 7000; // Increased buffer for UI animation
         for (const seat of room.seats) {
             if (seat) {
                 for (const hand of seat.hands) {
