@@ -21,7 +21,8 @@
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
-        #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100dvh; background: var(--bg-dark); border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
+        #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100dvh; background: var(--bg-dark); border-radius: 0; border: 6px solid var(--border-std); box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; overflow: hidden; display: flex; }
+
         #toast-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 9999; pointer-events: none; width: 100%; max-width: 600px; align-items: center; }
         .toast { background: rgba(0,0,0,0.95); border: 4px solid #fff; padding: 15px 30px; font-size: 28px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.8); pointer-events: auto; transition: 0.3s; }
         .toast-error { border-color: var(--danger); color: var(--danger); } .toast-success { border-color: var(--success); color: var(--success); } .toast-warning { border-color: var(--warning); color: var(--warning); }
@@ -35,15 +36,17 @@
         .mc-btn.small { padding: 4px 12px; } .mc-btn.small:active:not(:disabled) { padding-top: 6px; padding-bottom: 2px; }
         .mc-btn.circular { width: 60px; height: 60px; border-radius: 50%; padding: 0; font-size: 28px; box-shadow: 0 4px 8px rgba(0,0,0,0.6); }
         .mc-btn.circular:active:not(:disabled) { padding-top: 2px; padding-bottom: 0; }
+        .mc-btn.active { background: var(--success); border-color: #fff; text-shadow: none; color: #000; }
         .mc-panel { background: #1e1e2f; background-image: radial-gradient(#2a2a3f 1px, transparent 1px); background-size: 10px 10px; border: 6px solid #555; border-color: #555 #111 #111 #555; box-shadow: 10px 10px 0 rgba(0,0,0,0.8); }
 
         .full-menu, .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
         .full-menu { background: linear-gradient(to bottom, #1e3a8a 0%, #0f172a 100%); }
         .overlay-menu { background: rgba(0,0,0,0.85); z-index: 300; padding: 20px; backdrop-filter: blur(4px);}
+        
         .synthwave-bg { background: radial-gradient(circle at bottom center, #3b0764 0%, #020617 80%); overflow: hidden; position: relative; z-index: 1; }
         .synthwave-bg::before { content: ''; position: absolute; bottom: 0; left: -50%; width: 200%; height: 50%; background-image: linear-gradient(rgba(236, 72, 153, 0.4) 2px, transparent 2px), linear-gradient(90deg, rgba(236, 72, 153, 0.4) 2px, transparent 2px); background-size: 40px 40px; transform: perspective(400px) rotateX(60deg); animation: gridMove 3s linear infinite; z-index: -1; }
         @keyframes gridMove { 100% { background-position: 0 40px; } }
-        .synthwave-sun { position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); width: 400px; height: 200px; background: linear-gradient(to bottom, #fbbf24 0%, #ef4444 100%); border-radius: 200px 200px 0 0; box-shadow: 0 0 80px rgba(239, 68, 68, 0.8); -webkit-mask-image: repeating-linear-gradient(to bottom, black, black 6px, transparent 7px, transparent 12px); z-index: -2; }
+        .synthwave-sun { position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); width: 400px; height: 200px; background: linear-gradient(to bottom, #fbbf24 0%, #ef4444 100%); border-radius: 200px 200px 0 0; box-shadow: 0 0 80px rgba(239, 68, 68, 0.8); -webkit-mask-image: repeating-linear-gradient(to bottom, black, black 6px, transparent 7px, transparent 12px); mask-image: repeating-linear-gradient(to bottom, black, black 6px, transparent 7px, transparent 12px); z-index: -2; }
         .modal-box { padding: 30px; width: 650px; max-width: 100%; text-align: center; max-height: 90dvh; display: flex; flex-direction: column; overflow-y: auto;}
 
         .hotbar-wrapper { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 9000; pointer-events: auto; }
@@ -90,7 +93,7 @@
         .arcade-bet-area { flex-shrink: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(0,0,0,0.95) 70%, transparent); display: flex; flex-direction: column; align-items: center; z-index: 50;}
 
         .chip-rack { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 15px; padding: 8px 15px; background: rgba(0,0,0,0.3); backdrop-filter: blur(3px); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
-        .casino-chip { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; cursor: pointer; border: 4px dashed rgba(0,0,0,0.5); box-shadow: 0 4px 8px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.4), inset 0 0 5px rgba(0,0,0,0.8); transition: transform 0.1s, box-shadow 0.1s; position: relative; }
+        .casino-chip { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: normal; letter-spacing: 0; color: #fff; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; cursor: pointer; border: 4px dashed rgba(0,0,0,0.5); box-shadow: 0 4px 8px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.4), inset 0 0 5px rgba(0,0,0,0.8); transition: transform 0.1s, box-shadow 0.1s; position: relative; }
         .casino-chip::before { content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); pointer-events: none; }
         .casino-chip::after { content: ''; position: absolute; top: 3px; left: 3px; right: 3px; bottom: 3px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.4); pointer-events: none; }
         .casino-chip:hover { transform: translateY(-4px); }
@@ -99,7 +102,8 @@
         
         .chip-100 { background: radial-gradient(circle, #e2e8f0 40%, #94a3b8 100%); color: #000; text-shadow: none; border-color: #333;} .chip-100::after { border-color: rgba(0,0,0,0.1); }
         .chip-1k { background: radial-gradient(circle, #94a3b8 40%, #475569 100%); } .chip-5k { background: radial-gradient(circle, #f87171 40%, #b91c1c 100%); } .chip-20k { background: radial-gradient(circle, #34d399 40%, #047857 100%); } .chip-50k { background: radial-gradient(circle, #60a5fa 40%, #1d4ed8 100%); } 
-        .chip-action-btn { width: 50px; height: 50px; border-radius: 50%; font-size: 16px; background: #333; border: 3px solid #666; cursor: pointer; display:flex; justify-content:center; align-items:center; box-shadow: 0 4px 6px rgba(0,0,0,0.6); transition: 0.1s;}
+        
+        .chip-action-btn { width: 50px; height: 50px; border-radius: 50%; font-size: 16px; background: #333; color: #fff; border: 3px solid #666; cursor: pointer; display:flex; justify-content:center; align-items:center; box-shadow: 0 4px 6px rgba(0,0,0,0.6); transition: 0.1s;}
         .chip-action-btn:active { transform: translateY(2px); box-shadow: 0 2px 3px rgba(0,0,0,0.6); }
 
         .info-box { background: rgba(0,0,0,0.5); border: 4px solid #334155; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
@@ -138,14 +142,21 @@
         @keyframes slideCard { 0% { transform: translateY(-50px) scale(0.8); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         
         .hand-status-label { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-5deg); font-size: 28px; font-weight: bold; color: #fff; text-shadow: 2px 2px 0 #000; background: rgba(0,0,0,0.85); border: 3px solid; padding: 4px 10px; border-radius: 4px; z-index: 30; pointer-events: none; white-space: nowrap;}
-        .hand-status-bust { border-color: var(--danger); color: var(--danger); } .hand-status-win { border-color: var(--success); color: var(--success); } .hand-status-lose { border-color: #94a3b8; color: #94a3b8; } .hand-status-push { border-color: var(--warning); color: var(--warning); } .hand-status-blackjack { border-color: var(--accent-glow-2); color: var(--accent-glow-2); transform: translate(-50%, -50%) rotate(-10deg) scale(1.1); }
+        .hand-status-bust { border-color: var(--danger); color: var(--danger); }
+        .hand-status-win { border-color: var(--success); color: var(--success); }
+        .hand-status-lose { border-color: #94a3b8; color: #94a3b8; }
+        .hand-status-push { border-color: var(--warning); color: var(--warning); }
+        .hand-status-blackjack { border-color: var(--accent-glow-2); color: var(--accent-glow-2); transform: translate(-50%, -50%) rotate(-10deg) scale(1.1); }
+        
         .player-bet-text { font-size: 22px; font-weight: bold; color: var(--warning); text-shadow: 1px 1px 0 #000; background: rgba(0,0,0,0.8); border: 2px solid var(--warning); border-radius: 10px; padding: 2px 10px; margin-top: -15px; z-index: 25; position: relative; }
-        .anim-win { animation: betWinPop 0.5s ease forwards; border-color: var(--success); color: var(--success); } .anim-lose { opacity: 0.4; border-color: var(--danger); color: var(--danger); }
+        .anim-win { animation: betWinPop 0.5s ease forwards; border-color: var(--success); color: var(--success); }
+        .anim-lose { opacity: 0.4; border-color: var(--danger); color: var(--danger); }
         @keyframes betWinPop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
         .arcade-grid { display: flex; justify-content: center; gap: 15px; margin-bottom: 5px; flex-wrap: wrap;}
         .arcade-bet-box { background: #2d2d2d; border: 4px solid; border-color: #555 #111 #111 #555; padding: 15px; text-align: center; width: 200px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.1s; position: relative; height: 110px;}
-        .arcade-bet-box:active:not(.locked) { border-color: #111 #555 #555 #111; transform: translateY(2px); } .arcade-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
+        .arcade-bet-box:active:not(.locked) { border-color: #111 #555 #555 #111; transform: translateY(2px); }
+        .arcade-bet-box.locked { filter: grayscale(0.8); cursor: not-allowed; }
         .arcade-bet-title { font-size: 34px; color: #fff; margin-bottom: 5px; font-weight: bold; line-height:1;}
         .arcade-bet-payout { font-size: 20px; color: var(--success); font-weight: bold; line-height:1;}
         .payout-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.9); display: flex; justify-content: center; align-items: center; font-size: 35px; font-weight: bold; z-index: 30;}
@@ -224,9 +235,15 @@
         .baccarat-score-badge { font-size: 40px; font-weight: bold; color: #fff; text-shadow: 3px 3px 0 #000; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); background: #111; padding: 4px 20px; border: 4px solid #555; border-radius: 8px;}
         .baccarat-cards-row { display: flex; justify-content: center; gap: 10px; min-height: 88px;}
 
+        /* Slots & DVT UI */
         .slots-machine { width: 600px; background: #111; border: 8px solid #333; padding: 20px; border-radius: 10px; text-align: center; }
         .reels-container { display: flex; gap: 10px; justify-content: center; background: #000; border: 4px solid #555; padding: 20px; margin-bottom: 20px; }
         .reel { width: 120px; height: 150px; background: #fff; border: 4px solid #222; font-size: 80px; display: flex; justify-content: center; align-items: center; color: #000; box-shadow: inset 0 10px 20px rgba(0,0,0,0.5); overflow: hidden;}
+        
+        @keyframes slotSpin { 0% { transform: translateY(-200px); filter: blur(5px); } 100% { transform: translateY(0); filter: blur(0); } }
+        .reel.spinning { animation: slotSpin 0.15s linear infinite; }
+        .reel.stopping { animation: slotSpin 0.3s ease-out forwards; }
+        
         .dvt-cards-area { display: flex; justify-content: center; gap: 100px; margin-bottom: 30px; width: 100%; }
         .dvt-hand-box { width: 250px; text-align: center; padding: 20px; border: 4px solid #555; background: rgba(0,0,0,0.6); border-radius: 8px;}
     </style>
@@ -876,6 +893,25 @@
             list.innerHTML = offers.map(o => `<div class="trade-offer-card"><div><div style="font-size: 28px; color: var(--accent-glow-2);">${o.username}</div><div style="font-size: 20px; color: #fff;">Offering: ${o.item.toUpperCase()}</div></div>${o.username !== currentUser.username ? `<button class="mc-btn small" style="background:var(--success); color:#000;" onclick="actJoinTrade('${o.username}')">TRADE</button>` : `<div style="color:var(--warning);">YOUR OFFER</div>`}</div>`).join('');
         });
 
+        socket.on('trade_session_start', (data) => { hideModal('trade-hub-modal'); hideModal('trade-waiting-modal'); showModal('trade-session-modal'); activeTradeSessionId = data.sessionId; isTradeReady = false; myTradeItems = [null, null, null, null, null, null]; document.getElementById('trade-my-coins').value = "0"; document.getElementById('btn-trade-ready').style.background = 'var(--success)'; document.getElementById('btn-trade-ready').innerText = 'OK, COOL!'; updateTradeUI(data); });
+        socket.on('trade_session_update', updateTradeUI);
+        socket.on('trade_closed', (msg) => { activeTradeSessionId = null; hideModal('trade-session-modal'); showToast(msg, 'warning'); });
+        socket.on('trade_success', () => { activeTradeSessionId = null; hideModal('trade-session-modal'); hideModal('trade-confirm-modal'); showToast('TRADE COMPLETED SUCCESSFULLY!', 'success'); playSfx('win'); socket.emit('req_market', { username: currentUser.username }); });
+        socket.on('trade_confirm_canceled', () => { hideModal('trade-confirm-modal'); showToast('Partner modified or canceled the confirmation.', 'warning'); });
+
+        const originalMarketDataHandler = socket._callbacks['market_data'];
+        socket.on('market_data', (data) => {
+            if(!document.getElementById('trade-hub-modal').classList.contains('hidden')) { let counts = {}; data.inventory.forEach(i => counts[i] = (counts[i] || 0) + 1); document.getElementById('trade-inventory-grid').innerHTML = Object.keys(counts).map(item => `<div class="trade-inventory-item" onclick="actCreateTradeOffer('${item}')">📦 <div class="qty">${counts[item]}</div></div>`).join(''); }
+            const auctionList = document.getElementById('market-auctions-list');
+            if(auctionList) {
+                if(data.auctions.length === 0) { auctionList.innerHTML = '<div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">MARKET IS EMPTY</div>'; } 
+                else { auctionList.innerHTML = data.auctions.map(a => `<div class="market-item"><div><div class="market-title">${a.item.toUpperCase()}</div><div class="market-desc">Seller: ${a.seller} | Bid: ${a.highestBidder || 'None'}</div></div><div style="text-align: right;"><div style="color: var(--success); font-size: 24px; font-weight: bold;">${formatNumber(a.currentBid)} CR</div><div style="color: #ccc; font-size: 18px; margin-bottom: 5px;">${Math.max(0, Math.floor((a.endTime - Date.now()) / 1000))}s left</div><button class="mc-btn small" style="background: var(--accent-glow-2);" onclick="promptBid('${a.id}', ${a.currentBid})">BID</button></div></div>`).join(''); }
+                const invList = document.getElementById('market-inventory-list');
+                if(data.inventory.length === 0) { invList.innerHTML = '<div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">INVENTORY EMPTY</div>'; } 
+                else { let counts = {}; data.inventory.forEach(i => counts[i] = (counts[i] || 0) + 1); invList.innerHTML = Object.keys(counts).map(item => `<div class="market-item"><div class="market-title">${item.toUpperCase()} <span style="color:#fff;">(x${counts[item]})</span></div><button class="mc-btn small" style="background: var(--success); color:#000;" onclick="setupAuction('${item}')">SELL</button></div>`).join(''); }
+            }
+        });
+
         function showModal(id) { if(!currentUser && id !== 'how-to-play-modal' && id !== 'tos-modal') return showToast("Please log in first."); if(id !== 'table-modal' && id !== 'arcade-modal') { document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden')); } if(id === 'table-modal' || id === 'arcade-modal') { document.getElementById('play-category-modal').classList.add('hidden'); } const el = document.getElementById(id); if(el) el.classList.remove('hidden'); }
         function hideModal(id) { const el = document.getElementById(id); if(el) el.classList.add('hidden'); }
         function showProfile() { if(!currentUser) return showToast("Please log in first!"); document.getElementById('profile-username-preview').innerText = currentUser.username.toUpperCase(); document.getElementById('profile-credits-preview').innerText = formatNumber(currentUser.credits); showModal('profile-modal'); }
@@ -907,6 +943,57 @@
             setTimeout(() => { rewardCooldownSeconds = data.cooldownSeconds; lastPickedBoxIndex = -1; document.querySelectorAll('.reward-box').forEach(box => box.classList.remove('open')); showRewards(); }, 4500);
         });
 
+        socket.on('arcade_bet_placed', (data) => { 
+            let badgeId = `badge-${data.game}-${data.choice}`;
+            if (data.game === 'dice') badgeId = `badge-dice-${data.choice}`;
+            if (data.game === 'derby') badgeId = `badge-derby-${data.choice}`;
+            if (data.game === 'color') badgeId = `badge-color-${data.choice}`;
+            if (data.game === 'cups') badgeId = `badge-cups-${data.choice}`;
+            if (data.game === 'baccarat') badgeId = `badge-baccarat-${data.choice}`;
+            if (data.game === 'dvt') badgeId = `badge-dvt-${data.choice}`;
+
+            const badge = document.getElementById(badgeId); 
+            if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); badge.classList.remove('hidden'); }
+        });
+
+        socket.on('global_lobby_counts', (counts) => {
+            if(document.querySelector('.lobby-cnt-5seat')) document.querySelector('.lobby-cnt-5seat').innerText = counts['5seat'] || 0;
+            if(document.querySelector('.lobby-cnt-3seat')) document.querySelector('.lobby-cnt-3seat').innerText = counts['3seat'] || 0;
+            if(document.getElementById('derby-player-count')) document.getElementById('derby-player-count').innerText = counts['derby'] || 0;
+            if(document.getElementById('cups-player-count')) document.getElementById('cups-player-count').innerText = counts['cups'] || 0;
+            if(document.getElementById('dice-player-count')) document.getElementById('dice-player-count').innerText = counts['dice'] || 0;
+            if(document.getElementById('color-player-count')) document.getElementById('color-player-count').innerText = counts['color'] || 0;
+            if(document.getElementById('pvp-player-count')) document.getElementById('pvp-player-count').innerText = counts['pvp'] || 0;
+            if(document.getElementById('crash-player-count')) document.getElementById('crash-player-count').innerText = counts['crash'] || 0;
+            if(document.getElementById('baccarat-player-count')) document.getElementById('baccarat-player-count').innerText = counts['baccarat'] || 0;
+            if(document.getElementById('dvt-player-count')) document.getElementById('dvt-player-count').innerText = counts['dvt'] || 0;
+            if(document.getElementById('slots-player-count')) document.getElementById('slots-player-count').innerText = counts['slots'] || 0;
+        });
+
+        function openMarket() { if(!currentUser) return showToast("Please log in first!"); showModal('market-modal'); socket.emit('req_market', { username: currentUser.username }); }
+        socket.on('market_update', (auctions) => { if(!document.getElementById('market-modal').classList.contains('hidden')) socket.emit('req_market', { username: currentUser.username }); });
+        function setupAuction(itemName) { document.getElementById('auction-creator').classList.remove('hidden'); document.getElementById('auction-item-name').innerText = itemName.toUpperCase(); document.getElementById('auction-start-bid').value = ''; }
+        function postAuction() { const item = document.getElementById('auction-item-name').innerText; const bid = parseInt(document.getElementById('auction-start-bid').value); if(isNaN(bid) || bid < 100) return showToast("Starting bid must be at least 100 CR."); socket.emit('create_auction', { username: currentUser.username, item, startingBid: bid }); document.getElementById('auction-creator').classList.add('hidden'); }
+        function promptBid(id, currentBid) { const bidStr = prompt(`Current bid is ${formatNumber(currentBid)} CR. Enter your bid amount (Must be higher):`); if(!bidStr) return; const amt = parseInt(bidStr.replace(/,/g, '')); if(isNaN(amt) || amt <= currentBid) return showToast("Bid must be a valid number higher than current bid."); if(amt > currentUser.credits) return showToast("Insufficient credits."); socket.emit('place_bid', { id, username: currentUser.username, bidAmount: amt }); }
+
+        function openInbox() { if(!currentUser) return showToast("Please log in first!"); showModal('notify-modal'); setInboxTab('announcement'); socket.emit('req_inbox', { username: currentUser.username }); }
+        function setInboxTab(tab) { currentInboxTab = tab; document.getElementById('tab-announcement').classList.remove('active'); document.getElementById('tab-message').classList.remove('active'); document.getElementById('tab-support').classList.remove('active'); document.getElementById(`tab-${tab}`).classList.add('active'); document.getElementById('inbox-list-view').classList.remove('hidden'); document.getElementById('inbox-thread-view').classList.add('hidden'); document.getElementById('inbox-create-view').classList.add('hidden'); if(tab === 'support') { document.getElementById('btn-create-ticket').classList.remove('hidden'); } else { document.getElementById('btn-create-ticket').classList.add('hidden'); } renderInboxList(); }
+        function backToInbox() { currentOpenTicketId = null; document.getElementById('inbox-list-view').classList.remove('hidden'); document.getElementById('inbox-thread-view').classList.add('hidden'); document.getElementById('inbox-create-view').classList.add('hidden'); if(currentInboxTab === 'support') document.getElementById('btn-create-ticket').classList.remove('hidden'); socket.emit('req_inbox', { username: currentUser.username }); }
+        function openCreateTicket() { document.getElementById('inbox-list-view').classList.add('hidden'); document.getElementById('inbox-create-view').classList.remove('hidden'); document.getElementById('ticket-subject').value = ''; document.getElementById('ticket-text').value = ''; }
+        function submitTicket() { const subject = document.getElementById('ticket-subject').value.trim(); const text = document.getElementById('ticket-text').value.trim(); if(!subject || !text) return showToast("Please provide a subject and a message."); socket.emit('player_create_ticket', { username: currentUser.username, subject, text }); showToast("Support Ticket Submitted.", "success"); backToInbox(); }
+
+        function openTicket(id, status, type, encodedMsg, subjectStr) { currentOpenTicketId = id; document.getElementById('inbox-list-view').classList.add('hidden'); document.getElementById('inbox-thread-view').classList.remove('hidden'); socket.emit('read_ticket', { id, username: currentUser.username }); const messages = JSON.parse(decodeURIComponent(encodedMsg)); document.getElementById('thread-subject').innerText = decodeURIComponent(subjectStr); renderThread(messages, status, type); }
+        function renderThread(messages, status, type) { const list = document.getElementById('thread-messages'); list.innerHTML = messages.map(m => { const isMe = m.sender !== 'ADMIN' && m.sender !== 'SYSTEM'; const time = new Date(m.date).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' }); return `<div style="margin-bottom: 10px;"><div style="font-size:18px; color:#64748b; margin-bottom:2px;">${isMe ? 'YOU' : m.sender} - ${time}</div><div style="font-size:24px; color:${isMe ? '#fff' : 'var(--warning)'}; white-space:pre-wrap;">${m.text}</div></div>`; }).join(''); list.scrollTop = list.scrollHeight; const stLabel = document.getElementById('thread-status'); const replyBox = document.getElementById('thread-reply-box'); if (type === 'announcement') { stLabel.innerText = ''; replyBox.style.display = 'none'; } else { if (status === 'open') { stLabel.innerText = '[ STATUS: OPEN ]'; stLabel.style.color = 'var(--success)'; replyBox.style.display = 'flex'; } else { stLabel.innerText = '[ STATUS: CLOSED ]'; stLabel.style.color = 'var(--danger)'; replyBox.style.display = 'none'; } } }
+        function sendReply() { const input = document.getElementById('reply-input'); const text = input.value.trim(); if(!text || !currentOpenTicketId) return; socket.emit('player_reply', { id: currentOpenTicketId, username: currentUser.username, text }); input.value = ''; }
+        function deleteTicket(id, event) { event.stopPropagation(); showConfirm("Delete this message thread forever?", () => { socket.emit('del_ticket', { id, username: currentUser.username }); }); }
+
+        function renderInboxList() { const list = document.getElementById('inbox-content'); let filtered = allMyTickets.filter(t => t.type === currentInboxTab); if(filtered.length === 0) { list.innerHTML = '<div style="color: #64748b; font-size: 28px; text-align: center; margin-top: 20px;">NO MESSAGES</div>'; return; } list.innerHTML = filtered.map(t => { const date = new Date(t.updatedAt).toLocaleDateString('en-US', { timeZone: 'Asia/Manila' }); const time = new Date(t.updatedAt).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute:'2-digit' }); let isUnread = false; if(t.username === 'GLOBAL') { isUnread = !t.readBy.includes(currentUser.username); } else { isUnread = t.unreadPlayer; } const borderClass = isUnread ? 'border-color: var(--danger);' : 'border-color: #333;'; const newTag = isUnread ? `<span style="color:var(--danger); font-weight:bold;">[ NEW ]</span> ` : ''; const lastMsg = t.messages[t.messages.length - 1].text.substring(0, 40) + '...'; let tagVisual = ''; if(t.type === 'announcement') tagVisual = `<span style="color:var(--warning);">[ANNOUNCEMENT]</span>`; else if(t.type === 'message') tagVisual = `<span style="color:var(--accent-glow-2);">[MESSAGE]</span>`; else if(t.type === 'support') tagVisual = `<span style="color:var(--success);">[SUPPORT]</span>`; return `<div style="background: #111; border: 4px solid; ${borderClass} padding: 10px; margin-bottom: 10px; cursor: pointer;" onclick="openTicket('${t._id}', '${t.status}', '${t.type}', '${encodeURIComponent(JSON.stringify(t.messages))}', '${encodeURIComponent(t.subject || 'NO SUBJECT')}')"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><span style="font-size:24px; color:#fff;">${newTag}${tagVisual} <span style="font-weight:bold;">${t.subject || 'SYSTEM NOTIFICATION'}</span></span>${t.username !== 'GLOBAL' ? `<button class="mc-btn small" style="background:var(--danger);" onclick="deleteTicket('${t._id}', event)">DEL</button>` : `<span style="font-size:20px; color:#94a3b8;">${date} ${time}</span>`}</div><div style="font-size:22px; color:#94a3b8;">${lastMsg}</div></div>`; }).join(''); }
+        socket.on('inbox_data', (tickets) => { allMyTickets = tickets; unreadNotifs = tickets.filter(t => { if(t.username === 'GLOBAL') return !t.readBy.includes(currentUser.username); return t.unreadPlayer; }).length; const badge = document.getElementById('notif-badge'); if (unreadNotifs > 0) { badge.innerText = unreadNotifs; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } renderInboxList(); });
+        socket.on('ticket_updated', (t) => { if(currentOpenTicketId === t._id) renderThread(t.messages, t.status, t.type); });
+        socket.on('system_notification', (data) => { if (!currentUser) return; if (data.target === 'all' || data.target === 'active') { playSfx('win'); socket.emit('req_inbox', { username: currentUser.username }); } });
+        socket.on('new_mail', (data) => { if (currentUser && (data.username?.toLowerCase() === currentUser.username.toLowerCase() || data.username === 'GLOBAL' || data.target === 'all' || data.target === 'active')) { playSfx('win'); socket.emit('req_inbox', { username: currentUser.username }); } });
+        
+        function togglePlayerList(id) { const list = document.getElementById(id); if(list) { document.querySelectorAll('.player-dropdown-list').forEach(l => { if(l.id !== id) l.classList.add('hidden'); }); list.classList.toggle('hidden'); } }
         function toggleAuth(panel) { document.getElementById('panel-login').classList.toggle('hidden', panel !== 'login'); document.getElementById('panel-signup').classList.toggle('hidden', panel !== 'signup'); }
 
         async function signup() {
@@ -925,8 +1012,12 @@
                     showToast(data.error); 
                 }
             } catch(e) { 
-                if(window.location.protocol === 'file:') { showToast("ERROR: Do not double-click the HTML file! You must open http://localhost:3000 in your browser."); } 
-                else { showToast("SERVER OFFLINE: Please run 'node server.js' in your terminal."); }
+                console.error(e);
+                if(window.location.protocol === 'file:') {
+                    showToast("ERROR: Do not double-click the HTML file! You must open http://localhost:3000 in your browser.");
+                } else {
+                    showToast("SERVER OFFLINE: Please run 'node server.js' in your terminal.");
+                }
             }
         }
 
@@ -954,15 +1045,167 @@
                     showToast(data.error);
                 }
             } catch(e) { 
-                if(window.location.protocol === 'file:') { showToast("ERROR: Do not double-click the HTML file! You must open http://localhost:3000 in your browser."); } 
-                else { showToast("SERVER OFFLINE: Please run 'node server.js' in your terminal."); }
+                console.error(e);
+                if(window.location.protocol === 'file:') {
+                    showToast("ERROR: Do not double-click the HTML file! You must open http://localhost:3000 in your browser.");
+                } else {
+                    showToast("SERVER OFFLINE: Please run 'node server.js' in your terminal.");
+                }
             }
         }
 
         window.onload = () => { try { const savedU = localStorage.getItem('cr_user'); const savedP = localStorage.getItem('cr_pass'); if(savedU && savedP) { document.getElementById('login-user').value = savedU; document.getElementById('login-pass').value = savedP; login(); } } catch(e){} };
+        
+        socket.on('credit_update', (data) => { if(currentUser && currentUser.username.toLowerCase() === data.username.toLowerCase()) { currentUser.credits = data.credits; updateAllCredits(); } });
 
-        // --- BLACKJACK RENDER (DOM NUKE FIXED) ---
+        socket.on('game_lock_state', (locks) => {
+            gameLocks = locks;
+            ['under', 'seven', 'over'].forEach(c => { const b = document.getElementById(`dice-btn-${c}`); if(b) locks.dice ? b.classList.add('locked') : b.classList.remove('locked'); });
+            for(let i=0; i<6; i++) { const b = document.getElementById(`derby-btn-${i}`); if(b) locks.derby ? b.classList.add('locked') : b.classList.remove('locked'); }
+            ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => { const b = document.getElementById(`color-btn-${c}`); if(b) locks.color ? b.classList.add('locked') : b.classList.remove('locked'); });
+            for(let i=0; i<3; i++) { const b = document.getElementById(`cups-btn-${i}`); if(b) locks.cups ? b.classList.add('locked') : b.classList.remove('locked'); }
+            ['player', 'banker', 'tie'].forEach(c => { const b = document.getElementById(`baccarat-btn-${c}`); if(b) locks.baccarat ? b.classList.add('locked') : b.classList.remove('locked'); });
+        });
+
+        socket.on('force_disconnect', () => { showToast("Your connection was severed by the Administrator."); setTimeout(logout, 2000); });
+
+        function updateAllCredits() {
+            if(!currentUser) return; const creds = formatNumber(currentUser.credits);
+            ['hud-credits', 'dice-credits', 'derby-credits', 'color-credits', 'pvp-credits', 'cups-credits', 'crash-credits', 'baccarat-credits', 'dvt-credits', 'slots-credits', 'profile-credits-preview', 'bank-balance-display'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
+        }
+        function logout() { try { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); } catch(e){} location.reload(); }
+
+        function exitToMenu(game) { 
+            if (game === 'blackjack') { if (mySeatIndex !== -1 && currentGameState && currentGameState.seats[mySeatIndex]) { if (currentGameState.seats[mySeatIndex].hands.some(h => h.bet > 0)) { return showToast("You cannot leave the table with active bets!"); } } } 
+            else if (game === 'dice') { if (myDiceBets.under > 0 || myDiceBets.seven > 0 || myDiceBets.over > 0) return showToast("You cannot leave while you have active bets!"); } 
+            else if (game === 'derby') { if (myDerbyBets.reduce((a,b)=>a+b, 0) > 0) return showToast("You cannot leave while you have active bets!"); } 
+            else if (game === 'pvp') { if (myDuelSeatIndex !== -1) return showToast("You must stand up from the PVP duel before leaving!"); } 
+            else if (game === 'cups') { if (myCupsBets.reduce((a,b)=>a+b, 0) > 0) return showToast("You cannot leave while you have active bets!"); } 
+            else if (game === 'color') { if (Object.values(myColorBets).reduce((a,b)=>a+b, 0) > 0) return showToast("You cannot leave while you have active bets!"); } 
+            else if (game === 'baccarat') { if (Object.values(myBaccaratBets).reduce((a,b)=>a+b, 0) > 0) return showToast("You cannot leave while you have active bets!"); }
+            else if (game === 'dvt') { if (Object.values(myDvtBets).reduce((a,b)=>a+b, 0) > 0) return showToast("You cannot leave while you have active bets!"); }
+            else if (game === 'crash') { const btnCashout = document.getElementById('btn-crash-cashout'); if (btnCashout && btnCashout.style.display !== 'none') return showToast("You must cashout before leaving!"); }
+
+            document.getElementById('main-menu-view').classList.remove('hidden'); document.getElementById('comm-widget').classList.add('hidden');
+            if(game === 'blackjack') { document.getElementById('game-interface').classList.add('hidden'); if (currentGameState) { const seatIdx = currentGameState.seats.findIndex(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if (seatIdx !== -1) window.actEjectSeat(seatIdx); } socket.emit('leave_room', { username: currentUser.username, roomId: currentRoomId }); currentRoomId = null; }
+            if(['dice', 'derby', 'color', 'pvp', 'cups', 'crash', 'baccarat', 'dvt', 'slots'].includes(game)) { document.getElementById(game+'-interface').classList.add('hidden'); socket.emit('leave_arcade', { username: currentUser.username, game }); currentRoomId = null; }
+        }
+
+        function joinRoom(roomId) { currentRoomId = roomId; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('game-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); playSfx('deal'); }
+        function joinDice() { currentRoomId = 'dice'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('dice-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dice' }); socket.emit('get_dice_state'); playSfx('deal'); lastBetAction = null; }
+        function joinDerby() { currentRoomId = 'derby'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('derby-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'derby' }); socket.emit('get_derby_state'); playSfx('deal'); lastBetAction = null; }
+        function joinColorGame() { currentRoomId = 'color'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('color-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'color' }); socket.emit('get_color_state'); playSfx('deal'); lastBetAction = null; }
+        function joinCups() { currentRoomId = 'cups'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('cups-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'cups' }); socket.emit('get_cups_state'); playSfx('deal'); lastBetAction = null; }
+        function joinCrash() { currentRoomId = 'crash'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('crash-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'crash' }); socket.emit('get_crash_state'); playSfx('deal'); lastBetAction = null; }
+        function joinBaccarat() { currentRoomId = 'baccarat'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.getElementById('baccarat-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'baccarat' }); socket.emit('get_baccarat_state'); playSfx('deal'); lastBetAction = null; }
+        function joinPVP() { currentRoomId = 'pvp'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.querySelectorAll('.game-interface').forEach(el => el.classList.add('hidden')); document.getElementById('pvp-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'pvp' }); socket.emit('get_pvp_state'); playSfx('deal'); }
+        
+        function joinDvt() { currentRoomId = 'dvt'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.querySelectorAll('.game-interface').forEach(el => el.classList.add('hidden')); document.getElementById('dvt-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dvt' }); socket.emit('get_dvt_state'); playSfx('deal'); lastBetAction = null; }
+        function joinSlots() { currentRoomId = 'slots'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.querySelectorAll('.game-interface').forEach(el => el.classList.add('hidden')); document.getElementById('slots-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'slots' }); }
+
+        window.spinSlots = function() {
+            if(gameLocks.slots) return showToast('This game is offline for maintenance.');
+            if(isBetting) return; 
+            const amt = currentChipValue;
+            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); 
+            if (amt > 50000) return showToast("Max bet is 50,000 CR."); if (amt > currentUser.credits) return showToast("Insufficient credits!");
+            
+            applyThrottle();
+            document.getElementById('slots-result-text').innerText = "SPINNING...";
+            document.getElementById('reel-1').classList.add('spinning');
+            document.getElementById('reel-2').classList.add('spinning');
+            document.getElementById('reel-3').classList.add('spinning');
+            
+            socket.emit('spin_slots', { username: currentUser.username, betAmount: amt });
+        };
+
+        socket.on('slots_result', (data) => {
+            const r1 = document.getElementById('reel-1'); const r2 = document.getElementById('reel-2'); const r3 = document.getElementById('reel-3');
+            setTimeout(() => { r1.classList.remove('spinning'); r1.innerText = data.reels[0]; }, 500);
+            setTimeout(() => { r2.classList.remove('spinning'); r2.innerText = data.reels[1]; }, 1000);
+            setTimeout(() => { 
+                r3.classList.remove('spinning'); r3.innerText = data.reels[2]; 
+                if(data.winAmount > 0) {
+                    document.getElementById('slots-result-text').innerText = `JACKPOT! YOU WON ${formatNumber(data.winAmount)}!`;
+                    document.getElementById('slots-result-text').style.color = 'var(--success)';
+                    playSfx('win');
+                } else {
+                    document.getElementById('slots-result-text').innerText = `NO LUCK. SPIN AGAIN!`;
+                    document.getElementById('slots-result-text').style.color = '#fff';
+                    playSfx('lose');
+                }
+            }, 1500);
+        });
+
+        window.placeDvtBet = function(choice) {
+            if(gameLocks.dvt) return showToast('This game is offline for maintenance.');
+            if(isBetting) return; 
+            const amt = currentChipValue;
+            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); 
+            if (myDvtBets[choice] + amt > 50000) return showToast("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
+            applyThrottle(); myDvtBets[choice] += amt; socket.emit('place_dvt_bet', { username: currentUser.username, choice, amount: amt });
+            lastBetAction = { game: 'dvt', choice: choice };
+        };
+
+        socket.on('dvt_state_update', (data) => {
+            const statusText = document.getElementById('dvt-result-text');
+            const dCard = document.getElementById('dvt-dragon-card'); const tCard = document.getElementById('dvt-tiger-card');
+            
+            if (data.status === 'betting') {
+                statusText.innerText = "PLACE YOUR BETS"; myDvtBets = { dragon: 0, tiger: 0, tie: 0 };
+                dCard.innerText = '?'; tCard.innerText = '?'; dCard.style.color = '#fff'; tCard.style.color = '#fff';
+                document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-dvt')) { b.classList.add('hidden'); }});
+            } 
+            else if (data.status === 'drawing') { statusText.innerText = "NO MORE BETS"; playSfx('deal'); } 
+            else if (data.status === 'resolving') {
+                setTimeout(() => {
+                    dCard.innerText = data.dragonCard.value;
+                    dCard.style.color = ['Hearts', 'Diamonds'].includes(data.dragonCard.suit) ? 'red' : 'black';
+                    playSfx('deal');
+                }, 500);
+                setTimeout(() => {
+                    tCard.innerText = data.tigerCard.value;
+                    tCard.style.color = ['Hearts', 'Diamonds'].includes(data.tigerCard.suit) ? 'red' : 'black';
+                    playSfx('deal');
+                }, 1500);
+                setTimeout(() => {
+                    statusText.innerText = data.winner === 'tie' ? "TIE!" : `${data.winner.toUpperCase()} WINS!`;
+                    let totalBet = Object.values(myDvtBets).reduce((a,b)=>a+b, 0);
+                    if (totalBet > 0) {
+                        let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
+                        if (myWins.length > 0) { 
+                            playSfx('win');
+                        } else if (data.winner === 'tie' && (myDvtBets.dragon > 0 || myDvtBets.tiger > 0)) {
+                            playSfx('win');
+                        } else { playSfx('lose'); }
+                    }
+                }, 2500);
+            }
+        });
+
+        window.actSitDown = function(idx) { if(gameLocks[currentRoomId]) return showToast('Table is offline for maintenance.'); if(actionLocked) return; actionLocked = true; socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        window.actPlaceBetDropdown = function(idx) { if(gameLocks[currentRoomId]) return showToast('Table is offline for maintenance.'); if(actionLocked) return; const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value.replace(/,/g, '')) : 0; if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); if (amt > 50000) return showToast("Maximum limit is 50,000 credits."); if (amt > currentUser.credits) return showToast("Insufficient credits!"); actionLocked = true; window.lastBetAmount = amt; socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet'); }
+        window.actEjectSeat = function(idx) { if(actionLocked) return; actionLocked = true; socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actHit = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actStand = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actDouble = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        window.actSplit = function(idx) { if(actionLocked) return; actionLocked = true; document.querySelectorAll('.turn-bar-container').forEach(e=>e.classList.add('hidden')); socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+
         function formatCardHTML(c, isHidden) { if (isHidden) return `<div class="card dealer-hidden"></div>`; const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : 'black'; const suitSym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit]; return `<div class="card ${colorClass}"><div class="card-corner top-left">${c.value}<br>${suitSym}</div><div class="card-center-suit">${suitSym}</div><div class="card-corner bottom-right">${c.value}<br>${suitSym}</div></div>`; }
+
+        socket.on('game_state_update', (state) => {
+            if(currentGameState && currentGameState.status === 'dealerTurn' && state.status === 'resolving') { if(mySeatIndex !== -1 && state.seats[mySeatIndex]) { let hasWin = state.seats[mySeatIndex].hands.some(h => h.result === 'win' || h.result === 'win-bj'); let hasLose = state.seats[mySeatIndex].hands.some(h => h.result === 'lose' || h.result === 'bust'); if(hasWin) playSfx('win'); else if (hasLose) playSfx('lose'); } }
+            if(currentGameState && currentGameState.status === 'betting' && state.status === 'playing') playSfx('deal');
+            actionLocked = false; currentGameState = state; 
+            if(currentUser && currentRoomId && !document.getElementById('game-interface').classList.contains('hidden')) { 
+                const list = document.getElementById('bj-players-list'); list.innerHTML = ''; document.getElementById('player-count').innerText = state.lobby.length;
+                if(currentRoomId === '5seat' && document.querySelector('.lobby-cnt-5seat')) document.querySelector('.lobby-cnt-5seat').innerText = state.lobby.length;
+                if(currentRoomId === '3seat' && document.querySelector('.lobby-cnt-3seat')) document.querySelector('.lobby-cnt-3seat').innerText = state.lobby.length;
+                state.lobby.forEach(p => { list.innerHTML += `<div class="lobby-player" style="color:${p.color}">▶ ${p.username}</div>`; });
+                renderTable(state); manageTimers(state); 
+            }
+        });
+
         function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
 
         function renderTable(state) {
@@ -1046,87 +1289,234 @@
             if (seatsArea.innerHTML !== seatsHtml) seatsArea.innerHTML = seatsHtml; 
         }
 
-        // --- NEW GAMES ---
-        function joinDvt() { currentRoomId = 'dvt'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.querySelectorAll('.game-interface').forEach(el => el.classList.add('hidden')); document.getElementById('dvt-interface').classList.remove('hidden'); document.getElementById('comm-widget').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'dvt' }); socket.emit('get_dvt_state'); playSfx('deal'); }
-        function joinSlots() { currentRoomId = 'slots'; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); document.querySelectorAll('.game-interface').forEach(el => el.classList.add('hidden')); document.getElementById('slots-interface').classList.remove('hidden'); socket.emit('enter_arcade', { username: currentUser.username, game: 'slots' }); }
+        function manageTimers(state) {
+            const gTimerUI = document.getElementById('global-timer'); const nTimerUI = document.getElementById('next-round-timer'); const iTimerUI = document.getElementById('idle-timer');
+            if(gTimerUI) {
+                if (state.status === 'betting' && state.betTimeLeft > 0) { let left = Math.ceil(state.betTimeLeft / 1000); gTimerUI.classList.remove('hidden'); clearInterval(globalTimerInt); nTimerUI.classList.add('hidden'); document.getElementById('g-time').innerText = left; globalTimerInt = setInterval(() => { left--; if (left > 0) document.getElementById('g-time').innerText = left; else { clearInterval(globalTimerInt); gTimerUI.classList.add('hidden'); } }, 1000);
+                } else if (state.status !== 'betting') { gTimerUI.classList.add('hidden'); clearInterval(globalTimerInt); }
+            }
+            if(nTimerUI) {
+                if (state.status === 'resolving' && state.nextRoundTimeLeft > 0) { let left = Math.ceil(state.nextRoundTimeLeft / 1000); nTimerUI.classList.remove('hidden'); clearInterval(nextRoundTimerInt); document.getElementById('n-time').innerText = left; nextRoundTimerInt = setInterval(() => { left--; if (left > 0) document.getElementById('n-time').innerText = left; else { clearInterval(nextRoundTimerInt); nTimerUI.classList.add('hidden'); } }, 1000);
+                } else if (state.status !== 'resolving') { nTimerUI.classList.add('hidden'); clearInterval(nextRoundTimerInt); }
+            }
+            if(iTimerUI) {
+                if (mySeatIndex !== -1 && (state.status === 'betting' || state.status === 'waiting')) {
+                    const mySeatData = state.seats[mySeatIndex];
+                    if (mySeatData && mySeatData.hands[0].bet === 0 && mySeatData.kickTimeLeft > 0) { let left = Math.ceil(mySeatData.kickTimeLeft / 1000); iTimerUI.classList.remove('hidden'); clearInterval(idleTimerInt); document.getElementById('i-time').innerText = left; idleTimerInt = setInterval(() => { left--; if (left > 0) document.getElementById('i-time').innerText = left; else { clearInterval(idleTimerInt); iTimerUI.classList.add('hidden'); } }, 1000); } 
+                    else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
+                } else { iTimerUI.classList.add('hidden'); clearInterval(idleTimerInt); }
+            }
+            clearInterval(turnTimerVisualInt);
+            if (state.status === 'playing' && state.turnTimeLeft > 0 && state.activeSeatIndex !== -1) {
+                const bar = document.getElementById(`turn-bar-${state.activeSeatIndex}`);
+                if (bar) { let remaining = state.turnTimeLeft; turnTimerVisualInt = setInterval(() => { remaining -= 200; if (remaining < 0) remaining = 0; bar.style.width = `${(remaining / 15000) * 100}%`; if (remaining <= 0) clearInterval(turnTimerVisualInt); }, 200); }
+            }
+        }
 
-        window.placeDvtBet = function(choice) {
-            if(gameLocks.dvt) return showToast('This game is offline for maintenance.');
-            if(isBetting) return; 
-            const amt = currentChipValue;
-            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); 
-            if (myDvtBets[choice] + amt > 50000) return showToast("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
-            applyThrottle(); myDvtBets[choice] += amt; socket.emit('place_dvt_bet', { username: currentUser.username, choice, amount: amt });
-            lastBetAction = { game: 'dvt', choice: choice };
-        };
-
-        window.spinSlots = function() {
-            if(gameLocks.slots) return showToast('This game is offline for maintenance.');
-            if(isBetting) return; 
-            const amt = currentChipValue;
-            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); 
-            if (amt > 50000) return showToast("Max bet is 50,000 CR."); if (amt > currentUser.credits) return showToast("Insufficient credits!");
-            
-            applyThrottle();
-            document.getElementById('slots-result-text').innerText = "SPINNING...";
-            document.getElementById('reel-1').style.animation = 'subtleShake 0.1s infinite';
-            document.getElementById('reel-2').style.animation = 'subtleShake 0.1s infinite';
-            document.getElementById('reel-3').style.animation = 'subtleShake 0.1s infinite';
-            
-            socket.emit('spin_slots', { username: currentUser.username, betAmount: amt });
-        };
-
-        socket.on('slots_result', (data) => {
-            document.getElementById('reel-1').style.animation = 'none'; document.getElementById('reel-1').innerText = data.reels[0];
-            setTimeout(() => { document.getElementById('reel-2').style.animation = 'none'; document.getElementById('reel-2').innerText = data.reels[1]; }, 200);
-            setTimeout(() => { 
-                document.getElementById('reel-3').style.animation = 'none'; document.getElementById('reel-3').innerText = data.reels[2]; 
-                if(data.winAmount > 0) {
-                    document.getElementById('slots-result-text').innerText = `JACKPOT! YOU WON ${formatNumber(data.winAmount)}!`;
-                    document.getElementById('slots-result-text').style.color = 'var(--success)';
-                    playSfx('win');
-                } else {
-                    document.getElementById('slots-result-text').innerText = `NO LUCK. SPIN AGAIN!`;
-                    document.getElementById('slots-result-text').style.color = '#fff';
-                    playSfx('lose');
-                }
-            }, 400);
-        });
-
-        socket.on('dvt_state_update', (data) => {
-            const statusText = document.getElementById('dvt-result-text');
-            const dCard = document.getElementById('dvt-dragon-card'); const tCard = document.getElementById('dvt-tiger-card');
+        // BACCARAT ENGINE
+        let baccaratInterval = null;
+        socket.on('baccarat_state_update', (data) => {
+            const statusText = document.getElementById('baccarat-result-text'); const timerText = document.getElementById('baccarat-timer');
+            const pCardsUI = document.getElementById('baccarat-p-cards'); const bCardsUI = document.getElementById('baccarat-b-cards');
+            const pScore = document.getElementById('baccarat-p-score'); const bScore = document.getElementById('baccarat-b-score');
             
             if (data.status === 'betting') {
-                statusText.innerText = "PLACE YOUR BETS"; myDvtBets = { dragon: 0, tiger: 0, tie: 0 };
-                dCard.innerText = '?'; tCard.innerText = '?'; dCard.style.color = '#fff'; tCard.style.color = '#fff';
-                document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-dvt')) { b.classList.add('hidden'); }});
+                statusText.innerText = "WAITING FOR BETS..."; myBaccaratBets = { player: 0, banker: 0, tie: 0 }; clearInterval(baccaratInterval);
+                pCardsUI.innerHTML = ''; bCardsUI.innerHTML = ''; pScore.innerText = '0'; bScore.innerText = '0';
+                document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-baccarat')) { b.classList.add('hidden'); b.style.backgroundColor = 'var(--accent-glow-2)'; }});
+                baccaratInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(baccaratInterval); }, 1000);
             } 
-            else if (data.status === 'drawing') { statusText.innerText = "NO MORE BETS"; playSfx('deal'); } 
+            else if (data.status === 'drawing') { statusText.innerText = "NO MORE BETS"; timerText.innerText = "DRAWING CARDS..."; playSfx('deal'); } 
             else if (data.status === 'resolving') {
+                // Staggered reveal
+                pCardsUI.innerHTML = formatCardHTML(data.pCards[0], false);
+                bCardsUI.innerHTML = formatCardHTML(data.bCards[0], false);
+                
                 setTimeout(() => {
-                    dCard.innerText = data.dragonCard.value;
-                    dCard.style.color = ['Hearts', 'Diamonds'].includes(data.dragonCard.suit) ? 'red' : 'black';
+                    pCardsUI.innerHTML += formatCardHTML(data.pCards[1], false);
+                    bCardsUI.innerHTML += formatCardHTML(data.bCards[1], false);
                     playSfx('deal');
-                }, 500);
+                }, 1000);
+
+                let resolveTime = 2000;
+                
+                if (data.thirdCardTarget) {
+                    setTimeout(() => {
+                        if (data.thirdCardTarget === 'player' || data.thirdCardTarget === 'both') {
+                            timerText.innerText = "PLAYER DRAWS 3RD CARD";
+                            pCardsUI.innerHTML += formatCardHTML(data.pCards[2], false);
+                            playSfx('deal');
+                        }
+                    }, 2500);
+
+                    if(data.thirdCardTarget === 'banker' || data.thirdCardTarget === 'both') {
+                        let delay = data.thirdCardTarget === 'both' ? 4000 : 2500;
+                        setTimeout(() => {
+                            timerText.innerText = "BANKER DRAWS 3RD CARD";
+                            bCardsUI.innerHTML += formatCardHTML(data.bCards[2], false);
+                            playSfx('deal');
+                        }, delay);
+                    }
+                    resolveTime = data.thirdCardTarget === 'both' ? 5500 : 4000;
+                }
+
                 setTimeout(() => {
-                    tCard.innerText = data.tigerCard.value;
-                    tCard.style.color = ['Hearts', 'Diamonds'].includes(data.tigerCard.suit) ? 'red' : 'black';
-                    playSfx('deal');
-                }, 1500);
-                setTimeout(() => {
+                    pScore.innerText = data.pVal; bScore.innerText = data.bVal;
                     statusText.innerText = data.winner === 'tie' ? "TIE!" : `${data.winner.toUpperCase()} WINS!`;
-                    let totalBet = Object.values(myDvtBets).reduce((a,b)=>a+b, 0);
+                    
+                    let totalBet = Object.values(myBaccaratBets).reduce((a,b)=>a+b, 0);
                     if (totalBet > 0) {
                         let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
                         if (myWins.length > 0) { 
-                            playSfx('win');
-                        } else if (data.winner === 'tie' && (myDvtBets.dragon > 0 || myDvtBets.tiger > 0)) {
-                            playSfx('win');
-                        } else { playSfx('lose'); }
+                            let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0);
+                            timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win');
+                        } else if (data.winner === 'tie' && (myBaccaratBets.player > 0 || myBaccaratBets.banker > 0)) {
+                            timerText.innerText = `PUSH!`; playSfx('win');
+                        } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
+
+                        ['player', 'banker', 'tie'].forEach(c => { 
+                            if(myBaccaratBets[c] > 0) {
+                                const badge = document.getElementById(`badge-baccarat-${c}`); let winData = myWins.find(w=>w.choice===c);
+                                if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } 
+                                else if(data.winner === 'tie' && c !== 'tie') { badge.innerText = "PUSH"; badge.style.backgroundColor = 'var(--warning)'; }
+                                else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
+                            }
+                        });
                     }
-                }, 2500);
+                }, resolveTime);
             }
+        });
+
+        window.placeBaccaratBet = function(choice) {
+            if(gameLocks.baccarat) return showToast('This game is offline for maintenance.');
+            if(isBetting) return; const box = document.getElementById(`baccarat-btn-${choice}`); if(box && box.classList.contains('locked')) return;
+            const amt = currentChipValue;
+            if (isNaN(amt) || amt <= 0) return showToast("Select a valid bet amount."); 
+            if (myBaccaratBets[choice] + amt > 50000) return showToast("Maximum limit is 50,000 per tile!"); if (amt > currentUser.credits) return showToast("Insufficient credits!");
+            
+            applyThrottle(); myBaccaratBets[choice] += amt; socket.emit('place_baccarat_bet', { username: currentUser.username, choice, amount: amt });
+            lastBetAction = { game: 'baccarat', choice: choice };
+        };
+
+        window.actPvpPick = function(pick) {
+            socket.emit('pvp_rps_pick', { username: currentUser.username, pick });
+        };
+
+        socket.on('pvp_duel_state_update', (state) => {
+            currentPvpDuelState = state;
+            const statusBox = document.getElementById('duel-status-box');
+            statusBox.innerText = state.message;
+
+            const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
+            myDuelSeatIndex = mySeatData ? state.seats.indexOf(mySeatData) : -1;
+
+            if (state.type === 'rps' && state.status === 'waiting_picks' && myDuelSeatIndex !== -1 && !state.seats[myDuelSeatIndex].rpsChoice) { 
+                document.getElementById('duel-rps-controls').classList.remove('hidden'); 
+            } else { 
+                document.getElementById('duel-rps-controls').classList.add('hidden'); 
+            }
+
+            for(let i=0; i<2; i++) {
+                const seat = state.seats[i];
+                const emptyUI = document.getElementById(`duel-empty-${i}`);
+                const occUI = document.getElementById(`duel-occupied-${i}`);
+                const seatCard = document.getElementById(`duel-seat-${i}`);
+
+                if(seat) {
+                    emptyUI.classList.add('hidden'); occUI.classList.remove('hidden');
+                    document.getElementById(`duel-name-${i}`).innerText = seat.username.toUpperCase();
+                    document.getElementById(`duel-name-${i}`).style.color = seat.color || '#fff';
+                    document.getElementById(`duel-score-${i}`).innerText = seat.score;
+                    
+                    let displayChoice = seat.choice ? seat.choice.toUpperCase() : 'WAITING...';
+                    if(state.type === 'rps') {
+                        if (seat.rpsChoice) displayChoice = myDuelSeatIndex === i ? seat.rpsChoice.toUpperCase() : 'LOCKED IN';
+                        else displayChoice = 'THINKING...';
+                    } else if (state.type === 'deathroll') {
+                        displayChoice = 'READY TO ROLL';
+                    }
+                    document.getElementById(`duel-choice-${i}`).innerText = displayChoice;
+                    
+                    const readyBadge = document.getElementById(`duel-ready-${i}`);
+                    if(seat.ready) readyBadge.classList.remove('hidden'); else readyBadge.classList.add('hidden');
+
+                    if(myDuelSeatIndex === i) seatCard.classList.add('my-seat'); else seatCard.classList.remove('my-seat');
+                } else {
+                    emptyUI.classList.remove('hidden'); occUI.classList.add('hidden'); seatCard.classList.remove('my-seat');
+                    document.getElementById(`duel-ready-${i}`).classList.add('hidden');
+                }
+            }
+
+            const matchVisual = document.getElementById('duel-match-visual');
+            const pointer = document.getElementById('duel-wheel-pointer');
+            const canvas = document.getElementById('duel-wheel-canvas');
+            
+            if(state.status === 'flipping' || state.status === 'spinning') {
+                if (state.type === 'wheel') { matchVisual.classList.add('hidden'); canvas.classList.remove('hidden'); canvas.classList.add('wheel-spinning'); pointer.classList.remove('hidden'); drawWheel(canvas, state.slices, state.seats[0].username, state.seats[1].username); } 
+                else if (state.type === 'deathroll') { canvas.classList.add('hidden'); matchVisual.classList.remove('hidden'); matchVisual.className = 'duel-coin flipping'; matchVisual.innerText = '⚅'; pointer.classList.add('hidden'); }
+                else { canvas.classList.add('hidden'); matchVisual.classList.remove('hidden'); matchVisual.className = 'duel-coin flipping'; matchVisual.innerText = '?'; pointer.classList.add('hidden'); }
+            } else if (state.status === 'resolving' || state.status === 'finished') {
+                if (state.type === 'wheel') { matchVisual.classList.add('hidden'); canvas.classList.remove('hidden', 'wheel-spinning'); pointer.classList.remove('hidden'); const sliceAngle = 360 / state.slices; const stopAngle = (360 * 5) - (state.winSliceIndex * sliceAngle) - (sliceAngle / 2); canvas.style.transition = 'transform 3s cubic-bezier(0.2, 0.8, 0.2, 1)'; canvas.style.transform = `rotate(${stopAngle}deg)`; } 
+                else if (state.type === 'rps') { canvas.classList.add('hidden'); matchVisual.classList.remove('hidden', 'flipping'); matchVisual.innerText = '⚔️'; matchVisual.style.fontSize = '80px'; }
+                else if (state.type === 'deathroll') { canvas.classList.add('hidden'); matchVisual.classList.remove('hidden', 'flipping'); matchVisual.style.fontSize = '40px'; matchVisual.innerText = state.result || '?'; }
+                else { canvas.classList.add('hidden'); matchVisual.classList.remove('hidden', 'flipping'); matchVisual.innerText = state.result ? state.result.charAt(0).toUpperCase() : '?'; }
+                
+                if(state.status === 'finished') { if(mySeatData && mySeatData.score >= state.format) playSfx('win'); else if (mySeatData) playSfx('lose'); }
+            } else {
+                if(state.type === 'wheel') { matchVisual.classList.add('hidden'); canvas.classList.remove('hidden', 'wheel-spinning'); canvas.style.transition = 'none'; canvas.style.transform = 'rotate(0deg)'; if(state.seats[0] && state.seats[1]) { drawWheel(canvas, state.slices, state.seats[0].username, state.seats[1].username); } else { drawWheel(canvas, state.slices, 'WAITING', 'WAITING'); } pointer.classList.remove('hidden'); } 
+                else { canvas.classList.add('hidden'); matchVisual.classList.remove('hidden'); matchVisual.className = 'duel-coin'; matchVisual.innerText = '?'; matchVisual.style.fontSize = '60px'; pointer.classList.add('hidden'); }
+            }
+        });
+
+        function drawWheel(canvas, numSlices, p1Name, p2Name) {
+            if(!canvas.getContext) return; const ctx = canvas.getContext('2d'); const x = canvas.width / 2; const y = canvas.height / 2; const radius = x - 5;
+            ctx.clearRect(0, 0, canvas.width, canvas.height); const sliceAngle = (2 * Math.PI) / numSlices; const colors = ['#ef4444', '#3b82f6']; 
+            for (let i = 0; i < numSlices; i++) { const startAngle = i * sliceAngle - (Math.PI / 2); const endAngle = startAngle + sliceAngle; ctx.beginPath(); ctx.moveTo(x, y); ctx.arc(x, y, radius, startAngle, endAngle); ctx.closePath(); ctx.fillStyle = colors[i % 2]; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#0f172a'; ctx.stroke(); ctx.save(); ctx.translate(x, y); ctx.rotate(startAngle + (sliceAngle / 2)); ctx.textAlign = "right"; ctx.fillStyle = "#fff"; ctx.font = "bold 16px Arial"; ctx.shadowColor = "black"; ctx.shadowBlur = 4; const text = i % 2 === 0 ? p1Name : p2Name; ctx.fillText(text.substring(0, 8), radius - 15, 6); ctx.restore(); }
+            ctx.beginPath(); ctx.arc(x, y, 15, 0, 2 * Math.PI); ctx.fillStyle = '#fbbf24'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#b45309'; ctx.stroke();
+        }
+
+        socket.on('derby_state_update', (data) => {
+            const statusText = document.getElementById('derby-result-text'); const timerText = document.getElementById('derby-timer');
+            if(data.distances) { for(let i=0; i<6; i++) { const racer = document.getElementById(`racer-${i}`); if(racer) racer.style.left = `calc(${data.distances[i]}% - ${data.distances[i] * 0.75}px)`; } }
+            if (data.laneProfiles) {
+                for(let i=0; i<6; i++) {
+                    const mult = data.laneProfiles[i].m; const trackInd = document.getElementById(`track-ind-${i}`); const betMult = document.getElementById(`bet-mult-${i}`);
+                    const colorCodes = ['#ef4444', '#3b82f6', '#10b981', '#a855f7', '#ec4899', '#fbbf24']; const colorAbbr = ['RED', 'BLU', 'GRN', 'PUR', 'PNK', 'GLD'];
+                    if(trackInd) trackInd.innerHTML = `<span style="color:${colorCodes[i]};">${colorAbbr[i]} | ${mult}x</span>`; if(betMult) betMult.innerText = `PAYS ${mult}x`;
+                }
+            }
+          if (data.status === 'betting') {
+                statusText.innerText = "PLACE YOUR BETS"; myDerbyBets = [0, 0, 0, 0, 0, 0]; clearInterval(derbyInterval);
+                document.querySelectorAll('.racer-sprite').forEach(r => r.classList.remove('racer-running')); document.querySelectorAll('.derby-lane').forEach(l => l.classList.remove('scrolling'));
+                for(let i=0; i<6; i++) { const badge = document.getElementById(`badge-derby-${i}`); if(badge) { badge.classList.add('hidden'); badge.style.backgroundColor = 'var(--accent-glow-2)'; } }
+                derbyInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}s REMAINING`; if (left <= 0) clearInterval(derbyInterval); }, 1000);
+            }
+            else if (data.status === 'racing') { statusText.innerText = "RACING..."; timerText.innerText = "NO MORE BETS"; document.querySelectorAll('.racer-sprite').forEach(r => r.classList.add('racer-running')); document.querySelectorAll('.derby-lane').forEach(l => l.classList.add('scrolling')); playSfx('deal'); }
+            else if (data.status === 'resolving') {
+                document.querySelectorAll('.racer-sprite').forEach(r => r.classList.remove('racer-running')); document.querySelectorAll('.derby-lane').forEach(l => l.classList.remove('scrolling'));
+                const cNames = ['RED', 'BLUE', 'GREEN', 'PURPLE', 'PINK', 'GOLD']; statusText.innerText = `${cNames[data.winner]} WINS!`;
+                let totalDerbyBet = myDerbyBets.reduce((a,b)=>a+b, 0);
+                if (totalDerbyBet > 0) {
+                    let myWins = data.winners ? data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase()) : [];
+                    if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); timerText.innerText = `YOU WON ${formatNumber(totalWin)}!`; playSfx('win'); } else { timerText.innerText = "HOUSE WINS"; playSfx('lose'); }
+                    for(let i=0; i<6; i++) {
+                        if(myDerbyBets[i] > 0) {
+                            const badge = document.getElementById(`badge-derby-${i}`); let winData = myWins.find(w=>w.choice===i);
+                            if(winData) { badge.innerText = formatNumber(winData.amount); badge.style.backgroundColor = 'var(--success)'; } else { badge.innerText = "0"; badge.style.backgroundColor = 'var(--danger)'; }
+                        }
+                    }
+                }
+            }
+        });
+
+        socket.on('derby_race_tick', (data) => { if(data.distances) { for(let i=0; i<6; i++) { const racer = document.getElementById(`racer-${i}`); if(racer) racer.style.left = `calc(${data.distances[i]}% - ${data.distances[i] * 0.75}px)`; } } });
+
+        // Security locks to prevent console manipulation
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
         });
 
     </script>
