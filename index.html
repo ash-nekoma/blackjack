@@ -8,14 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
-        :root {
-            color-scheme: light dark;
-            --bg-dark: #0f172a; --bg-darker: #020617;
-            --table-green: #0d7a42; --table-dark: #054522; 
-            --accent-glow: #8b5cf6; --accent-glow-2: #3b82f6;
-            --danger: #ef4444; --success: #10b981; --warning: #fbbf24;
-            --border-std: #222;
-        }
+        :root { --bg-dark: #0f172a; --bg-darker: #020617; --table-green: #0d7a42; --table-dark: #054522; --accent-glow: #8b5cf6; --accent-glow-2: #3b82f6; --danger: #ef4444; --success: #10b981; --warning: #fbbf24; --border-std: #222; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-style: normal !important;}
         body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100dvh; overflow: hidden; user-select: none; }
         body, button, table, th, td { font-family: 'VT323', monospace; letter-spacing: 1px; color: #fff;}
@@ -123,7 +116,7 @@
 
         .info-box { background: rgba(0,0,0,0.5); border: 4px solid #334155; padding: 20px; text-align: left; font-size: 24px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
         .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
-        .reward-box { height: 100px; background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; transition: 0.2s; perspective: 1000px;}
+        .reward-box { height: 100px; background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 4px 4px 0 #000; perspective: 1000px;}
         .reward-box .inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; }
         .reward-box.open .inner { transform: rotateY(180deg); }
         .reward-box .front, .reward-box .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; cursor: pointer;}
@@ -595,7 +588,7 @@
                 <div class="center-focus"><div class="dice-container"><div id="die1" class="dice">⚀</div><div id="die2" class="dice">⚀</div></div><div style="text-align: center; margin-bottom: 20px;"><div id="dice-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div><div id="dice-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 4px solid #333; display:inline-block;">15s REMAINING</div></div></div>
                 <div class="arcade-bet-area">
                     <div class="chip-rack"><button class="chip-action-btn" onclick="actUndoBet('dice')">UNDO</button><div class="casino-chip chip-100 selected" onclick="selectChip(100)" id="chip-100">100</div><div class="casino-chip chip-1k" onclick="selectChip(1000)" id="chip-1000">1K</div><div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div><div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div><div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div><button class="chip-action-btn" onclick="actRebet()">REBET</button></div>
-                    <div class="arcade-grid"><div id="dice-btn-under" class="arcade-bet-box" onclick="placeDiceBet('under')"><div class="bet-badge pixel-text hidden" id="badge-under">0</div><div class="payout-overlay hidden" id="payout-under"></div><div class="arcade-bet-title pixel-text">UNDER 7</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div></div><div id="dice-btn-seven" class="arcade-bet-box" onclick="placeDiceBet('seven')"><div class="bet-badge pixel-text hidden" id="badge-seven">0</div><div class="payout-overlay hidden" id="payout-seven"></div><div class="arcade-bet-title pixel-text" style="color:#a855f7;">EXACTLY 7</div><div class="arcade-bet-payout pixel-text">PAYS 4:1</div></div><div id="dice-btn-over" class="arcade-bet-box" onclick="placeDiceBet('over')"><div class="bet-badge pixel-text hidden" id="badge-over">0</div><div class="payout-overlay hidden" id="payout-over"></div><div class="arcade-bet-title pixel-text" style="color:var(--success);">OVER 7</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div></div></div>
+                    <div class="arcade-grid"><div id="dice-btn-under" class="arcade-bet-box" onclick="placeDiceBet('under')"><div class="bet-badge pixel-text hidden" id="badge-dice-under">0</div><div class="payout-overlay hidden" id="payout-under"></div><div class="arcade-bet-title pixel-text">UNDER 7</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div></div><div id="dice-btn-seven" class="arcade-bet-box" onclick="placeDiceBet('seven')"><div class="bet-badge pixel-text hidden" id="badge-dice-seven">0</div><div class="payout-overlay hidden" id="payout-seven"></div><div class="arcade-bet-title pixel-text" style="color:#a855f7;">EXACTLY 7</div><div class="arcade-bet-payout pixel-text">PAYS 4:1</div></div><div id="dice-btn-over" class="arcade-bet-box" onclick="placeDiceBet('over')"><div class="bet-badge pixel-text hidden" id="badge-dice-over">0</div><div class="payout-overlay hidden" id="payout-over"></div><div class="arcade-bet-title pixel-text" style="color:var(--success);">OVER 7</div><div class="arcade-bet-payout pixel-text">PAYS 1:1</div></div></div>
                 </div>
             </div>
         </div>
@@ -643,7 +636,7 @@
                 <div class="center-focus"><div class="color-die-container"><div id="col-die1" class="color-die bg-red"></div><div id="col-die2" class="color-die bg-blue"></div><div id="col-die3" class="color-die bg-yellow"></div></div><div style="text-align: center; margin-top: 20px;"><div id="color-result-text" class="pixel-text" style="font-size: 60px; color: #fff; text-shadow: 4px 4px 0 #000;">ROLLING...</div><div id="color-timer" class="pixel-text" style="font-size: 30px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 4px solid #333; display:inline-block;">15s REMAINING</div></div></div>
                 <div class="arcade-bet-area">
                     <div class="chip-rack"><button class="chip-action-btn" onclick="actUndoBet('color')">UNDO</button><div class="casino-chip chip-100 selected" onclick="selectChip(100)" id="chip-100">100</div><div class="casino-chip chip-1k" onclick="selectChip(1000)" id="chip-1000">1K</div><div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div><div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div><div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div><button class="chip-action-btn" onclick="actRebet()">REBET</button></div>
-                    <div class="color-grid"><div id="color-btn-red" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('red')"><div class="bet-badge pixel-text hidden" id="badge-red">0</div><div class="arcade-bet-title c-red pixel-text">RED</div></div><div id="color-btn-blue" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('blue')"><div class="bet-badge pixel-text hidden" id="badge-blue">0</div><div class="arcade-bet-title c-blue pixel-text">BLUE</div></div><div id="color-btn-yellow" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('yellow')"><div class="bet-badge pixel-text hidden" id="badge-yellow">0</div><div class="arcade-bet-title c-yellow pixel-text">YELLOW</div></div><div id="color-btn-green" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('green')"><div class="bet-badge pixel-text hidden" id="badge-green">0</div><div class="arcade-bet-title c-green pixel-text">GREEN</div></div><div id="color-btn-pink" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('pink')"><div class="bet-badge pixel-text hidden" id="badge-pink">0</div><div class="arcade-bet-title c-pink pixel-text">PINK</div></div><div id="color-btn-white" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('white')"><div class="bet-badge pixel-text hidden" id="badge-white">0</div><div class="arcade-bet-title c-white pixel-text">WHITE</div></div></div>
+                    <div class="color-grid"><div id="color-btn-red" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('red')"><div class="bet-badge pixel-text hidden" id="badge-color-red">0</div><div class="arcade-bet-title c-red pixel-text">RED</div></div><div id="color-btn-blue" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('blue')"><div class="bet-badge pixel-text hidden" id="badge-color-blue">0</div><div class="arcade-bet-title c-blue pixel-text">BLUE</div></div><div id="color-btn-yellow" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('yellow')"><div class="bet-badge pixel-text hidden" id="badge-color-yellow">0</div><div class="arcade-bet-title c-yellow pixel-text">YELLOW</div></div><div id="color-btn-green" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('green')"><div class="bet-badge pixel-text hidden" id="badge-color-green">0</div><div class="arcade-bet-title c-green pixel-text">GREEN</div></div><div id="color-btn-pink" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('pink')"><div class="bet-badge pixel-text hidden" id="badge-color-pink">0</div><div class="arcade-bet-title c-pink pixel-text">PINK</div></div><div id="color-btn-white" class="arcade-bet-box" style="width: 100%; height: 90px;" onclick="placeColorBet('white')"><div class="bet-badge pixel-text hidden" id="badge-color-white">0</div><div class="arcade-bet-title c-white pixel-text">WHITE</div></div></div>
                 </div>
             </div>
         </div>
@@ -938,7 +931,13 @@
         async function executeBankRequest() { if(!pendingBankAction) return; const res = await fetch('/api/bank/request', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username: currentUser.username, type: pendingBankAction.type, amount: pendingBankAction.amount}) }); const data = await res.json(); if(res.ok) { showToast("Request submitted successfully to Administration.", "success"); if(data.newCredits !== undefined) { currentUser.credits = data.newCredits; updateAllCredits(); } hideModal('bank-confirm-modal'); pendingBankAction = null; } else { showToast(data.error); } }
         async function redeemCodeMain() { const code = document.getElementById('gift-code-main').value; if(!code) return showToast("Please enter a valid code."); const res = await fetch('/api/bank/giftcode', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username: currentUser.username, code}) }); const data = await res.json(); if(res.ok) { showToast(`Successfully Redeemed ${formatNumber(data.amount)} CR!`, 'success'); hideModal('redeem-modal'); document.getElementById('gift-code-main').value = ''; } else { showToast(data.error); } }
 
-        function pickRewardBox(idx) { if(rewardCooldownSeconds > 0) return showToast("Your cooldown is still active!"); if(lastPickedBoxIndex !== -1) return; lastPickedBoxIndex = idx; socket.emit('claim_daily_reward_box', { username: currentUser.username, boxIndex: idx }); }
+        function pickRewardBox(idx) { 
+            if(rewardCooldownSeconds > 0) return showToast("Your cooldown is still active!"); 
+            if(lastPickedBoxIndex !== -1) return; 
+            lastPickedBoxIndex = idx; 
+            document.querySelectorAll('.reward-box')[idx].classList.add('open');
+            socket.emit('claim_daily_reward_box', { username: currentUser.username, boxIndex: idx }); 
+        }
 
         socket.on('reward_box_opened', (data) => {
             if(!data.success) { lastPickedBoxIndex = -1; return showToast(data.message); }
@@ -948,6 +947,18 @@
             if (data.wonItem) { setTimeout(() => showToast(`Bonus Item Found: ${data.wonItem}`, "success"), 1500); }
             setTimeout(() => { document.querySelectorAll('.reward-box').forEach((box, i) => { if(i !== lastPickedBoxIndex) box.classList.add('open'); }); }, 1200);
             setTimeout(() => { rewardCooldownSeconds = data.cooldownSeconds; lastPickedBoxIndex = -1; document.querySelectorAll('.reward-box').forEach(box => box.classList.remove('open')); showRewards(); }, 4500);
+        });
+
+        socket.on('arcade_bet_placed', (data) => { 
+            let badgeId = `badge-${data.game}-${data.choice}`;
+            if (data.game === 'dice') badgeId = `badge-dice-${data.choice}`;
+            if (data.game === 'derby') badgeId = `badge-derby-${data.choice}`;
+            if (data.game === 'color') badgeId = `badge-color-${data.choice}`;
+            if (data.game === 'cups') badgeId = `badge-cups-${data.choice}`;
+            if (data.game === 'baccarat') badgeId = `badge-baccarat-${data.choice}`;
+
+            const badge = document.getElementById(badgeId); 
+            if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); badge.classList.remove('hidden'); }
         });
 
         socket.on('global_lobby_counts', (counts) => {
@@ -964,13 +975,13 @@
             if(document.getElementById('slots-player-count')) document.getElementById('slots-player-count').innerText = counts['slots'] || 0;
         });
 
-        function openMarket() { if(!currentUser) return; showModal('market-modal'); socket.emit('req_market', { username: currentUser.username }); }
+        function openMarket() { if(!currentUser) return showToast("Please log in first!"); showModal('market-modal'); socket.emit('req_market', { username: currentUser.username }); }
         socket.on('market_update', (auctions) => { if(!document.getElementById('market-modal').classList.contains('hidden')) socket.emit('req_market', { username: currentUser.username }); });
         function setupAuction(itemName) { document.getElementById('auction-creator').classList.remove('hidden'); document.getElementById('auction-item-name').innerText = itemName.toUpperCase(); document.getElementById('auction-start-bid').value = ''; }
         function postAuction() { const item = document.getElementById('auction-item-name').innerText; const bid = parseInt(document.getElementById('auction-start-bid').value); if(isNaN(bid) || bid < 100) return showToast("Starting bid must be at least 100 CR."); socket.emit('create_auction', { username: currentUser.username, item, startingBid: bid }); document.getElementById('auction-creator').classList.add('hidden'); }
         function promptBid(id, currentBid) { const bidStr = prompt(`Current bid is ${formatNumber(currentBid)} CR. Enter your bid amount (Must be higher):`); if(!bidStr) return; const amt = parseInt(bidStr.replace(/,/g, '')); if(isNaN(amt) || amt <= currentBid) return showToast("Bid must be a valid number higher than current bid."); if(amt > currentUser.credits) return showToast("Insufficient credits."); socket.emit('place_bid', { id, username: currentUser.username, bidAmount: amt }); }
 
-        function openInbox() { if(!currentUser) return; showModal('notify-modal'); setInboxTab('announcement'); socket.emit('req_inbox', { username: currentUser.username }); }
+        function openInbox() { if(!currentUser) return showToast("Please log in first!"); showModal('notify-modal'); setInboxTab('announcement'); socket.emit('req_inbox', { username: currentUser.username }); }
         function setInboxTab(tab) { currentInboxTab = tab; document.getElementById('tab-announcement').classList.remove('active'); document.getElementById('tab-message').classList.remove('active'); document.getElementById('tab-support').classList.remove('active'); document.getElementById(`tab-${tab}`).classList.add('active'); document.getElementById('inbox-list-view').classList.remove('hidden'); document.getElementById('inbox-thread-view').classList.add('hidden'); document.getElementById('inbox-create-view').classList.add('hidden'); if(tab === 'support') { document.getElementById('btn-create-ticket').classList.remove('hidden'); } else { document.getElementById('btn-create-ticket').classList.add('hidden'); } renderInboxList(); }
         function backToInbox() { currentOpenTicketId = null; document.getElementById('inbox-list-view').classList.remove('hidden'); document.getElementById('inbox-thread-view').classList.add('hidden'); document.getElementById('inbox-create-view').classList.add('hidden'); if(currentInboxTab === 'support') document.getElementById('btn-create-ticket').classList.remove('hidden'); socket.emit('req_inbox', { username: currentUser.username }); }
         function openCreateTicket() { document.getElementById('inbox-list-view').classList.add('hidden'); document.getElementById('inbox-create-view').classList.remove('hidden'); document.getElementById('ticket-subject').value = ''; document.getElementById('ticket-text').value = ''; }
