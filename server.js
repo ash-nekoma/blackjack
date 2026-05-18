@@ -1252,7 +1252,7 @@ io.on('connection', (socket) => {
         try {
             if(gameLocks[roomId]) return socket.emit('arcade_error', 'Table is currently offline.');
             let room = rooms[roomId]; if (!room) return; const seat = room.seats[seatIndex]; if (!seat || seat.username.toLowerCase() !== username.toLowerCase() || room.status !== 'betting') return;
-            if (betAmount >= 1000 && betAmount <= 50000) {
+            if (betAmount >= 100 && betAmount <= 50000) {
                 const updatedUser = await User.findOneAndUpdate({ username: new RegExp('^' + seat.username + '$', 'i'), credits: { $gte: betAmount } }, { $inc: { credits: -betAmount } }, { new: true });
                 if (!updatedUser) return; seat.credits = updatedUser.credits; seat.hands[0].bet = betAmount; seat.kickAt = null; 
                 await new Transaction({ username: updatedUser.username, type: getGameTitle(roomId), amount: -betAmount }).save();
