@@ -799,12 +799,17 @@
     </div>
     <!-- SYSTEM LOGIC CONTINUED -->
     <script>
-       <!-- ========================================================= -->
-    <!-- MASTER JAVASCRIPT ENGINE (UNIFIED & FAILSAFE)             -->
-    <!-- ========================================================= -->
-    <script>
-        // Failsafe: Prevents the entire script from crashing if the server is temporarily asleep
-        const socket = typeof io !== 'undefined' ? io() : null;
+        // 1. FAILSAFE SOCKET INITIALIZATION
+        let socket = null;
+        try {
+            if (typeof io !== 'undefined') {
+                socket = io();
+            } else {
+                console.warn("Socket.io missing. Ensure you are running via the Node server (localhost/Railway), not a local file path.");
+            }
+        } catch (e) {
+            console.error("Socket initialization failed:", e);
+        }
 
         // System State
         let currentUser = null; 
@@ -816,7 +821,6 @@
         let globalTimerInt = null; 
         let nextRoundTimerInt = null; 
         let turnTimerVisualInt = null;
-        let dailyRewardTimerInt = null;
         
         window.lastBetAmount = 0; 
         
@@ -850,8 +854,8 @@
         function formatNumber(num) { return num ? num.toLocaleString() : '0'; }
 
         function showToast(msg, type = 'error') { 
-            const container = document.getElementById('toast-container'); 
-            if(!container) return;
+            const container = document.getElementById('toast-container');
+            if(!container) return; 
             container.innerHTML = ''; 
             const toast = document.createElement('div'); 
             toast.className = `toast toast-${type}`; 
@@ -878,8 +882,16 @@
             if(audioNodes[id]) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } 
         }
 
-        function logout() { try { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); } catch(e){} location.reload(); }
-        function promptLogout() { showModal('logout-modal'); document.getElementById('confirm-action-msg').innerText = "DISCONNECT FROM LOBBY?"; document.getElementById('btn-confirm-yes').onclick = logout; }
+        function logout() { 
+            try { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); } catch(e){} 
+            location.reload(); 
+        }
+
+        function promptLogout() { 
+            showModal('logout-modal');
+            document.getElementById('confirm-action-msg').innerText = "DISCONNECT FROM LOBBY?";
+            document.getElementById('btn-confirm-yes').onclick = logout;
+        }
 
         function switchRealmTab(tab) {
             ['cards', 'arena', 'arcade', 'stakes'].forEach(t => {
@@ -897,17 +909,21 @@
         // ==========================================
         // AUTHENTICATION
         // ==========================================
+        
+        // Listen for "Enter" key on password field
+        document.getElementById('login-pass').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+
         async function login() {
             try {
-                if(!socket) {
-                    showToast("SERVER OFFLINE: Socket disconnected. Please check Railway.");
-                    return;
-                }
-
                 const u = document.getElementById('login-user').value.trim(); 
                 const p = document.getElementById('login-pass').value.trim();
                 
                 if(!u || !p) return showToast("Enter credentials."); 
+                if(!socket) return showToast("SERVER OFFLINE: Socket.io missing. Ensure you are visiting the Railway link.");
                 
                 const res = await fetch('/api/login', { 
                     method: 'POST', 
@@ -928,7 +944,7 @@
                     showToast(data.error);
                 }
             } catch(e) { 
-                showToast("SERVER OFFLINE: Terminal link failure. Check backend."); 
+                showToast("SERVER OFFLINE: Terminal link failure. Is your backend running?"); 
             }
         }
 
@@ -944,7 +960,7 @@
             } catch(e){} 
         };
         
-        if(socket) {
+        if (socket) {
             socket.on('credit_update', (data) => { 
                 if(currentUser && currentUser.username.toLowerCase() === data.username.toLowerCase()) { 
                     currentUser.credits = data.credits; 
@@ -965,86 +981,7 @@
         }
 
         // ==========================================
-        // DAILY REWARDS ENGINE (24HR COOLDOWN)
-        // ==========================================
-        function showRewards() {
-            showModal('rewards-modal');
-            checkRewardStatus();
-        }
-
-        function checkRewardStatus() {
-            const lastClaim = localStorage.getItem('cr_last_reward');
-            const btn = document.getElementById('btn-claim-reward');
-            const timerBox = document.getElementById('reward-timer-box');
-            const statusTxt = document.getElementById('reward-status');
-
-            if (!lastClaim) {
-                if(btn) btn.classList.remove('hidden');
-                if(timerBox) timerBox.classList.add('hidden');
-                if(statusTxt) statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR";
-                return;
-            }
-
-            const now = Date.now();
-            const timePassed = now - parseInt(lastClaim);
-            const cooldown = 24 * 60 * 60 * 1000; 
-
-            if (timePassed >= cooldown) {
-                if(btn) btn.classList.remove('hidden');
-                if(timerBox) timerBox.classList.add('hidden');
-                if(statusTxt) statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR";
-            } else {
-                if(btn) btn.classList.add('hidden');
-                if(timerBox) timerBox.classList.remove('hidden');
-                if(statusTxt) statusTxt.innerText = "NEXT REWARD AVAILABLE IN:";
-                startRewardCountdown(cooldown - timePassed);
-            }
-        }
-
-        function startRewardCountdown(msLeft) {
-            clearInterval(dailyRewardTimerInt);
-            const timerBox = document.getElementById('reward-timer-box');
-            let secondsLeft = Math.floor(msLeft / 1000);
-            
-            function updateDisplay() {
-                const h = Math.floor(secondsLeft / 3600).toString().padStart(2, '0');
-                const m = Math.floor((secondsLeft % 3600) / 60).toString().padStart(2, '0');
-                const s = (secondsLeft % 60).toString().padStart(2, '0');
-                if(timerBox) timerBox.innerText = `${h}:${m}:${s}`;
-            }
-            
-            updateDisplay();
-            dailyRewardTimerInt = setInterval(() => {
-                secondsLeft--;
-                if (secondsLeft <= 0) {
-                    clearInterval(dailyRewardTimerInt);
-                    checkRewardStatus(); 
-                } else {
-                    updateDisplay();
-                }
-            }, 1000);
-        }
-
-        window.claimDailyReward = function() {
-            if (!currentUser) return showToast("You must log in to claim.");
-            
-            const lastClaim = localStorage.getItem('cr_last_reward');
-            const now = Date.now();
-            const cooldown = 24 * 60 * 60 * 1000;
-
-            if (lastClaim && now - parseInt(lastClaim) < cooldown) return showToast("Reward is on cooldown.");
-
-            currentUser.credits += 10000;
-            updateAllCredits();
-            
-            localStorage.setItem('cr_last_reward', now.toString());
-            showToast("YOU FOUND 10,000 CR!", "success");
-            playSfx('win');
-            checkRewardStatus();
-        }
-
-        // ==========================================
-        // BANKING (LIMIT ENFORCED)
+        // BANKING & MODALS
         // ==========================================
         function showBank() {
             if(!currentUser) return;
@@ -1101,6 +1038,7 @@
         window.actRebet = function(gameOverride) {
             if(!lastBetAction) return showToast("No previous bet to repeat.");
             let targetGame = gameOverride || lastBetAction.game;
+            
             if(targetGame === 'baccarat') placeBet('baccarat', lastBetAction.choice);
             if(targetGame === 'dvt') placeBet('dvt', lastBetAction.choice);
             if(targetGame === 'dice') placeBet('dice', lastBetAction.choice);
@@ -1163,7 +1101,9 @@
         window.exitGame = function(game) { 
             let actualGame = game || currentRoomId;
             if (actualGame === 'blackjack' || actualGame === '5seat' || actualGame === '3seat') { 
-                if (mySeatIndex !== -1 && currentGameState && currentGameState.seats[mySeatIndex] && currentGameState.seats[mySeatIndex].hands.some(h => h.bet > 0)) return showToast("Active bets restrict leave."); 
+                if (mySeatIndex !== -1 && currentGameState && currentGameState.seats[mySeatIndex] && currentGameState.seats[mySeatIndex].hands.some(h => h.bet > 0)) { 
+                    return showToast("Active bets restrict leave."); 
+                } 
             } else if (actualGame === 'bac' || actualGame === 'baccarat') { 
                 if (Object.values(myBaccaratBets).reduce((a,b)=>a+b, 0) > 0) return showToast("Active bets restrict leave."); actualGame = 'baccarat'; 
             } else if (actualGame === 'dvt') { 
@@ -1239,7 +1179,7 @@
         }
 
         // ==========================================
-        // BLACKJACK ENGINE (NO SPAM LOCKS)
+        // BLACKJACK ENGINE
         // ==========================================
         window.actSitDown = function(idx) { if(socket) socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
         window.actPlaceBetDropdown = function(idx) { const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value) : 0; if (isNaN(amt) || amt < 100) return showToast("Invalid amount."); if (amt > 50000) return showToast("Limit is 50k."); if (amt > currentUser.credits) return showToast("Insufficient credits!"); window.lastBetAmount = amt; if(socket) socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet'); }
@@ -1326,6 +1266,12 @@
                 seatsHtml += `</div>`;
             }
             if (seatsArea) seatsArea.innerHTML = seatsHtml; 
+            
+            clearInterval(turnTimerVisualInt);
+            if (state.status === 'playing' && state.turnTimeLeft > 0 && state.activeSeatIndex !== -1) {
+                const bar = document.getElementById(`bj-turn-bar-${state.activeSeatIndex}`);
+                if (bar) { let remaining = state.turnTimeLeft; turnTimerVisualInt = setInterval(() => { remaining -= 200; if (remaining < 0) remaining = 0; bar.style.width = `${(remaining / 15000) * 100}%`; if (remaining <= 0) clearInterval(turnTimerVisualInt); }, 200); }
+            }
         }
 
         // ==========================================
