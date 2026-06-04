@@ -789,6 +789,9 @@
     <!-- ========================================================= -->
     <!-- MASTER JAVASCRIPT ENGINE (METAVERSE & ECONOMY EDITION)    -->
     <!-- ========================================================= -->
+    <!-- ========================================================= -->
+    <!-- MASTER JAVASCRIPT ENGINE (METAVERSE & ECONOMY EDITION)    -->
+    <!-- ========================================================= -->
     <script>
         // 1. FAILSAFE SOCKET INITIALIZATION
         let socket = null;
@@ -845,10 +848,11 @@
             'staff': { icon: '💎', name: 'Diamond Staff', value: 80000, desc: 'The absolute peak of Stick N\' Trade wealth.', perk: 'Boosts Daily Loot by a massive +5,000 CR.' }
         };
 
+        // User's Starting Dummy Inventory
         let myInventory = ['staff', 'crown', 'orb', 'vip', 'shield', 'token', 'token', 'token'];
         let tradeOfferSlots = [null, null, null, null, null, null, null, null, null]; 
         let pendingConversionIndex = null;
-        let equippedItem = null; // Used for canvas rendering
+        let equippedItem = null; // Tells the Canvas which item to draw on the Stickman
 
         function renderInventory() {
             let html = '';
@@ -875,6 +879,7 @@
             const itemKey = myInventory[idx];
             const item = SNT_ITEMS[itemKey];
 
+            // Determine Rarity Colors
             let color = '#aaa';
             let rarityText = 'COMMON';
             if(item.value === 'PRICELESS') { color = 'var(--rarity-rare)'; rarityText = 'RARE (SOULBOUND)'; }
@@ -901,6 +906,7 @@
             const btnConvert = document.getElementById('btn-inspector-convert');
             const btnEquip = document.getElementById('btn-inspector-equip');
 
+            // Handle Soulbound / VIP Locks
             if (item.soulbound) {
                 btnConvert.disabled = true;
                 btnConvert.innerText = "NON-CONVERTIBLE";
@@ -910,6 +916,7 @@
                 btnConvert.onclick = () => { pendingConversionIndex = idx; executeConversion(); };
             }
 
+            // Contextual Action Button (Equip vs Trade)
             const counterModal = document.getElementById('counter-offer-modal');
             if (counterModal && !counterModal.classList.contains('hidden')) {
                 if (item.soulbound) {
@@ -939,7 +946,7 @@
             const item = SNT_ITEMS[itemKey];
 
             if (item.soulbound) return showToast("Cannot convert soulbound items.");
-            if (equippedItem === itemKey) equippedItem = null;
+            if (equippedItem === itemKey) equippedItem = null; // Unequip if converting
 
             myInventory.splice(pendingConversionIndex, 1);
             currentUser.credits += item.value;
@@ -1037,30 +1044,29 @@
         }
 
         // ==========================================
-        // LIVE MARKETROOM HTML5 CANVAS ENGINE
+        // 🚀 THE MARKETROOM HTML5 CANVAS ENGINE
         // ==========================================
         let canvas, ctx;
-        let pX = 550, pY = 350; // Player start coordinates
-        let keys = { w: false, a: false, s: false, d: false };
+        let pX = 550, pY = 350, pZ = 0; // Coordinates (Z is for jumping)
+        let vZ = 0; // Jump velocity
+        let keys = { w: false, a: false, s: false, d: false, space: false };
         let marketAnimFrame = null;
         let isInMarket = false;
-
-        // VIP Platform Boundaries (Top Left Area)
-        const VIP_X = 50; const VIP_Y = 50; const VIP_W = 400; const VIP_H = 250;
+        
+        let walkFrame = 0; // Animates legs/arms
+        let facingRight = true;
 
         function initMarketroom() {
             canvas = document.getElementById('market-canvas');
             if(!canvas) return;
             ctx = canvas.getContext('2d');
-            
-            // Resize canvas to match container
             const container = document.querySelector('.marketroom-container');
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
-
+            
             window.addEventListener('keydown', handleMarketKeyDown);
             window.addEventListener('keyup', handleMarketKeyUp);
-
+            
             isInMarket = true;
             marketLoop();
         }
@@ -1073,12 +1079,12 @@
         }
 
         function handleMarketKeyDown(e) {
-            // Ignore WASD if chatting
             if(document.activeElement.tagName === "INPUT") return;
             if(['w','W','ArrowUp'].includes(e.key)) keys.w = true;
             if(['a','A','ArrowLeft'].includes(e.key)) keys.a = true;
             if(['s','S','ArrowDown'].includes(e.key)) keys.s = true;
             if(['d','D','ArrowRight'].includes(e.key)) keys.d = true;
+            if(e.code === 'Space') { keys.space = true; e.preventDefault(); }
         }
 
         function handleMarketKeyUp(e) {
@@ -1086,6 +1092,7 @@
             if(['a','A','ArrowLeft'].includes(e.key)) keys.a = false;
             if(['s','S','ArrowDown'].includes(e.key)) keys.s = false;
             if(['d','D','ArrowRight'].includes(e.key)) keys.d = false;
+            if(e.code === 'Space') keys.space = false;
         }
 
         function marketLoop() {
@@ -1096,28 +1103,46 @@
         }
 
         function updatePhysics() {
-            let speed = 4;
+            let speed = 5;
+            let isMoving = false;
             let nextX = pX; let nextY = pY;
 
-            if(keys.w) nextY -= speed;
-            if(keys.s) nextY += speed;
-            if(keys.a) nextX -= speed;
-            if(keys.d) nextX += speed;
+            if(keys.w) { nextY -= speed; isMoving = true; }
+            if(keys.s) { nextY += speed; isMoving = true; }
+            if(keys.a) { nextX -= speed; isMoving = true; facingRight = false; }
+            if(keys.d) { nextX += speed; isMoving = true; facingRight = true; }
+
+            // Jumping Physics
+            if (keys.space && pZ === 0) {
+                vZ = 12; // Initial jump burst
+                playSfx('bet'); // Little jumping sound
+            }
+            pZ += vZ;
+            if (pZ > 0) {
+                vZ -= 0.8; // Gravity
+            } else {
+                pZ = 0;
+                vZ = 0;
+            }
+
+            // Math.sin generates the smooth back-and-forth Stick Run leg motion!
+            if(isMoving && pZ === 0) { walkFrame += 0.3; } 
+            else if (pZ === 0) { walkFrame = 0; } // Stand still
 
             // Map Boundaries
             if (nextX < 20) nextX = 20;
             if (nextX > canvas.width - 20) nextX = canvas.width - 20;
-            if (nextY < 20) nextY = 20;
+            if (nextY < 150) nextY = 150; // Keep off the back wall
             if (nextY > canvas.height - 20) nextY = canvas.height - 20;
 
-            // VIP Platform Collision Check
-            const isVIP = myInventory.includes('vip');
+            // VIP Platform Collision Box
+            const VIP_X = 50, VIP_Y = 50, VIP_W = 400, VIP_H = 250;
+            const isVIP = myInventory.includes('vip') || (currentUser && currentUser.role === 'staff');
             const onPlatform = nextX > VIP_X - 10 && nextX < VIP_X + VIP_W + 10 && nextY > VIP_Y - 10 && nextY < VIP_Y + VIP_H + 10;
             
             if (onPlatform && !isVIP) {
-                // Bounce back / block movement
                 if (!document.getElementById('toast-container').innerHTML.includes('VIP PASS REQUIRED')) {
-                    showToast("VIP PASS REQUIRED to enter the platform.", "error");
+                    showToast("VIP PASS REQUIRED to cross the velvet ropes.", "error");
                 }
             } else {
                 pX = nextX;
@@ -1125,10 +1150,67 @@
             }
         }
 
+        function drawAvatar(x, y, z, name, eqIcon, isMe = false, frame = 0, facingR = true) {
+            // Shadow scale changes based on Jump Height (z)
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.beginPath(); ctx.ellipse(x, y + 25, Math.max(5, 15 - (z*0.1)), Math.max(2, 5 - (z*0.05)), 0, 0, Math.PI*2); ctx.fill();
+
+            let drawY = y - z; // Adjust Y coordinate for jump
+
+            ctx.save();
+            ctx.translate(x, drawY);
+            if (!facingR) ctx.scale(-1, 1); // Flip the canvas if walking left!
+
+            ctx.strokeStyle = '#fff';
+            if (eqIcon === '👑') ctx.strokeStyle = 'var(--neon-yellow)'; // Golden stickman for Crown
+            
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Animation Angles
+            let legSwing = Math.sin(frame) * 15;
+            let armSwing = Math.cos(frame) * 10;
+
+            // Torso
+            ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 15); ctx.stroke();
+            // Legs
+            ctx.beginPath(); ctx.moveTo(0, 15); ctx.lineTo(-8 + legSwing, 30); ctx.stroke(); // Back Leg
+            ctx.beginPath(); ctx.moveTo(0, 15); ctx.lineTo(8 - legSwing, 30); ctx.stroke(); // Front Leg
+            // Arms
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-10 + armSwing, 15); ctx.stroke(); // Back Arm
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(10 - armSwing, 15); ctx.stroke(); // Front Arm
+
+            // Head
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.beginPath(); ctx.arc(0, -10, 8, 0, Math.PI*2); ctx.fill();
+
+            // Render Equipped Item Visually
+            if (eqIcon) {
+                ctx.font = '24px Arial';
+                ctx.textAlign = 'center';
+                if (['🧢', '👑', '🕶️'].includes(eqIcon)) ctx.fillText(eqIcon, 0, -20); // Equip to head
+                else ctx.fillText(eqIcon, 15 - armSwing, 15); // Equip to front hand
+            }
+            ctx.restore();
+
+            // Nameplate (Rendered outside the flip scale so text isn't backwards)
+            ctx.fillStyle = isMe ? 'var(--neon-green)' : '#94a3b8';
+            if (myInventory.includes('staff')) ctx.fillStyle = 'var(--neon-blue)';
+            ctx.font = 'bold 20px VT323';
+            ctx.textAlign = 'center';
+            
+            let displayStr = name;
+            if (isMe && myInventory.includes('vip')) displayStr = "[VIP] " + displayStr;
+            
+            ctx.lineWidth = 3; ctx.strokeStyle = '#000';
+            ctx.strokeText(displayStr, x, drawY - 45);
+            ctx.fillText(displayStr, x, drawY - 45);
+        }
+
         function drawRoom() {
-            // 1. Draw Checkerboard Floor
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Checkerboard Floor
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#0f172a';
             for(let i=0; i<canvas.width; i+=40) {
                 for(let j=0; j<canvas.height; j+=40) {
@@ -1136,95 +1218,29 @@
                 }
             }
 
-            // 2. Draw VIP Platform (Raised Yellow Box)
-            // Draw shadow/base
-            ctx.fillStyle = '#854d0e';
-            ctx.fillRect(VIP_X + 10, VIP_Y + 10, VIP_W, VIP_H);
-            // Draw top surface
-            ctx.fillStyle = '#facc15';
-            ctx.fillRect(VIP_X, VIP_Y, VIP_W, VIP_H);
-            
-            // Draw VIP Text on Platform
-            ctx.fillStyle = '#ca8a04';
-            ctx.font = '80px VT323';
-            ctx.textAlign = 'center';
-            ctx.fillText("PREMIUM", VIP_X + VIP_W/2, VIP_Y + VIP_H/2 + 20);
+            // Yellow VIP Platform
+            const VIP_X = 50, VIP_Y = 50, VIP_W = 400, VIP_H = 250;
+            ctx.fillStyle = '#854d0e'; ctx.fillRect(VIP_X + 10, VIP_Y + 10, VIP_W, VIP_H);
+            ctx.fillStyle = '#facc15'; ctx.fillRect(VIP_X, VIP_Y, VIP_W, VIP_H);
+            ctx.fillStyle = '#ca8a04'; ctx.font = '80px VT323'; ctx.textAlign = 'center'; ctx.fillText("PREMIUM", VIP_X + VIP_W/2, VIP_Y + VIP_H/2 + 20);
 
-            // 3. Draw Red Velvet Ropes mapping the stairs
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(VIP_X + VIP_W, VIP_Y + 50);
-            ctx.lineTo(VIP_X + VIP_W + 60, VIP_Y + 50);
-            ctx.lineTo(VIP_X + VIP_W + 60, VIP_Y + VIP_H);
-            ctx.stroke();
-
-            // Draw Rope Poles
+            // Red Velvet Ropes
+            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(VIP_X + VIP_W, VIP_Y + 50); ctx.lineTo(VIP_X + VIP_W + 60, VIP_Y + 50); ctx.lineTo(VIP_X + VIP_W + 60, VIP_Y + VIP_H); ctx.stroke();
             ctx.fillStyle = '#d4d4d8';
-            [VIP_Y + 50, VIP_Y + 100, VIP_Y + 150, VIP_Y + 200, VIP_Y + VIP_H].forEach(y => {
-                ctx.beginPath(); ctx.arc(VIP_X + VIP_W + 60, y, 6, 0, Math.PI*2); ctx.fill();
-            });
+            [VIP_Y + 50, VIP_Y + 100, VIP_Y + 150, VIP_Y + 200, VIP_Y + VIP_H].forEach(y => { ctx.beginPath(); ctx.arc(VIP_X + VIP_W + 60, y, 6, 0, Math.PI*2); ctx.fill(); });
 
-            // 4. Draw Dummy Stalls
-            ctx.fillStyle = '#451a03'; // Brown stall
-            ctx.fillRect(canvas.width - 200, 100, 150, 80);
-            ctx.fillStyle = '#d97706'; // Counter top
-            ctx.fillRect(canvas.width - 205, 120, 160, 20);
-            ctx.fillStyle = '#fff';
-            ctx.font = '20px VT323';
-            ctx.fillText("AUCTIONEER", canvas.width - 125, 115);
+            // Auctioneer Stall
+            ctx.fillStyle = '#451a03'; ctx.fillRect(canvas.width - 200, 100, 150, 80);
+            ctx.fillStyle = '#d97706'; ctx.fillRect(canvas.width - 205, 120, 160, 20);
+            ctx.fillStyle = '#fff'; ctx.font = '20px VT323'; ctx.fillText("AUCTIONEER", canvas.width - 125, 115);
 
-            // 5. Render Players
-            // Draw a dummy player for visualization
-            drawAvatar(canvas.width - 250, 200, "STICKBOY", "🧢");
+            // Draw Dummy Player
+            drawAvatar(canvas.width - 250, 200, 0, "STICKBOY", "🧢", false, 0, false);
             
-            // Draw Our Current Avatar
-            let myIcon = "";
-            if (equippedItem) myIcon = SNT_ITEMS[equippedItem].icon;
-            drawAvatar(pX, pY, currentUser ? currentUser.username : "PLAYER", myIcon, true);
-        }
-
-        function drawAvatar(x, y, name, eqIcon, isMe = false) {
-            // Shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
-            ctx.beginPath(); ctx.ellipse(x, y + 25, 15, 5, 0, 0, Math.PI*2); ctx.fill();
-
-            // Stickman Body (Lines)
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 15); // Torso
-            ctx.moveTo(x, y + 15); ctx.lineTo(x - 8, y + 25); // L Leg
-            ctx.moveTo(x, y + 15); ctx.lineTo(x + 8, y + 25); // R Leg
-            ctx.moveTo(x - 10, y + 5); ctx.lineTo(x + 10, y + 5); // Arms
-            ctx.stroke();
-
-            // Stickman Head
-            ctx.fillStyle = '#fff';
-            ctx.beginPath(); ctx.arc(x, y - 10, 8, 0, Math.PI*2); ctx.fill();
-
-            // Equipped Item Visualization
-            if (eqIcon) {
-                ctx.font = '24px Arial';
-                ctx.textAlign = 'center';
-                // Render icon above head or in hand based on item type
-                if (['🧢', '👑'].includes(eqIcon)) ctx.fillText(eqIcon, x, y - 20); // Head
-                else ctx.fillText(eqIcon, x + 15, y + 5); // Hand
-            }
-
-            // Nametag
-            ctx.fillStyle = isMe ? 'var(--neon-green)' : '#94a3b8';
-            if (myInventory.includes('staff')) ctx.fillStyle = 'var(--neon-blue)'; // VIP staff flex
-            ctx.font = 'bold 20px VT323';
-            ctx.textAlign = 'center';
-            let displayStr = name;
-            if (isMe && myInventory.includes('vip')) displayStr = "[VIP] " + displayStr;
-            
-            // Stroke text for readability
-            ctx.lineWidth = 3; ctx.strokeStyle = '#000';
-            ctx.strokeText(displayStr, x, y - 40);
-            ctx.fillText(displayStr, x, y - 40);
+            // Draw Our Avatar
+            let myIcon = equippedItem ? SNT_ITEMS[equippedItem].icon : "";
+            drawAvatar(pX, pY, pZ, currentUser ? currentUser.username : "PLAYER", myIcon, true, walkFrame, facingRight);
         }
 
         // ==========================================
@@ -1271,9 +1287,7 @@
             const p2 = document.getElementById('profile-user'); if(p2) p2.innerText = currentUser.username;
         }
 
-        // ==========================================
         // NAVIGATION (JOIN/LEAVE GAMES)
-        // ==========================================
         window.joinGame = function(gameId) {
             if(!socket && gameId !== 'marketroom') return showToast("SERVER OFFLINE");
             currentRoomId = gameId; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); 
@@ -1550,8 +1564,7 @@
                                 setStatus('dvt', "HOUSE WINS", true); playSfx('lose'); 
                                 if (myInventory.includes('amulet')) {
                                     let refund = Math.floor(totalBet * 0.05);
-                                    currentUser.credits += refund;
-                                    updateAllCredits();
+                                    currentUser.credits += refund; updateAllCredits();
                                     addLedgerEntry('DRAGON AMULET REFUND', refund, true, currentUser.credits);
                                     showToast(`Amulet refunded ${formatNumber(refund)} CR!`, 'success');
                                 }
@@ -1744,7 +1757,6 @@
             });
         }
 
-        // Security locks
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', function(e) { if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; } });
 
