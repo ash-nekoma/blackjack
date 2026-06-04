@@ -3,51 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stick N' Trade: Arcade</title>
+    <title>Stick N' Trade: Arcade Realms</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
-        /* SOFTER, EYE-FRIENDLY COLOR PALETTE */
+        /* COLOR PALETTE - Eye-Friendly Slate & Pastels */
         :root { 
-            --bg-dark: #0f172a;       /* Deep slate instead of pure black */
-            --panel-bg: #1e293b;      /* Soft navy gray */
-            --table-green: #064e3b;   
-            --table-dark: #022c22; 
+            --bg-dark: #0f172a; --panel-bg: #1e293b; 
+            --table-green: #064e3b; --table-dark: #022c22; 
             
-            /* Muted Pastel-Neons for less eye strain */
-            --blue: #60a5fa;      
-            --red: #f87171;       
-            --green: #34d399;     
-            --gold: #fbbf24;      
-            --purple: #c084fc;    
-            --pink: #f472b6;      
+            --blue: #60a5fa; --red: #f87171; 
+            --green: #34d399; --gold: #fbbf24; 
+            --purple: #c084fc; --pink: #f472b6; 
 
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --text-main: #f8fafc; --text-muted: #94a3b8;
+            
+            --rarity-common: #94a3b8; --rarity-uncommon: #60a5fa;
+            --rarity-rare: #c084fc; --rarity-epic: #f87171;
+            --rarity-legendary: #fbbf24; --rarity-mythic: #f472b6;
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'VT323', monospace; text-transform: uppercase; user-select: none; }
         body { background-color: #020617; display: flex; justify-content: center; align-items: center; height: 100dvh; overflow: hidden; color: var(--text-main); letter-spacing: 1px;}
         
-        input, select { background: #0f172a; border: 3px solid #334155; color: #fff; padding: 10px; font-size: 22px; outline: none; text-align: center; border-radius: 6px; user-select: auto !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);}
+        .text-black, [style*="color: #000"], [style*="color:#000"] { text-shadow: none !important; }
+        input, select { background: #0f172a; border: 3px solid #334155; color: #fff; padding: 10px; font-size: 22px; outline: none; text-align: center; border-radius: 6px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); user-select: auto !important;}
         input:focus, select:focus { border-color: var(--blue); }
         .hidden { display: none !important; }
         
-        ::-webkit-scrollbar { width: 8px; } 
-        ::-webkit-scrollbar-track { background: #0f172a; } 
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px;} 
-        ::-webkit-scrollbar-thumb:hover { background: var(--blue); }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #0f172a; } ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px;} ::-webkit-scrollbar-thumb:hover { background: var(--blue); }
         input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-        /* MAIN CABINET FRAME */
+        /* MAIN CABINET */
         #arcade-cabinet { width: 1400px; height: 800px; max-width: 100vw; max-height: 100dvh; background: var(--bg-dark); border: 4px solid #334155; border-radius: 12px; position: relative; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
 
         /* TOASTS */
         #toast-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 9999; pointer-events: none; align-items: center; }
         .toast { background: rgba(15,23,42,0.95); border: 2px solid var(--text-muted); padding: 12px 24px; font-size: 24px; text-align: center; border-radius: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: 0.3s; pointer-events: auto; }
-        .toast-error { border-color: var(--red); color: var(--red); } 
-        .toast-success { border-color: var(--green); color: var(--green); } 
-        .toast.fade-out { opacity: 0; transform: translateY(-20px); }
+        .toast-error { border-color: var(--red); color: var(--red); } .toast-success { border-color: var(--green); color: var(--green); } .toast.fade-out { opacity: 0; transform: translateY(-20px); }
 
         /* BUTTONS */
         .btn { background: #1e293b; border: 3px solid #475569; color: var(--text-main); padding: 10px 20px; font-size: 24px; cursor: pointer; transition: 0.1s; border-radius: 6px; font-weight: bold; text-shadow: 1px 1px 0 rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
@@ -67,19 +60,16 @@
         .overlay-menu { background: rgba(2,6,23,0.85); z-index: 300; backdrop-filter: blur(4px); }
         .panel { background: var(--panel-bg); border: 4px solid #334155; border-radius: 12px; padding: 30px; width: 600px; text-align: center; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.8);}
 
-        /* HEADER */
         .main-header { font-size: 80px; margin-bottom: 30px; display: flex; gap: 15px; align-items: center; justify-content: center; font-weight:bold; }
         .txt-gold { color: var(--gold); text-shadow: 2px 2px 0px rgba(0,0,0,0.8); }
         .txt-block { background: #020617; border: 3px solid #cbd5e1; padding: 0 15px; color: #cbd5e1; border-radius: 8px;}
 
-        /* HOTBAR */
+        /* HUD & NAVIGATION */
         .hotbar-container { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: center; z-index: 100; }
         .hotbar { display: flex; gap: 10px; background: rgba(15,23,42,0.95); padding: 10px 20px; border: 2px solid #334155; border-radius: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);}
         .hotbar-btn { background: transparent; border: none; color: var(--text-muted); font-size: 22px; font-weight: bold; cursor: pointer; padding: 5px 15px; transition: 0.2s; border-radius: 20px;}
-        .hotbar-btn:hover { color: #fff; background: #334155; }
-        .hotbar-btn.danger:hover { color: var(--red); background: rgba(248,113,113,0.1); }
+        .hotbar-btn:hover { color: #fff; background: #334155; } .hotbar-btn.danger:hover { color: var(--red); background: rgba(248,113,113,0.1); }
 
-        /* GRID */
         .category-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; width: 100%; }
         .nav-tab { background: #0f172a; border: 2px solid #334155; color: var(--text-muted); font-size: 26px; padding: 8px 25px; cursor: pointer; border-radius: 8px; transition: 0.2s; font-weight:bold;}
         .nav-tab.active { background: var(--blue); color: #fff; border-color: #e2e8f0; text-shadow: 1px 1px 0 rgba(0,0,0,0.5);}
@@ -103,6 +93,7 @@
 
         .status-bar { width: 100%; padding: 8px 25px; background: rgba(0,0,0,0.4); border-bottom: 1px solid #1e293b; display: flex; justify-content: center; align-items: center; gap: 20px; min-height: 50px; flex-shrink: 0;}
         .timer-display { font-size: 24px; color: var(--gold); font-weight: bold; border: 2px solid var(--gold); padding: 4px 15px; background: rgba(0,0,0,0.8); border-radius: 6px;}
+        .timer-display.danger { border-color: var(--red); color: var(--red); box-shadow: 0 0 15px rgba(239,68,68,0.3); }
         .result-display { font-size: 28px; color: #fff; font-weight: bold; text-shadow: 1px 1px 0 rgba(0,0,0,0.8); }
 
         .game-surface { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; padding: 20px; overflow: hidden; }
@@ -123,18 +114,22 @@
         .bet-tile-payout { font-size: 18px; color: var(--text-muted); font-weight: bold; }
         .bet-badge { position: absolute; top: -10px; right: -10px; background: var(--blue); color: #fff; padding: 2px 10px; border: 2px solid #0f172a; font-size: 18px; font-weight: bold; z-index: 10; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.5);}
 
-        /* CARDS */
+        /* SMOOTH CARD ANIMATIONS */
         .hands-wrapper { display: flex; gap: 8px; justify-content: center; min-height: 110px; align-items: center;}
-        .card { width: 75px; height: 110px; background: #f8fafc; border: 2px solid #0f172a; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #0f172a; position: relative; font-family: Arial; box-shadow: 2px 4px 8px rgba(0,0,0,0.5); margin-left: -40px; }
+        @keyframes dealAnim { 
+            0% { transform: translateY(-100px) scale(0.5) rotateY(90deg); opacity: 0; } 
+            100% { transform: translateY(0) scale(1) rotateY(0deg); opacity: 1; } 
+        }
+        .card { width: 75px; height: 110px; background: #f8fafc; border: 2px solid #0f172a; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #0f172a; position: relative; font-family: Arial; box-shadow: 2px 4px 8px rgba(0,0,0,0.5); margin-left: -40px; animation: dealAnim 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;}
         .card:first-child { margin-left: 0; } .card.red { color: var(--red); }
         .card-corner { position: absolute; font-size: 18px; font-weight: bold; line-height: 1; text-align: center; }
         .card-corner.tl { top: 4px; left: 4px; } .card-corner.br { bottom: 4px; right: 4px; transform: rotate(180deg); }
         .card-center { font-size: 40px; }
-        .card.hidden-card { background: repeating-linear-gradient(45deg, #1e293b, #1e293b 5px, #334155 5px, #334155 10px); color: transparent; border-color: #0f172a; }
+        .card.hidden-card { background: repeating-linear-gradient(45deg, #1e293b, #1e293b 5px, #334155 5px, #334155 10px); color: transparent; border-color: #0f172a; animation:none;}
 
-        /* BLACKJACK */
-        .bj-table { display: flex; justify-content: center; gap: 20px; width: 100%; position: absolute; bottom: 30px; }
-        .seat { display: flex; flex-direction: column; align-items: center; width: 180px; transition: 0.3s; }
+        /* BLACKJACK ALIGNMENT FIX */
+        .bj-table { display: flex; justify-content: center; align-items: flex-end; gap: 20px; width: 100%; position: absolute; bottom: 30px; height: 250px;}
+        .seat { display: flex; flex-direction: column; align-items: center; width: 180px; transition: 0.3s; justify-content: flex-end;}
         .seat.active-turn { transform: translateY(-15px); }
         .seat.active-turn .nameplate { border-color: var(--gold); color: var(--gold); }
         
@@ -151,17 +146,22 @@
         .zone-title { font-size: 32px; font-weight: bold; margin-bottom: 15px; letter-spacing: 1px; }
         .zone-score { position: absolute; bottom: -20px; background: #0f172a; border: 3px solid #fff; padding: 2px 20px; font-size: 30px; font-weight: bold; border-radius: 8px; z-index: 20; color: #fff;}
 
-        /* DOSSIER & INVENTORY */
-        .modal-split { display:flex; gap:15px; height: 400px; text-align:left;}
+        /* MARKET, TRADE & INVENTORY MODALS */
+        .modal-split { display:flex; gap:15px; height: 450px; text-align:left;}
         .modal-col { flex:1; background:#0f172a; border:2px solid #334155; border-radius:8px; padding:15px; overflow-y:auto;}
         .inv-slot { width: 60px; height: 60px; border: 2px solid #475569; display:flex; justify-content:center; align-items:center; background:#1e293b; font-size:30px; cursor:pointer; border-radius: 6px; transition:0.1s;}
         .inv-slot:hover { border-color: #fff; transform: translateY(-2px); background:#334155;}
         
+        .market-item { border:2px solid #475569; background:#1e293b; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        
+        /* LEDGER */
         .ledger-entry { border-left: 4px solid #475569; padding: 8px 12px; background: #1e293b; margin-bottom: 8px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
         .ledger-entry.win { border-color: var(--green); } .ledger-entry.loss { border-color: var(--red); }
+        .ledger-running-bal { font-size: 18px; color: var(--gold); background: #0f172a; padding: 2px 8px; border-radius: 4px; display: inline-block; width: max-content; border: 1px solid #334155;}
 
-        /* ARCADE MINIFIED */
+        /* ARCADE MINIFIED (SHAKES AND SPINS) */
         .dice-display { font-size: 120px; font-family: Arial; display:flex; gap: 20px; text-shadow: 0 10px 20px rgba(0,0,0,0.8);}
+        .dice-display.shake { animation: dShake 0.1s infinite; color: var(--gold); } @keyframes dShake { 0% { transform: translate(3px, 3px); } 50% { transform: translate(-3px, -3px); } 100% { transform: translate(3px, -3px); } }
         .derby-track { width: 800px; height: 240px; background: rgba(0,0,0,0.5); border: 4px solid #334155; display: flex; flex-direction: column; position: relative; border-radius:8px;} 
         .derby-lane { flex: 1; border-bottom: 2px dashed #334155; position: relative; display: flex; align-items: center; padding: 0 10px; } 
         .horse { height: 80%; width: 50px; background: #e2e8f0; position: absolute; bottom: 10%; transition: left 0.1s linear; border-radius:4px; box-shadow: 2px 2px 5px rgba(0,0,0,0.5);}
@@ -171,7 +171,9 @@
         .slots-machine { background: #1e293b; border: 6px solid #334155; padding: 20px; text-align: center; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);} 
         .reels { display: flex; gap: 15px; background: #0f172a; border: 4px solid #020617; padding: 15px; margin: 15px 0; border-radius:8px;} 
         .reel { width: 100px; height: 130px; background: #f8fafc; font-size: 70px; display: flex; justify-content: center; align-items: center; border-radius:6px; box-shadow: inset 0 5px 15px rgba(0,0,0,0.5);} 
+        .reel.spinning { animation: sSpin 0.15s linear infinite; } @keyframes sSpin { 0% { transform: translateY(-100px); filter:blur(4px); } 100% { transform: translateY(0); filter:blur(0); } }
         .crash-graph { width: 700px; height: 300px; background: rgba(0,0,0,0.5); border: 4px solid #334155; position: relative; display: flex; justify-content: center; align-items: center; border-radius:8px;} 
+        .crash-rocket { width: 50px; height: 50px; font-size: 40px; position: absolute; bottom: 20px; left: 20px; transition: transform 0.1s linear;}
         .cups-rack { display: flex; gap: 40px; height: 120px; align-items: flex-end;} 
         .cup-wrapper { position: relative; width: 80px; display:flex; justify-content:center;} 
         .cup-shape { width: 70px; height: 90px; background: var(--red); border-radius: 30px 30px 5px 5px; z-index: 10; transition: 0.2s; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.3);} 
@@ -184,15 +186,9 @@
 <body>
 
     <div id="arcade-cabinet">
-        <!-- AUDIO -->
-        <audio id="sfx-deal" src="deal.mp3" preload="auto"></audio>
-        <audio id="sfx-bet" src="bet.mp3" preload="auto"></audio>
-        <audio id="sfx-win" src="win.mp3" preload="auto"></audio>
-        <audio id="sfx-lose" src="lose.mp3" preload="auto"></audio>
-        
+        <audio id="sfx-deal" src="deal.mp3"></audio><audio id="sfx-bet" src="bet.mp3"></audio><audio id="sfx-win" src="win.mp3"></audio><audio id="sfx-lose" src="lose.mp3"></audio>
         <div id="toast-container"></div>
 
-        <!-- AUTH VIEW -->
         <div id="auth-view" class="full-menu">
             <div class="main-header"><span class="txt-gold">STICK N'</span> <span class="txt-block">TRADE</span></div>
             <div class="panel">
@@ -203,7 +199,6 @@
             </div>
         </div>
 
-        <!-- MAIN HUB -->
         <div id="main-menu-view" class="full-menu hidden">
             <div class="main-header"><span class="txt-gold">STICK N'</span> <span class="txt-block">TRADE</span></div>
             
@@ -215,25 +210,21 @@
             </div>
 
             <div class="realm-viewport custom-scroll">
-                <!-- CARDS -->
                 <div id="realm-cards" class="realm-grid">
                     <div class="realm-card" onclick="joinGame('5seat')"><div class="realm-title" style="color:var(--green);">CLASSIC BLACKJACK</div><div class="realm-desc">5-Seat Table</div><div class="realm-status">PLAY NOW</div></div>
                     <div class="realm-card" onclick="joinGame('3seat')"><div class="realm-title" style="color:var(--blue);">VIP BLACKJACK</div><div class="realm-desc">3-Seat Fast Paced</div><div class="realm-status">PLAY NOW</div></div>
                     <div class="realm-card" onclick="joinGame('baccarat')"><div class="realm-title" style="color:var(--red);">PUNTO BANCO</div><div class="realm-desc">True Baccarat</div><div class="realm-status">PLAY NOW</div></div>
                     <div class="realm-card" onclick="joinGame('dvt')"><div class="realm-title" style="color:var(--gold);">DRAGON VS TIGER</div><div class="realm-desc">High Card Wins</div><div class="realm-status">PLAY NOW</div></div>
                 </div>
-                <!-- ARENA -->
                 <div id="realm-arena" class="realm-grid hidden">
                     <div class="realm-card" onclick="joinGame('pvp')"><div class="realm-title" style="color:var(--red);">CUSTOM DUELS</div><div class="realm-desc">1v1 Wagering</div><div class="realm-status">ENTER ARENA</div></div>
                 </div>
-                <!-- ARCADE -->
                 <div id="realm-arcade" class="realm-grid hidden">
                     <div class="realm-card" onclick="joinGame('dice')"><div class="realm-title" style="color:var(--blue);">HIGH-LOW DICE</div><div class="realm-desc">Jackpot 7s</div><div class="realm-status">PLAY NOW</div></div>
                     <div class="realm-card" onclick="joinGame('derby')"><div class="realm-title" style="color:var(--gold);">8-BIT DERBY</div><div class="realm-desc">Virtual Sprint</div><div class="realm-status">PLAY NOW</div></div>
                     <div class="realm-card" onclick="joinGame('color')"><div class="realm-title" style="color:var(--green);">PERYA COLOR</div><div class="realm-desc">3 Color Dice</div><div class="realm-status">PLAY NOW</div></div>
                     <div class="realm-card" onclick="joinGame('cups')"><div class="realm-title" style="color:var(--purple);">STREET HUSTLE</div><div class="realm-desc">3 Cups 1 Ball</div><div class="realm-status">PLAY NOW</div></div>
                 </div>
-                <!-- STAKES -->
                 <div id="realm-stakes" class="realm-grid hidden">
                     <div class="realm-card" onclick="joinGame('crash')"><div class="realm-title" style="color:var(--red);">8-BIT CRASH</div><div class="realm-desc">Ride multiplier</div><div class="realm-status">PLAY NOW</div></div>
                     <div class="realm-card" onclick="joinGame('slots')"><div class="realm-title" style="color:var(--gold);">RETRO SLOTS</div><div class="realm-desc">Hit the Jackpot</div><div class="realm-status">PLAY NOW</div></div>
@@ -244,15 +235,100 @@
                 <div class="hotbar">
                     <button class="hotbar-btn" onclick="showProfile()">DOSSIER</button>
                     <button class="hotbar-btn" onclick="showBank()">BANK</button>
-                    <button class="hotbar-btn" onclick="openMarket()">AUCTIONS</button>
-                    <button class="hotbar-btn" onclick="openTradeHub()">TRADE HUB</button>
+                    <button class="hotbar-btn" style="color:var(--green);" onclick="openMarket()">MARKET</button>
+                    <button class="hotbar-btn" style="color:var(--gold);" onclick="openAuction()">AUCTIONS</button>
+                    <button class="hotbar-btn" style="color:var(--blue);" onclick="openTradeHub()">TRADE HUB</button>
                     <button class="hotbar-btn" style="color:var(--purple);" onclick="showRewards()">DAILY LOOT</button>
                     <button class="hotbar-btn danger" onclick="promptLogout()">DISCONNECT</button>
                 </div>
             </div>
         </div>
 
-        <!-- MODALS -->
+        <div id="market-modal" class="overlay-menu hidden">
+            <div class="panel" style="width: 1100px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <h2 style="color: var(--green); font-size: 40px; margin:0;">SNT RETAIL MARKET</h2>
+                    <button class="btn btn-red small" onclick="hideModal('market-modal')">CLOSE</button>
+                </div>
+                <div class="modal-split">
+                    <div class="modal-col custom-scroll">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #334155; padding-bottom:10px; margin-bottom:15px;">
+                            <h3 style="font-size:28px; margin:0;">LIVE LISTINGS</h3>
+                            <button class="btn btn-green small" onclick="showToast('STAFF RANK REQUIRED TO CREATE RETAIL LISTINGS.', 'error')">ADD LISTING (STAFF)</button>
+                        </div>
+                        <div id="market-listings-area">
+                            </div>
+                    </div>
+                    <div class="modal-col custom-scroll">
+                        <h3 style="font-size:28px; margin-bottom:15px; border-bottom:2px solid #334155; padding-bottom:10px;">YOUR INVENTORY</h3>
+                        <div id="market-inventory-grid" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="auction-modal" class="overlay-menu hidden">
+            <div class="panel" style="width: 1100px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <h2 style="color: var(--gold); font-size: 40px; margin:0;">AUCTION HOUSE</h2>
+                    <button class="btn btn-red small" onclick="hideModal('auction-modal')">CLOSE</button>
+                </div>
+                <div class="modal-split">
+                    <div class="modal-col custom-scroll">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #334155; padding-bottom:10px; margin-bottom:15px;">
+                            <h3 style="font-size:28px; margin:0;">ACTIVE BIDS</h3>
+                            <button class="btn btn-gold small" onclick="showToast('VIP/STAFF RANK REQUIRED TO AUCTION ITEMS.', 'error')">CREATE AUCTION</button>
+                        </div>
+                        <div id="auction-listings-area">
+                            </div>
+                    </div>
+                    <div class="modal-col custom-scroll">
+                        <h3 style="font-size:28px; margin-bottom:15px; border-bottom:2px solid #334155; padding-bottom:10px;">YOUR INVENTORY</h3>
+                        <div id="auction-inventory-grid" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="trade-hub-modal" class="overlay-menu hidden">
+            <div class="panel" style="width: 1100px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <h2 style="color: var(--blue); font-size: 40px; margin:0;">P2P TRADE HUB</h2>
+                    <button class="btn btn-red small" onclick="hideModal('trade-hub-modal')">CLOSE</button>
+                </div>
+                <div class="modal-split">
+                    <div class="modal-col custom-scroll">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #334155; padding-bottom:10px; margin-bottom:15px;">
+                            <h3 style="font-size:28px; margin:0;">PLAYER OFFERS</h3>
+                            <button class="btn btn-blue small" onclick="showToast('Create Offer interface loading...', 'success')">CREATE OFFER</button>
+                        </div>
+                        <div id="trade-listings-area">
+                            </div>
+                    </div>
+                    <div class="modal-col custom-scroll">
+                        <h3 style="font-size:28px; margin-bottom:15px; border-bottom:2px solid #334155; padding-bottom:10px;">YOUR INVENTORY</h3>
+                        <div id="trade-inventory-grid" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="item-inspector-modal" class="overlay-menu hidden">
+            <div class="panel" style="width: 500px; border-color:var(--blue);">
+                <h2 id="inspector-name" style="color: #fff; font-size: 36px; margin-bottom: 5px; text-shadow: 2px 2px 0 #000;">ITEM NAME</h2>
+                <div id="inspector-rarity" style="font-size: 20px; margin-bottom: 15px; font-weight:bold;">RARITY</div>
+                <div class="inv-slot" id="inspector-icon" style="width:100px; height:100px; font-size:50px; margin: 0 auto 15px auto; pointer-events:none;">?</div>
+                <div id="inspector-desc" style="font-size:20px; color:var(--text-muted); margin-bottom:15px; line-height:1.2;">Description goes here.</div>
+                <div id="inspector-perk" style="font-size:20px; color:var(--gold); margin-bottom:15px; background:#0f172a; border: 1px solid #334155; padding:8px; border-radius:6px;">Perk goes here.</div>
+                <div id="inspector-value" style="font-size:32px; font-weight:bold; margin-bottom:20px; color:var(--green);">🪙 0 CR</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <button id="btn-inspector-equip" class="btn btn-blue">EQUIP ITEM</button>
+                    <button id="btn-inspector-convert" class="btn btn-green" onclick="executeConversion()">CONVERT TO CREDITS</button>
+                    <button class="btn btn-red" onclick="hideModal('item-inspector-modal')">CLOSE</button>
+                </div>
+            </div>
+        </div>
+
         <div id="rewards-modal" class="overlay-menu hidden">
             <div class="panel">
                 <h2 style="color: var(--purple); font-size: 40px; margin-bottom: 20px;">DAILY REWARDS</h2>
@@ -277,7 +353,6 @@
             </div>
         </div>
 
-        <!-- DOSSIER & INVENTORY -->
         <div id="profile-modal" class="overlay-menu hidden">
             <div class="panel" style="width: 800px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
@@ -288,11 +363,8 @@
                     <div id="profile-user" style="font-size: 36px; font-weight:bold; color:var(--blue);">USER</div>
                     <div style="font-size: 24px; color:var(--text-muted);">🪙 <span id="profile-bal" style="color:var(--gold);">0</span> CR</div>
                 </div>
-                
                 <h3 style="font-size:24px; color:var(--gold); text-align:left; margin-bottom:10px;">BET HISTORY / LEDGER</h3>
-                <div id="dossier-ledger" style="height: 250px; background:#0f172a; border:2px solid #334155; border-radius:6px; overflow-y:auto; padding:10px; text-align:left; display:flex; flex-direction:column; gap:5px;">
-                    <!-- Auto populated -->
-                </div>
+                <div id="dossier-ledger" class="custom-scroll" style="height: 250px; background:#0f172a; border:2px solid #334155; border-radius:6px; overflow-y:auto; padding:10px; text-align:left; display:flex; flex-direction:column; gap:5px;"></div>
             </div>
         </div>
 
@@ -307,9 +379,6 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- BLACKJACK UI                                              -->
-        <!-- ========================================================= -->
         <div id="bj-interface" class="game-interface hidden">
             <div class="top-hud">
                 <button class="btn small" onclick="exitGame('blackjack')">◄ LEAVE</button>
@@ -328,14 +397,10 @@
                         <div id="bj-dealer-val" class="hand-score hidden">0</div>
                     </div>
                 </div>
-                
                 <div id="bj-seats-area" class="bj-table"></div>
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- BACCARAT UI                                               -->
-        <!-- ========================================================= -->
         <div id="bac-interface" class="game-interface bg-red hidden">
             <div class="top-hud">
                 <button class="btn small" onclick="exitGame('bac')">◄ LEAVE</button>
@@ -374,9 +439,6 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- DRAGON VS TIGER UI                                        -->
-        <!-- ========================================================= -->
         <div id="dvt-interface" class="game-interface bg-red hidden">
             <div class="top-hud">
                 <button class="btn small" onclick="exitGame('dvt')">◄ LEAVE</button>
@@ -413,9 +475,6 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- ARCADE MINIFIED: DICE, DERBY, COLOR, CUPS, CRASH, SLOTS, PVP -->
-        <!-- ========================================================= -->
         <div id="dice-interface" class="game-interface bg-blue hidden">
             <div class="top-hud"><button class="btn small" onclick="exitGame('dice')">◄ LEAVE</button><div class="hud-center">HIGH-LOW DICE</div><div class="wallet-display">🪙 <span id="dice-hud-credits">0</span></div></div>
             <div class="status-bar"><div id="dice-timer" class="timer-display hidden">WAITING</div><div id="dice-res" class="result-display">PLACE YOUR BETS</div></div>
@@ -549,6 +608,9 @@
 
     </div>
 
+    <!-- ========================================================= -->
+    <!-- MASTER JAVASCRIPT ENGINE (OPTIMIZED SYNC EDITION)         -->
+    <!-- ========================================================= -->
     <script>
         // 1. FAILSAFE SOCKET INITIALIZATION
         let socket = null;
@@ -557,16 +619,21 @@
             else { console.warn("Socket.io missing. Ensure you are running via the Node server."); }
         } catch (e) { console.error("Socket initialization failed:", e); }
 
-        // System State
+        // SYSTEM STATE
         let currentUser = null; 
         let currentGameState = null; 
         let currentRoomId = null; 
         let mySeatIndex = -1;
         
         let globalTimerInt = null; 
-        let nextRoundTimerInt = null; 
         let dailyRewardTimerInt = null;
         
+        let currentChipValue = 1000;
+        let lastBetAction = null;
+        let isBetting = false;
+        let betThrottleTimeout = null;
+
+        // BET TRACKING POOLS
         window.lastBetAmount = 0; 
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
         let myDerbyBets = [0, 0, 0, 0, 0, 0]; 
@@ -575,50 +642,88 @@
         let myBaccaratBets = { player: 0, banker: 0, tie: 0 }; 
         let myDvtBets = { dragon: 0, tiger: 0, tie: 0 };
         let myDuelSeatIndex = -1;
-        let currentChipValue = 100;
-        let lastBetAction = null;
-        let isBetting = false;
-        let betThrottleTimeout = null;
 
-        const audioNodes = { deal: document.getElementById('sfx-deal'), bet: document.getElementById('sfx-bet'), win: document.getElementById('sfx-win'), lose: document.getElementById('sfx-lose') };
+        const audioNodes = { 
+            deal: document.getElementById('sfx-deal'), 
+            bet: document.getElementById('sfx-bet'), 
+            win: document.getElementById('sfx-win'), 
+            lose: document.getElementById('sfx-lose') 
+        };
 
-        // UTILITIES
+        // ==========================================
+        // SNT VIRTUAL ECONOMY DATABASE
+        // ==========================================
+        const SNT_ITEMS = {
+            'token': { icon: '🪙', name: 'SNT Token', value: 500, desc: 'A solid block of pure SNT currency.', perk: 'None. Pure currency.' },
+            'cap': { icon: '🧢', name: 'Retro Cap', value: 1000, desc: 'A classic 8-bit baseball cap.', perk: 'None. Cosmetic flex.' },
+            'shield': { icon: '🛡️', name: 'Iron Shield', value: 2500, desc: 'Good for deflecting bad beats.', perk: 'Boosts Daily Loot by +500 CR.' },
+            'shades': { icon: '🕶️', name: 'Pixel Shades', value: 3000, desc: 'Cool pixelated sunglasses.', perk: 'None. Cosmetic flex.' },
+            'jacket': { icon: '🧥', name: 'Neon Jacket', value: 12000, desc: 'A glowing synthwave jacket.', perk: 'Reduces market tax by 2%.' },
+            'vip': { icon: '🎫', name: 'VIP Pass', value: 'PRICELESS', desc: 'Exclusive access to the SNT elite.', perk: 'Grants [VIP] Rank & Auction Access.', soulbound: true },
+            'orb': { icon: '🔮', name: 'Mystic Orb', value: 25000, desc: 'Pulsing with unstable arcade energy.', perk: '+5% payout bonus on Color Game.' },
+            'guitar': { icon: '🎸', name: 'Punk Guitar', value: 30000, desc: 'Slung across your Stickman\'s back.', perk: 'Unlocks Neon Red chat name.' },
+            'crown': { icon: '👑', name: 'Golden Crown', value: 50000, desc: 'The ultimate mark of a High Roller.', perk: 'Turns Blackjack/Baccarat seat GOLD.' },
+            'amulet': { icon: '🐉', name: 'Dragon Amulet', value: 60000, desc: 'An ancient, glowing charm.', perk: 'Refunds 5% of Dragon vs Tiger losses.' },
+            'staff': { icon: '💎', name: 'Diamond Staff', value: 80000, desc: 'The absolute peak of Stick N\' Trade wealth.', perk: 'Boosts Daily Loot by a massive +5,000 CR.' }
+        };
+
+        let myInventory = ['staff', 'crown', 'orb', 'vip', 'shield', 'token', 'token', 'token'];
+        let tradeOfferSlots = [null, null, null, null, null, null, null, null, null]; 
+        let pendingConversionIndex = null;
+        let equippedItem = null; 
+
+        // ==========================================
+        // UTILITIES & AUTHENTICATION
+        // ==========================================
         function formatNumber(num) { return num ? num.toLocaleString() : '0'; }
-        function showToast(msg, type = 'error') { const c = document.getElementById('toast-container'); if(!c) return; c.innerHTML = ''; const t = document.createElement('div'); t.className = `toast toast-${type}`; t.innerText = msg; c.appendChild(t); setTimeout(() => { t.classList.add('fade-out'); setTimeout(() => t.remove(), 300); }, 3000); }
+        
+        function showToast(msg, type = 'error') { 
+            const c = document.getElementById('toast-container'); if(!c) return; 
+            const t = document.createElement('div'); t.className = `toast toast-${type}`; t.innerText = msg; c.appendChild(t); 
+            setTimeout(() => { t.classList.add('fade-out'); setTimeout(() => t.remove(), 300); }, 3000); 
+        }
+
         function showModal(id) { document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden')); const el = document.getElementById(id); if (el) el.classList.remove('hidden'); }
         function hideModal(id) { const el = document.getElementById(id); if (el) el.classList.add('hidden'); }
         function playSfx(id) { if(audioNodes[id]) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } }
         
         window.logout = function() { try { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); } catch(e){} location.reload(); }
         window.promptLogout = function() { showModal('logout-modal'); document.getElementById('btn-confirm-yes').onclick = logout; }
+        
         window.switchRealmTab = function(tab) {
             ['cards', 'arena', 'arcade', 'stakes'].forEach(t => { const btn = document.getElementById(`tab-btn-${t}`); const r = document.getElementById(`realm-${t}`); if(btn) btn.classList.remove('active'); if(r) r.classList.add('hidden'); });
             const actBtn = document.getElementById(`tab-btn-${tab}`); const actRealm = document.getElementById(`realm-${tab}`); if(actBtn) actBtn.classList.add('active'); if(actRealm) actRealm.classList.remove('hidden');
         }
 
-        // AUTH
         document.getElementById('login-pass').addEventListener('keypress', function (e) { if (e.key === 'Enter') { login(); } });
 
         window.login = async function() {
             try {
-                if(!socket) return showToast("SERVER OFFLINE: Localmode active. Please connect to Node server.");
+                if(!socket) return showToast("SERVER OFFLINE: Socket.io missing. Ensure Node server is running.");
                 const u = document.getElementById('login-user').value.trim(); const p = document.getElementById('login-pass').value.trim();
                 if(!u || !p) return showToast("Enter credentials."); 
                 
                 const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
                 const data = await res.json();
+                
                 if(res.ok) {
                     currentUser = data; 
                     try { localStorage.setItem('cr_user', u); localStorage.setItem('cr_pass', p); } catch(e) {}
                     document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
-                    updateAllCredits(); playSfx('deal'); 
+                    updateAllCredits(); playSfx('deal'); renderInventory(); 
                 } else { showToast(data.error); }
             } catch(e) { showToast("SERVER OFFLINE: Terminal link failure."); }
         }
 
         window.onload = () => { try { const savedU = localStorage.getItem('cr_user'); const savedP = localStorage.getItem('cr_pass'); if(savedU && savedP) { document.getElementById('login-user').value = savedU; document.getElementById('login-pass').value = savedP; login(); } } catch(e){} };
         
-        if (socket) { socket.on('credit_update', (data) => { if(currentUser && currentUser.username.toLowerCase() === data.username.toLowerCase()) { currentUser.credits = data.credits; updateAllCredits(); } }); }
+        if (socket) { 
+            socket.on('credit_update', (data) => { 
+                if(currentUser && currentUser.username.toLowerCase() === data.username.toLowerCase()) { 
+                    currentUser.credits = data.credits; updateAllCredits(); 
+                } 
+            }); 
+        }
 
         function updateAllCredits() {
             if(!currentUser) return; const creds = formatNumber(currentUser.credits);
@@ -626,11 +731,57 @@
             const p2 = document.getElementById('profile-user'); if(p2) p2.innerText = currentUser.username;
         }
 
-        // MENUS
+        // ==========================================
+        // DYNAMIC LEDGER & DAILY LOOT
+        // ==========================================
+        function addLedgerEntry(title, amount, isWin, newBalance) {
+            const ledger = document.getElementById('dossier-ledger'); if(!ledger) return;
+            const date = new Date(); const timeStr = `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+            const amountStr = isWin ? `+ 🪙 ${formatNumber(amount)}` : `- 🪙 ${formatNumber(amount)}`;
+            const bgClass = isWin ? 'win' : 'loss';
+            ledger.insertAdjacentHTML('afterbegin', `<div class="ledger-entry ${bgClass}"><div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="color:#94a3b8; font-size:16px;">${timeStr}</span><span style="font-size:16px; color:var(--gold);">BAL: ${formatNumber(newBalance)}</span></div><span style="font-size:20px; font-weight:bold;">${amountStr} (${title})</span></div>`);
+        }
+
+        window.showRewards = function() { showModal('rewards-modal'); checkRewardStatus(); }
+        
+        function checkRewardStatus() {
+            const lastClaim = localStorage.getItem('cr_last_reward'); const btn = document.getElementById('btn-claim-reward'); const timerBox = document.getElementById('reward-timer-box'); const statusTxt = document.getElementById('reward-status');
+            if (!lastClaim) { if(btn) btn.classList.remove('hidden'); if(timerBox) timerBox.classList.add('hidden'); if(statusTxt) statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR"; return; }
+            
+            const now = Date.now(); const timePassed = now - parseInt(lastClaim); const cooldown = 24 * 60 * 60 * 1000; 
+            if (timePassed >= cooldown) { if(btn) btn.classList.remove('hidden'); if(timerBox) timerBox.classList.add('hidden'); if(statusTxt) statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR"; } 
+            else { if(btn) btn.classList.add('hidden'); if(timerBox) timerBox.classList.remove('hidden'); if(statusTxt) statusTxt.innerText = "NEXT REWARD IN:"; startRewardCountdown(cooldown - timePassed); }
+        }
+
+        function startRewardCountdown(msLeft) {
+            clearInterval(dailyRewardTimerInt); const timerBox = document.getElementById('reward-timer-box'); let secondsLeft = Math.floor(msLeft / 1000);
+            function updateDisplay() { const h = Math.floor(secondsLeft / 3600).toString().padStart(2, '0'); const m = Math.floor((secondsLeft % 3600) / 60).toString().padStart(2, '0'); const s = (secondsLeft % 60).toString().padStart(2, '0'); if(timerBox) timerBox.innerText = `${h}:${m}:${s}`; }
+            updateDisplay(); dailyRewardTimerInt = setInterval(() => { secondsLeft--; if (secondsLeft <= 0) { clearInterval(dailyRewardTimerInt); checkRewardStatus(); } else { updateDisplay(); } }, 1000);
+        }
+
+        window.claimDailyReward = function() {
+            if (!currentUser) return showToast("You must log in to claim.");
+            const lastClaim = localStorage.getItem('cr_last_reward'); const now = Date.now(); const cooldown = 24 * 60 * 60 * 1000;
+            if (lastClaim && now - parseInt(lastClaim) < cooldown) return showToast("Reward is on cooldown.");
+            
+            let lootBonus = 0;
+            if (myInventory.includes('staff')) lootBonus = 5000;
+            else if (myInventory.includes('shield')) lootBonus = 500;
+            
+            let totalLoot = 10000 + lootBonus;
+            
+            currentUser.credits += totalLoot; updateAllCredits(); addLedgerEntry('DAILY REWARD', totalLoot, true, currentUser.credits);
+            localStorage.setItem('cr_last_reward', now.toString()); showToast(`YOU FOUND ${formatNumber(totalLoot)} CR!`, "success"); playSfx('win'); checkRewardStatus();
+        }
+
+        // ==========================================
+        // ECONOMY MENUS & INVENTORY
+        // ==========================================
         window.showBank = function() { if(!currentUser) return; document.getElementById('bank-amt').value = ''; showModal('bank-modal'); }
         window.showProfile = function() { showModal('profile-modal'); }
-        window.openMarket = function() { showToast("Auction Market offline."); }
-        window.openTradeHub = function() { showToast("Trade Hub offline."); }
+        window.openMarket = function() { renderInventory(); showModal('market-modal'); }
+        window.openAuction = function() { renderInventory(); showModal('auction-modal'); }
+        window.openTradeHub = function() { renderInventory(); showModal('trade-hub-modal'); }
         
         window.submitBank = async function(type) {
             const amtStr = document.getElementById('bank-amt').value; const amt = parseInt(amtStr);
@@ -642,48 +793,193 @@
             } catch(e) { showToast("Bank system error."); }
         }
 
-        function addLedgerEntry(title, amount, isWin, newBalance) {
-            const ledger = document.getElementById('dossier-ledger'); if(!ledger) return;
-            const date = new Date(); const timeStr = `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
-            const amountStr = isWin ? `+ 🪙 ${formatNumber(amount)}` : `- 🪙 ${formatNumber(amount)}`;
-            const bgClass = isWin ? 'win' : 'loss';
-            ledger.insertAdjacentHTML('afterbegin', `<div class="ledger-entry ${bgClass}"><div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="color:#94a3b8; font-size:16px;">${timeStr}</span><span style="font-size:16px; color:var(--gold);">BAL: ${formatNumber(newBalance)}</span></div><span style="font-size:20px; font-weight:bold;">${amountStr} (${title})</span></div>`);
+        function renderInventory() {
+            let html = '';
+            myInventory.forEach((itemKey, idx) => {
+                const item = SNT_ITEMS[itemKey];
+                let border = '#475569';
+                if(item.value === 'PRICELESS') border = 'var(--rarity-rare)';
+                else if(item.value >= 80000) border = 'var(--rarity-mythic)';
+                else if(item.value >= 50000) border = 'var(--rarity-legendary)';
+                else if(item.value >= 25000) border = 'var(--rarity-epic)';
+                else if(item.value >= 12000) border = 'var(--rarity-rare)';
+                else if(item.value >= 2500) border = 'var(--rarity-uncommon)';
+
+                html += `<div class="inv-slot" style="border-color:${border}; color:${border};" onclick="openItemInspector(${idx})" title="${item.name}">${item.icon}</div>`;
+            });
+            
+            const auctionGrid = document.getElementById('auction-inventory-grid');
+            const tradeGrid = document.getElementById('trade-inventory-grid');
+            const marketGrid = document.getElementById('market-inventory-grid');
+            if(auctionGrid) auctionGrid.innerHTML = html;
+            if(tradeGrid) tradeGrid.innerHTML = html;
+            if(marketGrid) marketGrid.innerHTML = html;
         }
 
-        // DAILY REWARDS
-        window.showRewards = function() { showModal('rewards-modal'); checkRewardStatus(); }
-        function checkRewardStatus() {
-            const lastClaim = localStorage.getItem('cr_last_reward'); const btn = document.getElementById('btn-claim-reward'); const timerBox = document.getElementById('reward-timer-box'); const statusTxt = document.getElementById('reward-status');
-            if (!lastClaim) { if(btn) btn.classList.remove('hidden'); if(timerBox) timerBox.classList.add('hidden'); if(statusTxt) statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR"; return; }
-            const now = Date.now(); const timePassed = now - parseInt(lastClaim); const cooldown = 24 * 60 * 60 * 1000; 
-            if (timePassed >= cooldown) { if(btn) btn.classList.remove('hidden'); if(timerBox) timerBox.classList.add('hidden'); if(statusTxt) statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR"; } 
-            else { if(btn) btn.classList.add('hidden'); if(timerBox) timerBox.classList.remove('hidden'); if(statusTxt) statusTxt.innerText = "NEXT REWARD IN:"; startRewardCountdown(cooldown - timePassed); }
-        }
-        function startRewardCountdown(msLeft) {
-            clearInterval(dailyRewardTimerInt); const timerBox = document.getElementById('reward-timer-box'); let secondsLeft = Math.floor(msLeft / 1000);
-            function updateDisplay() { const h = Math.floor(secondsLeft / 3600).toString().padStart(2, '0'); const m = Math.floor((secondsLeft % 3600) / 60).toString().padStart(2, '0'); const s = (secondsLeft % 60).toString().padStart(2, '0'); if(timerBox) timerBox.innerText = `${h}:${m}:${s}`; }
-            updateDisplay(); dailyRewardTimerInt = setInterval(() => { secondsLeft--; if (secondsLeft <= 0) { clearInterval(dailyRewardTimerInt); checkRewardStatus(); } else { updateDisplay(); } }, 1000);
-        }
-        window.claimDailyReward = function() {
-            if (!currentUser) return showToast("You must log in to claim.");
-            const lastClaim = localStorage.getItem('cr_last_reward'); const now = Date.now(); const cooldown = 24 * 60 * 60 * 1000;
-            if (lastClaim && now - parseInt(lastClaim) < cooldown) return showToast("Reward is on cooldown.");
-            currentUser.credits += 10000; updateAllCredits(); addLedgerEntry('DAILY REWARD', 10000, true, currentUser.credits);
-            localStorage.setItem('cr_last_reward', now.toString()); showToast(`YOU FOUND 10,000 CR!`, "success"); playSfx('win'); checkRewardStatus();
+        window.openItemInspector = function(idx) {
+            const itemKey = myInventory[idx];
+            const item = SNT_ITEMS[itemKey];
+
+            let color = '#f8fafc'; let rarityText = 'COMMON';
+            if(item.value === 'PRICELESS') { color = 'var(--rarity-rare)'; rarityText = 'RARE (SOULBOUND)'; }
+            else if(item.value >= 80000) { color = 'var(--rarity-mythic)'; rarityText = 'MYTHIC'; }
+            else if(item.value >= 50000) { color = 'var(--rarity-legendary)'; rarityText = 'LEGENDARY'; }
+            else if(item.value >= 25000) { color = 'var(--rarity-epic)'; rarityText = 'EPIC'; }
+            else if(item.value >= 12000) { color = 'var(--rarity-rare)'; rarityText = 'RARE'; }
+            else if(item.value >= 2500) { color = 'var(--rarity-uncommon)'; rarityText = 'UNCOMMON'; }
+
+            document.getElementById('inspector-name').innerText = item.name;
+            document.getElementById('inspector-name').style.color = color;
+            document.getElementById('inspector-rarity').innerText = rarityText;
+            document.getElementById('inspector-rarity').style.color = color;
+            
+            const iconEl = document.getElementById('inspector-icon');
+            iconEl.innerText = item.icon; iconEl.style.borderColor = color; iconEl.style.color = color;
+
+            document.getElementById('inspector-desc').innerText = item.desc;
+            document.getElementById('inspector-perk').innerText = "PERK: " + item.perk;
+            document.getElementById('inspector-value').innerText = item.value === 'PRICELESS' ? 'PRICELESS' : `🪙 ${formatNumber(item.value)} CR`;
+
+            const btnConvert = document.getElementById('btn-inspector-convert');
+            const btnEquip = document.getElementById('btn-inspector-equip');
+
+            if (item.soulbound) {
+                btnConvert.disabled = true; btnConvert.innerText = "NON-CONVERTIBLE";
+            } else {
+                btnConvert.disabled = false; btnConvert.innerText = "CONVERT TO CREDITS";
+                btnConvert.onclick = () => { pendingConversionIndex = idx; executeConversion(); };
+            }
+
+            const counterModal = document.getElementById('counter-offer-modal');
+            if (counterModal && !counterModal.classList.contains('hidden')) {
+                if (item.soulbound) { btnEquip.disabled = true; btnEquip.innerText = "UNTRADABLE ITEM"; } 
+                else { btnEquip.disabled = false; btnEquip.innerText = "ADD TO TRADE GRID"; btnEquip.onclick = () => { addToTradeGrid(idx); }; }
+            } else {
+                btnEquip.disabled = false;
+                btnEquip.innerText = equippedItem === itemKey ? "UNEQUIP ITEM" : "EQUIP ITEM";
+                btnEquip.onclick = () => { 
+                    if (equippedItem === itemKey) { equippedItem = null; showToast(`Unequipped ${item.name}.`, 'success'); }
+                    else { equippedItem = itemKey; showToast(`Equipped ${item.name}!`, 'success'); }
+                    hideModal('item-inspector-modal'); 
+                };
+            }
+            showModal('item-inspector-modal');
         }
 
-        // BETTING MECHANICS
+        window.executeConversion = function() {
+            if (pendingConversionIndex === null || !currentUser) return;
+            const itemKey = myInventory[pendingConversionIndex]; const item = SNT_ITEMS[itemKey];
+
+            if (item.soulbound) return showToast("Cannot convert soulbound items.");
+            if (equippedItem === itemKey) equippedItem = null; 
+
+            myInventory.splice(pendingConversionIndex, 1);
+            currentUser.credits += item.value; updateAllCredits();
+            addLedgerEntry('ITEM CONVERSION', item.value, true, currentUser.credits);
+            
+            showToast(`${item.name} CONVERTED FOR ${formatNumber(item.value)} CR!`, 'success'); playSfx('win');
+            pendingConversionIndex = null; renderInventory(); hideModal('item-inspector-modal');
+        }
+
+        // --- TRADE HUB LOGIC ---
+        window.openCounterOfferModal = function(targetName, icon, itemName) {
+            document.getElementById('target-trade-name').innerText = targetName;
+            document.getElementById('target-trade-icon').innerText = icon;
+            document.getElementById('target-trade-item-name').innerText = itemName;
+            tradeOfferSlots = [null, null, null, null, null, null, null, null, null];
+            const creditInput = document.querySelector('#counter-offer-modal input[type="number"]'); if(creditInput) creditInput.value = '';
+            renderInventory(); renderTradeGrid(); showModal('counter-offer-modal');
+        }
+
+        function addToTradeGrid(inventoryIdx) {
+            const emptySlot = tradeOfferSlots.findIndex(s => s === null);
+            if (emptySlot !== -1) { tradeOfferSlots[emptySlot] = myInventory[inventoryIdx]; renderTradeGrid(); hideModal('item-inspector-modal'); } 
+            else { showToast("All 9 trade slots are full!"); }
+        }
+
+        function renderTradeGrid() {
+            const gridCells = document.querySelectorAll('.trade-grid-3x3 .trade-slot');
+            if (!gridCells.length) return;
+            tradeOfferSlots.forEach((itemKey, idx) => {
+                const cell = gridCells[idx];
+                if (itemKey) { const item = SNT_ITEMS[itemKey]; cell.innerText = item.icon; cell.style.borderColor = 'var(--gold)'; cell.onclick = () => { tradeOfferSlots[idx] = null; renderTradeGrid(); }; } 
+                else { cell.innerText = ''; cell.style.borderColor = '#334155'; cell.onclick = () => showToast("Select an item from your inventory.", "success"); }
+            });
+        }
+
+        window.openTradeConfirm = function() {
+            const creditInput = document.querySelector('#counter-offer-modal input[type="number"]');
+            const creditsOffered = parseInt(creditInput ? creditInput.value : 0) || 0;
+            if (creditsOffered > currentUser.credits) return showToast("Insufficient credits for this offer.");
+
+            let offeredIcons = tradeOfferSlots.filter(s => s !== null).map(k => SNT_ITEMS[k].icon).join(' ');
+            if (!offeredIcons) offeredIcons = '[ NO ITEMS ]';
+
+            document.getElementById('confirm-target-name').innerText = document.getElementById('target-trade-name').innerText;
+            document.getElementById('confirm-target-item').innerText = document.getElementById('target-trade-item-name').innerText;
+            
+            const myOfferDisplay = document.querySelector('#trade-confirm-modal .modal-box > div > div:nth-child(2)');
+            if(myOfferDisplay) myOfferDisplay.innerHTML = `<span style="color:var(--gold);">${offeredIcons}</span> + 🪙 ${formatNumber(creditsOffered)} CR`;
+
+            hideModal('counter-offer-modal'); showModal('trade-confirm-modal');
+        }
+
+        window.finalizeTrade = function() { showToast("Trade offer submitted to the network!", "success"); playSfx('deal'); hideModal('trade-confirm-modal'); }
+
+
+        // ==========================================
+        // OPTIMISTIC BETTING DISPATCH
+        // ==========================================
         function applyThrottle() { isBetting = true; clearTimeout(betThrottleTimeout); betThrottleTimeout = setTimeout(() => { isBetting = false; }, 250); }
-        window.selectChip = function(val) { currentChipValue = val; document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected')); const chipId = val >= 1000 ? (val/1000) + 'k' : val; const chipEl = document.getElementById(`chip-${chipId}`); if(chipEl) chipEl.classList.add('selected'); playSfx('bet'); }
+        
+        window.selectChip = function(val) { 
+            currentChipValue = val; 
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected')); 
+            const chipId = val >= 1000 ? (val/1000) + 'k' : val; 
+            const chipEl = document.getElementById(`chip-${chipId}`); 
+            if(chipEl) chipEl.classList.add('selected'); 
+            playSfx('bet'); 
+        }
+
+        window.placeBet = function(game, choice) {
+            if (isBetting || !socket) return;
+            const amt = currentChipValue; 
+            if (amt > currentUser.credits) return showToast("Insufficient credits!");
+
+            if (game === 'baccarat') { if (myBaccaratBets[choice] + amt > 50000) return showToast("Limit is 50k."); myBaccaratBets[choice] += amt; } 
+            else if (game === 'dvt') { if (myDvtBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDvtBets[choice] += amt; } 
+            else if (game === 'dice') { if (myDiceBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDiceBets[choice] += amt; } 
+            else if (game === 'derby') { if (myDerbyBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDerbyBets[choice] += amt; } 
+            else if (game === 'color') { if (myColorBets[choice] + amt > 50000) return showToast("Limit is 50k."); myColorBets[choice] += amt; } 
+            else if (game === 'cups') { if (myCupsBets[choice] + amt > 50000) return showToast("Limit is 50k."); myCupsBets[choice] += amt; }
+            
+            // OPTIMISTIC UI UPDATE: Deduct immediately before server confirmation
+            currentUser.credits -= amt;
+            updateAllCredits();
+            addLedgerEntry(`${game.toUpperCase()} BET`, amt, false, currentUser.credits);
+            
+            applyThrottle(); 
+            socket.emit(`place_${game}_bet`, { username: currentUser.username, choice, amount: amt }); 
+            lastBetAction = { game, choice };
+        }
+
         window.actRebet = function(gameOverride) {
             if(!lastBetAction) return showToast("No previous bet.");
             let targetGame = gameOverride || lastBetAction.game;
             if(targetGame === 'baccarat') placeBet('baccarat', lastBetAction.choice); if(targetGame === 'dvt') placeBet('dvt', lastBetAction.choice); if(targetGame === 'dice') placeBet('dice', lastBetAction.choice); if(targetGame === 'derby') placeBet('derby', lastBetAction.choice); if(targetGame === 'color') placeBet('color', lastBetAction.choice); if(targetGame === 'cups') placeBet('cups', lastBetAction.choice);
         }
         window.actUndoBet = function(game) { if(socket) socket.emit('undo_bet', { username: currentUser.username, game: game }); }
-        if(socket) { socket.on('arcade_bet_placed', (data) => { let badgeId = `badge-${data.game}-${data.choice}`; const badge = document.getElementById(badgeId); if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); if(data.totalChoiceBet > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden'); } }); }
+        
+        if(socket) { 
+            socket.on('arcade_bet_placed', (data) => { 
+                let badgeId = `badge-${data.game}-${data.choice}`; const badge = document.getElementById(badgeId); 
+                if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); if(data.totalChoiceBet > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden'); } 
+            }); 
+        }
 
-        // NAVIGATION
+        // ==========================================
+        // NAVIGATION (JOIN/LEAVE GAMES)
+        // ==========================================
         window.joinGame = function(gameId) {
             if(!socket) return showToast("SERVER OFFLINE");
             currentRoomId = gameId; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); 
@@ -736,10 +1032,7 @@
             globalTimerInt = setInterval(() => { 
                 s--; 
                 if(s > 0) { timerEl.innerText = `${prefix}: ${s}S`; } 
-                else { 
-                    clearInterval(globalTimerInt); 
-                    timerEl.innerText = "PROCESSING..."; 
-                } 
+                else { clearInterval(globalTimerInt); timerEl.innerText = "PROCESSING..."; } 
             }, 1000);
         }
 
@@ -749,26 +1042,22 @@
             return `<div class="card ${colorClass}"><div class="card-corner tl">${c.value}<br>${suitSym}</div><div class="card-center">${suitSym}</div><div class="card-corner br">${c.value}<br>${suitSym}</div></div>`; 
         }
 
-        window.placeBet = function(game, choice) {
-            if (isBetting || !socket) return;
-            const amt = currentChipValue; if (amt > currentUser.credits) return showToast("Insufficient credits!");
-
-            if (game === 'baccarat') { if (myBaccaratBets[choice] + amt > 50000) return showToast("Limit is 50k."); myBaccaratBets[choice] += amt; } 
-            else if (game === 'dvt') { if (myDvtBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDvtBets[choice] += amt; } 
-            else if (game === 'dice') { if (myDiceBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDiceBets[choice] += amt; } 
-            else if (game === 'derby') { if (myDerbyBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDerbyBets[choice] += amt; } 
-            else if (game === 'color') { if (myColorBets[choice] + amt > 50000) return showToast("Limit is 50k."); myColorBets[choice] += amt; } 
-            else if (game === 'cups') { if (myCupsBets[choice] + amt > 50000) return showToast("Limit is 50k."); myCupsBets[choice] += amt; }
-            
-            applyThrottle(); socket.emit(`place_${game}_bet`, { username: currentUser.username, choice, amount: amt }); lastBetAction = { game, choice };
-            addLedgerEntry(`${game.toUpperCase()} BET`, amt, false, currentUser.credits - amt);
-        }
-
         // ==========================================
         // BLACKJACK ENGINE
         // ==========================================
         window.actSitDown = function(idx) { if(socket) socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
-        window.actPlaceBetDropdown = function(idx) { const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value) : 0; if (isNaN(amt) || amt < 100) return showToast("Invalid amount."); if (amt > 50000) return showToast("Limit is 50k."); if (amt > currentUser.credits) return showToast("Insufficient credits!"); window.lastBetAmount = amt; if(socket) socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet'); addLedgerEntry('BLACKJACK BET', amt, false, currentUser.credits - amt); }
+        
+        window.actPlaceBetDropdown = function(idx) { 
+            const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value) : 0; 
+            if (isNaN(amt) || amt < 100) return showToast("Invalid amount."); if (amt > 50000) return showToast("Limit is 50k."); if (amt > currentUser.credits) return showToast("Insufficient credits!"); 
+            window.lastBetAmount = amt; 
+            
+            // Optimistic Update
+            currentUser.credits -= amt; updateAllCredits(); addLedgerEntry('BLACKJACK BET', amt, false, currentUser.credits);
+            
+            if(socket) socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet'); 
+        }
+        
         window.actEjectSeat = function(idx) { if(socket) socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
         window.actHit = function(idx) { if(socket) socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
         window.actStand = function(idx) { if(socket) socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
@@ -787,6 +1076,7 @@
                         });
                         let hasWin = state.seats[mySeatIndex].hands.some(h => h.result === 'win' || h.result === 'win-bj'); 
                         let hasLose = state.seats[mySeatIndex].hands.some(h => h.result === 'lose' || h.result === 'bust'); 
+                        
                         if(hasWin) { playSfx('win'); addLedgerEntry('BLACKJACK WIN', totalWinAmt, true, currentUser.credits + totalWinAmt); } 
                         else if (hasLose) playSfx('lose'); 
                     } 
@@ -808,12 +1098,17 @@
 
             const dCards = document.getElementById('bj-dealer-cards'); const dBadge = document.getElementById('bj-dealer-val');
             let dealerHtml = ''; state.dealerCards.forEach(c => { dealerHtml += formatCardHTML(c, c.hidden); });
-            if (dCards) dCards.innerHTML = dealerHtml;
+            
+            // Only update DOM if HTML changes (Prevents Animation Breakage)
+            if (dCards && dCards.innerHTML !== dealerHtml) dCards.innerHTML = dealerHtml;
+            
             const visibleDealerCards = state.dealerCards.filter(c => !c.hidden);
             if (visibleDealerCards.length > 0) { if (dBadge) { dBadge.innerText = calculateValue(visibleDealerCards); dBadge.classList.remove('hidden'); } } else { if (dBadge) dBadge.classList.add('hidden'); }
 
             const seatsArea = document.getElementById('bj-seats-area'); let seatsHtml = '';
             if(currentUser) { const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if(mySeatData) { mySeatIndex = state.seats.indexOf(mySeatData);} else { mySeatIndex = -1; } }
+
+            let hasCrown = myInventory.includes('crown');
 
             for(let index=0; index<state.seats.length; index++) {
                 let seatData = state.seats[index]; let isMySeat = currentUser && seatData && seatData.username.toLowerCase() === currentUser.username.toLowerCase(); let hasSeatAnywhere = state.seats.some(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
@@ -848,7 +1143,9 @@
                         seatsHtml += `<div class="${betClass}">[ 🪙 ${formatNumber(handBet)} ]</div>`; 
                     }
                     
-                    let nameplateColor = isMySeat ? 'var(--green)' : '#fff';
+                    let nameplateColor = isMySeat ? 'var(--green)' : '#f8fafc';
+                    if (isMySeat && hasCrown) nameplateColor = 'var(--gold)';
+                    
                     seatsHtml += `<div class="nameplate" style="color:${nameplateColor};">${seatData.username}</div>`;
 
                     if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
@@ -863,14 +1160,14 @@
                         const cHand = seatData.hands[seatData.currentHand];
                         if (cHand && cHand.status === 'waiting') {
                             seatsHtml += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; width:100%; margin-top:5px;"><button class="btn btn-green small" onclick="actHit(${index})">HIT</button><button class="btn btn-gold small" onclick="actStand(${index})">STAND</button>`;
-                            if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) { seatsHtml += `<button class="btn btn-blue small" onclick="actDouble(${index})">2X</button>`; if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) { seatsHtml += `<button class="btn small" style="background:var(--purple);" onclick="actSplit(${index})">SPLIT</button>`; } }
+                            if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) { seatsHtml += `<button class="btn btn-blue small" onclick="actDouble(${index})">2X</button>`; if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) { seatsHtml += `<button class="btn small" style="background:var(--purple); border-color:#d8b4fe;" onclick="actSplit(${index})">SPLIT</button>`; } }
                             seatsHtml += `</div>`;
                         }
                     }
                 }
                 seatsHtml += `</div>`;
             }
-            if (seatsArea) seatsArea.innerHTML = seatsHtml; 
+            if (seatsArea && seatsArea.innerHTML !== seatsHtml) seatsArea.innerHTML = seatsHtml; 
         }
 
         // ==========================================
@@ -945,26 +1242,40 @@
                         let totalBet = Object.values(myDvtBets).reduce((a,b)=>a+b, 0);
                         if (totalBet > 0) {
                             let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
-                            if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('dvt', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); addLedgerEntry('DRAGON VS TIGER WIN', totalWin, true, currentUser.credits + totalWin); } 
+                            if (myWins.length > 0) { 
+                                let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); 
+                                setStatus('dvt', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); 
+                                addLedgerEntry('DRAGON VS TIGER WIN', totalWin, true, currentUser.credits + totalWin); 
+                            } 
                             else if (data.winner === 'tie' && (myDvtBets.dragon > 0 || myDvtBets.tiger > 0)) { setStatus('dvt', `PUSH (HALF WIN)`); playSfx('win'); } 
-                            else { setStatus('dvt', "HOUSE WINS", true); playSfx('lose'); }
+                            else { 
+                                setStatus('dvt', "HOUSE WINS", true); playSfx('lose'); 
+                                if (myInventory.includes('amulet')) {
+                                    let refund = Math.floor(totalBet * 0.05);
+                                    currentUser.credits += refund; updateAllCredits();
+                                    addLedgerEntry('DRAGON AMULET REFUND', refund, true, currentUser.credits);
+                                    showToast(`Amulet refunded ${formatNumber(refund)} CR!`, 'success');
+                                }
+                            }
                         }
                     }, 2500);
                 }
             });
 
-            // ARCADE ENGINES
+            // ==========================================
+            // ARCADE ENGINES (DICE, DERBY, COLOR, CUPS, SLOTS)
+            // ==========================================
             socket.on('dice_state_update', (data) => {
                 if (currentRoomId !== 'dice') return;
                 const d1 = document.getElementById('die1'); const d2 = document.getElementById('die2');
                 if (data.status === 'betting') { 
-                    setStatus('dice', "PLACE YOUR BETS"); d1.style.color = '#fff'; d2.style.color = '#fff'; myDiceBets = { under: 0, seven: 0, over: 0 }; 
+                    setStatus('dice', "PLACE YOUR BETS"); d1.style.color = '#fff'; d2.style.color = '#fff'; d1.classList.remove('shake'); d2.classList.remove('shake'); myDiceBets = { under: 0, seven: 0, over: 0 }; 
                     document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-dice')) b.classList.add('hidden'); }); 
                     setTimer('dice', data.betEndTime - Date.now(), "BETS CLOSING");
                 } 
-                else if (data.status === 'rolling') { setTimer('dice', 0); setStatus('dice', "ROLLING..."); d1.style.color = 'var(--gold)'; d2.style.color = 'var(--gold)'; } 
+                else if (data.status === 'rolling') { setTimer('dice', 0); setStatus('dice', "ROLLING..."); d1.style.color = 'var(--gold)'; d2.style.color = 'var(--gold)'; d1.classList.add('shake'); d2.classList.add('shake'); } 
                 else if (data.status === 'resolving') {
-                    d1.style.color = '#fff'; d2.style.color = '#fff'; d1.innerText = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][data.dice[0]-1]; d2.innerText = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][data.dice[1]-1]; 
+                    d1.style.color = '#fff'; d2.style.color = '#fff'; d1.classList.remove('shake'); d2.classList.remove('shake'); d1.innerText = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][data.dice[0]-1]; d2.innerText = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][data.dice[1]-1]; 
                     setStatus('dice', `RESULT: ${data.total}`);
                     let totalBet = Object.values(myDiceBets).reduce((a,b)=>a+b, 0);
                     if (totalBet > 0) {
@@ -1008,7 +1319,16 @@
                     let totalBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
                     if (totalBet > 0) {
                         let myWins = data.winners ? data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase()) : [];
-                        if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('color', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); addLedgerEntry('PERYA COLOR WIN', totalWin, true, currentUser.credits + totalWin); } else { setStatus('color', "HOUSE WINS", true); playSfx('lose'); }
+                        if (myWins.length > 0) { 
+                            let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); 
+                            if (myInventory.includes('orb')) {
+                                let bonus = Math.floor(totalWin * 0.05);
+                                totalWin += bonus; currentUser.credits += bonus; 
+                                showToast(`Orb activated! +${formatNumber(bonus)} CR Bonus!`, 'success');
+                            }
+                            setStatus('color', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win');
+                            addLedgerEntry('PERYA COLOR WIN', totalWin, true, currentUser.credits + totalWin);
+                        } else { setStatus('color', "HOUSE WINS", true); playSfx('lose'); }
                     }
                 }
             });
@@ -1051,9 +1371,10 @@
             socket.on('slots_result', (data) => {
                 if (currentRoomId !== 'slots') return;
                 const r1 = document.getElementById('reel-1'); const r2 = document.getElementById('reel-2'); const r3 = document.getElementById('reel-3');
-                setTimeout(() => { r1.innerText = data.reels[0]; }, 500); setTimeout(() => { r2.innerText = data.reels[1]; }, 1000);
+                setTimeout(() => { r1.classList.remove('spinning'); r1.innerText = data.reels[0]; }, 500); 
+                setTimeout(() => { r2.classList.remove('spinning'); r2.innerText = data.reels[1]; }, 1000);
                 setTimeout(() => { 
-                    r3.innerText = data.reels[2]; 
+                    r3.classList.remove('spinning'); r3.innerText = data.reels[2]; 
                     if(data.winAmount > 0) { setStatus('slots', `JACKPOT! YOU WON ${formatNumber(data.winAmount)}!`); playSfx('win'); addLedgerEntry('SLOTS JACKPOT', data.winAmount, true, currentUser.credits + data.winAmount); } else { setStatus('slots', `NO LUCK. SPIN AGAIN!`); playSfx('lose'); }
                 }, 1500);
             });
@@ -1075,9 +1396,9 @@
             });
         }
 
-        window.actCrashBet = function() { const amt = currentChipValue; if (amt > currentUser.credits) return showToast("Insufficient credits!"); if(socket) socket.emit('place_crash_bet', { username: currentUser.username, amount: amt }); };
+        window.actCrashBet = function() { const amt = currentChipValue; if (amt > currentUser.credits) return showToast("Insufficient credits!"); currentUser.credits -= amt; updateAllCredits(); addLedgerEntry('8-BIT CRASH BET', amt, false, currentUser.credits); if(socket) socket.emit('place_crash_bet', { username: currentUser.username, amount: amt }); };
         window.actCrashCashout = function() { if(socket) socket.emit('crash_cashout', { username: currentUser.username }); };
-        window.actSpinSlots = function() { if(isBetting) return; const amt = currentChipValue; if (amt > 50000) return showToast("Max bet is 50,000 CR."); if (amt > currentUser.credits) return showToast("Insufficient credits!"); applyThrottle(); setStatus('slots', "SPINNING..."); document.getElementById('reel-1').innerText = '...'; document.getElementById('reel-2').innerText = '...'; document.getElementById('reel-3').innerText = '...'; if(socket) socket.emit('spin_slots', { username: currentUser.username, betAmount: amt }); addLedgerEntry('RETRO SLOTS BET', amt, false, currentUser.credits - amt); };
+        window.actSpinSlots = function() { if(isBetting) return; const amt = currentChipValue; if (amt > 50000) return showToast("Max bet is 50,000 CR."); if (amt > currentUser.credits) return showToast("Insufficient credits!"); applyThrottle(); setStatus('slots', "SPINNING..."); document.getElementById('reel-1').innerText = '...'; document.getElementById('reel-2').innerText = '...'; document.getElementById('reel-3').innerText = '...'; document.getElementById('reel-1').classList.add('spinning'); document.getElementById('reel-2').classList.add('spinning'); document.getElementById('reel-3').classList.add('spinning'); currentUser.credits -= amt; updateAllCredits(); addLedgerEntry('RETRO SLOTS BET', amt, false, currentUser.credits); if(socket) socket.emit('spin_slots', { username: currentUser.username, betAmount: amt }); };
 
         window.actPvpSit = function(index) { if(socket) socket.emit('join_pvp_seat', { username: currentUser.username, seatIndex: index }); };
         window.actPvpLeave = function() { if(myDuelSeatIndex !== -1 && currentUser && socket) socket.emit('leave_pvp_seat', { username: currentUser.username, seatIndex: myDuelSeatIndex }); };
