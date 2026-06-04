@@ -89,8 +89,8 @@
         .rc-purple:hover { border-color: var(--neon-purple); box-shadow: 0 0 15px rgba(168,85,247,0.3); } .rc-purple:hover::before { background: var(--neon-purple); }
         
         .realm-title { font-size: 32px; color: #fff; font-weight: bold; margin-bottom: 10px; line-height: 1; text-shadow: 2px 2px 0 #000; z-index: 2; }
-        .realm-desc { font-size: 18px; color: #94a3b8; line-height: 1.2; margin-bottom: 15px; z-index: 2; }
-        .realm-status { font-size: 20px; background: #000; padding: 5px; border: 2px solid #222; width: 90%; color: var(--neon-green); font-weight: bold; z-index: 2; }
+        .realm-desc { font-size: 20px; color: #94a3b8; line-height: 1.2; margin-bottom: 15px; z-index: 2; }
+        .realm-status { font-size: 22px; background: #000; padding: 5px; border: 2px solid #222; width: 90%; color: var(--neon-green); font-weight: bold; z-index: 2; }
 
         /* Game Interface Framework */
         .game-interface { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); display: flex; flex-direction: column; z-index: 100; }
@@ -100,13 +100,13 @@
         
         .top-hud { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(0,0,0,0.85); border-bottom: 4px solid #111; box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 10; flex-shrink: 0;}
         .hud-center { font-size: 45px; font-weight: bold; text-shadow: 0 0 10px rgba(255,255,255,0.3), 3px 3px 0 #000; color: #fff; position: absolute; left: 50%; transform: translateX(-50%); }
-        .wallet-display { font-size: 32px; color: var(--neon-yellow); background: #000; padding: 8px 25px; border: 4px solid #333; text-shadow: 2px 2px 0 #000; box-shadow: inset 0 0 15px rgba(250,204,21,0.1); }
+        .wallet-display { font-size: 36px; color: var(--neon-yellow); background: #000; padding: 8px 25px; border: 4px solid #333; text-shadow: 2px 2px 0 #000; box-shadow: inset 0 0 15px rgba(250,204,21,0.1); }
 
         /* NEAT STATUS BAR FOR TIMERS (Prevents Overlap) */
         .status-bar { width: 100%; padding: 10px 30px; background: rgba(0,0,0,0.6); border-bottom: 2px solid #222; display: flex; justify-content: center; align-items: center; gap: 20px; z-index: 9; min-height: 60px; box-shadow: inset 0 -10px 20px rgba(0,0,0,0.5); flex-shrink: 0;}
-        .timer-display { font-size: 28px; color: var(--warning); font-weight: bold; border: 2px solid var(--warning); padding: 4px 15px; background: #000; text-shadow: 1px 1px 0 #000; box-shadow: 0 0 10px rgba(250,204,21,0.3); }
-        .timer-display.danger { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 10px rgba(239,68,68,0.3); }
-        .result-display { font-size: 32px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000; }
+        .timer-display { font-size: 32px; color: var(--warning); font-weight: bold; border: 3px solid var(--warning); padding: 4px 20px; background: #000; text-shadow: 1px 1px 0 #000; box-shadow: 0 0 15px rgba(250,204,21,0.3); border-radius: 8px;}
+        .timer-display.danger { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 15px rgba(239,68,68,0.3); }
+        .result-display { font-size: 36px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000; }
 
         .game-surface { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; padding: 20px; overflow: hidden; }
         
@@ -114,84 +114,87 @@
         .arcade-bet-area { background: rgba(0,0,0,0.95); padding: 20px; display: flex; flex-direction: column; align-items: center; border-top: 4px solid #222; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); z-index: 10; flex-shrink: 0;}
         .chip-rack { display: flex; gap: 15px; margin-bottom: 20px; background: #111; padding: 15px 25px; border-radius: 50px; border: 2px solid #333; box-shadow: inset 0 5px 15px rgba(0,0,0,0.8); align-items: center;}
         
-        .casino-chip { width: 55px; height: 55px; border-radius: 50%; border: 3px dashed #000; display: flex; justify-content: center; align-items: center; font-size: 22px; cursor: pointer; color: #000; font-weight: bold; background: #cbd5e1; box-shadow: 0 5px 10px rgba(0,0,0,0.5); transition: 0.2s; position: relative; }
+        .casino-chip { width: 55px; height: 55px; border-radius: 50%; border: 3px dashed #000; display: flex; justify-content: center; align-items: center; font-size: 22px; cursor: pointer; color: #000; font-weight: bold; background: #cbd5e1; box-shadow: 0 5px 10px rgba(0,0,0,0.5); transition: 0.2s; position: relative; font-family: Arial;}
         .casino-chip::before { content: ''; position: absolute; top: 3px; left: 3px; right: 3px; bottom: 3px; border: 2px solid rgba(0,0,0,0.3); border-radius: 50%; pointer-events: none; }
         .casino-chip:hover { transform: translateY(-5px); }
         .casino-chip:active { transform: translateY(2px); box-shadow: 0 2px 5px rgba(0,0,0,0.8); }
         .casino-chip.selected { border: 4px solid var(--neon-yellow); background: #fff; transform: translateY(-10px) scale(1.1); box-shadow: 0 10px 20px rgba(0,0,0,0.8), 0 0 15px rgba(250,204,21,0.5); }
         .chip-1k { background: #94a3b8; } .chip-5k { background: #f87171; } .chip-20k { background: #34d399; } .chip-50k { background: #60a5fa; }
         
-        .action-chip { width: auto; height: 45px; border-radius: 8px; border: 3px solid #555; background: #222; color: #fff; padding: 0 15px; font-size: 20px; text-shadow: 1px 1px 0 #000; box-shadow: 0 4px 8px rgba(0,0,0,0.5);}
+        .action-chip { width: auto; height: 45px; border-radius: 8px; border: 3px solid #555; background: #222; color: #fff; padding: 0 15px; font-size: 24px; text-shadow: 1px 1px 0 #000; box-shadow: 0 4px 8px rgba(0,0,0,0.5); cursor: pointer; transition:0.1s;}
         .action-chip:hover { border-color: #fff; background: #333; }
+        .action-chip:active { transform: translateY(2px); }
 
         /* Game Grids */
         .bet-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
         .bet-tile { background: #111; border: 4px solid #444; width: 220px; height: 110px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; position: relative; box-shadow: 0 8px 0 #000; transition: 0.1s; }
         .bet-tile:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 10px 0 #000; }
         .bet-tile:active { transform: translateY(8px); box-shadow: 0 0 0 #000; }
-        .bet-tile-title { font-size: 34px; font-weight: bold; text-shadow: 2px 2px 0 #000; line-height: 1; margin-bottom: 5px; }
-        .bet-tile-payout { font-size: 20px; color: #94a3b8; font-weight: bold; }
-        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--neon-blue); color: #fff; padding: 2px 10px; border: 3px solid #fff; font-size: 20px; font-weight: bold; z-index: 10; box-shadow: 2px 2px 0 #000; }
+        .bet-tile-title { font-size: 38px; font-weight: bold; text-shadow: 2px 2px 0 #000; line-height: 1; margin-bottom: 5px; }
+        .bet-tile-payout { font-size: 24px; color: #94a3b8; font-weight: bold; }
+        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--neon-blue); color: #fff; padding: 4px 15px; border: 3px solid #fff; font-size: 24px; font-weight: bold; z-index: 10; box-shadow: 2px 2px 0 #000; border-radius: 20px;}
 
         /* Card Graphics */
         .hands-wrapper { display: flex; gap: 12px; justify-content: center; min-height: 125px; align-items: center; position: relative;}
-        .card { width: 80px; height: 115px; background: #fff; border: 2px solid #000; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; position: relative; font-family: Arial, sans-serif; box-shadow: 3px 3px 10px rgba(0,0,0,0.8); margin-left: -50px; animation: dealAnim 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .card { width: 85px; height: 125px; background: #fff; border: 2px solid #000; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; position: relative; font-family: Arial, sans-serif; box-shadow: 3px 3px 10px rgba(0,0,0,0.8); margin-left: -50px; animation: dealAnim 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .card:first-child { margin-left: 0; }
         .card.red { color: var(--neon-red); }
-        .card-corner { position: absolute; font-size: 18px; font-weight: bold; line-height: 1; text-align: center; }
-        .card-corner.tl { top: 4px; left: 4px; } .card-corner.br { bottom: 4px; right: 4px; transform: rotate(180deg); }
-        .card-center { font-size: 40px; }
+        .card-corner { position: absolute; font-size: 22px; font-weight: bold; line-height: 1; text-align: center; }
+        .card-corner.tl { top: 5px; left: 5px; } .card-corner.br { bottom: 5px; right: 5px; transform: rotate(180deg); }
+        .card-center { font-size: 50px; }
         .card.hidden-card { background: repeating-linear-gradient(45deg, #222, #222 5px, #444 5px, #444 10px); color: transparent; border-color: #111; animation: none;}
         @keyframes dealAnim { from { transform: translateY(-80px) scale(0.8) rotateY(90deg); opacity: 0; } to { transform: translateY(0) scale(1) rotateY(0deg); opacity: 1; } }
 
         /* Baccarat & DVT Specifics */
         .card-table-split { display: flex; gap: 80px; justify-content: center; align-items: center; width: 100%; margin-top: 20px; }
         .baccarat-zone { border: 6px solid #444; background: rgba(0,0,0,0.7); padding: 25px; border-radius: 12px; width: 380px; display: flex; flex-direction: column; align-items: center; position: relative; box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 20px 40px rgba(0,0,0,0.6); }
-        .baccarat-title { font-size: 36px; font-weight: bold; margin-bottom: 20px; text-shadow: 3px 3px 0 #000; letter-spacing: 2px; }
-        .baccarat-score { position: absolute; bottom: -25px; background: #000; border: 4px solid #fff; padding: 4px 25px; font-size: 38px; font-weight: bold; text-shadow: 2px 2px 0 #000; z-index: 50; border-radius: 8px; box-shadow: 0 8px 15px rgba(0,0,0,0.8); }
+        .baccarat-title { font-size: 38px; font-weight: bold; margin-bottom: 20px; text-shadow: 3px 3px 0 #000; letter-spacing: 2px; }
+        .baccarat-score-overlay { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); background: #000; border: 4px solid #fff; padding: 5px 30px; font-size: 50px; font-weight: bold; text-shadow: 3px 3px 0 #000; z-index: 50; border-radius: 12px; box-shadow: 0 8px 15px rgba(0,0,0,0.8); }
 
         /* Blackjack Alignment Fixes */
         .bj-seats-container { display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; align-items: flex-end; gap: 15px; width: 100%; position: absolute; bottom: 20px; }
-        .seat-box { width: 210px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        .seat-box { width: 220px; display: flex; flex-direction: column; align-items: center; position: relative; }
         .seat-empty { width: 100%; height: 140px; border: 4px dashed rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); margin-bottom: 10px; transition: 0.2s;}
         .seat-empty:hover { background: rgba(255,255,255,0.1); border-color: #fff; }
-        .seat-nameplate { background: #000; border: 3px solid #444; width: 100%; text-align: center; padding: 6px; font-size: 24px; font-weight: bold; box-shadow: 0 5px 10px rgba(0,0,0,0.8); text-shadow: 2px 2px 0 #000; }
-        .hand-score { position: absolute; top: 50%; left: -20px; transform: translateY(-50%); background: #111; border: 3px solid #fff; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; font-size: 18px; font-weight: bold; z-index: 10; box-shadow: 2px 2px 5px #000;}
+        .seat-nameplate { background: #000; border: 3px solid #444; width: 100%; text-align: center; padding: 6px; font-size: 28px; font-weight: bold; box-shadow: 0 5px 10px rgba(0,0,0,0.8); text-shadow: 2px 2px 0 #000; }
+        
+        .hand-container { position: relative; display: flex; justify-content: center; align-items: center; min-height: 125px; margin-bottom: 10px; width: 100%;}
+        .hand-score { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: #111; border: 3px solid var(--neon-blue); border-radius: 50%; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; z-index: 10; box-shadow: 2px 2px 5px #000; color: #fff;}
+        .player-bet-text { background: #000; border: 3px solid var(--warning); color: var(--warning); padding: 4px 15px; border-radius: 20px; font-size: 24px; font-weight: bold; box-shadow: 0 4px 0 #000; margin-top: -10px; z-index: 25; position: relative; text-shadow: 1px 1px 0 #000;}
+        .player-bet-text.anim-win { border-color: var(--success); color: var(--success); }
+        
         .seat-box.active-turn { transform: translateY(-15px); }
         .seat-box.active-turn .seat-nameplate { border-color: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue); }
 
-        /* Arcade Games Modals & Market */
+        /* Arcade Modals (SAMPLE DATA INCLUDED) */
         .modal-split { display:flex; gap:15px; text-align:left; height:450px;}
         .modal-col { flex:1; background:#000; border:4px solid #333; padding:15px; overflow-y:auto;}
-        .market-item { border:2px solid #555; background:#111; padding:10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;}
-        .trade-slot { width: 60px; height: 60px; border: 2px solid #555; display:flex; justify-content:center; align-items:center; background:#000; font-size:30px; cursor:pointer;}
+        .market-item { border:3px solid #555; background:#111; padding:15px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; border-radius: 8px;}
+        .trade-slot { width: 70px; height: 70px; border: 3px solid #555; display:flex; justify-content:center; align-items:center; background:#000; font-size:35px; cursor:pointer; border-radius: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
 
-        /* Arcade Games Restored */
-        .color-dice-rack { display: flex; gap: 40px; margin-bottom: 20px; }
-        .color-die { width: 120px; height: 120px; border: 8px solid #222; border-radius: 16px; box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 15px 30px rgba(0,0,0,0.8); transition: 0.1s; }
-        .color-bet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 800px; }
-        .color-bet-tile { height: 90px; border: 4px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 34px; font-weight: bold; text-shadow: 2px 2px 0 #000; cursor: pointer; position: relative; box-shadow: 0 6px 0 #000; transition: 0.1s; }
-        .color-bet-tile:active { transform: translateY(6px); box-shadow: 0 0 0 #000; }
-        .c-red { background-color: var(--neon-red); } .c-blue { background-color: var(--neon-blue); } .c-yellow { background-color: var(--neon-yellow); color: #000 !important; text-shadow: none !important;} .c-green { background-color: var(--neon-green); } .c-pink { background-color: var(--neon-pink); } .c-white { background-color: #f8fafc; color: #000 !important; text-shadow: none !important;}
-
-        .dice-display { font-size: 160px; text-shadow: 0 15px 30px #000; font-family: Arial; line-height: 1; display:flex; gap: 40px; }
-        .dice-display.shake { animation: dShake 0.1s infinite; color: var(--neon-yellow); }
+        /* Arcade Games Minified */
+        .color-dice-rack { display: flex; gap: 40px; margin-bottom: 30px; }
+        .color-die { width: 120px; height: 120px; border: 8px solid #222; border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.8); transition: 0.1s; }
+        .c-red { background: var(--danger); } .c-blue { background: var(--pro-blue); } .c-yellow { background: var(--warning); color:#000 !important; text-shadow:none !important;} .c-green { background: var(--success); } .c-pink { background: var(--neon-pink); } .c-white { background: #fff; color:#000 !important; text-shadow:none !important;}
+        
+        .dice-display { font-size: 150px; text-shadow: 0 10px 20px #000; font-family: Arial; line-height: 1; display:flex; gap: 30px; }
+        .dice-display.shake { animation: dShake 0.1s infinite; color: var(--warning); }
         @keyframes dShake { 0% { transform: translate(3px, 3px); } 50% { transform: translate(-3px, -3px); } 100% { transform: translate(3px, -3px); } }
         
         .derby-track { width: 900px; height: 260px; background: #111; border: 6px solid #333; display: flex; flex-direction: column; position: relative; box-shadow: inset 0 0 40px #000;}
         .derby-lane { flex: 1; border-bottom: 2px dashed #444; position: relative; display: flex; align-items: center; padding: 0 10px; }
-        .horse { height: 85%; width: 70px; background: #fff; position: absolute; bottom: 0; z-index: 20; transition: left 0.1s linear;}
+        .horse { height: 85%; width: 60px; background: #fff; position: absolute; bottom: 0; z-index: 20; transition: left 0.1s linear;}
         
-        .slots-machine { background: #111; border: 8px solid #333; padding: 30px; text-align: center; border-radius: 12px; }
-        .reels { display: flex; gap: 15px; background: #000; border: 4px solid #555; padding: 20px; margin: 20px 0; }
-        .reel { width: 130px; height: 160px; background: #fff; border: 4px solid #222; font-size: 90px; display: flex; justify-content: center; align-items: center; color: #000; box-shadow: inset 0 10px 30px rgba(0,0,0,0.5); overflow:hidden;}
+        .slots-machine { background: #111; border: 8px solid #333; padding: 25px; text-align: center; border-radius: 12px; }
+        .reels { display: flex; gap: 15px; background: #000; border: 4px solid #555; padding: 15px; margin: 15px 0; }
+        .reel { width: 120px; height: 160px; background: #fff; border: 4px solid #222; font-size: 80px; display: flex; justify-content: center; align-items: center; color: #000; box-shadow: inset 0 10px 30px rgba(0,0,0,0.5); overflow:hidden;}
         .reel.spinning { animation: sSpin 0.15s linear infinite; }
         @keyframes sSpin { 0% { transform: translateY(-100px); filter:blur(4px); } 100% { transform: translateY(0); filter:blur(0); } }
         
         .crash-graph { width: 800px; height: 350px; background: rgba(0,0,0,0.8); border: 6px solid #333; position: relative; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        .crash-rocket { width: 60px; height: 60px; font-size: 45px; position: absolute; bottom: 20px; left: 20px; transition: transform 0.1s linear;}
+        .crash-rocket { width: 50px; height: 50px; font-size: 40px; position: absolute; bottom: 20px; left: 20px; transition: transform 0.1s linear;}
         
-        .cups-rack { display: flex; gap: 50px; position: relative; height: 160px; align-items: flex-end;}
+        .cups-rack { display: flex; gap: 40px; position: relative; height: 150px; align-items: flex-end;}
         .cup-wrapper { position: relative; width: 100px; display:flex; justify-content:center;}
         .cup-shape { width: 90px; height: 110px; background: #dc2626; border-radius: 40px 40px 5px 5px; border-bottom: 10px solid #f87171; z-index: 10; transition: 0.2s;}
         .cup-ball { font-size: 40px; position: absolute; bottom: -5px; z-index: 5; opacity: 0; }
@@ -206,7 +209,6 @@
 <body>
 
     <div id="arcade-cabinet">
-        <!-- AUDIO -->
         <audio id="sfx-deal" src="deal.mp3"></audio>
         <audio id="sfx-bet" src="bet.mp3"></audio>
         <audio id="sfx-win" src="win.mp3"></audio>
@@ -214,7 +216,6 @@
 
         <div id="toast-container"></div>
 
-        <!-- AUTH VIEW -->
         <div id="auth-view" class="full-menu">
             <h1 class="hub-title">
                 <span class="snt-gold">STICK N'</span> <span class="snt-block text-black">TRADE</span>
@@ -227,7 +228,6 @@
             </div>
         </div>
 
-        <!-- MAIN HUB -->
         <div id="main-menu-view" class="full-menu hidden">
             <h1 class="hub-title">
                 <span class="snt-gold">STICK N'</span> <span class="snt-block text-black">TRADE</span>
@@ -241,28 +241,24 @@
             </div>
 
             <div class="realm-viewport custom-scroll">
-                <!-- CARDS -->
                 <div id="realm-cards" class="realm-grid-container">
                     <div class="realm-card rc-green" onclick="joinGame('5seat')"><div class="realm-title">CLASSIC BLACKJACK</div><div class="realm-desc">5-Seat Table</div><div class="realm-status">PLAY NOW</div></div>
                     <div class="realm-card rc-blue" onclick="joinGame('3seat')"><div class="realm-title">VIP BLACKJACK</div><div class="realm-desc">3-Seat Fast Paced</div><div class="realm-status">PLAY NOW</div></div>
                     <div class="realm-card rc-red" onclick="joinGame('baccarat')"><div class="realm-title">PUNTO BANCO</div><div class="realm-desc">True Baccarat</div><div class="realm-status">PLAY NOW</div></div>
-                    <div class="realm-card rc-yellow" onclick="joinGame('dvt')"><div class="realm-title">DRAGON VS TIGER</div><div class="realm-desc">High Card Wins</div><div class="realm-status">PLAY NOW</div></div>
+                    <div class="realm-card rc-yellow" onclick="joinGame('dvt')"><div class="realm-title text-black">DRAGON VS TIGER</div><div class="realm-desc">High Card Wins</div><div class="realm-status">PLAY NOW</div></div>
                 </div>
-                <!-- ARENA -->
                 <div id="realm-arena" class="realm-grid-container hidden">
                     <div class="realm-card rc-red" onclick="joinGame('pvp')"><div class="realm-title">CUSTOM DUELS</div><div class="realm-desc">1v1 Wagering</div><div class="realm-status">ENTER ARENA</div></div>
                 </div>
-                <!-- ARCADE -->
                 <div id="realm-arcade" class="realm-grid-container hidden">
                     <div class="realm-card rc-blue" onclick="joinGame('dice')"><div class="realm-title">HIGH-LOW DICE</div><div class="realm-desc">Jackpot 7s</div><div class="realm-status">PLAY NOW</div></div>
-                    <div class="realm-card rc-yellow" onclick="joinGame('derby')"><div class="realm-title">8-BIT DERBY</div><div class="realm-desc">Virtual Sprint</div><div class="realm-status">PLAY NOW</div></div>
+                    <div class="realm-card rc-yellow" onclick="joinGame('derby')"><div class="realm-title text-black">8-BIT DERBY</div><div class="realm-desc">Virtual Sprint</div><div class="realm-status">PLAY NOW</div></div>
                     <div class="realm-card rc-green" onclick="joinGame('color')"><div class="realm-title">PERYA COLOR</div><div class="realm-desc">3 Color Dice</div><div class="realm-status">PLAY NOW</div></div>
                     <div class="realm-card rc-purple" onclick="joinGame('cups')"><div class="realm-title">STREET HUSTLE</div><div class="realm-desc">3 Cups 1 Ball</div><div class="realm-status">PLAY NOW</div></div>
                 </div>
-                <!-- STAKES -->
                 <div id="realm-stakes" class="realm-grid-container hidden">
                     <div class="realm-card rc-red" onclick="joinGame('crash')"><div class="realm-title">8-BIT CRASH</div><div class="realm-desc">Ride multiplier</div><div class="realm-status">PLAY NOW</div></div>
-                    <div class="realm-card rc-yellow" onclick="joinGame('slots')"><div class="realm-title">RETRO SLOTS</div><div class="realm-desc">Hit the Jackpot</div><div class="realm-status">PLAY NOW</div></div>
+                    <div class="realm-card rc-yellow" onclick="joinGame('slots')"><div class="realm-title text-black">RETRO SLOTS</div><div class="realm-desc">Hit the Jackpot</div><div class="realm-status">PLAY NOW</div></div>
                 </div>
             </div>
 
@@ -270,23 +266,22 @@
                 <div class="hotbar">
                     <div class="hotbar-slot" onclick="showProfile()">DOSSIER</div>
                     <div class="hotbar-slot" onclick="showBank()">BANKING</div>
-                    <div class="hotbar-slot" onclick="openMarket()">AUCTIONS</div>
-                    <div class="hotbar-slot" onclick="openTradeHub()">TRADE HUB</div>
+                    <div class="hotbar-slot" onclick="showModal('market-modal')">AUCTIONS</div>
+                    <div class="hotbar-slot" onclick="showModal('trade-hub-modal')">TRADE HUB</div>
                     <div class="hotbar-slot danger" onclick="promptLogout()">DISCONNECT</div>
                 </div>
             </div>
         </div>
 
-        <!-- RESTORED MODALS: BANK, PROFILE, MARKET, TRADE HUB -->
         <div id="bank-modal" class="overlay-menu hidden">
             <div class="modal-box mc-panel">
                 <h2 style="color: var(--warning); font-size: 50px; margin-bottom: 20px;">SYSTEM BANK</h2>
-                <div style="font-size: 32px; background:#000; padding:10px; border:4px solid #111; margin-bottom: 20px;">BALANCE: 🪙 <span id="bank-bal">0</span></div>
-                <div style="color:#94a3b8; margin-bottom:10px;">MAX LIMIT: 100,000 CR</div>
+                <div style="font-size: 36px; background:#000; padding:10px; border:4px solid #111; margin-bottom: 10px;">BALANCE: 🪙 <span id="bank-bal">0</span></div>
+                <div style="color:#94a3b8; font-size: 20px; margin-bottom: 20px;">MAXIMUM TRANSACTION LIMIT: 100,000 CR</div>
                 <input type="number" id="bank-amt" placeholder="AMOUNT" style="margin-bottom: 20px;">
                 <div style="display:flex; gap:10px; margin-bottom: 20px;">
                     <button class="mc-btn" style="flex:1; background:var(--neon-blue);" onclick="submitBank('deposit')">DEPOSIT</button>
-                    <button class="mc-btn" style="flex:1; background:var(--warning); color:#000;" onclick="submitBank('withdrawal')">WITHDRAW</button>
+                    <button class="mc-btn text-black" style="flex:1; background:var(--warning); border-color:#fff;" onclick="submitBank('withdrawal')">WITHDRAW</button>
                 </div>
                 <button class="mc-btn" style="background:var(--danger); width:100%;" onclick="hideModal('bank-modal')">CLOSE</button>
             </div>
@@ -295,8 +290,8 @@
         <div id="profile-modal" class="overlay-menu hidden">
             <div class="modal-box mc-panel">
                 <h2 style="color: var(--success); font-size: 50px; margin-bottom: 20px;">AGENT DOSSIER</h2>
-                <div id="profile-user" style="font-size: 40px; margin-bottom: 10px; font-weight:bold;">USER</div>
-                <div style="font-size: 32px; background:#000; padding:10px; border:4px solid #111; margin-bottom: 20px;">BALANCE: 🪙 <span id="profile-bal">0</span></div>
+                <div id="profile-user" style="font-size: 45px; margin-bottom: 10px; font-weight:bold; color:var(--neon-blue);">USER</div>
+                <div style="font-size: 36px; background:#000; padding:10px; border:4px solid #111; margin-bottom: 20px;">BALANCE: 🪙 <span id="profile-bal">0</span></div>
                 <button class="mc-btn" style="background:var(--danger); width:100%;" onclick="hideModal('profile-modal')">CLOSE</button>
             </div>
         </div>
@@ -304,25 +299,78 @@
         <div id="market-modal" class="overlay-menu hidden">
             <div class="modal-box mc-panel" style="width: 1000px;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                    <h2 style="font-size: 40px; color: var(--warning); margin:0;">AUCTION HOUSE</h2>
+                    <h2 style="font-size: 45px; color: var(--warning); margin:0;">AUCTION HOUSE</h2>
                     <button class="mc-btn small" style="background:var(--danger);" onclick="hideModal('market-modal')">CLOSE</button>
                 </div>
                 <div class="modal-split">
-                    <div class="modal-col custom-scroll"><h3 style="font-size:28px; margin-bottom:10px;">LIVE AUCTIONS</h3><div id="market-auctions-list">Connecting to Market...</div></div>
-                    <div class="modal-col custom-scroll"><h3 style="font-size:28px; margin-bottom:10px;">INVENTORY</h3><div id="market-inventory-list">Loading items...</div></div>
+                    <div class="modal-col custom-scroll">
+                        <h3 style="font-size:32px; margin-bottom:15px; border-bottom:2px solid #333; padding-bottom:10px;">LIVE AUCTIONS</h3>
+                        
+                        <div class="market-item">
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <div class="trade-slot" style="border-color:var(--warning); color:var(--warning);">👑</div>
+                                <div>
+                                    <div style="font-size:32px; color:var(--warning); font-weight:bold;">GOLDEN CROWN</div>
+                                    <div style="color:#aaa; font-size:22px;">SELLER: ADMIN • BID: 🪙 50,000</div>
+                                </div>
+                            </div>
+                            <button class="mc-btn small" style="background:var(--neon-blue);">BID</button>
+                        </div>
+
+                        <div class="market-item">
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <div class="trade-slot" style="border-color:var(--neon-pink); color:var(--neon-pink);">🎫</div>
+                                <div>
+                                    <div style="font-size:32px; color:var(--neon-pink); font-weight:bold;">VIP PASS</div>
+                                    <div style="color:#aaa; font-size:22px;">SELLER: STICKBOY • BID: 🪙 15,000</div>
+                                </div>
+                            </div>
+                            <button class="mc-btn small" style="background:var(--neon-blue);">BID</button>
+                        </div>
+                    </div>
+
+                    <div class="modal-col custom-scroll">
+                        <h3 style="font-size:32px; margin-bottom:15px; border-bottom:2px solid #333; padding-bottom:10px;">YOUR INVENTORY</h3>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                            <div class="trade-slot" style="border-color:var(--success); color:var(--success);">💎</div>
+                            <div class="trade-slot" style="border-color:#aaa; color:#aaa;">🪙</div>
+                            <div class="trade-slot" style="border-color:var(--neon-blue); color:var(--neon-blue);">🛡️</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div id="trade-hub-modal" class="overlay-menu hidden">
-            <div class="modal-box mc-panel" style="width: 900px;">
+            <div class="modal-box mc-panel" style="width: 1000px;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                    <h2 style="font-size: 40px; color: var(--success); margin:0;">SNT TRADE HUB</h2>
+                    <h2 style="font-size: 45px; color: var(--success); margin:0;">SNT TRADE HUB</h2>
                     <button class="mc-btn small" style="background:var(--danger);" onclick="hideModal('trade-hub-modal')">CLOSE</button>
                 </div>
-                <div class="modal-split" style="height:350px;">
-                    <div class="modal-col custom-scroll"><h3 style="font-size:28px; margin-bottom:10px;">LIVE OFFERS</h3><div id="active-trade-offers-list">Searching active nodes...</div></div>
-                    <div class="modal-col custom-scroll"><h3 style="font-size:28px; margin-bottom:10px;">YOUR ITEMS</h3><div id="trade-inventory-grid">Fetching vault...</div></div>
+                <div class="modal-split">
+                    <div class="modal-col custom-scroll">
+                        <h3 style="font-size:32px; margin-bottom:15px; border-bottom:2px solid #333; padding-bottom:10px;">LIVE OFFERS</h3>
+                        
+                        <div class="market-item">
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <div class="trade-slot" style="border-color:var(--neon-purple); color:var(--neon-purple);">🔮</div>
+                                <div>
+                                    <div style="font-size:32px; color:var(--neon-blue); font-weight:bold;">PLAYER_99</div>
+                                    <div style="color:#aaa; font-size:22px;">OFFERING: MYSTIC ORB</div>
+                                </div>
+                            </div>
+                            <button class="mc-btn small text-black" style="background:var(--success);">TRADE</button>
+                        </div>
+                    </div>
+
+                    <div class="modal-col custom-scroll">
+                        <h3 style="font-size:32px; margin-bottom:15px; border-bottom:2px solid #333; padding-bottom:10px;">YOUR ITEMS</h3>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                            <div class="trade-slot" style="border-color:var(--success); color:var(--success);">💎</div>
+                            <div class="trade-slot" style="border-color:#aaa; color:#aaa;">🪙</div>
+                            <div class="trade-slot" style="border-color:var(--neon-blue); color:var(--neon-blue);">🛡️</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -330,7 +378,7 @@
         <div id="logout-modal" class="overlay-menu hidden">
             <div class="modal-box mc-panel">
                 <h2 style="color: var(--danger); font-size: 45px;">DISCONNECT</h2>
-                <p id="confirm-action-msg" style="font-size: 26px; margin: 15px 0;"></p>
+                <p id="confirm-action-msg" style="font-size: 32px; margin: 20px 0;"></p>
                 <div style="display: flex; gap: 10px;">
                     <button id="btn-confirm-yes" class="mc-btn" style="flex: 1; background: var(--danger);">YES</button>
                     <button class="mc-btn" style="flex: 1;" onclick="hideModal('logout-modal')">NO</button>
@@ -338,9 +386,6 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- BLACKJACK UI                                              -->
-        <!-- ========================================================= -->
         <div id="bj-interface" class="game-interface hidden">
             <div class="top-hud">
                 <button class="mc-btn small" onclick="exitGame('blackjack')">◄ LEAVE ROOM</button>
@@ -353,19 +398,16 @@
             </div>
             <div class="game-surface">
                 <div style="text-align:center; margin-bottom:20px; position:absolute; top:20px;">
-                    <div style="font-size:32px; letter-spacing:2px; margin-bottom:5px;">DEALER</div>
+                    <div style="font-size:38px; letter-spacing:2px; margin-bottom:5px;">DEALER</div>
                     <div class="hand-container">
-                        <div id="bj-dealer-cards" class="hands-wrapper" style="margin:0; min-height:100px;"></div>
-                        <div id="bj-dealer-val" class="hand-score hidden">0</div>
+                        <div id="bj-dealer-cards" class="hands-wrapper" style="margin:0; min-height:125px;"></div>
+                        <div id="bj-dealer-val" class="hand-score hidden" style="top: -25px; left: 50%; transform: translateX(-50%);">0</div>
                     </div>
                 </div>
                 <div id="bj-seats-area" class="bj-seats-container"></div>
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- BACCARAT UI                                               -->
-        <!-- ========================================================= -->
         <div id="bac-interface" class="game-interface bg-red hidden">
             <div class="top-hud">
                 <button class="mc-btn small" onclick="exitGame('bac')">◄ LEAVE ROOM</button>
@@ -408,13 +450,10 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- DRAGON VS TIGER UI                                        -->
-        <!-- ========================================================= -->
         <div id="dvt-interface" class="game-interface bg-red hidden">
             <div class="top-hud">
                 <button class="mc-btn small" onclick="exitGame('dvt')">◄ LEAVE ROOM</button>
-                <div class="hud-center">DRAGON VS TIGER</div>
+                <div class="hud-center text-black" style="color:var(--warning);">DRAGON VS TIGER</div>
                 <div class="wallet-display">🪙 <span id="dvt-hud-credits">0</span></div>
             </div>
             <div class="status-bar" id="dvt-status-bar">
@@ -425,11 +464,11 @@
                 <div class="card-table-split">
                     <div class="baccarat-zone" style="border-color: var(--danger); width: 280px;">
                         <div class="baccarat-title" style="color: var(--danger);">DRAGON</div>
-                        <div id="dvt-d-cards" class="hands-wrapper" style="min-height:100px;"></div>
+                        <div id="dvt-d-cards" class="hands-wrapper" style="min-height:125px;"></div>
                     </div>
                     <div class="baccarat-zone" style="border-color: var(--warning); width: 280px;">
-                        <div class="baccarat-title" style="color: var(--warning);">TIGER</div>
-                        <div id="dvt-t-cards" class="hands-wrapper" style="min-height:100px;"></div>
+                        <div class="baccarat-title text-black" style="color: var(--warning);">TIGER</div>
+                        <div id="dvt-t-cards" class="hands-wrapper" style="min-height:125px;"></div>
                     </div>
                 </div>
             </div>
@@ -446,14 +485,11 @@
                 <div class="bet-grid">
                     <div class="bet-tile" style="border-color: var(--danger);" onclick="placeBet('dvt', 'dragon')"><div class="bet-badge hidden" id="badge-dvt-dragon">0</div><div class="bet-tile-title" style="color:var(--danger);">DRAGON</div><div class="bet-tile-payout">1:1</div></div>
                     <div class="bet-tile" style="border-color: var(--success); width: 180px;" onclick="placeBet('dvt', 'tie')"><div class="bet-badge hidden" id="badge-dvt-tie">0</div><div class="bet-tile-title" style="color:var(--success);">TIE</div><div class="bet-tile-payout">8:1</div></div>
-                    <div class="bet-tile" style="border-color: var(--warning);" onclick="placeBet('dvt', 'tiger')"><div class="bet-badge hidden" id="badge-dvt-tiger">0</div><div class="bet-tile-title" style="color:var(--warning);">TIGER</div><div class="bet-tile-payout">1:1</div></div>
+                    <div class="bet-tile" style="border-color: var(--warning);" onclick="placeBet('dvt', 'tiger')"><div class="bet-badge hidden" id="badge-dvt-tiger">0</div><div class="bet-tile-title text-black" style="color:var(--warning);">TIGER</div><div class="bet-tile-payout">1:1</div></div>
                 </div>
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- DICE UI                                                   -->
-        <!-- ========================================================= -->
         <div id="dice-interface" class="game-interface bg-blue hidden">
             <div class="top-hud">
                 <button class="mc-btn small" onclick="exitGame('dice')">◄ LEAVE ROOM</button>
@@ -481,13 +517,10 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- DERBY UI                                                  -->
-        <!-- ========================================================= -->
         <div id="derby-interface" class="game-interface bg-dark hidden">
             <div class="top-hud">
                 <button class="mc-btn small" onclick="exitGame('derby')">◄ LEAVE ROOM</button>
-                <div class="hud-center" style="color:var(--warning);">8-BIT DERBY</div>
+                <div class="hud-center text-black" style="color:var(--warning);">8-BIT DERBY</div>
                 <div class="wallet-display">🪙 <span id="derby-hud-credits">0</span></div>
             </div>
             <div class="status-bar" id="derby-status-bar">
@@ -496,12 +529,12 @@
             </div>
             <div class="game-surface">
                 <div class="derby-track">
-                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#ef4444; font-weight:bold; z-index:5;" id="track-ind-0">RED</div><div class="horse" id="racer-0" style="background:#ef4444;"></div></div>
-                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#3b82f6; font-weight:bold; z-index:5;" id="track-ind-1">BLU</div><div class="horse" id="racer-1" style="background:#3b82f6;"></div></div>
-                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#10b981; font-weight:bold; z-index:5;" id="track-ind-2">GRN</div><div class="horse" id="racer-2" style="background:#10b981;"></div></div>
-                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#a855f7; font-weight:bold; z-index:5;" id="track-ind-3">PUR</div><div class="horse" id="racer-3" style="background:#a855f7;"></div></div>
-                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#ec4899; font-weight:bold; z-index:5;" id="track-ind-4">PNK</div><div class="horse" id="racer-4" style="background:#ec4899;"></div></div>
-                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#facc15; font-weight:bold; z-index:5;" id="track-ind-5">GLD</div><div class="horse" id="racer-5" style="background:#facc15;"></div></div>
+                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#ef4444; font-weight:bold; z-index:5; font-size:24px;" id="track-ind-0">RED</div><div class="horse" id="racer-0" style="background:#ef4444;"></div></div>
+                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#3b82f6; font-weight:bold; z-index:5; font-size:24px;" id="track-ind-1">BLU</div><div class="horse" id="racer-1" style="background:#3b82f6;"></div></div>
+                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#10b981; font-weight:bold; z-index:5; font-size:24px;" id="track-ind-2">GRN</div><div class="horse" id="racer-2" style="background:#10b981;"></div></div>
+                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#a855f7; font-weight:bold; z-index:5; font-size:24px;" id="track-ind-3">PUR</div><div class="horse" id="racer-3" style="background:#a855f7;"></div></div>
+                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#ec4899; font-weight:bold; z-index:5; font-size:24px;" id="track-ind-4">PNK</div><div class="horse" id="racer-4" style="background:#ec4899;"></div></div>
+                    <div class="derby-lane"><div style="position:absolute; left:10px; color:#facc15; font-weight:bold; z-index:5; font-size:24px;" id="track-ind-5">GLD</div><div class="horse" id="racer-5" style="background:#facc15;"></div></div>
                 </div>
             </div>
             <div class="arcade-bet-area">
@@ -517,9 +550,6 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- COLOR GAME UI                                             -->
-        <!-- ========================================================= -->
         <div id="color-interface" class="game-interface bg-dark hidden">
             <div class="top-hud">
                 <button class="mc-btn small" onclick="exitGame('color')">◄ LEAVE ROOM</button>
@@ -550,13 +580,10 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- CUPS UI                                                   -->
-        <!-- ========================================================= -->
         <div id="cups-interface" class="game-interface bg-dark hidden">
             <div class="top-hud">
                 <button class="mc-btn small" onclick="exitGame('cups')">◄ LEAVE ROOM</button>
-                <div class="hud-center" style="color:var(--lobby-orange);">STREET HUSTLE</div>
+                <div class="hud-center text-black" style="color:var(--lobby-orange);">STREET HUSTLE</div>
                 <div class="wallet-display">🪙 <span id="cups-hud-credits">0</span></div>
             </div>
             <div class="status-bar" id="cups-status-bar">
@@ -573,16 +600,13 @@
             <div class="arcade-bet-area">
                 <div class="chip-rack"><button class="action-chip" onclick="actUndoBet('cups')">UNDO</button><div class="casino-chip chip-100 selected" onclick="selectChip(100)">100</div><div class="casino-chip chip-1k" onclick="selectChip(1000)">1K</div><div class="casino-chip chip-5k" onclick="selectChip(5000)">5K</div><div class="casino-chip chip-20k" onclick="selectChip(20000)">20K</div><div class="casino-chip chip-50k" onclick="selectChip(50000)">50K</div><button class="action-chip" onclick="actRebet('cups')">REBET</button></div>
                 <div class="bet-grid">
-                    <div class="bet-tile" style="border-color:var(--lobby-orange);" onclick="placeBet('cups', 0)"><div class="bet-badge hidden" id="badge-cups-0">0</div><div class="bet-tile-title" style="color:var(--lobby-orange);">CUP 1</div><div class="bet-tile-payout">2.5x</div></div>
-                    <div class="bet-tile" style="border-color:var(--lobby-orange);" onclick="placeBet('cups', 1)"><div class="bet-badge hidden" id="badge-cups-1">0</div><div class="bet-tile-title" style="color:var(--lobby-orange);">CUP 2</div><div class="bet-tile-payout">2.5x</div></div>
-                    <div class="bet-tile" style="border-color:var(--lobby-orange);" onclick="placeBet('cups', 2)"><div class="bet-badge hidden" id="badge-cups-2">0</div><div class="bet-tile-title" style="color:var(--lobby-orange);">CUP 3</div><div class="bet-tile-payout">2.5x</div></div>
+                    <div class="bet-tile" style="border-color:var(--lobby-orange);" onclick="placeBet('cups', 0)"><div class="bet-badge hidden" id="badge-cups-0">0</div><div class="bet-tile-title text-black" style="color:var(--lobby-orange);">CUP 1</div><div class="bet-tile-payout">2.5x</div></div>
+                    <div class="bet-tile" style="border-color:var(--lobby-orange);" onclick="placeBet('cups', 1)"><div class="bet-badge hidden" id="badge-cups-1">0</div><div class="bet-tile-title text-black" style="color:var(--lobby-orange);">CUP 2</div><div class="bet-tile-payout">2.5x</div></div>
+                    <div class="bet-tile" style="border-color:var(--lobby-orange);" onclick="placeBet('cups', 2)"><div class="bet-badge hidden" id="badge-cups-2">0</div><div class="bet-tile-title text-black" style="color:var(--lobby-orange);">CUP 3</div><div class="bet-tile-payout">2.5x</div></div>
                 </div>
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- CRASH UI                                                  -->
-        <!-- ========================================================= -->
         <div id="crash-interface" class="game-interface bg-dark hidden">
             <div class="top-hud">
                 <button class="mc-btn small" onclick="exitGame('crash')">◄ LEAVE ROOM</button>
@@ -609,18 +633,15 @@
                 <div class="chip-rack"><div class="casino-chip chip-100 selected" onclick="selectChip(100)">100</div><div class="casino-chip chip-1k" onclick="selectChip(1000)">1K</div><div class="casino-chip chip-5k" onclick="selectChip(5000)">5K</div><div class="casino-chip chip-20k" onclick="selectChip(20000)">20K</div><div class="casino-chip chip-50k" onclick="selectChip(50000)">50K</div></div>
                 <div style="display:flex; gap:10px; margin-top:10px;">
                     <button id="btn-crash-bet" class="mc-btn" style="background:var(--neon-blue); width:250px;" onclick="actCrashBet()">PLACE BET</button>
-                    <button id="btn-crash-cashout" class="mc-btn hidden" style="background:var(--success); color:#000; width:250px;" onclick="actCrashCashout()">CASH OUT</button>
+                    <button id="btn-crash-cashout" class="mc-btn hidden text-black" style="background:var(--success); width:250px;" onclick="actCrashCashout()">CASH OUT</button>
                 </div>
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- SLOTS UI                                                  -->
-        <!-- ========================================================= -->
         <div id="slots-interface" class="game-interface bg-dark hidden">
             <div class="top-hud">
                 <button class="mc-btn small" onclick="exitGame('slots')">◄ LEAVE ROOM</button>
-                <div class="hud-center" style="color:var(--warning);">RETRO SLOTS</div>
+                <div class="hud-center text-black" style="color:var(--warning);">RETRO SLOTS</div>
                 <div class="wallet-display">🪙 <span id="slots-hud-credits">0</span></div>
             </div>
             <div class="status-bar" id="slots-status-bar">
@@ -628,7 +649,7 @@
             </div>
             <div class="game-surface">
                 <div class="slots-machine">
-                    <div style="font-size: 32px; color: var(--warning); margin-bottom: 20px;">JACKPOT: 🪙 5,000,000</div>
+                    <div style="font-size: 40px; color: var(--warning); margin-bottom: 20px;">JACKPOT: 🪙 5,000,000</div>
                     <div class="reels">
                         <div class="reel" id="reel-1">🍒</div>
                         <div class="reel" id="reel-2">🍒</div>
@@ -638,13 +659,10 @@
             </div>
             <div class="arcade-bet-area">
                 <div class="chip-rack"><div class="casino-chip chip-100 selected" onclick="selectChip(100)">100</div><div class="casino-chip chip-1k" onclick="selectChip(1000)">1K</div><div class="casino-chip chip-5k" onclick="selectChip(5000)">5K</div><div class="casino-chip chip-20k" onclick="selectChip(20000)">20K</div><div class="casino-chip chip-50k" onclick="selectChip(50000)">50K</div></div>
-                <button class="mc-btn" style="background:var(--warning); color:#000; font-size:36px; padding:10px 50px; margin-top:10px;" onclick="actSpinSlots()">SPIN</button>
+                <button class="mc-btn text-black" style="background:var(--warning); font-size:36px; padding:10px 50px; margin-top:10px;" onclick="actSpinSlots()">SPIN</button>
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- PVP ARENA UI                                              -->
-        <!-- ========================================================= -->
         <div id="pvp-interface" class="game-interface bg-dark hidden">
             <div class="top-hud">
                 <button class="mc-btn small" onclick="exitGame('pvp')">◄ LEAVE ROOM</button>
@@ -661,27 +679,27 @@
                         <div id="pvp-occ-0" class="hidden" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
                             <div class="bet-badge hidden" id="pvp-rdy-0">READY</div>
                             <div class="seat-nameplate" id="pvp-name-0">P1</div>
-                            <div id="pvp-choice-0" style="font-size:24px; color:#fff;">WAITING</div>
-                            <div style="font-size:60px; color:var(--warning); font-weight:bold;" id="pvp-score-0">0</div>
+                            <div id="pvp-choice-0" style="font-size:28px; color:#fff; font-weight:bold;">WAITING</div>
+                            <div style="font-size:70px; color:var(--warning); font-weight:bold;" id="pvp-score-0">0</div>
                         </div>
                     </div>
                     <div class="pvp-center">
                         <div style="font-size:40px; color:var(--danger); font-weight:bold; margin-bottom:20px;">VS</div>
-                        <div id="pvp-visual" style="font-size:80px; width:120px; height:120px; background:var(--warning); color:#b45309; border-radius:50%; display:flex; justify-content:center; align-items:center; border:8px solid #b45309;">?</div>
+                        <div id="pvp-visual" style="font-size:80px; width:140px; height:140px; background:var(--warning); color:#b45309; border-radius:50%; display:flex; justify-content:center; align-items:center; border:8px solid #b45309; font-weight:bold; text-shadow:none;">?</div>
                     </div>
                     <div class="pvp-seat" id="pvp-seat-1">
                         <div class="seat-empty" id="pvp-empty-1" onclick="actPvpSit(1)" style="height:100%; cursor:pointer;">CLICK TO SIT</div>
                         <div id="pvp-occ-1" class="hidden" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
                             <div class="bet-badge hidden" id="pvp-rdy-1">READY</div>
                             <div class="seat-nameplate" id="pvp-name-1">P2</div>
-                            <div id="pvp-choice-1" style="font-size:24px; color:var(--danger);">WAITING</div>
-                            <div style="font-size:60px; color:var(--warning); font-weight:bold;" id="pvp-score-1">0</div>
+                            <div id="pvp-choice-1" style="font-size:28px; color:var(--danger); font-weight:bold;">WAITING</div>
+                            <div style="font-size:70px; color:var(--warning); font-weight:bold;" id="pvp-score-1">0</div>
                         </div>
                     </div>
                 </div>
                 <div id="pvp-rps-controls" class="hidden" style="display:flex; gap:10px; margin-top:30px;">
                     <button class="mc-btn" style="background:var(--neon-blue);" onclick="actPvpPick('rock')">🪨 ROCK</button>
-                    <button class="mc-btn" style="background:var(--success); color:#000;" onclick="actPvpPick('paper')">📄 PAPER</button>
+                    <button class="mc-btn text-black" style="background:var(--success);" onclick="actPvpPick('paper')">📄 PAPER</button>
                     <button class="mc-btn" style="background:var(--danger);" onclick="actPvpPick('scissors')">✂️ SCISSORS</button>
                 </div>
                 <button class="mc-btn small" style="margin-top:30px; background:var(--danger);" onclick="actPvpLeave()">STAND UP</button>
@@ -690,6 +708,9 @@
 
     </div>
 
+    <!-- ========================================================= -->
+    <!-- MASTER JAVASCRIPT ENGINE                                  -->
+    <!-- ========================================================= -->
     <script>
         const socket = io();
 
@@ -702,14 +723,9 @@
         // Timers
         let globalTimerInt = null; 
         let nextRoundTimerInt = null; 
-        let idleTimerInt = null; 
         let turnTimerVisualInt = null;
         
-        // Locks & Limits
-        let actionLocked = false; 
         window.lastBetAmount = 0; 
-        let pendingBankAction = null; 
-        let gameLocks = {}; 
         
         // Bet Tracking Pools
         let myDiceBets = { under: 0, seven: 0, over: 0 }; 
@@ -861,7 +877,7 @@
         }
 
         // ==========================================
-        // BANKING (LIMIT ENFORCED)
+        // BANKING
         // ==========================================
         function showBank() {
             if(!currentUser) return;
@@ -898,8 +914,8 @@
         }
 
         function showProfile() { showModal('profile-modal'); }
-        function openMarket() { showToast("Marketplace module syncing..."); }
-        function openTradeHub() { showToast("Trade Hub module syncing..."); }
+        function openMarket() { showModal('market-modal'); }
+        function openTradeHub() { showModal('trade-hub-modal'); }
 
         // ==========================================
         // BETTING MECHANICS
@@ -1050,7 +1066,6 @@
             const amt = currentChipValue;
             if (amt > currentUser.credits) return showToast("Insufficient credits!");
 
-            // Route to correct game pool
             if (game === 'baccarat') {
                 if (myBaccaratBets[choice] + amt > 50000) return showToast("Limit is 50k.");
                 myBaccaratBets[choice] += amt;
@@ -1079,18 +1094,22 @@
         // ==========================================
         // BLACKJACK ENGINE
         // ==========================================
-        window.actSitDown = function(idx) { if(actionLocked) return; actionLocked = true; setTimeout(() => { actionLocked = false; }, 1000); socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
-        window.actPlaceBetDropdown = function(idx) { if (actionLocked) return; const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value) : 0; if (isNaN(amt) || amt < 100) return showToast("Invalid amount."); if (amt > 50000) return showToast("Limit is 50k."); if (amt > currentUser.credits) return showToast("Insufficient credits!"); actionLocked = true; setTimeout(() => { actionLocked = false; }, 1000); window.lastBetAmount = amt; socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet'); }
-        window.actEjectSeat = function(idx) { actionLocked = true; setTimeout(() => { actionLocked = false; }, 1000); socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actHit = function(idx) { actionLocked = true; setTimeout(() => { actionLocked = false; }, 1000); socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actStand = function(idx) { actionLocked = true; setTimeout(() => { actionLocked = false; }, 1000); socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actDouble = function(idx) { actionLocked = true; setTimeout(() => { actionLocked = false; }, 1000); socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
-        window.actSplit = function(idx) { actionLocked = true; setTimeout(() => { actionLocked = false; }, 1000); socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        window.actSitDown = function(idx) { socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        window.actPlaceBetDropdown = function(idx) { const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value) : 0; if (isNaN(amt) || amt < 100) return showToast("Invalid amount."); if (amt > 50000) return showToast("Limit is 50k."); if (amt > currentUser.credits) return showToast("Insufficient credits!"); window.lastBetAmount = amt; socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet'); }
+        window.actEjectSeat = function(idx) { socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        
+        // Anti-spam lock REMOVED. Buttons are instantly responsive.
+        window.actHit = function(idx) { socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actStand = function(idx) { socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actDouble = function(idx) { socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        window.actSplit = function(idx) { socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
 
         socket.on('game_state_update', (state) => {
             if(currentGameState && currentGameState.status === 'dealerTurn' && state.status === 'resolving') { if(mySeatIndex !== -1 && state.seats[mySeatIndex]) { let hasWin = state.seats[mySeatIndex].hands.some(h => h.result === 'win' || h.result === 'win-bj'); let hasLose = state.seats[mySeatIndex].hands.some(h => h.result === 'lose' || h.result === 'bust'); if(hasWin) playSfx('win'); else if (hasLose) playSfx('lose'); } }
             if(currentGameState && currentGameState.status === 'betting' && state.status === 'playing') playSfx('deal');
-            actionLocked = false; currentGameState = state; 
+            
+            currentGameState = state; 
+            
             if(currentUser && (currentRoomId === '5seat' || currentRoomId === '3seat')) { renderTable(state); }
         });
 
@@ -1142,7 +1161,7 @@
                     });
                     
                     let handBet = seatData.hands[0].bet > 0 ? seatData.hands[0].bet : 0; 
-                    if (handBet > 0 || state.status === 'resolving') { seatsHtml += `<div class="player-bet-text" style="margin-top:10px;">${formatNumber(handBet)}</div>`; }
+                    if (handBet > 0 || state.status === 'resolving') { seatsHtml += `<div class="player-bet-text" style="margin-top:10px;">🪙 ${formatNumber(handBet)}</div>`; }
 
                     seatsHtml += `</div><div class="seat-nameplate" style="color:${isMySeat?'var(--success)':'#fff'};">${seatData.username}</div>`;
 
@@ -1150,14 +1169,14 @@
                         if (seatData.hands[0].bet === 0) {
                             let startBet = window.lastBetAmount || 0; let opts = [100, 1000, 5000, 20000, 50000]; if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
                             let optHTML = opts.map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
-                            seatsHtml += `<div style="display:flex; flex-direction:column; gap:4px; width:100%; margin-top:5px;"><select id="inseat-bet-${index}" style="padding:4px; font-size:20px; text-align:center;">${optHTML}</select><div style="display:flex; gap:4px; width:100%;"><button class="mc-btn small" style="flex:1; background:var(--success); color:#000;" onclick="actPlaceBetDropdown(${index})">BET</button><button class="mc-btn small" style="flex:1; background:var(--danger);" onclick="actEjectSeat(${index})">LEAVE</button></div></div>`;
+                            seatsHtml += `<div style="display:flex; flex-direction:column; gap:4px; width:100%; margin-top:5px;"><select id="inseat-bet-${index}" style="padding:4px; font-size:20px; text-align:center;">${optHTML}</select><div style="display:flex; gap:4px; width:100%;"><button class="mc-btn small text-black" style="flex:1; background:var(--success);" onclick="actPlaceBetDropdown(${index})">BET</button><button class="mc-btn small" style="flex:1; background:var(--danger);" onclick="actEjectSeat(${index})">LEAVE</button></div></div>`;
                         }
                     } else if (isMySeat && state.status === 'waiting') { seatsHtml += `<div style="width: 100%; margin-top: 5px;"><button class="mc-btn small" style="background:var(--danger); width:100%;" onclick="actEjectSeat(${index})">STAND UP</button></div>`; }
 
                     if (isMySeat && state.status === 'playing' && state.activeSeatIndex === index) {
                         const cHand = seatData.hands[seatData.currentHand];
                         if (cHand && cHand.status === 'waiting') {
-                            seatsHtml += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; width:100%; margin-top:5px;"><button class="mc-btn small" style="background:var(--success); color:#000;" onclick="actHit(${index})">HIT</button><button class="mc-btn small" style="background:var(--warning); color:#000;" onclick="actStand(${index})">STAND</button>`;
+                            seatsHtml += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; width:100%; margin-top:5px;"><button class="mc-btn small text-black" style="background:var(--success);" onclick="actHit(${index})">HIT</button><button class="mc-btn small text-black" style="background:var(--warning);" onclick="actStand(${index})">STAND</button>`;
                             if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) { seatsHtml += `<button class="mc-btn small" style="background:var(--neon-blue);" onclick="actDouble(${index})">2X</button>`; if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) { seatsHtml += `<button class="mc-btn small" style="background:var(--neon-purple);" onclick="actSplit(${index})">SPLIT</button>`; } }
                             seatsHtml += `</div>`;
                         }
