@@ -3,116 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="light dark">
-    <title>Stick N' Trade: Game Hub</title>
+    <title>Stick N' Trade: Arcade Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
         :root { 
-            --bg-sky: #a5f3fc; 
-            --sand: #fef08a;
-            --lobby-orange: #d97706;
-            --lobby-brown: #92400e;
-            --lobby-terracotta: #b45309;
-            --danger-red: #ef4444; 
-            --success-green: #10b981; 
-            --pro-blue: #0ea5e9;
-            --vip-yellow: #facc15;
+            --bg-sky: #a5f3fc; --sand: #fef08a; --lobby-orange: #d97706; --lobby-brown: #92400e; 
+            --lobby-terra: #b45309; --danger: #ef4444; --success: #10b981; --warning: #facc15; 
+            --pro-blue: #0ea5e9; --table-green: #0d7a42; --table-dark: #054522;
         }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'VT323', monospace; text-transform: uppercase; }
+        body { background-color: #111; display: flex; justify-content: center; align-items: center; height: 100dvh; overflow: hidden; user-select: none; color: #fff; }
+        input, select { background: #000; border: 4px solid #555; color: #fff; padding: 8px; font-size: 24px; outline: none; text-align: center; }
+        input:focus, select:focus { border-color: var(--success); }
+        .hidden { display: none !important; }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'VT323', monospace; text-transform: uppercase; font-style: normal !important;}
-        body { background-color: #111; display: flex; justify-content: center; align-items: center; height: 100dvh; overflow: hidden; user-select: none; }
+        #arcade-cabinet { width: 1400px; height: 800px; background: linear-gradient(to bottom, var(--bg-sky) 0%, var(--bg-sky) 60%, var(--sand) 100%); border: 8px solid #222; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         
-        #arcade-cabinet { 
-            width: 1400px; 
-            height: 800px; 
-            background: linear-gradient(to bottom, var(--bg-sky) 0%, var(--bg-sky) 70%, var(--sand) 100%); 
-            border: 8px solid #222; 
-            position: relative; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column;
-        }
-
-        /* TOAST NOTIFICATIONS */
-        #toast-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 9999; pointer-events: none; width: auto; align-items: center; }
-        .toast { background: rgba(0,0,0,0.95); border: 4px solid #fff; padding: 12px 24px; font-size: 26px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.5); pointer-events: auto; }
-        .toast-error { border-color: var(--danger-red); color: var(--danger-red); } 
-        .toast-success { border-color: var(--success-green); color: var(--success-green); }
-        .toast.fade-out { opacity: 0; transform: translateY(-20px); transition: 0.3s; }
-
-        /* CORE LOBBY SHEETS */
-        .stick-title { font-size: 110px; color: #d97706; text-shadow: 5px 5px 0px #000; letter-spacing: 2px; margin-top: 40px; text-align: center; }
-        .stick-subtitle { font-size: 32px; color: #000; font-weight: bold; text-align: center; margin-top: -10px; margin-bottom: 5px; }
-
-        .entry-pill-container { display: flex; flex-direction: column; gap: 15px; width: 450px; margin: 40px auto 0 auto; z-index: 10; }
-        .entry-pill { background: #fff; border: 5px solid #000; border-radius: 40px; color: #000; font-size: 38px; font-weight: bold; padding: 12px 30px; cursor: pointer; display: flex; align-items: center; gap: 20px; transition: 0.1s; box-shadow: 0 8px 0 #000; }
-        .entry-pill:hover { transform: translateY(-3px); box-shadow: 0 11px 0 #000; filter: brightness(0.95); }
-        .entry-pill:active { transform: translateY(5px); box-shadow: 0 3px 0 #000; }
-        .entry-pill.dark { background: #111; color: #fff; border-color: #fff; box-shadow: 0 8px 0 #fff; }
-        .entry-pill.dark:hover { box-shadow: 0 11px 0 #fff; }
-        .entry-pill.dark:active { box-shadow: 0 3px 0 #fff; }
-        .entry-pill-icon { font-size: 40px; line-height: 1; }
-
-        /* THE ARENA LOBBY DIALOG (image_3df35e.png) */
-        .stick-lobby-modal { width: 850px; background: var(--lobby-orange); border: 5px solid #000; box-shadow: 15px 15px 0 rgba(0,0,0,0.6); display: flex; flex-direction: column; position: relative; z-index: 500; }
-        .lobby-header-bar { background: var(--warning); border-bottom: 4px solid #000; padding: 12px; display: flex; justify-content: center; align-items: center; position: relative; }
-        .lobby-header-title { font-size: 38px; color: #fff; font-weight: bold; text-shadow: 3px 3px 0 #000; letter-spacing: 1px; }
-        .lobby-close-box { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 45px; height: 45px; background: var(--danger-red); border: 3px solid #000; display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.1s; }
-        .lobby-close-box:hover { filter: brightness(1.2); } .lobby-close-box:active { transform: translateY(-50%) scale(0.9); }
-
-        /* SUB HEADERS */
-        .lobby-divider-banner { background: var(--lobby-terracotta); border-top: 4px solid #000; border-bottom: 4px solid #000; padding: 10px; text-align: center; font-size: 32px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        /* UI Components */
+        .mc-btn { background: #737373; border: 4px solid; border-color: #A8A8A8 #383838 #383838 #A8A8A8; color: #FFF; text-shadow: 2px 2px 0 #000; padding: 10px 20px; font-size: 24px; cursor: pointer; transition: 0.1s; }
+        .mc-btn:hover { filter: brightness(1.2); }
+        .mc-btn:active { border-color: #383838 #A8A8A8 #A8A8A8 #383838; padding-top: 12px; padding-bottom: 8px; }
+        .mc-btn.small { padding: 4px 12px; font-size: 20px; }
+        .mc-panel { background: var(--lobby-orange); border: 6px solid #000; box-shadow: 10px 10px 0 rgba(0,0,0,0.8); }
         
-        /* SECTOR CORES */
-        .top-sectors-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px 30px; padding: 25px; background: var(--lobby-orange); }
-        .sector-button-wrap { display: flex; align-items: center; gap: 10px; }
-        .sector-btn { flex: 1; padding: 10px; font-size: 24px; font-weight: bold; border: 3px solid #000; text-shadow: 1px 1px 0 #000; box-shadow: 0 4px 0 #000; cursor: pointer; text-align: center; }
-        .sector-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #000; }
-        .sector-btn.gray { background: #cbd5e1; color: #000; text-shadow: none; }
-        .sector-btn.blue { background: var(--pro-blue); color: #fff; }
-        .sector-btn.yellow { background: var(--vip-yellow); color: #000; text-shadow: none; }
-        .sector-counter { font-size: 24px; font-weight: bold; color: #fff; text-shadow: 2px 2px 0 #000; display: flex; align-items: center; gap: 2px; }
+        /* Modals & Menus */
+        .full-menu, .overlay-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 200; flex-direction: column;}
+        .full-menu { background: rgba(0,0,0,0.9); }
+        .overlay-menu { background: rgba(0,0,0,0.8); z-index: 300; }
+        .modal-box { padding: 30px; width: 650px; text-align: center; display: flex; flex-direction: column; }
+        
+        /* Toasts */
+        #toast-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 9999; }
+        .toast { background: #000; border: 4px solid var(--danger); padding: 15px 30px; font-size: 28px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.8); transition: 0.3s; }
+        .toast.success { border-color: var(--success); color: var(--success); }
+        .toast.fade-out { opacity: 0; transform: translateY(-20px); }
 
-        /* BOTTOM TIERS PANEL */
-        .bottom-lobby-split { display: flex; height: 320px; background: var(--lobby-brown); padding: 20px; gap: 20px; }
-        .split-left-sectors { width: 45%; display: flex; flex-direction: column; gap: 15px; }
-        .split-right-isometric { flex: 1; border-left: 3px dashed rgba(0,0,0,0.3); padding-left: 20px; position: relative; overflow: hidden; }
+        /* Main Menu Specifics */
+        .stick-title { font-size: 110px; color: var(--lobby-orange); text-shadow: 5px 5px 0px #000; margin-bottom: 40px; }
+        .hotbar { display: flex; gap: 10px; background: rgba(0,0,0,0.8); padding: 10px; border: 4px solid #111; margin-top: 50px; }
+        .hotbar-slot { padding: 10px 20px; background: #333; border: 4px solid #555; cursor: pointer; font-size: 24px; font-weight: bold; }
+        .hotbar-slot:hover { background: #555; }
+        .hotbar-slot.danger { color: var(--danger); }
 
-        .market-sector-block { display: flex; flex-direction: column; gap: 5px; }
-        .market-sector-title { font-size: 26px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000; display: flex; align-items: center; gap: 8px; }
-        .market-row-slots { display: flex; gap: 12px; margin-top: 5px; }
-        .market-square-slot { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-        .market-square-btn { width: 45px; height: 45px; background: #e2e8f0; border: 3px solid #000; box-shadow: 0 3px 0 #000; color: #000; font-size: 24px; font-weight: bold; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        .market-square-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
-        .market-square-count { font-size: 18px; color: #94a3b8; font-weight: bold; }
+        /* Stick N' Trade Layout (Sidebar + Grid) */
+        .arcade-hub-layout { display: flex; width: 1100px; height: 700px; background: #111; border: 6px solid #000; box-shadow: 10px 10px 0 rgba(0,0,0,0.8); }
+        .category-sidebar { width: 280px; background: var(--lobby-brown); border-right: 6px solid #000; display: flex; flex-direction: column; padding: 20px; gap: 15px; }
+        .sidebar-btn { background: var(--lobby-terra); border: 4px solid #000; color: #fff; font-size: 28px; padding: 15px; cursor: pointer; text-align: center; font-weight: bold; transition: 0.1s; }
+        .sidebar-btn.active, .sidebar-btn:hover { background: var(--warning); color: #000; transform: translateX(5px); }
+        
+        .realm-grid-wrapper { flex: 1; padding: 20px; background: var(--lobby-orange); overflow-y: auto; }
+        .realm-grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .realm-card { background: #cbd5e1; border: 4px solid #000; padding: 20px; cursor: pointer; display: flex; flex-direction: column; align-items: center; text-align: center; color: #000; box-shadow: 4px 4px 0 #000; transition: 0.1s; }
+        .realm-card:active { transform: translateY(4px); box-shadow: 0 0 0 #000; }
+        .realm-title { font-size: 32px; font-weight: bold; margin-bottom: 5px; line-height: 1; }
+        .realm-desc { font-size: 20px; color: #333; line-height: 1.1; margin-bottom: 10px; }
+        .realm-status { font-size: 24px; background: #000; color: #fff; padding: 4px 15px; width: 100%; border: 2px solid #555; }
 
-        /* ISOMETRIC ZONE DRAWING */
-        .iso-header-tag { font-size: 24px; color: #fff; font-weight: bold; text-shadow: 2px 2px 0 #000; position: absolute; }
-        .iso-diamond-btn { position: absolute; width: 65px; height: 40px; background: #475569; border: 3px solid #000; transform: rotate(-25deg) skewX(20deg); cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: -3px 3px 0 #000; transition: 0.1s; }
-        .iso-diamond-btn:hover { background: #64748b; }
-        .iso-diamond-btn:active { transform: rotate(-25deg) skewX(20deg) translate(2px, -2px); box-shadow: -1px 1px 0 #000; }
-        .iso-diamond-text { transform: skewX(-20deg) rotate(25deg); font-size: 22px; font-weight: bold; color: #fff; text-shadow: 1px 1px 0 #000; }
-        .iso-counter-tag { position: absolute; font-size: 18px; color: #cbd5e1; }
+        /* Game Interface */
+        .game-interface { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%); display: flex; flex-direction: column; z-index: 100; }
+        .game-interface.bg-red { background: radial-gradient(circle at center, #991b1b 0%, #450a0a 100%); }
+        .game-interface.bg-blue { background: radial-gradient(circle at center, #1e3a8a 0%, #020617 100%); }
+        .game-interface.bg-dark { background: radial-gradient(circle at center, #1f2937 0%, #000 100%); }
+        
+        .top-hud { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(0,0,0,0.8); border-bottom: 4px solid #111; }
+        .hud-center { font-size: 40px; font-weight: bold; text-shadow: 2px 2px 0 #000; }
+        .wallet-display { font-size: 30px; color: var(--warning); background: #000; padding: 5px 20px; border: 4px solid #333; }
 
-        /* GAME SCREEN FRAMEWORK */
-        .card-table-surface { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 20px 0; }
-        .hud-dock-wrapper { background: rgba(0,0,0,0.8); border: 3px solid #555; padding: 5px 20px; display: flex; align-items: center; gap: 10px; height: 50px; }
-        .hud-title-node { font-size: 36px; text-shadow: 2px 2px 0 #000; font-weight: bold; }
+        .game-surface { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        
+        /* Betting Area */
+        .arcade-bet-area { background: rgba(0,0,0,0.9); padding: 15px; display: flex; flex-direction: column; align-items: center; border-top: 4px solid #111; }
+        .chip-rack { display: flex; gap: 15px; margin-bottom: 15px; }
+        .casino-chip { width: 60px; height: 60px; border-radius: 50%; border: 4px dashed #000; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; color: #000; font-weight: bold; background: #cbd5e1; box-shadow: 0 4px 0 #000; transition: 0.1s;}
+        .casino-chip:active { transform: translateY(4px); box-shadow: 0 0 0 #000; }
+        .casino-chip.selected { border: 4px solid var(--warning); background: #fff; transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
+        .chip-1k { background: #94a3b8; } .chip-5k { background: #f87171; } .chip-20k { background: #34d399; } .chip-50k { background: #60a5fa; }
 
-        /* CARD WRAPPERS */
-        .card-rack-node { width: 62px; height: 88px; background: #fff; border: 2px solid #000; border-radius: 4px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; position: relative; margin-left: -35px; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); animation: dealCardAnim 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        .card-rack-node:first-child { margin-left: 0; }
-        .card-rack-node.red-suit { color: #ef4444; }
-        .card-mini-label { position: absolute; font-size: 14px; font-weight: bold; font-family: Arial; }
-        .card-mini-label.tl { top: 3px; left: 3px; } .card-mini-label.br { bottom: 3px; right: 3px; transform: rotate(180deg); }
-        .card-main-symbol { font-size: 32px; }
-        @keyframes dealCardAnim { from { transform: translateY(-60px) scale(0.7); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        /* Game Grids (Baccarat, DVT, Dice, etc) */
+        .bet-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        .bet-tile { background: #222; border: 6px solid #444; width: 220px; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; position: relative; box-shadow: 0 6px 0 #000; transition: 0.1s; }
+        .bet-tile:active { transform: translateY(6px); box-shadow: 0 0 0 #000; }
+        .bet-tile-title { font-size: 36px; font-weight: bold; }
+        .bet-tile-payout { font-size: 20px; color: var(--success); }
+        .bet-badge { position: absolute; top: -15px; right: -15px; background: var(--accent-glow-2); color: #fff; padding: 4px 12px; border: 3px solid #fff; font-size: 22px; font-weight: bold; z-index: 10; }
 
-        /* DOCK AND HOTBAR CONTROLS */
-        .right-dock-rack { position: absolute; right: 15px; top: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
-        .dock-action-square { width: 45px; height: 45px; background: rgba(0,0,0,0.6); border: 3px solid #fff; font-size: 24px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 3px 3px 0 #000; }
-        .dock-action-square:hover { background: rgba(255,255,255,0.2); }
+        /* Cards */
+        .card { width: 70px; height: 100px; background: #fff; border: 2px solid #000; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; position: relative; font-family: Arial; box-shadow: 2px 2px 5px rgba(0,0,0,0.8); margin-left: -40px; }
+        .card:first-child { margin-left: 0; }
+        .card.red { color: var(--danger); }
+        .card-corner { position: absolute; font-size: 16px; font-weight: bold; }
+        .card-corner.tl { top: 4px; left: 4px; } .card-corner.br { bottom: 4px; right: 4px; transform: rotate(180deg); }
+        .card-center { font-size: 36px; }
+
+        /* Seats */
+        .seats-container { display: flex; justify-content: center; align-items: flex-end; gap: 20px; width: 100%; position: absolute; bottom: 20px; }
+        .seat-box { width: 200px; display: flex; flex-direction: column; align-items: center; }
+        .seat-empty { width: 100%; height: 120px; border: 4px dashed rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); margin-bottom: 10px;}
+        .seat-nameplate { background: #000; border: 2px solid #555; width: 100%; text-align: center; padding: 5px; font-size: 24px; }
+        .hands-wrapper { display: flex; gap: 10px; justify-content: center; min-height: 120px; align-items: flex-end; margin-bottom: 10px; position: relative;}
+        .hand-score { position: absolute; top: -15px; left: -15px; background: #000; border: 2px solid #fff; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; font-size: 16px; z-index: 10; }
+        
+        .timer-box { font-size: 40px; background: rgba(0,0,0,0.8); border: 4px solid var(--warning); color: var(--warning); padding: 10px 30px; position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 20; text-align: center; }
     </style>
 </head>
 <body>
@@ -120,806 +112,417 @@
     <div id="arcade-cabinet">
         <div id="toast-container"></div>
 
-        <!-- RIGHT SIDE HUD UTILS -->
-        <div class="right-dock-rack" id="right-dock-utility">
-            <div class="dock-action-square" onclick="showModal('how-to-play-modal')">Q</div>
-            <div class="dock-action-square" onclick="openInbox()">M</div>
-            <div class="dock-action-square" onclick="showBank()">B</div>
-        </div>
-
-        <!-- AUDIO NODE DRIVERS -->
-        <audio id="sfx-deal" src="deal.mp3" preload="auto"></audio>
-        <audio id="sfx-bet" src="bet.mp3" preload="auto"></audio>
-        <audio id="sfx-win" src="win.mp3" preload="auto"></audio>
-        <audio id="sfx-lose" src="lose.mp3" preload="auto"></audio>
-
-        <!-- AUTHENTICATION DIALOG ENGINES -->
         <div id="auth-view" class="full-menu synthwave-bg">
-            <div class="synthwave-sun"></div>
-            <div class="stick-title">STICK N' TRADE</div>
-            <div class="stick-subtitle">DEVELOPED BY: STICKRUN TEAM</div>
-            
-            <div id="panel-login" class="modal-box mc-panel custom-scroll" style="margin-top: 20px;">
-                <h2 style="color: var(--accent-glow-2); margin-bottom: 15px; font-size: 36px;">SECURE ACCESS</h2>
-                <input type="text" id="login-user" class="retro-input" placeholder="ACCOUNT USERNAME" style="margin-bottom:12px; display:block;">
-                <input type="password" id="login-pass" class="retro-input" placeholder="SECURITY KEY" style="margin-bottom:12px; display:block;">
-                <button class="mc-btn" style="background: var(--accent-glow-2); width: 100%;" onclick="login()">CONNECT ACCOUNT</button>
+            <h1 class="stick-title" style="margin-top:0;">CASINO ROYALE</h1>
+            <div class="modal-box mc-panel">
+                <h2 style="color: var(--accent-glow-2); font-size: 40px; margin-bottom: 20px;">SYSTEM LOGIN</h2>
+                <input type="text" id="login-user" placeholder="USERNAME" style="margin-bottom:10px;">
+                <input type="password" id="login-pass" placeholder="PASSWORD" style="margin-bottom:20px;">
+                <button class="mc-btn" style="background: var(--accent-glow-2); width:100%;" onclick="login()">CONNECT</button>
             </div>
         </div>
 
-        <!-- BASE RECEPTION / OVERWORLD ROOM HUB -->
         <div id="main-menu-view" class="full-menu hidden">
-            <div class="stick-title" style="margin-top:60px;">STICK N' TRADE</div>
-            <div class="stick-subtitle">LOBBY MULTIPLAYER ENVIRONMENT</div>
+            <h1 class="stick-title">ARCADE HUB</h1>
+            <button class="mc-btn" style="background: var(--success); color:#000; font-size: 60px; padding: 20px 80px;" onclick="showModal('play-category-modal')">▶ ENTER LOBBY</button>
             
-            <div class="entry-pill-container">
-                <div class="entry-pill" onclick="showToast('Singleplayer requires authorization tokens.', 'warning')">
-                    <span class="entry-pill-icon">👤</span> <span>SINGLEPLAYER MODE</span>
-                </div>
-                <div class="entry-pill dark" onclick="showModal('play-category-modal')">
-                    <span class="entry-pill-icon">👥</span> <span>MULTIPLAYER SECTORS</span>
-                </div>
-            </div>
-
-            <!-- LOWER SYSTEM SHORTCUTS -->
             <div class="hotbar-wrapper">
                 <div class="hotbar">
-                    <div class="hotbar-slot" onclick="showProfile()">DOSSIER</div>
-                    <div class="hotbar-slot" onclick="showBank()">SYSTEM BANK</div>
-                    <div class="hotbar-slot" onclick="openMarket()">AUCTIONS</div>
-                    <div class="hotbar-slot" onclick="openTradeHub()">BARTER HUB</div>
-                    <div class="hotbar-slot" style="color: var(--danger-red);" onclick="promptLogout()">DISCONNECT</div>
+                    <div class="hotbar-slot" onclick="showBank()">🏦 BANK</div>
+                    <div class="hotbar-slot danger" onclick="logout()">🔌 LOGOUT</div>
                 </div>
             </div>
         </div>
 
-        <!-- MULTIPLAYER SECTOR INTERFACE (image_3df35e.png) -->
         <div id="play-category-modal" class="overlay-menu hidden">
-            <div class="stick-lobby-window mc-panel" style="padding:0; width:850px; background:var(--lobby-orange); border-color:#000;">
+            <div class="arcade-hub-layout">
+                <div class="category-sidebar">
+                    <div style="font-size: 40px; color: #fff; text-align: center; border-bottom: 4px solid #000; padding-bottom: 10px;">SECTORS</div>
+                    <button class="sidebar-btn active" id="tab-btn-cards" onclick="switchTab('cards')">♠ CARD GAMES</button>
+                    <button class="sidebar-btn" id="tab-btn-arcade" onclick="switchTab('arcade')">🎡 ARCADE</button>
+                    <button class="sidebar-btn" id="tab-btn-stakes" onclick="switchTab('stakes')">🎰 STAKES</button>
+                    <div style="flex:1;"></div>
+                    <button class="mc-btn" style="background: var(--danger); width: 100%; border-color:#000;" onclick="hideModal('play-category-modal')">CLOSE</button>
+                </div>
                 
-                <!-- TOP HEADER ACCORD -->
-                <div class="lobby-header-bar">
-                    <div class="lobby-header-title">MULTIPLAYER SECTORS</div>
-                    <div class="lobby-close-box" onclick="hideModal('play-category-modal')">X</div>
-                </div>
-
-                <!-- TOP SECTOR WAFERS (2x3 GRID) -->
-                <div class="top-sectors-grid">
-                    <div class="sector-button-wrap">
-                        <button class="sector-btn gray" onclick="joinRoom('5seat')">STICK RUNNERZ</button>
-                        <div class="sector-counter">🏃<span class="lobby-cnt-5seat">0</span></div>
+                <div class="realm-grid-wrapper custom-scroll">
+                    <div id="realm-cards" class="realm-grid-container">
+                        <div class="realm-card" onclick="joinGame('5seat')"><div class="realm-title">CLASSIC BLACKJACK</div><div class="realm-desc">5-Seat Table</div><div class="realm-status">PLAY NOW</div></div>
+                        <div class="realm-card" onclick="joinGame('3seat')"><div class="realm-title">VIP BLACKJACK</div><div class="realm-desc">3-Seat Fast Paced</div><div class="realm-status">PLAY NOW</div></div>
+                        <div class="realm-card" onclick="joinGame('baccarat')"><div class="realm-title" style="color:var(--danger);">PUNTO BANCO</div><div class="realm-desc">True Baccarat</div><div class="realm-status">PLAY NOW</div></div>
+                        <div class="realm-card" onclick="joinGame('dvt')"><div class="realm-title" style="color:var(--lobby-orange);">DRAGON VS TIGER</div><div class="realm-desc">High Card Wins</div><div class="realm-status">PLAY NOW</div></div>
                     </div>
-                    <div class="sector-button-wrap">
-                        <button class="sector-btn gray" onclick="joinRoom('3seat')">STICK BROS</button>
-                        <div class="sector-counter">🏃<span class="lobby-cnt-3seat">0</span></div>
+                    <div id="realm-arcade" class="realm-grid-container hidden">
+                        <div class="realm-card" onclick="joinGame('dice')"><div class="realm-title" style="color:var(--accent-glow-2);">HIGH-LOW DICE</div><div class="realm-desc">Classic 2-Die Roll</div><div class="realm-status">PLAY NOW</div></div>
+                        <div class="realm-card" onclick="joinGame('derby')"><div class="realm-title" style="color:var(--warning);">8-BIT DERBY</div><div class="realm-desc">Virtual Sprint</div><div class="realm-status">PLAY NOW</div></div>
+                        <div class="realm-card" onclick="joinGame('color')"><div class="realm-title" style="color:var(--success);">PERYA COLOR</div><div class="realm-desc">3 Color Dice</div><div class="realm-status">PLAY NOW</div></div>
+                        <div class="realm-card" onclick="joinGame('cups')"><div class="realm-title" style="color:var(--lobby-terra);">STREET HUSTLE</div><div class="realm-desc">3 Cups 1 Ball</div><div class="realm-status">PLAY NOW</div></div>
                     </div>
-                    <div class="sector-button-wrap">
-                        <button class="sector-btn blue" onclick="joinBaccarat()">PRO ZONE</button>
-                        <div class="sector-counter">🏃<span id="baccarat-player-count">0</span></div>
-                    </div>
-                    <div class="sector-button-wrap">
-                        <button class="sector-btn gray" onclick="joinDice()">JUST FOR FUN</button>
-                        <div class="sector-counter">🏃<span id="dice-player-count">0</span></div>
-                    </div>
-                    <div class="sector-button-wrap">
-                        <button class="sector-btn gray" onclick="joinDerby()">SERIOUS RUNNING</button>
-                        <div class="sector-counter">🏃<span id="derby-player-count">0</span></div>
-                    </div>
-                    <div class="sector-button-wrap">
-                        <button class="sector-btn yellow" onclick="joinDvt()">VIP ZONE</button>
-                        <div class="sector-counter">🏃<span id="dvt-player-count">0</span></div>
-                    </div>
-                </div>
-
-                <!-- MIDDLE SECTION STRIP -->
-                <div class="lobby-divider-banner">
-                    <span>MARKETPLACE & ROOMS</span>
-                    <span style="font-size:20px; background:var(--success-green); padding:2px 8px; border-radius:4px; border:2px solid #000;">✓ SNT TRADE</span>
-                </div>
-
-                <!-- LOWER HOUSING PLATFORMS -->
-                <div class="bottom-lobby-split">
-                    
-                    <!-- LEFT MARKET PIECE -->
-                    <div class="split-left-sectors">
-                        <div class="market-sector-block">
-                            <div class="market-sector-title">🏪 MARKETPLACE TRADING</div>
-                            <div class="market-row-slots">
-                                <div class="market-square-slot" onclick="openMarket()">
-                                    <div class="market-square-btn">A</div><div class="market-square-count">🏃1</div>
-                                </div>
-                                <div class="market-square-slot" onclick="openTradeHub()">
-                                    <div class="market-square-btn">B</div><div class="market-square-count">🏃0</div>
-                                </div>
-                                <div class="market-square-slot" onclick="showToast('SNT Market node C syncing...', 'success')">
-                                    <div class="market-square-btn">C</div><div class="market-square-count">🏃0</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="market-sector-block" style="margin-top:10px;">
-                            <div class="market-sector-title">🏪 MARKETPLACE+ (HIGH TIERS)</div>
-                            <div class="market-row-slots">
-                                <div class="market-square-slot" onclick="showToast('Marketplace+ Alpha active.', 'success')">
-                                    <div class="market-square-btn">A</div><div class="market-square-count">0</div>
-                                </div>
-                                <div class="market-square-slot" onclick="showToast('Marketplace+ Beta active.', 'success')">
-                                    <div class="market-square-btn">B</div><div class="market-square-count">0</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- RIGHT ISOMETRIC ENGINE OVERLAY -->
-                    <div class="split-right-isometric">
-                        <div class="iso-header-tag" style="left:20px; top:10px; color:var(--vip-yellow);">🌐 MARKETROOMS</div>
-                        <div class="iso-diamond-btn" style="left:30px; top:45px;" onclick="joinPVP()">
-                            <div class="iso-diamond-text">A</div>
-                        </div>
-                        <div class="iso-counter-tag" style="left:105px; top:55px;">🚶<span id="pvp-player-count">0</span></div>
-
-                        <div class="iso-header-tag" style="left:20px; top:110px; color:var(--success-green);">🏛️ CORE BANK</div>
-                        <div class="iso-diamond-btn" style="left:30px; top:145px;" onclick="showBank()">
-                            <div class="iso-diamond-text">A</div>
-                        </div>
-                        <div class="iso-counter-tag" style="left:105px; top:155px;">🚶REQ</div>
-
-                        <div class="iso-header-tag" style="left:190px; top:35px; color:var(--danger-red);">📈 BIDDING (STAKES)</div>
-                        <div class="iso-diamond-btn" style="left:200px; top:75px;" onclick="joinCrash()">
-                            <div class="iso-diamond-text">A</div>
-                        </div>
-                        <div class="iso-counter-tag" style="left:275px; top:85px;">🚶<span id="crash-player-count">0</span></div>
-
-                        <div class="iso-diamond-btn" style="left:160px; top:125px;" onclick="joinSlots()">
-                            <div class="iso-diamond-text">B</div>
-                        </div>
-                        <div class="iso-counter-tag" style="left:235px; top:135px;">🚶<span id="slots-player-count">0</span></div>
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- CORE ACTIVE GAME INTERFACES (UNCHANGED ARGS) -->
-        <!-- ========================================== -->
-        
-        <!-- BLACKJACK REALM ENGINE -->
-        <div id="game-interface" class="game-interface hidden">
-            <div class="game-area">
-                <div class="top-hud">
-                    <button class="mc-btn small" onclick="exitToMenu('blackjack')">◄ LEAVE SECTOR</button>
-                    <div class="hud-center"><div class="hud-title-node" id="phase-display">WAITING FOR DEAL</div></div>
-                    <div class="wallet-display">🪙 <span id="hud-credits">0</span></div>
-                </div>
-                <div class="card-table-surface">
-                    <div class="banker-station">
-                        <div style="font-size:32px; text-align:center; margin-bottom:10px;">DEALER MANDATE</div>
-                        <div class="hand-container">
-                            <div id="bj-dealer-cards" class="hands-wrapper" style="margin:0;"></div>
-                            <div id="bj-dealer-val" class="hd-badge hidden"></div>
-                        </div>
-                    </div>
-                    <div id="bj-timers-container" class="timers-container">
-                        <div id="bj-global-timer" class="global-timer hidden">WAGERS CLOSING: <span id="bj-g-time">15</span>S</div>
-                        <div id="bj-next-round-timer" class="global-timer hidden" style="background:var(--accent-glow-2);">NEXT SPRINT: <span id="bj-n-time">5</span>S</div>
-                    </div>
-                    <div id="bj-seats-area" class="seats-area"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PUNTO BANCO ENGINE -->
-        <div id="baccarat-interface" class="game-interface hidden">
-            <div class="game-area baccarat-bg">
-                <div class="top-hud">
-                    <button class="mc-btn small" onclick="exitToMenu('baccarat')">◄ LEAVE SECTOR</button>
-                    <div class="hud-center"><div class="hud-title-node" id="baccarat-phase-display">BETS DISPATCHED</div></div>
-                    <div class="wallet-display">🪙 <span id="baccarat-credits">0</span></div>
-                </div>
-                <div class="center-focus">
-                    <div class="baccarat-cards-area">
-                        <div class="baccarat-hand-box" style="border-color: var(--accent-glow-2);">
-                            <div class="baccarat-hand-title" style="color: var(--accent-glow-2);">PLAYER POSITION</div>
-                            <div class="baccarat-cards-row" id="baccarat-p-cards"></div>
-                            <div class="baccarat-score-badge" id="baccarat-p-score" style="display:none;">0</div>
-                        </div>
-                        <div class="baccarat-hand-box" style="border-color: var(--danger-red);">
-                            <div class="baccarat-hand-title" style="color: var(--danger-red);">BANKER POSITION</div>
-                            <div class="baccarat-cards-row" id="baccarat-b-cards"></div>
-                            <div class="baccarat-score-badge" id="baccarat-b-score" style="display:none;">0</div>
-                        </div>
-                    </div>
-                    <div style="text-align: center; margin-top: 30px;">
-                        <div id="baccarat-result-text" style="font-size: 50px; text-shadow: 4px 4px 0 #000;">AWAITING SECTOR DEPOSITS...</div>
-                        <div id="baccarat-timer" style="font-size: 26px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 3px solid #333; display:inline-block;">15S REMAINING</div>
-                    </div>
-                </div>
-                <div class="arcade-bet-area">
-                    <div class="chip-rack"><button class="chip-action-btn" onclick="actUndoBet('baccarat')">UNDO</button><div class="casino-chip chip-100" onclick="selectChip(100)" id="chip-100">100</div><div class="casino-chip chip-1k selected" onclick="selectChip(1000)" id="chip-1000">1K</div><div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div><div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20000">20K</div><div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50000">50K</div><button class="chip-action-btn" onclick="actRebet()">REBET</button></div>
-                    <div class="arcade-grid" style="gap: 20px;">
-                        <div id="baccarat-btn-player" class="arcade-bet-box" style="width: 250px; border-color: var(--accent-glow-2);" onclick="placeBaccaratBet('player')"><div class="bet-badge hidden" id="badge-baccarat-player">0</div><div class="arcade-bet-title" style="color:var(--accent-glow-2);">PLAYER</div><div class="arcade-bet-payout">RETURN 1:1</div></div>
-                        <div id="baccarat-btn-tie" class="arcade-bet-box" style="width: 200px; border-color: var(--success-green);" onclick="placeBaccaratBet('tie')"><div class="bet-badge hidden" id="badge-baccarat-tie">0</div><div class="arcade-bet-title" style="color:var(--success-green);">TIE SPLIT</div><div class="arcade-bet-payout">RETURN 8:1</div></div>
-                        <div id="baccarat-btn-banker" class="arcade-bet-box" style="width: 250px; border-color: var(--danger-red);" onclick="placeBaccaratBet('banker')"><div class="bet-badge hidden" id="badge-baccarat-banker">0</div><div class="arcade-bet-title" style="color:var(--danger-red);">BANKER</div><div class="arcade-bet-payout">RETURN 0.95:1</div></div>
+                    <div id="realm-stakes" class="realm-grid-container hidden">
+                        <div class="realm-card" onclick="joinGame('crash')"><div class="realm-title" style="color:var(--danger);">8-BIT CRASH</div><div class="realm-desc">Ride the multiplier</div><div class="realm-status">PLAY NOW</div></div>
+                        <div class="realm-card" onclick="joinGame('slots')"><div class="realm-title" style="color:var(--warning);">RETRO SLOTS</div><div class="realm-desc">Hit the Jackpot</div><div class="realm-status">PLAY NOW</div></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- DRAGON VS TIGER REALM -->
-        <div id="dvt-interface" class="game-interface hidden">
-            <div class="game-area baccarat-bg">
-                <div class="top-hud">
-                    <button class="mc-btn small" onclick="exitToMenu('dvt')">◄ LEAVE SECTOR</button>
-                    <div class="hud-center"><div class="hud-title-node">DRAGON VS TIGER ZONE</div></div>
-                    <div class="wallet-display">🪙 <span id="dvt-credits">0</span></div>
-                </div>
-                <div class="center-focus">
-                    <div class="baccarat-cards-area">
-                        <div class="baccarat-hand-box" style="border-color: var(--danger-red); width: 250px;">
-                            <div class="baccarat-hand-title" style="color: var(--danger-red);">DRAGON SECTOR</div>
-                            <div class="baccarat-cards-row" id="dvt-dragon-card" style="height:100px;"></div>
-                        </div>
-                        <div class="baccarat-hand-box" style="border-color: var(--warning); width: 250px;">
-                            <div class="baccarat-hand-title" style="color: var(--warning);">TIGER SECTOR</div>
-                            <div class="baccarat-cards-row" id="dvt-tiger-card" style="height:100px;"></div>
-                        </div>
-                    </div>
-                    <div style="text-align: center; margin-top: 20px;">
-                        <div id="dvt-result-text" style="font-size: 50px; text-shadow: 4px 4px 0 #000;">AWAITING HIGH CARD LOCKS...</div>
-                        <div id="dvt-timer" style="font-size: 26px; color: var(--accent-glow-2); background: rgba(0,0,0,0.6); padding: 4px 15px; border: 3px solid #333; display:inline-block;">15S REMAINING</div>
-                    </div>
-                </div>
-                <div class="arcade-bet-area">
-                    <div class="chip-rack"><button class="chip-action-btn" onclick="actUndoBet('dvt')">UNDO</button><div class="casino-chip chip-100 selected" onclick="selectChip(100)">100</div><div class="casino-chip chip-1k" onclick="selectChip(1000)">1K</div><div class="casino-chip chip-5k" onclick="selectChip(5000)">5K</div><div class="casino-chip chip-20k" onclick="selectChip(20000)">20K</div><div class="casino-chip chip-50k" onclick="selectChip(50000)">50K</div><button class="chip-action-btn" onclick="actRebet()">REBET</button></div>
-                    <div class="arcade-grid" style="gap: 20px;">
-                        <div id="dvt-btn-dragon" class="arcade-bet-box" style="width: 250px; border-color: var(--danger-red);" onclick="placeDvtBet('dragon')"><div class="bet-badge hidden" id="badge-dvt-dragon">0</div><div class="arcade-bet-title" style="color:var(--danger-red);">DRAGON</div><div class="arcade-bet-payout">1:1 PUSH HALF</div></div>
-                        <div id="dvt-btn-tie" class="arcade-bet-box" style="width: 200px; border-color: var(--success-green);" onclick="placeDvtBet('tie')"><div class="bet-badge hidden" id="badge-dvt-tie">0</div><div class="arcade-bet-title" style="color:var(--success-green);">TIE TRACK</div><div class="arcade-bet-payout">8:1 MULTI</div></div>
-                        <div id="dvt-btn-tiger" class="arcade-bet-box" style="width: 250px; border-color: var(--warning);" onclick="placeDvtBet('tiger')"><div class="bet-badge hidden" id="badge-dvt-tiger">0</div><div class="arcade-bet-title" style="color:var(--warning);">TIGER</div><div class="arcade-bet-payout">1:1 PUSH HALF</div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- BANK CONTROL HOUSING MODAL -->
         <div id="bank-modal" class="overlay-menu hidden">
-            <div class="modal-box mc-panel custom-scroll" style="width: 700px;">
-                <h2 style="color: var(--warning); font-size: 45px; margin-bottom: 5px;">SNT CREDIT BANKING</h2>
-                <div style="font-size: 28px; margin-bottom: 20px; background:#000; padding:10px; border:4px solid #111;">CURRENT BALANCE: 🪙 <span id="bank-balance-display" style="font-size: 36px;">0</span></div>
-                <input type="text" id="bank-amount" class="retro-input" placeholder="ENTER ADJUSTMENT AMOUNT" oninput="formatInput(this)" style="margin-bottom:15px;">
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <button class="mc-btn" style="flex: 1; background: var(--accent-glow-2);" onclick="showBankConfirm('deposit')">POST DEPOSIT</button>
-                    <button class="mc-btn" style="flex: 1; background: var(--warning); color:#000;" onclick="showBankConfirm('withdrawal')">EXECUTE WITHDRAWAL</button>
+            <div class="modal-box mc-panel">
+                <h2 style="color: var(--warning); font-size: 50px; margin-bottom: 20px;">SYSTEM BANK</h2>
+                <div style="font-size: 32px; background:#000; padding:10px; border:4px solid #111; margin-bottom: 20px;">BALANCE: 🪙 <span id="bank-bal">0</span></div>
+                <input type="number" id="bank-amt" placeholder="AMOUNT" style="margin-bottom: 20px;">
+                <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                    <button class="mc-btn" style="flex:1; background:var(--accent-glow-2);" onclick="submitBank('deposit')">DEPOSIT</button>
+                    <button class="mc-btn" style="flex:1; background:var(--warning); color:#000;" onclick="submitBank('withdrawal')">WITHDRAW</button>
                 </div>
-                <button class="mc-btn" style="width:100%; background:var(--danger-red);" onclick="hideModal('bank-modal')">CLOSE BANK PANEL</button>
+                <button class="mc-btn" style="background:var(--danger); width:100%;" onclick="hideModal('bank-modal')">CLOSE</button>
             </div>
         </div>
 
-        <div id="bank-confirm-modal" class="overlay-menu hidden">
-            <div class="modal-box mc-panel custom-scroll" style="width: 500px;">
-                <h2 style="color: var(--warning); margin-bottom: 10px; font-size: 40px;">CONFIRM MANIFEST</h2>
-                <div style="font-size: 32px; color: #fff; margin-bottom: 10px;"><span id="confirm-bank-type"></span>: <span style="color: var(--success-green);">🪙 <span id="confirm-bank-amt"></span></span></div>
-                <div class="info-box" style="text-align: center; background: #000; border: 4px solid #111; font-size: 20px;">SYSTEM AUDIT IDENTIFIER REQUIRED<br>DISCORD ADMIN: @ashley.gg</div>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button class="mc-btn" style="flex:1; background: var(--success-green); color:#000;" onclick="executeBankRequest()">TRANSMIT</button>
-                    <button class="mc-btn" style="flex:1; background: var(--danger-red);" onclick="hideModal('bank-confirm-modal'); showModal('bank-modal');">ABORT</button>
-                </div>
+        <div id="active-game-view" class="game-interface hidden">
+            <div class="top-hud">
+                <button class="mc-btn small" onclick="exitGame()">◄ LEAVE ROOM</button>
+                <div class="hud-center" id="hud-title">ROOM NAME</div>
+                <div class="wallet-display">🪙 <span id="game-bal">0</span></div>
             </div>
-        </div>
 
-        <!-- PROFILE DOSSIERS -->
-        <div id="profile-modal" class="overlay-menu hidden">
-            <div class="modal-box mc-panel custom-scroll" style="width: 750px;">
-                <h2 style="color: var(--success-green); margin-bottom: 20px; font-size: 45px;">SNT AGENT DOSSIER</h2>
-                <div id="profile-username-preview" style="color: #fff; font-size: 36px; margin-bottom: 10px; font-weight:bold;">AGENT PROFILE</div>
-                <div style="margin-bottom: 20px; font-size: 36px; background:#000; padding:10px; border:4px solid #111;">SECURE BALANCE: 🪙 <span id="profile-credits-preview">0</span></div>
-                <button class="mc-btn" style="background:var(--danger-red); width:100%;" onclick="hideModal('profile-modal')">CLOSE FILE</button>
-            </div>
-        </div>
+            <div id="game-surface" class="game-surface"></div>
+            
+            <div id="game-timer" class="timer-box hidden">WAITING...</div>
 
-        <!-- LOGOUT FAILSAPE ACCORD -->
-        <div id="logout-modal" class="overlay-menu hidden">
-            <div class="modal-box mc-panel custom-scroll">
-                <h2 style="color: var(--danger-red); font-size: 45px;">DISCONNECT SIGNAL</h2>
-                <p id="confirm-action-msg" style="font-size: 26px; margin: 10px 0; color: #fff;"></p>
-                <div style="display: flex; gap: 10px; margin-top: 30px;">
-                    <button id="btn-confirm-yes" class="mc-btn" style="flex: 1; background: var(--danger-red);">DISCONNECT</button>
-                    <button class="mc-btn" style="flex: 1;" onclick="hideModal('logout-modal')">MAINTAIN LINK</button>
+            <div id="universal-bet-area" class="arcade-bet-area">
+                <div class="chip-rack">
+                    <button class="mc-btn small" onclick="actUndo()">UNDO</button>
+                    <div class="casino-chip chip-100 selected" onclick="selectChip(100)" id="chip-100">100</div>
+                    <div class="casino-chip chip-1k" onclick="selectChip(1000)" id="chip-1000">1K</div>
+                    <div class="casino-chip chip-5k" onclick="selectChip(5000)" id="chip-5000">5K</div>
+                    <div class="casino-chip chip-20k" onclick="selectChip(20000)" id="chip-20k">20K</div>
+                    <div class="casino-chip chip-50k" onclick="selectChip(50000)" id="chip-50k">50K</div>
+                    <button class="mc-btn small" onclick="actRebet()">REBET</button>
                 </div>
+                <div id="bet-grid" class="bet-grid"></div>
             </div>
         </div>
 
     </div>
 
-    <!-- PART 2 WILL ATTACH THE ENGINE LOOPS IMMEDIATELY HERE -->
-
     <script>
         const socket = io();
 
-        // ==========================================
-        // SYSTEM STATE & SECTOR GLOBALS
-        // ==========================================
-        let currentUser = null; 
-        let currentGameState = null; 
-        let currentRoomId = null; 
-        let mySeatIndex = -1;
-        
-        let globalTimerInt = null; 
-        let nextRoundTimerInt = null; 
-        let idleTimerInt = null; 
-        let turnTimerVisualInt = null;
-        
-        let actionLocked = false; 
-        window.lastBetAmount = 0; 
-        let pendingBankAction = null; 
-        let isBetting = false;
-        let betThrottleTimeout = null;
-        let confirmActionCallback = null;
-
-        // Active Bet Track Pools
-        let myBaccaratBets = { player: 0, banker: 0, tie: 0 }; 
-        let myDvtBets = { dragon: 0, tiger: 0, tie: 0 };
-        let myDiceBets = { under: 0, seven: 0, over: 0 };
-        let myDerbyBets = [0, 0, 0, 0, 0, 0];
-        let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
-        let myCupsBets = [0, 0, 0];
-
-        // Global UI State
-        let currentChipValue = 1000;
+        let currentUser = null;
+        let activeGame = null;
+        let activeRoom = null;
+        let currentChip = 100;
         let lastBetAction = null;
-
-        const audioNodes = { 
-            deal: document.getElementById('sfx-deal'), 
-            bet: document.getElementById('sfx-bet'), 
-            win: document.getElementById('sfx-win'), 
-            lose: document.getElementById('sfx-lose') 
+        let activeTimer = null;
+        
+        let gameData = {
+            baccarat: { player: 0, banker: 0, tie: 0 },
+            dvt: { dragon: 0, tiger: 0, tie: 0 },
+            dice: { under: 0, seven: 0, over: 0 },
+            derby: [0,0,0,0,0,0],
+            color: { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 },
+            cups: [0,0,0],
+            bjState: null
         };
 
-        // ==========================================
-        // SYSTEM ENGINE CORE CORES
-        // ==========================================
-        function formatNumber(num) { return num ? num.toLocaleString() : '0'; }
-
-        function showToast(msg, type = 'error') { 
-            const container = document.getElementById('toast-container'); 
-            container.innerHTML = ''; 
-            const toast = document.createElement('div'); 
-            toast.className = `toast toast-${type}`; 
-            toast.innerText = msg; 
-            container.appendChild(toast); 
-            setTimeout(() => { 
-                toast.classList.add('fade-out'); 
-                setTimeout(() => toast.remove(), 300); 
-            }, 3000); 
+        // --- UTILS ---
+        function formatNum(n) { return n ? n.toLocaleString() : '0'; }
+        function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function showToast(msg, isSuccess = false) {
+            const c = document.getElementById('toast-container');
+            c.innerHTML = `<div class="toast ${isSuccess ? 'success' : ''}">${msg}</div>`;
+            setTimeout(() => c.firstChild.classList.add('fade-out'), 2500);
+            setTimeout(() => c.innerHTML = '', 2800);
         }
 
-        function showModal(id) { 
-            document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden')); 
-            const el = document.getElementById(id);
-            if(el) el.classList.remove('hidden'); 
-        }
-
-        function hideModal(id) { 
-            const el = document.getElementById(id);
-            if(el) el.classList.add('hidden'); 
-        }
-
-        function showConfirm(msg, callback) { 
-            document.getElementById('confirm-action-msg').innerText = msg; 
-            confirmActionCallback = callback; 
-            showModal('logout-modal'); 
-        }
-
-        document.getElementById('btn-confirm-yes').addEventListener('click', () => { 
-            if(confirmActionCallback) confirmActionCallback(); 
-            hideModal('logout-modal'); 
-        });
-
-        function promptLogout() { 
-            showConfirm("Are you sure you want to disconnect from the sector server?", () => logout()); 
-        }
-
-        function playSfx(id) { 
-            if(audioNodes[id]) { 
-                audioNodes[id].currentTime = 0; 
-                audioNodes[id].play().catch(()=>{}); 
-            } 
-        }
-
-        function logout() { 
-            try { 
-                localStorage.removeItem('cr_user'); 
-                localStorage.removeItem('cr_pass'); 
-            } catch(e){} 
-            location.reload(); 
-        }
-
-        function switchRealmTab(tab) {
-            ['cards', 'arena', 'arcade', 'stakes'].forEach(t => {
-                const btn = document.getElementById(`tab-btn-${t}`);
-                const grid = document.getElementById(`realm-${t}`);
-                if(btn) btn.classList.remove('active');
-                if(grid) grid.classList.add('hidden');
-            });
-            const activeBtn = document.getElementById(`tab-btn-${tab}`);
-            const activeGrid = document.getElementById(`realm-${tab}`);
-            if(activeBtn) activeBtn.classList.add('active');
-            if(activeGrid) activeGrid.classList.remove('hidden');
-        }
-
-        // ==========================================
-        // CONNECT SECURITY SIGNALS
-        // ==========================================
+        // --- AUTH & BANK ---
         async function login() {
+            const u = document.getElementById('login-user').value;
+            const p = document.getElementById('login-pass').value;
+            if(!u || !p) return showToast("Enter credentials.");
+            
             try {
-                const u = document.getElementById('login-user').value.trim(); 
-                const p = document.getElementById('login-pass').value.trim();
-                if(!u || !p) return showToast("Enter account credentials."); 
-
-                const res = await fetch('/api/login', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({username: u, password: p}) 
-                });
+                const res = await fetch('/api/login', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username: u, password: p}) });
                 const data = await res.json();
-                
                 if(res.ok) {
-                    currentUser = data; 
-                    try { localStorage.setItem('cr_user', u); localStorage.setItem('cr_pass', p); } catch(e){}
-                    document.getElementById('auth-view').classList.add('hidden'); 
-                    document.getElementById('main-menu-view').classList.remove('hidden');
-                    updateAllCredits(); 
-                    playSfx('deal'); 
-                } else {
-                    showToast(data.error);
-                }
-            } catch(e) { 
-                showToast("SERVER OFFLINE: Terminal link communication failure."); 
-            }
+                    currentUser = data;
+                    localStorage.setItem('cr_u', u); localStorage.setItem('cr_p', p);
+                    hideModal('auth-view'); showModal('main-menu-view');
+                    updateBal();
+                } else showToast(data.error);
+            } catch(e) { showToast("Server Offline."); }
         }
 
-        socket.on('credit_update', (data) => { 
-            if(currentUser && currentUser.username.toLowerCase() === data.username.toLowerCase()) { 
-                currentUser.credits = data.credits; 
-                updateAllCredits(); 
-            } 
-        });
+        function logout() { localStorage.clear(); location.reload(); }
+        function showBank() { document.getElementById('bank-bal').innerText = formatNum(currentUser.credits); document.getElementById('bank-amt').value = ''; showModal('bank-modal'); }
+        
+        async function submitBank(type) {
+            const amt = parseInt(document.getElementById('bank-amt').value);
+            if(isNaN(amt) || amt <= 0) return showToast("Invalid amount.");
+            try {
+                const res = await fetch('/api/bank/request', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username: currentUser.username, type, amount: amt}) });
+                const data = await res.json();
+                if(res.ok) { showToast("Bank request sent.", true); if(data.newCredits) { currentUser.credits = data.newCredits; updateBal(); } hideModal('bank-modal'); }
+                else showToast(data.error);
+            } catch(e) { showToast("Error connecting to bank."); }
+        }
 
-        function updateAllCredits() {
-            if(!currentUser) return; 
-            const creds = formatNumber(currentUser.credits);
-            ['hud-credits', 'baccarat-credits', 'dvt-credits'].forEach(id => { 
-                const el = document.getElementById(id); 
-                if(el) el.innerText = creds; 
+        function updateBal() {
+            const bal = formatNum(currentUser.credits);
+            document.getElementById('hud-credits').innerText = bal;
+            document.getElementById('game-bal').innerText = bal;
+        }
+
+        // --- UI NAVIGATION ---
+        function switchTab(tab) {
+            ['cards', 'arcade', 'stakes'].forEach(t => {
+                document.getElementById(`tab-btn-${t}`).classList.remove('active');
+                document.getElementById(`realm-${t}`).classList.add('hidden');
             });
-            const preview = document.getElementById('profile-credits-preview');
-            if(preview) preview.innerText = creds;
-            const userPlate = document.getElementById('profile-username-preview');
-            if(userPlate) userPlate.innerText = currentUser.username;
+            document.getElementById(`tab-btn-${tab}`).classList.add('active');
+            document.getElementById(`realm-${tab}`).classList.remove('hidden');
         }
 
-        function showProfile() {
-            if(!currentUser) return;
-            updateAllCredits();
-            showModal('profile-modal');
+        function selectChip(val) {
+            currentChip = val;
+            document.querySelectorAll('.casino-chip').forEach(c => c.classList.remove('selected'));
+            document.getElementById(`chip-${val >= 1000 ? val/1000 + 'k' : val}`).classList.add('selected');
         }
 
-        function showBank() {
-            if(!currentUser) return;
-            document.getElementById('bank-balance-display').innerText = formatNumber(currentUser.credits);
-            document.getElementById('bank-amount').value = '';
-            showModal('bank-modal');
-        }
+        // --- GAME ENTRY ROUTER ---
+        window.joinGame = function(gameId) {
+            activeRoom = gameId;
+            hideModal('play-category-modal');
+            document.getElementById('main-menu-view').classList.add('hidden');
+            
+            const view = document.getElementById('active-game-view');
+            const surface = document.getElementById('game-surface');
+            const grid = document.getElementById('bet-grid');
+            const betArea = document.getElementById('universal-bet-area');
+            view.className = 'game-interface'; // reset bg
 
-        function showBankConfirm(type) {
-            const amt = parseInt(document.getElementById('bank-amount').value.replace(/,/g, ''));
-            if(isNaN(amt) || amt <= 0) return showToast("Enter a clean dynamic value amount.");
-            pendingBankAction = { type, amount: amt };
-            document.getElementById('confirm-bank-type').innerText = type.toUpperCase();
-            document.getElementById('confirm-bank-amt').innerText = formatNumber(amt);
-            hideModal('bank-modal');
-            showModal('bank-confirm-modal');
-        }
-
-        async function executeBankRequest() {
-            if(!pendingBankAction) return;
-            const res = await fetch('/api/bank/request', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: currentUser.username, type: pendingBankAction.type, amount: pendingBankAction.amount})
-            });
-            const data = await res.json();
-            if(res.ok) {
-                showToast("Request sent to administration.", "success");
-                if(data.newCredits !== undefined) {
-                    currentUser.credits = data.newCredits;
-                    updateAllCredits();
-                }
-                hideModal('bank-confirm-modal');
-                pendingBankAction = null;
+            if(gameId === '5seat' || gameId === '3seat') {
+                activeGame = 'blackjack';
+                document.getElementById('hud-title').innerText = gameId === '5seat' ? "CLASSIC BLACKJACK" : "VIP BLACKJACK";
+                surface.innerHTML = `<div style="text-align:center; margin-bottom:20px; font-size:32px;">DEALER</div><div id="bj-dealer" class="hands-wrapper"></div><div id="bj-seats" class="seats-container"></div>`;
+                betArea.classList.add('hidden'); // BJ uses in-seat betting
+                socket.emit('enter_room', { username: currentUser.username, roomId: gameId });
             } else {
-                showToast(data.error);
+                activeGame = gameId;
+                betArea.classList.remove('hidden');
+                
+                if(gameId === 'baccarat') {
+                    view.classList.add('bg-red'); document.getElementById('hud-title').innerText = "PUNTO BANCO";
+                    surface.innerHTML = `<div style="display:flex; gap:100px;"><div style="text-align:center; border:4px solid #3b82f6; padding:20px; background:rgba(0,0,0,0.6);"><div style="font-size:32px; color:#3b82f6;">PLAYER</div><div id="bac-p" class="hands-wrapper" style="width:200px;"></div></div><div style="text-align:center; border:4px solid #ef4444; padding:20px; background:rgba(0,0,0,0.6);"><div style="font-size:32px; color:#ef4444;">BANKER</div><div id="bac-b" class="hands-wrapper" style="width:200px;"></div></div></div>`;
+                    grid.innerHTML = `<div class="bet-tile" style="border-color:#3b82f6;" onclick="placeBet('player')"><div class="bet-badge hidden" id="badge-player">0</div><div class="bet-tile-title" style="color:#3b82f6;">PLAYER</div><div class="bet-tile-payout">1:1</div></div><div class="bet-tile" style="border-color:#10b981;" onclick="placeBet('tie')"><div class="bet-badge hidden" id="badge-tie">0</div><div class="bet-tile-title" style="color:#10b981;">TIE</div><div class="bet-tile-payout">8:1</div></div><div class="bet-tile" style="border-color:#ef4444;" onclick="placeBet('banker')"><div class="bet-badge hidden" id="badge-banker">0</div><div class="bet-tile-title" style="color:#ef4444;">BANKER</div><div class="bet-tile-payout">0.95:1</div></div>`;
+                }
+                else if (gameId === 'dvt') {
+                    view.classList.add('bg-red'); document.getElementById('hud-title').innerText = "DRAGON VS TIGER";
+                    surface.innerHTML = `<div style="display:flex; gap:100px;"><div style="text-align:center; border:4px solid #ef4444; padding:20px; background:rgba(0,0,0,0.6);"><div style="font-size:32px; color:#ef4444;">DRAGON</div><div id="dvt-d" class="hands-wrapper" style="width:150px;"></div></div><div style="text-align:center; border:4px solid #facc15; padding:20px; background:rgba(0,0,0,0.6);"><div style="font-size:32px; color:#facc15;">TIGER</div><div id="dvt-t" class="hands-wrapper" style="width:150px;"></div></div></div>`;
+                    grid.innerHTML = `<div class="bet-tile" style="border-color:#ef4444;" onclick="placeBet('dragon')"><div class="bet-badge hidden" id="badge-dragon">0</div><div class="bet-tile-title" style="color:#ef4444;">DRAGON</div><div class="bet-tile-payout">1:1</div></div><div class="bet-tile" style="border-color:#10b981;" onclick="placeBet('tie')"><div class="bet-badge hidden" id="badge-tie">0</div><div class="bet-tile-title" style="color:#10b981;">TIE</div><div class="bet-tile-payout">8:1</div></div><div class="bet-tile" style="border-color:#facc15;" onclick="placeBet('tiger')"><div class="bet-badge hidden" id="badge-tiger">0</div><div class="bet-tile-title" style="color:#facc15;">TIGER</div><div class="bet-tile-payout">1:1</div></div>`;
+                }
+                else if (gameId === 'dice') {
+                    view.classList.add('bg-blue'); document.getElementById('hud-title').innerText = "HIGH-LOW DICE";
+                    surface.innerHTML = `<div style="font-size:150px; text-shadow:0 10px 20px #000;"><span id="die1">⚀</span> <span id="die2">⚀</span></div><div id="dice-res" style="font-size:40px; margin-top:20px;"></div>`;
+                    grid.innerHTML = `<div class="bet-tile" onclick="placeBet('under')"><div class="bet-badge hidden" id="badge-under">0</div><div class="bet-tile-title">UNDER 7</div><div class="bet-tile-payout">1:1</div></div><div class="bet-tile" style="border-color:#a855f7;" onclick="placeBet('seven')"><div class="bet-badge hidden" id="badge-seven">0</div><div class="bet-tile-title" style="color:#a855f7;">EXACT 7</div><div class="bet-tile-payout">4:1</div></div><div class="bet-tile" onclick="placeBet('over')"><div class="bet-badge hidden" id="badge-over">0</div><div class="bet-tile-title">OVER 7</div><div class="bet-tile-payout">1:1</div></div>`;
+                }
+                
+                socket.emit('enter_arcade', { username: currentUser.username, game: gameId });
+                socket.emit(`get_${gameId}_state`);
             }
-        }
+            view.classList.remove('hidden');
+        };
 
-        function applyThrottle() { 
-            isBetting = true; 
-            clearTimeout(betThrottleTimeout); 
-            betThrottleTimeout = setTimeout(() => { isBetting = false; }, 250); 
-        }
+        window.exitGame = function() {
+            document.getElementById('active-game-view').classList.add('hidden');
+            document.getElementById('main-menu-view').classList.remove('hidden');
+            if(activeGame === 'blackjack') socket.emit('leave_room', { username: currentUser.username, roomId: activeRoom });
+            else socket.emit('leave_arcade', { username: currentUser.username, game: activeRoom });
+            activeGame = null; activeRoom = null;
+            clearInterval(globalTimerInt);
+            document.getElementById('game-timer').classList.add('hidden');
+        };
 
-        function selectChip(val) { currentChipValue = val; playSfx('bet'); }
-
-        // ==========================================
-        // CLASSIC RUNNERZ / SECTOR STAGING ENGINE
-        // ==========================================
-        function joinRoom(roomId) { 
-            currentRoomId = roomId; 
-            hideModal('play-category-modal'); 
-            document.getElementById('main-menu-view').classList.add('hidden'); 
-            document.getElementById('game-interface').classList.remove('hidden'); 
-            socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId }); 
-            playSfx('deal'); 
-        }
-
-        window.actSitDown = function(idx) { 
-            if(actionLocked) return; 
-            actionLocked = true; setTimeout(() => { actionLocked = false; }, 1500);
-            socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); 
-            playSfx('bet'); 
-        }
-
-        window.actPlaceBetDropdown = function(idx) { 
-            if(actionLocked) return; 
-            const selectEl = document.getElementById(`inseat-bet-${idx}`); 
-            const amt = selectEl ? parseInt(selectEl.value) : 0; 
-            if (isNaN(amt) || amt < 100) return showToast("Wager must match or exceed 100 credits."); 
-            if (amt > 50000) return showToast("Wager caps out at 50,000 credits."); 
-            if (amt > currentUser.credits) return showToast("Insufficient sector balance."); 
+        // --- MASTER BET DISPATCHER ---
+        window.placeBet = function(choice) {
+            if(!activeGame || activeGame === 'blackjack') return;
+            const amt = currentChip;
+            if(amt > currentUser.credits) return showToast("Insufficient funds.");
             
-            actionLocked = true; setTimeout(() => { actionLocked = false; }, 1500);
-            window.lastBetAmount = amt; 
-            socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); 
-            playSfx('bet'); 
+            // Limit checks
+            let currentPool = gameData[activeGame][choice] || 0;
+            if(currentPool + amt > 50000) return showToast("Tile limit is 50,000 CR.");
+            
+            gameData[activeGame][choice] += amt;
+            socket.emit(`place_${activeGame}_bet`, { username: currentUser.username, choice, amount: amt });
+            lastBetAction = { game: activeGame, choice };
+        };
+
+        window.actRebet = function() {
+            if(lastBetAction && lastBetAction.game === activeGame) {
+                placeBet(lastBetAction.choice);
+            } else showToast("No previous valid bet in this room.");
+        };
+
+        window.actUndo = function() {
+            if(activeGame && activeGame !== 'blackjack') {
+                socket.emit('undo_bet', { username: currentUser.username, game: activeGame });
+            }
+        };
+
+        socket.on('arcade_bet_placed', (data) => {
+            if(data.game === activeGame) {
+                const badge = document.getElementById(`badge-${data.choice}`);
+                if(badge) {
+                    badge.innerText = formatNum(data.totalChoiceBet);
+                    if(data.totalChoiceBet > 0) badge.classList.remove('hidden');
+                    else badge.classList.add('hidden');
+                }
+            }
+        });
+
+        // --- TIMER MANAGER ---
+        function setTimer(ms, textPrefix) {
+            const tb = document.getElementById('game-timer');
+            clearInterval(globalTimerInt);
+            if(ms <= 0) { tb.classList.add('hidden'); return; }
+            
+            tb.classList.remove('hidden');
+            let s = Math.ceil(ms/1000);
+            tb.innerText = `${textPrefix}: ${s}S`;
+            globalTimerInt = setInterval(()=>{
+                s--;
+                if(s>0) tb.innerText = `${textPrefix}: ${s}S`;
+                else { clearInterval(globalTimerInt); tb.classList.add('hidden'); }
+            }, 1000);
         }
 
-        window.actEjectSeat = function(idx) { actionLocked = true; setTimeout(() => { actionLocked = false; }, 1500); socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actHit = function(idx) { actionLocked = true; setTimeout(() => { actionLocked = false; }, 1500); socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actStand = function(idx) { actionLocked = true; setTimeout(() => { actionLocked = false; }, 1500); socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
-        window.actDouble = function(idx) { actionLocked = true; setTimeout(() => { actionLocked = false; }, 1500); socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
-        window.actSplit = function(idx) { actionLocked = true; setTimeout(() => { actionLocked = false; }, 1500); socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        // --- HTML CARD BUILDER ---
+        function buildCard(c, hidden) {
+            if(hidden) return `<div class="card bg-dark" style="background:#222;"></div>`;
+            const color = ['Hearts','Diamonds'].includes(c.suit) ? 'red' : 'black';
+            const sym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit];
+            return `<div class="card ${color}"><div class="card-corner tl">${c.value}<br>${sym}</div><div class="card-center">${sym}</div><div class="card-corner br">${c.value}<br>${sym}</div></div>`;
+        }
 
+        // --- BLACKJACK LOGIC ---
         socket.on('game_state_update', (state) => {
-            if(currentGameState && currentGameState.status === 'dealerTurn' && state.status === 'resolving') { 
-                if(mySeatIndex !== -1 && state.seats[mySeatIndex]) { 
-                    let hasWin = state.seats[mySeatIndex].hands.some(h => h.result === 'win' || h.result === 'win-bj'); 
-                    let hasLose = state.seats[mySeatIndex].hands.some(h => h.result === 'lose' || h.result === 'bust'); 
-                    if(hasWin) playSfx('win'); else if (hasLose) playSfx('lose'); 
-                } 
-            }
-            if(currentGameState && currentGameState.status === 'betting' && state.status === 'playing') playSfx('deal');
-            actionLocked = false; 
-            currentGameState = state; 
-            if(currentUser && currentRoomId && !document.getElementById('game-interface').classList.contains('hidden')) { 
-                renderTable(state); 
-                manageTimers(state); 
-            }
-        });
-
-        function renderTable(state) {
-            if (!state) return; 
-            document.getElementById('phase-display').innerText = state.status === 'resolving' ? 'RESULTS' : state.status.toUpperCase();
-            const dCards = document.getElementById('dealer-cards'); 
-            const dBadge = document.getElementById('bj-dealer-val');
+            if(activeGame !== 'blackjack') return;
+            gameData.bjState = state;
             
-            let dealerHtml = ''; 
-            state.dealerCards.forEach(c => { dealerHtml += formatCardHTML(c, c.hidden); });
-            if (dCards.innerHTML !== dealerHtml) dCards.innerHTML = dealerHtml;
-            
-            const visibleDealerCards = state.dealerCards.filter(c => !c.hidden);
-            if (visibleDealerCards.length > 0) { 
-                if(dBadge) { dBadge.innerText = calculateValue(visibleDealerCards); dBadge.classList.remove('hidden'); }
-            } else { 
-                if(dBadge) dBadge.classList.add('hidden'); 
-            }
+            let dHtml = ''; state.dealerCards.forEach(c => dHtml += buildCard(c, c.hidden));
+            document.getElementById('bj-dealer').innerHTML = dHtml;
 
-            const seatsArea = document.getElementById('bj-seats-area');
-            let seatsHtml = '';
+            let sHtml = '';
+            let isSitting = state.seats.some(s => s && s.username === currentUser.username);
 
-            for(let index=0; index<state.seats.length; index++) {
-                let seatData = state.seats[index]; 
-                let isMySeat = currentUser && seatData && seatData.username.toLowerCase() === currentUser.username.toLowerCase();
-                let hasSeatAnywhere = state.seats.some(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
-                
-                let seatClass = 'seat';
-                if(seatData) { seatClass += ' occupied'; if(isMySeat) seatClass += ' my-seat'; if(state.activeSeatIndex === index) seatClass += ' active-turn'; }
-
-                seatsHtml += `<div class="${seatClass}" id="seat-${index}">`;
-                if (!seatData) {
-                    if (state.status === 'waiting' || state.status === 'betting') {
-                        let sitBtn = !hasSeatAnywhere ? `<button class="mc-btn small" onclick="actSitDown(${index})" style="background:var(--success-green); color:#000;">SIT DOWN</button>` : '';
-                        seatsHtml += `<div class="seat-empty-box"><div style="font-size:28px; color:#94a3b8; margin-bottom:10px;">EMPTY POSITION</div>${sitBtn}</div>`;
-                    }
+            state.seats.forEach((seat, i) => {
+                sHtml += `<div class="seat-box">`;
+                if(!seat) {
+                    let sitBtn = !isSitting && state.status === 'betting' ? `<button class="mc-btn small" onclick="actSitDown(${i})">SIT DOWN</button>` : '';
+                    sHtml += `<div class="seat-empty">${sitBtn}</div>`;
                 } else {
-                    seatsHtml += `<div class="hands-wrapper">`;
-                    seatData.hands.forEach((hand, hIdx) => {
-                        let activeHandClass = (state.activeSeatIndex === index && seatData.currentHand === hIdx && hand.status === 'waiting') ? 'active-hand' : '';
-                        seatsHtml += `<div class="hand-box ${activeHandClass}"><div class="hand-container">`;
-                        hand.cards.forEach(c => { seatsHtml += formatCardHTML(c, false); });
-                        if (hand.cards.length > 0) seatsHtml += `<div class="hd-badge">${hand.value || calculateValue(hand.cards)}</div>`;
-                        seatsHtml += `</div>`;
-                        
-                        let handBet = hand.bet > 0 ? hand.bet : 0;
-                        if (handBet > 0) seatsHtml += `<div class="player-bet-text">${formatNumber(handBet)}</div>`;
-                        if (activeHandClass) seatsHtml += `<div class="turn-bar-container"><div class="turn-bar-fill" id="bj-turn-bar-${index}"></div></div>`;
-                        seatsHtml += `</div>`;
+                    let isMe = seat.username === currentUser.username;
+                    sHtml += `<div class="hands-wrapper">`;
+                    seat.hands.forEach(h => {
+                        sHtml += `<div style="position:relative; display:flex;">`;
+                        h.cards.forEach(c => sHtml += buildCard(c, false));
+                        if(h.value) sHtml += `<div class="hand-score">${h.value}</div>`;
+                        sHtml += `</div>`;
                     });
-                    seatsHtml += `</div><div class="player-info-plate"><div class="player-name-text" style="color:${seatData.color}">${seatData.username}</div></div>`;
-
-                    if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
-                        if (seatData.hands[0].bet === 0) {
-                            let startBet = window.lastBetAmount || 0; let opts = [100, 1000, 5000, 20000, 50000];
-                            let optHTML = opts.map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
-                            seatsHtml += `<div style="display:flex; flex-direction:column; gap:4px; width:100%; margin-top:5px;"><select id="inseat-bet-${index}" class="retro-input" style="padding:4px; font-size:22px; text-align:center;">${optHTML}</select><button class="mc-btn small" onclick="actPlaceBetDropdown(${index})" style="background:var(--success-green); color:#000;">CONFIRM BET</button></div>`;
-                        }
+                    sHtml += `</div><div class="seat-nameplate" style="color:${isMe?'var(--success)':'#fff'};">${seat.username}</div>`;
+                    
+                    if(isMe && state.status === 'betting' && seat.hands[0].bet === 0) {
+                        sHtml += `<div style="margin-top:5px; display:flex; flex-direction:column; gap:5px;"><select id="bj-bet-${i}"><option value="100">100</option><option value="1000" selected>1,000</option><option value="5000">5,000</option></select><button class="mc-btn small" onclick="actBjBet(${i})">CONFIRM BET</button><button class="mc-btn small" style="border-color:var(--danger);" onclick="actEject(${i})">STAND UP</button></div>`;
+                    }
+                    if(isMe && state.status === 'playing' && state.activeSeatIndex === i) {
+                        sHtml += `<div style="margin-top:5px; display:grid; grid-template-columns:1fr 1fr; gap:5px;"><button class="mc-btn small" onclick="actHit(${i})">HIT</button><button class="mc-btn small" onclick="actStand(${i})">STAND</button></div>`;
                     }
                 }
-                seatsHtml += `</div>`;
-            }
-            if (seatsArea.innerHTML !== seatsHtml) seatsArea.innerHTML = seatsHtml; 
-        }
+                sHtml += `</div>`;
+            });
+            document.getElementById('bj-seats').innerHTML = sHtml;
 
-        function manageTimers(state) {
-            const gTimerUI = document.getElementById('bj-global-timer'); 
-            const nTimerUI = document.getElementById('bj-next-round-timer'); 
-            if(gTimerUI) {
-                if (state.status === 'betting' && state.betTimeLeft > 0) { 
-                    let left = Math.ceil(state.betTimeLeft / 1000); gTimerUI.classList.remove('hidden'); clearInterval(globalTimerInt);
-                    if(nTimerUI) nTimerUI.classList.add('hidden'); document.getElementById('bj-g-time').innerText = left;
-                    globalTimerInt = setInterval(() => { left--; if(left > 0) document.getElementById('bj-g-time').innerText = left; else { clearInterval(globalTimerInt); gTimerUI.classList.add('hidden'); } }, 1000);
-                } else if (state.status !== 'betting') { gTimerUI.classList.add('hidden'); }
-            }
-        }
+            if(state.status === 'betting') setTimer(state.betTimeLeft, "BETS CLOSING");
+            else setTimer(0);
+        });
 
-        // ==========================================
-        // PRO ZONE (PUNTO BANCO BACCARAT)
-        // ==========================================
-        function joinBaccarat() { 
-            currentRoomId = 'baccarat'; hideModal('play-category-modal'); 
-            document.getElementById('main-menu-view').classList.add('hidden'); 
-            document.getElementById('baccarat-interface').classList.remove('hidden'); 
-            socket.emit('enter_arcade', { username: currentUser.username, game: 'baccarat' }); 
-            socket.emit('get_baccarat_state'); 
-        }
+        window.actSitDown = function(i) { socket.emit('join_seat', { roomId: activeRoom, username: currentUser.username, seatIndex: i }); }
+        window.actEject = function(i) { socket.emit('leave_seat', { roomId: activeRoom, username: currentUser.username, seatIndex: i }); }
+        window.actBjBet = function(i) { const a = parseInt(document.getElementById(`bj-bet-${i}`).value); socket.emit('place_bet', { roomId: activeRoom, username: currentUser.username, seatIndex: i, betAmount: a }); }
+        window.actHit = function(i) { socket.emit('player_action_hit', { roomId: activeRoom, username: currentUser.username, seatIndex: i }); }
+        window.actStand = function(i) { socket.emit('player_action_stand', { roomId: activeRoom, username: currentUser.username, seatIndex: i }); }
 
-        window.placeBaccaratBet = function(choice) {
-            if(isBetting) return; const amt = currentChipValue;
-            if (myBaccaratBets[choice] + amt > 50000) return showToast("Tile limit is 50,000 credits.");
-            if (amt > currentUser.credits) return showToast("Insufficient sector balance.");
-            applyThrottle(); myBaccaratBets[choice] += amt;
-            socket.emit('place_baccarat_bet', { username: currentUser.username, choice, amount: amt });
-            lastBetAction = { game: 'baccarat', choice };
-        };
-
-        let baccaratInterval = null;
+        // --- BACCARAT LOGIC ---
         socket.on('baccarat_state_update', (data) => {
-            const statusText = document.getElementById('baccarat-result-text'); const timerText = document.getElementById('baccarat-timer');
-            const pCardsUI = document.getElementById('baccarat-p-cards'); const bCardsUI = document.getElementById('baccarat-b-cards');
-            const pScoreUI = document.getElementById('baccarat-p-score'); const bScoreUI = document.getElementById('baccarat-b-score');
+            if(activeGame !== 'baccarat') return;
+            const pBox = document.getElementById('bac-p');
+            const bBox = document.getElementById('bac-b');
             
-            if (data.status === 'betting') {
-                statusText.innerText = "AWAITING SECTOR DEPOSITS..."; myBaccaratBets = { player: 0, banker: 0, tie: 0 }; clearInterval(baccaratInterval);
-                pCardsUI.innerHTML = ''; bCardsUI.innerHTML = ''; pScoreUI.innerText = '0'; bScoreUI.innerText = '0';
-                pScoreUI.style.display = 'none'; bScoreUI.style.display = 'none';
-                baccaratInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}S REMAINING`; if (left <= 0) clearInterval(baccaratInterval); }, 1000);
-            } 
-            else if (data.status === 'drawing') { statusText.innerText = "NO MORE BETS"; timerText.innerText = "DEALING GRID..."; } 
-            else if (data.status === 'resolving') {
-                pScoreUI.style.display = 'block'; bScoreUI.style.display = 'block';
-                let pScore = 0, bScore = 0;
-                
-                setTimeout(() => { pCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.pCards[0], false)); pScore = (pScore + getBaccaratWeight(data.pCards[0])) % 10; pScoreUI.innerText = pScore; playSfx('deal'); }, 500);
-                setTimeout(() => { bCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.bCards[0], false)); bScore = (bScore + getBaccaratWeight(data.bCards[0])) % 10; bScoreUI.innerText = bScore; playSfx('deal'); }, 1500);
-                setTimeout(() => { pCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.pCards[1], false)); pScore = (pScore + getBaccaratWeight(data.pCards[1])) % 10; pScoreUI.innerText = pScore; playSfx('deal'); }, 2500);
-                setTimeout(() => { bCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.bCards[1], false); bScore = (bScore + getBaccaratWeight(data.bCards[1])) % 10; bScoreUI.innerText = bScore; playSfx('deal'); }, 3500);
-
-                let delay = 4500;
-                if (data.thirdCardTarget) {
-                    if (data.thirdCardTarget === 'player' || data.thirdCardTarget === 'both') {
-                        setTimeout(() => { timerText.innerText = "PLAYER EXTENSION CARD DEAL..."; }, delay); delay += 1000;
-                        setTimeout(() => { pCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.pCards[2], false)); pScore = (pScore + getBaccaratWeight(data.pCards[2])) % 10; pScoreUI.innerText = pScore; playSfx('deal'); }, delay); delay += 1500;
-                    }
-                    if(data.thirdCardTarget === 'banker' || data.thirdCardTarget === 'both') {
-                        let bDelay = data.thirdCardTarget === 'both' ? 4000 : 2500;
-                        setTimeout(() => { timerText.innerText = "BANKER EXTENSION CARD DEAL..."; }, delay + (data.thirdCardTarget === 'both'? 2500 : 0)); 
-                        setTimeout(() => { bCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.bCards[2], false)); bScore = (bScore + getBaccaratWeight(data.bCards[2])) % 10; bScoreUI.innerText = bScore; playSfx('deal'); }, delay + (data.thirdCardTarget === 'both'? 3500 : 1000)); 
-                        delay += bDelay;
-                    }
+            if(data.status === 'betting') {
+                pBox.innerHTML = ''; bBox.innerHTML = '';
+                gameData.baccarat = { player: 0, banker: 0, tie: 0 };
+                ['player','banker','tie'].forEach(c => document.getElementById(`badge-${c}`).classList.add('hidden'));
+                setTimer(data.betEndTime - Date.now(), "BETS CLOSING");
+            } else if (data.status === 'resolving') {
+                setTimer(0);
+                setTimeout(() => pBox.insertAdjacentHTML('beforeend', buildCard(data.pCards[0], false)), 500);
+                setTimeout(() => bBox.insertAdjacentHTML('beforeend', buildCard(data.bCards[0], false)), 1500);
+                setTimeout(() => pBox.insertAdjacentHTML('beforeend', buildCard(data.pCards[1], false)), 2500);
+                setTimeout(() => bBox.insertAdjacentHTML('beforeend', buildCard(data.bCards[1], false)), 3500);
+                if(data.thirdCardTarget) {
+                    if(['player','both'].includes(data.thirdCardTarget)) setTimeout(()=>pBox.insertAdjacentHTML('beforeend', buildCard(data.pCards[2], false)), 5000);
+                    if(['banker','both'].includes(data.thirdCardTarget)) setTimeout(()=>bBox.insertAdjacentHTML('beforeend', buildCard(data.bCards[2], false)), 6500);
                 }
-
-                setTimeout(() => {
-                    statusText.innerText = data.winner === 'tie' ? "TIE VALUE!" : `${data.winner.toUpperCase()} POSITION MATCH!`;
-                    let totalBet = Object.values(myBaccaratBets).reduce((a,b)=>a+b, 0);
-                    if (totalBet > 0) {
-                        let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
-                        if (myWins.length > 0) { 
-                            let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); timerText.innerText = `YOU ACQUIRED: ${formatNumber(totalWin)} CR!`; playSfx('win');
-                        } else if (data.winner === 'tie' && (myBaccaratBets.player > 0 || myBaccaratBets.banker > 0)) {
-                            timerText.innerText = `STAGNANT PUSH MATRIX`; playSfx('win');
-                        } else { timerText.innerText = "HOUSE CLAIMS SECURE"; playSfx('lose'); }
-                    }
-                }, delay);
             }
         });
 
-        // ==========================================
-        // VIP ZONE (DRAGON VS TIGER)
-        // ==========================================
-        function joinDvt() { 
-            currentRoomId = 'dvt'; hideModal('play-category-modal'); 
-            document.getElementById('main-menu-view').classList.add('hidden'); 
-            document.getElementById('dvt-interface').classList.remove('hidden'); 
-            socket.emit('enter_arcade', { username: currentUser.username, game: 'dvt' }); 
-            socket.emit('get_dvt_state'); 
-        }
+        // --- DVT LOGIC ---
+        socket.on('dvt_state_update', (data) => {
+            if(activeGame !== 'dvt') return;
+            const dBox = document.getElementById('dvt-d');
+            const tBox = document.getElementById('dvt-t');
+            
+            if(data.status === 'betting') {
+                dBox.innerHTML = ''; tBox.innerHTML = '';
+                gameData.dvt = { dragon: 0, tiger: 0, tie: 0 };
+                ['dragon','tiger','tie'].forEach(c => document.getElementById(`badge-${c}`).classList.add('hidden'));
+                setTimer(data.betEndTime - Date.now(), "BETS CLOSING");
+            } else if (data.status === 'resolving') {
+                setTimer(0);
+                setTimeout(() => dBox.innerHTML = buildCard(data.dragonCard, false), 500);
+                setTimeout(() => tBox.innerHTML = buildCard(data.tigerCard, false), 1500);
+            }
+        });
 
-        window.placeDvtBet = function(choice) {
-            if(isBetting) return; const amt = currentChipValue;
-            if (myDvtBets[choice] + amt > 50000) return showToast("Tile limit is 50,000 credits.");
-            if (amt > currentUser.credits) return showToast("Insufficient sector balance.");
-            applyThrottle(); myDvtBets[choice] += amt;
-            socket.emit('place_dvt_bet', { username: currentUser.username, choice, amount: amt });
-            lastBetAction = { game: 'dvt', choice };
+        // --- DICE LOGIC ---
+        socket.on('dice_state_update', (data) => {
+            if(activeGame !== 'dice') return;
+            if(data.status === 'betting') {
+                gameData.dice = { under:0, seven:0, over:0 };
+                ['under','seven','over'].forEach(c => document.getElementById(`badge-${c}`).classList.add('hidden'));
+                document.getElementById('dice-res').innerText = '';
+                setTimer(data.betEndTime - Date.now(), "BETS CLOSING");
+            } else if (data.status === 'resolving') {
+                setTimer(0);
+                const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+                document.getElementById('die1').innerText = faces[data.dice[0]-1];
+                document.getElementById('die2').innerText = faces[data.dice[1]-1];
+                document.getElementById('dice-res').innerText = `TOTAL: ${data.total}`;
+            }
+        });
+
+        // Auto login check
+        window.onload = () => { 
+            if(localStorage.getItem('cr_user')) {
+                document.getElementById('login-user').value = localStorage.getItem('cr_user');
+                document.getElementById('login-pass').value = localStorage.getItem('cr_pass');
+                login();
+            }
         };
 
-        let dvtInterval = null;
-        socket.on('dvt_state_update', (data) => {
-            const statusText = document.getElementById('dvt-result-text'); const timerText = document.getElementById('dvt-timer');
-            const dCardUI = document.getElementById('dvt-dragon-card'); const tCardUI = document.getElementById('dvt-tiger-card');
-            
-            if (data.status === 'betting') {
-                statusText.innerText = "AWAITING HIGH CARD LOCKS..."; myDvtBets = { dragon: 0, tiger: 0, tie: 0 }; clearInterval(dvtInterval);
-                dCardUI.innerHTML = ''; tCardUI.innerHTML = '';
-                dvtInterval = setInterval(() => { let left = Math.max(0, Math.floor((data.betEndTime - Date.now()) / 1000)); timerText.innerText = `${left}S REMAINING`; if (left <= 0) clearInterval(dvtInterval); }, 1000);
-            } 
-            else if (data.status === 'drawing') { statusText.innerText = "NO MORE BETS"; timerText.innerText = "PROCESSING ARRAY..."; } 
-            else if (data.status === 'resolving') {
-                setTimeout(() => { dCardUI.innerHTML = formatCardHTML(data.dragonCard, false); playSfx('deal'); }, 500);
-                setTimeout(() => { tCardUI.innerHTML = formatCardHTML(data.tigerCard, false); playSfx('deal'); }, 1500);
-                setTimeout(() => {
-                    statusText.innerText = data.winner === 'tie' ? "TIE ARREST!" : `${data.winner.toUpperCase()} VICTORIOUS!`;
-                    let totalBet = Object.values(myDvtBets).reduce((a,b)=>a+b, 0);
-                    if (totalBet > 0) {
-                        let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
-                        if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); timerText.innerText = `YOU ACQUIRED: ${formatNumber(totalWin)} CR!`; playSfx('win'); } 
-                        else if (data.winner === 'tie' && (myDvtBets.dragon > 0 || myDvtBets.tiger > 0)) { timerText.innerText = `PUSH CONDITION OVERRIDE`; playSfx('win'); } 
-                        else { timerText.innerText = "HOUSE CLAIMS SECURE"; playSfx('lose'); }
-                    }
-                }, 2500);
-            }
-        });
-
-        // ==========================================
-        // SYSTEM SYNC CONTROLS
-        // ==========================================
-        socket.on('global_lobby_counts', (counts) => {
-            if(document.querySelector('.lobby-cnt-5seat')) document.querySelector('.lobby-cnt-5seat').innerText = counts['5seat'] || 0;
-            if(document.querySelector('.lobby-cnt-3seat')) document.querySelector('.lobby-cnt-3seat').innerText = counts['3seat'] || 0;
-            if(document.getElementById('baccarat-player-count')) document.getElementById('baccarat-player-count').innerText = counts['baccarat'] || 0;
-            if(document.getElementById('dvt-player-count')) document.getElementById('dvt-player-count').innerText = counts['dvt'] || 0;
-            if(document.getElementById('dice-player-count')) document.getElementById('dice-player-count').innerText = counts['dice'] || 0;
-            if(document.getElementById('derby-player-count')) document.getElementById('derby-player-count').innerText = counts['derby'] || 0;
-            if(document.getElementById('pvp-player-count')) document.getElementById('pvp-player-count').innerText = counts['pvp'] || 0;
-            if(document.getElementById('crash-player-count')) document.getElementById('crash-player-count').innerText = counts['crash'] || 0;
-            if(document.getElementById('slots-player-count')) document.getElementById('slots-player-count').innerText = counts['slots'] || 0;
-        });
-
-        // Safety context binding locks
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
-        });
     </script>
 </body>
 </html>
