@@ -799,11 +799,174 @@
     </div>
     <!-- SYSTEM LOGIC CONTINUED -->
     <script>
+       <!-- ========================================================= -->
+    <!-- MASTER JAVASCRIPT ENGINE (UNIFIED & FAILSAFE)             -->
+    <!-- ========================================================= -->
+    <script>
+        // Failsafe: Prevents the entire script from crashing if the server is temporarily asleep
+        const socket = typeof io !== 'undefined' ? io() : null;
+
+        // System State
+        let currentUser = null; 
+        let currentGameState = null; 
+        let currentRoomId = null; 
+        let mySeatIndex = -1;
+        
+        // Timers
+        let globalTimerInt = null; 
+        let nextRoundTimerInt = null; 
+        let turnTimerVisualInt = null;
+        let dailyRewardTimerInt = null;
+        
+        window.lastBetAmount = 0; 
+        
+        // Bet Tracking Pools
+        let myDiceBets = { under: 0, seven: 0, over: 0 }; 
+        let myDerbyBets = [0, 0, 0, 0, 0, 0]; 
+        let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
+        let myCupsBets = [0, 0, 0]; 
+        let myBaccaratBets = { player: 0, banker: 0, tie: 0 }; 
+        let myDvtBets = { dragon: 0, tiger: 0, tie: 0 };
+        
+        let currentPvpDuelState = null; 
+        let myDuelSeatIndex = -1;
+        
+        let currentChipValue = 1000;
+        let lastBetAction = null;
+        let isBetting = false;
+        let betThrottleTimeout = null;
+
+        // Audio System
+        const audioNodes = { 
+            deal: document.getElementById('sfx-deal'), 
+            bet: document.getElementById('sfx-bet'), 
+            win: document.getElementById('sfx-win'), 
+            lose: document.getElementById('sfx-lose') 
+        };
+
+        // ==========================================
+        // UTILITY FUNCTIONS
+        // ==========================================
+        function formatNumber(num) { return num ? num.toLocaleString() : '0'; }
+
+        function showToast(msg, type = 'error') { 
+            const container = document.getElementById('toast-container'); 
+            if(!container) return;
+            container.innerHTML = ''; 
+            const toast = document.createElement('div'); 
+            toast.className = `toast toast-${type}`; 
+            toast.innerText = msg; 
+            container.appendChild(toast); 
+            setTimeout(() => { 
+                toast.classList.add('fade-out'); 
+                setTimeout(() => toast.remove(), 300); 
+            }, 3000); 
+        }
+
+        function showModal(id) { 
+            document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden')); 
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('hidden'); 
+        }
+
+        function hideModal(id) { 
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden'); 
+        }
+
+        function playSfx(id) { 
+            if(audioNodes[id]) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } 
+        }
+
+        function logout() { try { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); } catch(e){} location.reload(); }
+        function promptLogout() { showModal('logout-modal'); document.getElementById('confirm-action-msg').innerText = "DISCONNECT FROM LOBBY?"; document.getElementById('btn-confirm-yes').onclick = logout; }
+
+        function switchRealmTab(tab) {
+            ['cards', 'arena', 'arcade', 'stakes'].forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const realm = document.getElementById(`realm-${t}`);
+                if (btn) btn.classList.remove('active');
+                if (realm) realm.classList.add('hidden');
+            });
+            const activeBtn = document.getElementById(`tab-btn-${tab}`);
+            const activeRealm = document.getElementById(`realm-${tab}`);
+            if (activeBtn) activeBtn.classList.add('active');
+            if (activeRealm) activeRealm.classList.remove('hidden');
+        }
+
+        // ==========================================
+        // AUTHENTICATION
+        // ==========================================
+        async function login() {
+            try {
+                if(!socket) {
+                    showToast("SERVER OFFLINE: Socket disconnected. Please check Railway.");
+                    return;
+                }
+
+                const u = document.getElementById('login-user').value.trim(); 
+                const p = document.getElementById('login-pass').value.trim();
+                
+                if(!u || !p) return showToast("Enter credentials."); 
+                
+                const res = await fetch('/api/login', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({username: u, password: p}) 
+                });
+                
+                const data = await res.json();
+                if(res.ok) {
+                    currentUser = data; 
+                    try { localStorage.setItem('cr_user', u); localStorage.setItem('cr_pass', p); } catch(e) {}
+                    
+                    document.getElementById('auth-view').classList.add('hidden'); 
+                    document.getElementById('main-menu-view').classList.remove('hidden');
+                    updateAllCredits(); 
+                    playSfx('deal'); 
+                } else {
+                    showToast(data.error);
+                }
+            } catch(e) { 
+                showToast("SERVER OFFLINE: Terminal link failure. Check backend."); 
+            }
+        }
+
+        window.onload = () => { 
+            try { 
+                const savedU = localStorage.getItem('cr_user'); 
+                const savedP = localStorage.getItem('cr_pass'); 
+                if(savedU && savedP) { 
+                    document.getElementById('login-user').value = savedU; 
+                    document.getElementById('login-pass').value = savedP; 
+                    login(); 
+                } 
+            } catch(e){} 
+        };
+        
+        if(socket) {
+            socket.on('credit_update', (data) => { 
+                if(currentUser && currentUser.username.toLowerCase() === data.username.toLowerCase()) { 
+                    currentUser.credits = data.credits; 
+                    updateAllCredits(); 
+                } 
+            });
+        }
+
+        function updateAllCredits() {
+            if(!currentUser) return; 
+            const creds = formatNumber(currentUser.credits);
+            ['bj-hud-credits', 'bac-hud-credits', 'dvt-hud-credits', 'dice-hud-credits', 'derby-hud-credits', 'col-hud-credits', 'cups-hud-credits', 'crash-hud-credits', 'slots-hud-credits', 'pvp-hud-credits', 'bank-bal', 'profile-bal'].forEach(id => { 
+                const el = document.getElementById(id); 
+                if(el) el.innerText = creds; 
+            });
+            const p2 = document.getElementById('profile-user'); 
+            if(p2) p2.innerText = currentUser.username;
+        }
+
         // ==========================================
         // DAILY REWARDS ENGINE (24HR COOLDOWN)
         // ==========================================
-        let dailyRewardTimerInt = null;
-        
         function showRewards() {
             showModal('rewards-modal');
             checkRewardStatus();
@@ -816,27 +979,24 @@
             const statusTxt = document.getElementById('reward-status');
 
             if (!lastClaim) {
-                // Never claimed
-                btn.classList.remove('hidden');
-                timerBox.classList.add('hidden');
-                statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR";
+                if(btn) btn.classList.remove('hidden');
+                if(timerBox) timerBox.classList.add('hidden');
+                if(statusTxt) statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR";
                 return;
             }
 
             const now = Date.now();
             const timePassed = now - parseInt(lastClaim);
-            const cooldown = 24 * 60 * 60 * 1000; // 24 hours in ms
+            const cooldown = 24 * 60 * 60 * 1000; 
 
             if (timePassed >= cooldown) {
-                // Ready to claim
-                btn.classList.remove('hidden');
-                timerBox.classList.add('hidden');
-                statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR";
+                if(btn) btn.classList.remove('hidden');
+                if(timerBox) timerBox.classList.add('hidden');
+                if(statusTxt) statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR";
             } else {
-                // On cooldown
-                btn.classList.add('hidden');
-                timerBox.classList.remove('hidden');
-                statusTxt.innerText = "NEXT REWARD AVAILABLE IN:";
+                if(btn) btn.classList.add('hidden');
+                if(timerBox) timerBox.classList.remove('hidden');
+                if(statusTxt) statusTxt.innerText = "NEXT REWARD AVAILABLE IN:";
                 startRewardCountdown(cooldown - timePassed);
             }
         }
@@ -844,14 +1004,13 @@
         function startRewardCountdown(msLeft) {
             clearInterval(dailyRewardTimerInt);
             const timerBox = document.getElementById('reward-timer-box');
-            
             let secondsLeft = Math.floor(msLeft / 1000);
             
             function updateDisplay() {
                 const h = Math.floor(secondsLeft / 3600).toString().padStart(2, '0');
                 const m = Math.floor((secondsLeft % 3600) / 60).toString().padStart(2, '0');
                 const s = (secondsLeft % 60).toString().padStart(2, '0');
-                timerBox.innerText = `${h}:${m}:${s}`;
+                if(timerBox) timerBox.innerText = `${h}:${m}:${s}`;
             }
             
             updateDisplay();
@@ -859,7 +1018,7 @@
                 secondsLeft--;
                 if (secondsLeft <= 0) {
                     clearInterval(dailyRewardTimerInt);
-                    checkRewardStatus(); // Reset UI
+                    checkRewardStatus(); 
                 } else {
                     updateDisplay();
                 }
@@ -873,21 +1032,545 @@
             const now = Date.now();
             const cooldown = 24 * 60 * 60 * 1000;
 
-            if (lastClaim && now - parseInt(lastClaim) < cooldown) {
-                return showToast("Reward is on cooldown.");
-            }
+            if (lastClaim && now - parseInt(lastClaim) < cooldown) return showToast("Reward is on cooldown.");
 
-            // Simulate the backend granting 10,000 CR locally since there's no backend route mapped for this specific feature in the prompt
             currentUser.credits += 10000;
             updateAllCredits();
             
             localStorage.setItem('cr_last_reward', now.toString());
             showToast("YOU FOUND 10,000 CR!", "success");
             playSfx('win');
-            
-            // Re-render UI
             checkRewardStatus();
         }
+
+        // ==========================================
+        // BANKING (LIMIT ENFORCED)
+        // ==========================================
+        function showBank() {
+            if(!currentUser) return;
+            document.getElementById('bank-amt').value = '';
+            showModal('bank-modal');
+        }
+
+        async function submitBank(type) {
+            const amtStr = document.getElementById('bank-amt').value;
+            const amt = parseInt(amtStr);
+            if (isNaN(amt) || amt <= 0) return showToast("Invalid amount.");
+            if (amt > 100000) return showToast("Limit exceeded. Maximum 100,000 CR per transaction.");
+
+            try {
+                const res = await fetch('/api/bank/request', { 
+                    method: 'POST', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body: JSON.stringify({username: currentUser.username, type: type, amount: amt}) 
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    showToast("Transaction successful.", "success");
+                    if(data.newCredits !== undefined) {
+                        currentUser.credits = data.newCredits;
+                        updateAllCredits();
+                    }
+                    hideModal('bank-modal');
+                } else { showToast(data.error); }
+            } catch(e) { showToast("Bank system error."); }
+        }
+
+        function showProfile() { showModal('profile-modal'); }
+        function openMarket() { showModal('market-modal'); }
+        function openTradeHub() { showModal('trade-hub-modal'); }
+
+        // ==========================================
+        // BETTING MECHANICS
+        // ==========================================
+        function applyThrottle() { 
+            isBetting = true; 
+            clearTimeout(betThrottleTimeout); 
+            betThrottleTimeout = setTimeout(() => { isBetting = false; }, 250); 
+        }
+
+        function selectChip(val) { 
+            currentChipValue = val; 
+            document.querySelectorAll('.casino-chip').forEach(c => c.classList.remove('selected')); 
+            const chipId = val >= 1000 ? (val/1000) + 'k' : val;
+            const chipEl = document.getElementById(`chip-${chipId}`);
+            if(chipEl) chipEl.classList.add('selected'); 
+            playSfx('bet'); 
+        }
+
+        window.actRebet = function(gameOverride) {
+            if(!lastBetAction) return showToast("No previous bet to repeat.");
+            let targetGame = gameOverride || lastBetAction.game;
+            if(targetGame === 'baccarat') placeBet('baccarat', lastBetAction.choice);
+            if(targetGame === 'dvt') placeBet('dvt', lastBetAction.choice);
+            if(targetGame === 'dice') placeBet('dice', lastBetAction.choice);
+            if(targetGame === 'derby') placeBet('derby', lastBetAction.choice);
+            if(targetGame === 'color') placeBet('color', lastBetAction.choice);
+            if(targetGame === 'cups') placeBet('cups', lastBetAction.choice);
+        }
+
+        window.actUndoBet = function(game) { 
+            if(socket) socket.emit('undo_bet', { username: currentUser.username, game: game }); 
+        }
+
+        if(socket) {
+            socket.on('arcade_bet_placed', (data) => { 
+                let badgeId = `badge-${data.game}-${data.choice}`;
+                const badge = document.getElementById(badgeId); 
+                if(badge) { 
+                    badge.innerText = formatNumber(data.totalChoiceBet); 
+                    if(data.totalChoiceBet > 0) badge.classList.remove('hidden'); 
+                    else badge.classList.add('hidden'); 
+                }
+            });
+        }
+
+        // ==========================================
+        // NAVIGATION (JOIN/LEAVE GAMES)
+        // ==========================================
+        window.joinGame = function(gameId) {
+            if(!socket) return showToast("SERVER OFFLINE");
+            currentRoomId = gameId; 
+            hideModal('play-category-modal'); 
+            document.getElementById('main-menu-view').classList.add('hidden'); 
+            
+            let interfaceId = '';
+            if (gameId === '5seat' || gameId === '3seat') interfaceId = 'bj-interface';
+            else if (gameId === 'baccarat') interfaceId = 'bac-interface';
+            else if (gameId === 'dvt') interfaceId = 'dvt-interface';
+            else if (gameId === 'dice') interfaceId = 'dice-interface';
+            else if (gameId === 'derby') interfaceId = 'derby-interface';
+            else if (gameId === 'color') interfaceId = 'color-interface';
+            else if (gameId === 'cups') interfaceId = 'cups-interface';
+            else if (gameId === 'crash') interfaceId = 'crash-interface';
+            else if (gameId === 'slots') interfaceId = 'slots-interface';
+            else if (gameId === 'pvp') interfaceId = 'pvp-interface';
+
+            const ui = document.getElementById(interfaceId);
+            if (ui) ui.classList.remove('hidden');
+
+            if (gameId === '5seat' || gameId === '3seat') {
+                const title = document.getElementById('bj-hud-title');
+                if (title) title.innerText = gameId === '5seat' ? "CLASSIC BLACKJACK" : "VIP BLACKJACK";
+                socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId });
+            } else {
+                socket.emit('enter_arcade', { username: currentUser.username, game: currentRoomId }); 
+                socket.emit(`get_${currentRoomId}_state`); 
+            }
+            playSfx('deal');
+        }
+
+        window.exitGame = function(game) { 
+            let actualGame = game || currentRoomId;
+            if (actualGame === 'blackjack' || actualGame === '5seat' || actualGame === '3seat') { 
+                if (mySeatIndex !== -1 && currentGameState && currentGameState.seats[mySeatIndex] && currentGameState.seats[mySeatIndex].hands.some(h => h.bet > 0)) return showToast("Active bets restrict leave."); 
+            } else if (actualGame === 'bac' || actualGame === 'baccarat') { 
+                if (Object.values(myBaccaratBets).reduce((a,b)=>a+b, 0) > 0) return showToast("Active bets restrict leave."); actualGame = 'baccarat'; 
+            } else if (actualGame === 'dvt') { 
+                if (Object.values(myDvtBets).reduce((a,b)=>a+b, 0) > 0) return showToast("Active bets restrict leave."); 
+            } else if (actualGame === 'dice') { 
+                if (Object.values(myDiceBets).reduce((a,b)=>a+b, 0) > 0) return showToast("Active bets restrict leave."); 
+            } else if (actualGame === 'color') { 
+                if (Object.values(myColorBets).reduce((a,b)=>a+b, 0) > 0) return showToast("Active bets restrict leave."); 
+            } 
+
+            document.getElementById('main-menu-view').classList.remove('hidden'); 
+            document.querySelectorAll('.game-interface').forEach(el => el.classList.add('hidden'));
+            
+            if(socket) {
+                if(actualGame === 'blackjack' || actualGame === '5seat' || actualGame === '3seat') { 
+                    if (currentGameState) { 
+                        const seatIdx = currentGameState.seats.findIndex(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); 
+                        if (seatIdx !== -1) window.actEjectSeat(seatIdx); 
+                    } 
+                    socket.emit('leave_room', { username: currentUser.username, roomId: currentRoomId }); 
+                } else { 
+                    socket.emit('leave_arcade', { username: currentUser.username, game: actualGame }); 
+                }
+            }
+            currentRoomId = null; 
+        }
+
+        function setStatus(game, text, isDanger = false) {
+            const el = document.getElementById(`${game}-res`);
+            if (el) { el.innerText = text; el.style.color = isDanger ? 'var(--danger)' : '#fff'; }
+        }
+
+        function setTimer(game, ms, prefix) {
+            const timerEl = document.getElementById(`${game}-timer`);
+            if (!timerEl) return;
+            clearInterval(globalTimerInt);
+            if(ms <= 0) { timerEl.classList.add('hidden'); return; }
+            
+            timerEl.classList.remove('hidden');
+            let s = Math.ceil(ms / 1000);
+            timerEl.innerText = `${prefix}: ${s}S`;
+            globalTimerInt = setInterval(() => {
+                s--;
+                if(s > 0) timerEl.innerText = `${prefix}: ${s}S`;
+                else { clearInterval(globalTimerInt); timerEl.classList.add('hidden'); }
+            }, 1000);
+        }
+
+        function formatCardHTML(c, isHidden) { 
+            if (!c) return ''; if (isHidden) return `<div class="card hidden-card"></div>`; 
+            const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : ''; const suitSym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit]; 
+            return `<div class="card ${colorClass}"><div class="card-corner tl">${c.value}<br>${suitSym}</div><div class="card-center">${suitSym}</div><div class="card-corner br">${c.value}<br>${suitSym}</div></div>`; 
+        }
+
+        // ==========================================
+        // UNIVERSAL BETTING DISPATCH
+        // ==========================================
+        window.placeBet = function(game, choice) {
+            if (isBetting || !socket) return;
+            const amt = currentChipValue;
+            if (amt > currentUser.credits) return showToast("Insufficient credits!");
+
+            if (game === 'baccarat') { if (myBaccaratBets[choice] + amt > 50000) return showToast("Limit is 50k."); myBaccaratBets[choice] += amt; } 
+            else if (game === 'dvt') { if (myDvtBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDvtBets[choice] += amt; } 
+            else if (game === 'dice') { if (myDiceBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDiceBets[choice] += amt; } 
+            else if (game === 'derby') { if (myDerbyBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDerbyBets[choice] += amt; } 
+            else if (game === 'color') { if (myColorBets[choice] + amt > 50000) return showToast("Limit is 50k."); myColorBets[choice] += amt; } 
+            else if (game === 'cups') { if (myCupsBets[choice] + amt > 50000) return showToast("Limit is 50k."); myCupsBets[choice] += amt; }
+            
+            applyThrottle();
+            socket.emit(`place_${game}_bet`, { username: currentUser.username, choice, amount: amt });
+            lastBetAction = { game, choice };
+        }
+
+        // ==========================================
+        // BLACKJACK ENGINE (NO SPAM LOCKS)
+        // ==========================================
+        window.actSitDown = function(idx) { if(socket) socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        window.actPlaceBetDropdown = function(idx) { const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value) : 0; if (isNaN(amt) || amt < 100) return showToast("Invalid amount."); if (amt > 50000) return showToast("Limit is 50k."); if (amt > currentUser.credits) return showToast("Insufficient credits!"); window.lastBetAmount = amt; if(socket) socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet'); }
+        window.actEjectSeat = function(idx) { if(socket) socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        
+        window.actHit = function(idx) { if(socket) socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actStand = function(idx) { if(socket) socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actDouble = function(idx) { if(socket) socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        window.actSplit = function(idx) { if(socket) socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+
+        if(socket) {
+            socket.on('game_state_update', (state) => {
+                if(currentGameState && currentGameState.status === 'dealerTurn' && state.status === 'resolving') { if(mySeatIndex !== -1 && state.seats[mySeatIndex]) { let hasWin = state.seats[mySeatIndex].hands.some(h => h.result === 'win' || h.result === 'win-bj'); let hasLose = state.seats[mySeatIndex].hands.some(h => h.result === 'lose' || h.result === 'bust'); if(hasWin) playSfx('win'); else if (hasLose) playSfx('lose'); } }
+                if(currentGameState && currentGameState.status === 'betting' && state.status === 'playing') playSfx('deal');
+                currentGameState = state; 
+                if(currentUser && (currentRoomId === '5seat' || currentRoomId === '3seat')) renderTable(state); 
+            });
+        }
+
+        function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
+
+        function renderTable(state) {
+            if (!state) return; 
+            setStatus('bj', state.status === 'resolving' ? 'RESULTS' : state.status.toUpperCase());
+            if (state.status === 'betting') setTimer('bj', state.betTimeLeft, "BETS CLOSING");
+            else if (state.status === 'resolving') setTimer('bj', state.nextRoundTimeLeft, "NEXT ROUND");
+            else setTimer('bj', 0);
+
+            const dCards = document.getElementById('bj-dealer-cards'); const dBadge = document.getElementById('bj-dealer-val');
+            let dealerHtml = ''; state.dealerCards.forEach(c => { dealerHtml += formatCardHTML(c, c.hidden); });
+            if (dCards) dCards.innerHTML = dealerHtml;
+            const visibleDealerCards = state.dealerCards.filter(c => !c.hidden);
+            if (visibleDealerCards.length > 0) { if (dBadge) { dBadge.innerText = calculateValue(visibleDealerCards); dBadge.classList.remove('hidden'); } } else { if (dBadge) dBadge.classList.add('hidden'); }
+
+            const seatsArea = document.getElementById('bj-seats-area'); let seatsHtml = '';
+            if(currentUser) { const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if(mySeatData) { mySeatIndex = state.seats.indexOf(mySeatData);} else { mySeatIndex = -1; } }
+
+            for(let index=0; index<state.seats.length; index++) {
+                let seatData = state.seats[index]; let isMySeat = currentUser && seatData && seatData.username.toLowerCase() === currentUser.username.toLowerCase(); let hasSeatAnywhere = state.seats.some(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
+                let seatClass = 'seat-box'; if(seatData && state.activeSeatIndex === index) seatClass += ' active-turn'; 
+
+                seatsHtml += `<div class="${seatClass}" id="seat-${index}">`;
+                if (!seatData) {
+                    if (state.status === 'waiting' || state.status === 'betting') {
+                        let sitBtn = !hasSeatAnywhere ? `<button class="mc-btn small" onclick="actSitDown(${index})" style="background:var(--neon-green); color:#000;">SIT DOWN</button>` : '';
+                        seatsHtml += `<div class="seat-empty"><div style="font-size:24px; color:#94a3b8; margin-bottom:10px;">EMPTY POSITION</div>${sitBtn}</div>`;
+                    }
+                } else {
+                    seatsHtml += `<div class="hands-wrapper">`;
+                    seatData.hands.forEach((hand, hIdx) => {
+                        let activeHandClass = (state.activeSeatIndex === index && seatData.currentHand === hIdx && hand.status === 'waiting') ? 'active-hand' : '';
+                        seatsHtml += `<div class="hand-container" style="flex-direction:column;">`;
+                        let cardsHtml = `<div style="display:flex; flex-direction:row;">`;
+                        hand.cards.forEach(c => { cardsHtml += formatCardHTML(c, false); }); 
+                        cardsHtml += `</div>`;
+                        seatsHtml += cardsHtml;
+
+                        if (hand.cards.length > 0) seatsHtml += `<div class="hand-score">${hand.value || calculateValue(hand.cards)}</div>`;
+                        if (hand.status === 'bust' || hand.result === 'bust') seatsHtml += `<div class="hand-status-label hand-status-bust">BUST!</div>`; else if (hand.result) { if(hand.result === 'win' || hand.result === 'win-bj') seatsHtml += `<div class="hand-status-label hand-status-win">${hand.result==='win-bj'?'BLACKJACK!':'WIN'}</div>`; else if(hand.result === 'lose') seatsHtml += `<div class="hand-status-label hand-status-lose">LOSE</div>`; else if(hand.result === 'push') seatsHtml += `<div class="hand-status-label hand-status-push">PUSH</div>`; } else if (hand.status === 'blackjack' && state.status !== 'resolving') seatsHtml += `<div class="hand-status-label hand-status-blackjack">BLACKJACK!</div>`;
+                        seatsHtml += `</div>`; 
+                    });
+                    
+                    let handBet = seatData.hands[0].bet > 0 ? seatData.hands[0].bet : 0; 
+                    if (handBet > 0 || state.status === 'resolving') { seatsHtml += `<div class="player-bet-text" style="margin-top:10px;">🪙 ${formatNumber(handBet)}</div>`; }
+                    seatsHtml += `</div><div class="seat-nameplate" style="color:${isMySeat?'var(--success)':'#fff'};">${seatData.username}</div>`;
+
+                    if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
+                        if (seatData.hands[0].bet === 0) {
+                            let startBet = window.lastBetAmount || 0; let opts = [100, 1000, 5000, 20000, 50000]; if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
+                            let optHTML = opts.map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
+                            seatsHtml += `<div style="display:flex; flex-direction:column; gap:4px; width:100%; margin-top:5px;"><select id="inseat-bet-${index}" style="padding:4px; font-size:20px; text-align:center;">${optHTML}</select><div style="display:flex; gap:4px; width:100%;"><button class="mc-btn small text-black" style="flex:1; background:var(--success);" onclick="actPlaceBetDropdown(${index})">BET</button><button class="mc-btn small" style="flex:1; background:var(--danger);" onclick="actEjectSeat(${index})">LEAVE</button></div></div>`;
+                        }
+                    } else if (isMySeat && state.status === 'waiting') { seatsHtml += `<div style="width: 100%; margin-top: 5px;"><button class="mc-btn small" style="background:var(--danger); width:100%;" onclick="actEjectSeat(${index})">STAND UP</button></div>`; }
+
+                    if (isMySeat && state.status === 'playing' && state.activeSeatIndex === index) {
+                        const cHand = seatData.hands[seatData.currentHand];
+                        if (cHand && cHand.status === 'waiting') {
+                            seatsHtml += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; width:100%; margin-top:5px;"><button class="mc-btn small text-black" style="background:var(--success);" onclick="actHit(${index})">HIT</button><button class="mc-btn small text-black" style="background:var(--warning);" onclick="actStand(${index})">STAND</button>`;
+                            if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) { seatsHtml += `<button class="mc-btn small" style="background:var(--neon-blue);" onclick="actDouble(${index})">2X</button>`; if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) { seatsHtml += `<button class="mc-btn small" style="background:var(--neon-purple);" onclick="actSplit(${index})">SPLIT</button>`; } }
+                            seatsHtml += `</div>`;
+                        }
+                    }
+                }
+                seatsHtml += `</div>`;
+            }
+            if (seatsArea) seatsArea.innerHTML = seatsHtml; 
+        }
+
+        // ==========================================
+        // BACCARAT ENGINE
+        // ==========================================
+        if(socket) {
+            socket.on('baccarat_state_update', (data) => {
+                if (currentRoomId !== 'baccarat') return;
+                const pCardsUI = document.getElementById('bac-p-cards'); const bCardsUI = document.getElementById('bac-b-cards'); 
+                const pScoreUI = document.getElementById('bac-p-score'); const bScoreUI = document.getElementById('bac-b-score');
+                
+                if (data.status === 'betting') {
+                    setStatus('bac', "PLACE YOUR BETS"); myBaccaratBets = { player: 0, banker: 0, tie: 0 }; 
+                    pCardsUI.innerHTML = ''; bCardsUI.innerHTML = ''; pScoreUI.innerText = '0'; bScoreUI.innerText = '0'; pScoreUI.style.display = 'none'; bScoreUI.style.display = 'none';
+                    document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-baccarat')) b.classList.add('hidden'); });
+                    setTimer('bac', data.betEndTime - Date.now(), "BETS CLOSING");
+                } 
+                else if (data.status === 'drawing') { setStatus('bac', "DEALING..."); setTimer('bac', 0); } 
+                else if (data.status === 'resolving') {
+                    pScoreUI.style.display = 'block'; bScoreUI.style.display = 'block'; let pScore = 0, bScore = 0;
+                    setTimeout(() => { pCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.pCards[0], false)); pScore = (pScore + getBaccaratWeight(data.pCards[0])) % 10; pScoreUI.innerText = pScore; playSfx('deal'); }, 500);
+                    setTimeout(() => { bCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.bCards[0], false)); bScore = (bScore + getBaccaratWeight(data.bCards[0])) % 10; bScoreUI.innerText = bScore; playSfx('deal'); }, 1500);
+                    setTimeout(() => { pCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.pCards[1], false)); pScore = (pScore + getBaccaratWeight(data.pCards[1])) % 10; pScoreUI.innerText = pScore; playSfx('deal'); }, 2500);
+                    setTimeout(() => { bCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.bCards[1], false)); bScore = (bScore + getBaccaratWeight(data.bCards[1])) % 10; bScoreUI.innerText = bScore; playSfx('deal'); }, 3500);
+
+                    let delay = 4500;
+                    if (data.thirdCardTarget) {
+                        if (data.thirdCardTarget === 'player' || data.thirdCardTarget === 'both') {
+                            setTimeout(() => { setStatus('bac', "PLAYER DRAWS 3RD CARD"); }, delay); delay += 1000;
+                            setTimeout(() => { pCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.pCards[2], false)); pScore = (pScore + getBaccaratWeight(data.pCards[2])) % 10; pScoreUI.innerText = pScore; playSfx('deal'); }, delay); delay += 1500;
+                        }
+                        if(data.thirdCardTarget === 'banker' || data.thirdCardTarget === 'both') {
+                            let bDelay = data.thirdCardTarget === 'both' ? 4000 : 2500;
+                            setTimeout(() => { setStatus('bac', "BANKER DRAWS 3RD CARD"); }, delay + (data.thirdCardTarget === 'both'? 2500 : 0)); 
+                            setTimeout(() => { bCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.bCards[2], false)); bScore = (bScore + getBaccaratWeight(data.bCards[2])) % 10; bScoreUI.innerText = bScore; playSfx('deal'); }, delay + (data.thirdCardTarget === 'both'? 3500 : 1000)); 
+                            delay += bDelay;
+                        }
+                    }
+
+                    setTimeout(() => {
+                        setStatus('bac', data.winner === 'tie' ? "TIE!" : `${data.winner.toUpperCase()} WINS!`);
+                        let totalBet = Object.values(myBaccaratBets).reduce((a,b)=>a+b, 0);
+                        if (totalBet > 0) {
+                            let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
+                            if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('bac', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); } 
+                            else if (data.winner === 'tie' && (myBaccaratBets.player > 0 || myBaccaratBets.banker > 0)) { setStatus('bac', `PUSH!`); playSfx('win'); } 
+                            else { setStatus('bac', "HOUSE WINS", true); playSfx('lose'); }
+                        }
+                    }, delay);
+                }
+            });
+        }
+
+        // ==========================================
+        // DRAGON VS TIGER ENGINE
+        // ==========================================
+        if(socket) {
+            socket.on('dvt_state_update', (data) => {
+                if (currentRoomId !== 'dvt') return;
+                const dCardUI = document.getElementById('dvt-d-cards'); const tCardUI = document.getElementById('dvt-t-cards');
+                
+                if (data.status === 'betting') {
+                    setStatus('dvt', "PLACE YOUR BETS"); myDvtBets = { dragon: 0, tiger: 0, tie: 0 };
+                    dCardUI.innerHTML = ''; tCardUI.innerHTML = '';
+                    document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-dvt')) b.classList.add('hidden'); });
+                    setTimer('dvt', data.betEndTime - Date.now(), "BETS CLOSING");
+                } 
+                else if (data.status === 'drawing') { setTimer('dvt', 0); setStatus('dvt', "DRAWING..."); } 
+                else if (data.status === 'resolving') {
+                    setTimeout(() => { dCardUI.insertAdjacentHTML('beforeend', formatCardHTML(data.dragonCard, false)); playSfx('deal'); }, 500);
+                    setTimeout(() => { tCardUI.insertAdjacentHTML('beforeend', formatCardHTML(data.tigerCard, false)); playSfx('deal'); }, 1500);
+                    setTimeout(() => {
+                        setStatus('dvt', data.winner === 'tie' ? "TIE!" : `${data.winner.toUpperCase()} WINS!`);
+                        let totalBet = Object.values(myDvtBets).reduce((a,b)=>a+b, 0);
+                        if (totalBet > 0) {
+                            let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
+                            if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('dvt', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); } 
+                            else if (data.winner === 'tie' && (myDvtBets.dragon > 0 || myDvtBets.tiger > 0)) { setStatus('dvt', `PUSH (HALF WIN)`); playSfx('win'); } 
+                            else { setStatus('dvt', "HOUSE WINS", true); playSfx('lose'); }
+                        }
+                    }, 2500);
+                }
+            });
+        }
+
+        // ==========================================
+        // ARCADE ENGINES (DICE, DERBY, COLOR, CUPS)
+        // ==========================================
+        if(socket) {
+            socket.on('dice_state_update', (data) => {
+                if (currentRoomId !== 'dice') return;
+                const d1 = document.getElementById('die1'); const d2 = document.getElementById('die2');
+                if (data.status === 'betting') { 
+                    setStatus('dice', "PLACE YOUR BETS"); d1.classList.remove('shake'); d2.classList.remove('shake'); myDiceBets = { under: 0, seven: 0, over: 0 }; 
+                    document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-dice')) b.classList.add('hidden'); }); 
+                    setTimer('dice', data.betEndTime - Date.now(), "BETS CLOSING");
+                } 
+                else if (data.status === 'rolling') { setTimer('dice', 0); setStatus('dice', "ROLLING..."); d1.classList.add('shake'); d2.classList.add('shake'); } 
+                else if (data.status === 'resolving') {
+                    d1.classList.remove('shake'); d2.classList.remove('shake'); d1.innerText = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][data.dice[0]-1]; d2.innerText = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][data.dice[1]-1]; 
+                    setStatus('dice', `RESULT: ${data.total}`);
+                    let totalBet = Object.values(myDiceBets).reduce((a,b)=>a+b, 0);
+                    if (totalBet > 0) {
+                        let myWins = data.winners ? data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase()) : [];
+                        if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('dice', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); } else { setStatus('dice', "HOUSE WINS", true); playSfx('lose'); }
+                    }
+                }
+            });
+
+            socket.on('derby_state_update', (data) => {
+                if (currentRoomId !== 'derby') return;
+                if(data.distances) { for(let i=0; i<6; i++) { const racer = document.getElementById(`racer-${i}`); if(racer) racer.style.left = `calc(${data.distances[i]}% - 20px)`; } }
+                if (data.status === 'betting') { 
+                    setStatus('derby', "PLACE YOUR BETS"); myDerbyBets = [0, 0, 0, 0, 0, 0]; 
+                    for(let i=0; i<6; i++) { const badge = document.getElementById(`badge-derby-${i}`); if(badge) badge.classList.add('hidden'); } 
+                    setTimer('derby', data.betEndTime - Date.now(), "BETS CLOSING");
+                }
+                else if (data.status === 'racing') { setTimer('derby', 0); setStatus('derby', "RACING..."); playSfx('deal'); }
+                else if (data.status === 'resolving') {
+                    const cNames = ['RED', 'BLUE', 'GREEN', 'PURPLE', 'PINK', 'GOLD']; setStatus('derby', `${cNames[data.winner]} WINS!`);
+                    let totalBet = myDerbyBets.reduce((a,b)=>a+b, 0);
+                    if (totalBet > 0) {
+                        let myWins = data.winners ? data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase()) : [];
+                        if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('derby', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); } else { setStatus('derby', "HOUSE WINS", true); playSfx('lose'); }
+                    }
+                }
+            });
+            socket.on('derby_race_tick', (data) => { if (currentRoomId !== 'derby') return; if(data.distances) { for(let i=0; i<6; i++) { const racer = document.getElementById(`racer-${i}`); if(racer) racer.style.left = `calc(${data.distances[i]}% - 20px)`; } } });
+
+            socket.on('color_state_update', (data) => {
+                if (currentRoomId !== 'color') return;
+                if (data.status === 'betting') { 
+                    setStatus('color', "PLACE YOUR BETS"); myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
+                    ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => document.getElementById(`badge-color-${c}`).classList.add('hidden')); 
+                    setTimer('color', data.betEndTime - Date.now(), "BETS CLOSING");
+                }
+                else if (data.status === 'rolling') { setTimer('color', 0); setStatus('color', "ROLLING..."); }
+                else if (data.status === 'resolving') {
+                    document.getElementById('col-d1').className = `color-die c-${data.dice[0]}`; document.getElementById('col-d2').className = `color-die c-${data.dice[1]}`; document.getElementById('col-d3').className = `color-die c-${data.dice[2]}`; 
+                    setStatus('color', "RESULT!");
+                    let totalBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
+                    if (totalBet > 0) {
+                        let myWins = data.winners ? data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase()) : [];
+                        if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('color', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); } else { setStatus('color', "HOUSE WINS", true); playSfx('lose'); }
+                    }
+                }
+            });
+
+            socket.on('cups_state_update', (data) => {
+                if (currentRoomId !== 'cups') return;
+                if (data.status === 'shuffling') { 
+                    setStatus('cups', "SHUFFLING..."); myCupsBets = [0,0,0]; document.querySelectorAll('.cup-wrapper').forEach(w => w.classList.remove('reveal')); 
+                    for(let i=0; i<3; i++) document.getElementById(`badge-cups-${i}`).classList.add('hidden'); 
+                }
+                else if (data.status === 'betting') { setStatus('cups', "FIND THE BALL"); setTimer('cups', data.betEndTime - Date.now(), "BETS CLOSING"); }
+                else if (data.status === 'resolving') {
+                    setTimer('cups', 0); const winCupWrap = document.getElementById(`cup-wrap-${data.winningCup}`); if(winCupWrap) winCupWrap.classList.add('reveal');
+                    setStatus('cups', `CUP ${data.winningCup + 1} REVEALED!`);
+                    let totalBet = myCupsBets.reduce((a,b)=>a+b, 0);
+                    if (totalBet > 0) {
+                        let myWins = data.winners ? data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase()) : [];
+                        if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('cups', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); } else { setStatus('cups', "HOUSE WINS", true); playSfx('lose'); }
+                    }
+                }
+            });
+
+            socket.on('crash_state_update', (data) => {
+                if (currentRoomId !== 'crash') return;
+                if(data.multiplier) document.getElementById('crash-mult').innerText = data.multiplier.toFixed(2) + 'x';
+                if(data.status === 'betting') { 
+                    setStatus('crash', "PLACE YOUR BETS"); document.getElementById('btn-crash-bet').classList.remove('hidden'); document.getElementById('btn-crash-cashout').classList.add('hidden'); document.getElementById('crash-rocket').style.transform = 'translateY(0px)'; document.getElementById('crash-mult').style.color = '#fff'; document.getElementById('crash-bet-list').innerHTML = ''; 
+                    setTimer('crash', data.betEndTime - Date.now(), "LAUNCH IN");
+                }
+                else if(data.status === 'flying') { 
+                    setTimer('crash', 0); setStatus('crash', "FLYING..."); document.getElementById('btn-crash-bet').classList.add('hidden'); let myBetUI = Array.from(document.querySelectorAll('.crash-bet-item')).find(el => el.innerText.includes(currentUser.username)); if (myBetUI && !myBetUI.classList.contains('cashed')) { document.getElementById('btn-crash-cashout').classList.remove('hidden'); } 
+                }
+                else if(data.status === 'crashed') { 
+                    setStatus('crash', "CRASHED!", true); document.getElementById('crash-mult').style.color = 'var(--danger)'; document.getElementById('btn-crash-bet').classList.add('hidden'); document.getElementById('btn-crash-cashout').classList.add('hidden'); playSfx('lose'); 
+                    document.querySelectorAll('.crash-bet-item').forEach(el => { if(!el.classList.contains('cashed')) { el.style.borderColor = 'var(--danger)'; el.style.opacity = '0.5'; } }); 
+                }
+            });
+
+            socket.on('crash_tick', (data) => { 
+                if (currentRoomId !== 'crash') return;
+                if(data.multiplier) document.getElementById('crash-mult').innerText = data.multiplier.toFixed(2) + 'x'; 
+                document.getElementById('crash-rocket').style.transform = `translateY(-${Math.min(200, (data.multiplier - 1) * 50)}px) scale(${1 + (data.multiplier * 0.05)})`;
+                const btnCashout = document.getElementById('btn-crash-cashout');
+                if (btnCashout && !btnCashout.classList.contains('hidden')) btnCashout.innerText = `CASH OUT ${formatNumber(currentChipValue * data.multiplier)}`;
+            });
+            socket.on('crash_bet_placed', (data) => { document.getElementById('crash-bet-list').innerHTML += `<div class="crash-bet-item" id="c-bet-${currentUser.username}" style="border-left:4px solid #555; padding:5px; background:rgba(0,0,0,0.6);"><span>${currentUser.username}</span><span class="status" style="color:var(--warning);">${formatNumber(data.amount)}</span></div>`; playSfx('bet'); });
+            socket.on('crash_cashout_success', (data) => { const myBetUI = document.getElementById(`c-bet-${currentUser.username}`); if(myBetUI) { myBetUI.classList.add('cashed'); myBetUI.style.borderColor = 'var(--success)'; myBetUI.querySelector('.status').innerText = `+${formatNumber(data.winAmount)}`; } document.getElementById('btn-crash-cashout').classList.add('hidden'); playSfx('win'); });
+
+            socket.on('slots_result', (data) => {
+                if (currentRoomId !== 'slots') return;
+                const r1 = document.getElementById('reel-1'); const r2 = document.getElementById('reel-2'); const r3 = document.getElementById('reel-3');
+                setTimeout(() => { r1.classList.remove('spinning'); r1.innerText = data.reels[0]; }, 500);
+                setTimeout(() => { r2.classList.remove('spinning'); r2.innerText = data.reels[1]; }, 1000);
+                setTimeout(() => { 
+                    r3.classList.remove('spinning'); r3.innerText = data.reels[2]; 
+                    if(data.winAmount > 0) { setStatus('slots', `JACKPOT! YOU WON ${formatNumber(data.winAmount)}!`); playSfx('win'); } else { setStatus('slots', `NO LUCK. SPIN AGAIN!`); playSfx('lose'); }
+                }, 1500);
+            });
+        }
+
+        window.actCrashBet = function() { const amt = currentChipValue; if (amt > currentUser.credits) return showToast("Insufficient credits!"); if(socket) socket.emit('place_crash_bet', { username: currentUser.username, amount: amt }); };
+        window.actCrashCashout = function() { if(socket) socket.emit('crash_cashout', { username: currentUser.username }); };
+        window.actSpinSlots = function() { if(isBetting) return; const amt = currentChipValue; if (amt > 50000) return showToast("Max bet is 50,000 CR."); if (amt > currentUser.credits) return showToast("Insufficient credits!"); applyThrottle(); setStatus('slots', "SPINNING..."); document.getElementById('reel-1').classList.add('spinning'); document.getElementById('reel-2').classList.add('spinning'); document.getElementById('reel-3').classList.add('spinning'); if(socket) socket.emit('spin_slots', { username: currentUser.username, betAmount: amt }); };
+
+        // ==========================================
+        // PVP ARENA
+        // ==========================================
+        window.actPvpSit = function(index) { if(socket) socket.emit('join_pvp_seat', { username: currentUser.username, seatIndex: index }); };
+        window.actPvpLeave = function() { if(myDuelSeatIndex !== -1 && currentUser && socket) socket.emit('leave_pvp_seat', { username: currentUser.username, seatIndex: myDuelSeatIndex }); };
+        window.actPvpPick = function(pick) { if(socket) socket.emit('pvp_rps_pick', { username: currentUser.username, pick }); };
+        
+        if(socket) {
+            socket.on('pvp_duel_state_update', (state) => {
+                if (currentRoomId !== 'pvp') return;
+                currentPvpDuelState = state; setStatus('pvp', state.message);
+                const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); myDuelSeatIndex = mySeatData ? state.seats.indexOf(mySeatData) : -1;
+
+                if (state.type === 'rps' && state.status === 'waiting_picks' && myDuelSeatIndex !== -1 && !state.seats[myDuelSeatIndex].rpsChoice) { document.getElementById('pvp-rps-controls').classList.remove('hidden'); } else { document.getElementById('pvp-rps-controls').classList.add('hidden'); }
+
+                for(let i=0; i<2; i++) {
+                    const seat = state.seats[i]; const emptyUI = document.getElementById(`pvp-empty-${i}`); const occUI = document.getElementById(`pvp-occ-${i}`); const seatCard = document.getElementById(`pvp-seat-${i}`);
+                    if(seat) {
+                        emptyUI.classList.add('hidden'); occUI.classList.remove('hidden'); document.getElementById(`pvp-name-${i}`).innerText = seat.username; document.getElementById(`pvp-score-${i}`).innerText = seat.score;
+                        let displayChoice = seat.choice ? seat.choice : 'WAITING...';
+                        if(state.type === 'rps') { if (seat.rpsChoice) displayChoice = myDuelSeatIndex === i ? seat.rpsChoice : 'LOCKED IN'; else displayChoice = 'THINKING...'; } else if (state.type === 'deathroll') { displayChoice = 'READY TO ROLL'; }
+                        document.getElementById(`pvp-choice-${i}`).innerText = displayChoice;
+                        if(myDuelSeatIndex === i) seatCard.classList.add('my-seat'); else seatCard.classList.remove('my-seat');
+                    } else { emptyUI.classList.remove('hidden'); occUI.classList.add('hidden'); seatCard.classList.remove('my-seat'); }
+                }
+
+                const matchVisual = document.getElementById('pvp-visual');
+                if(state.status === 'flipping' || state.status === 'spinning') { matchVisual.innerText = '⚅'; } 
+                else if (state.status === 'resolving' || state.status === 'finished') { matchVisual.innerText = state.result ? state.result.charAt(0) : '?'; if(state.status === 'finished') { if(mySeatData && mySeatData.score >= state.format) playSfx('win'); else if (mySeatData) playSfx('lose'); } } 
+                else { matchVisual.innerText = '?'; }
+            });
+        }
+
+        // Security locks
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) { if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; } });
+
     </script>
 </body>
 </html>
