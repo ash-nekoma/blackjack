@@ -728,3 +728,846 @@
 
         </div>
     </div>
+
+    <!-- ========================================================= -->
+    <!-- MASTER JAVASCRIPT ENGINE (OPTIMIZED SYNC EDITION)         -->
+    <!-- ========================================================= -->
+    <script>
+        // 1. FAILSAFE SOCKET INITIALIZATION
+        let socket = null;
+        try {
+            if (typeof io !== 'undefined') { socket = io(); } 
+            else { console.warn("Socket.io missing. Ensure you are running via the Node server."); }
+        } catch (e) { console.error("Socket initialization failed:", e); }
+
+        // SYSTEM STATE
+        let currentUser = null; 
+        let currentGameState = null; 
+        let currentRoomId = null; 
+        let mySeatIndex = -1;
+        
+        let globalTimerInt = null; 
+        let dailyRewardTimerInt = null;
+        
+        let currentChipValue = 1000;
+        let lastBetAction = null;
+        let isBetting = false;
+        let betThrottleTimeout = null;
+
+        // BET TRACKING POOLS
+        window.lastBetAmount = 0; 
+        let myDiceBets = { under: 0, seven: 0, over: 0 }; 
+        let myDerbyBets = [0, 0, 0, 0, 0, 0]; 
+        let myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
+        let myCupsBets = [0, 0, 0]; 
+        let myBaccaratBets = { player: 0, banker: 0, tie: 0 }; 
+        let myDvtBets = { dragon: 0, tiger: 0, tie: 0 };
+        let myDuelSeatIndex = -1;
+
+        // NAVIGATION HISTORY STACK
+        let menuHistory = [];
+
+        const audioNodes = { 
+            deal: document.getElementById('sfx-deal'), 
+            bet: document.getElementById('sfx-bet'), 
+            win: document.getElementById('sfx-win'), 
+            lose: document.getElementById('sfx-lose') 
+        };
+
+        // ==========================================
+        // SNT VIRTUAL ECONOMY DATABASE
+        // ==========================================
+        const SNT_ITEMS = {
+            'token': { icon: '🪙', name: 'SNT Token', value: 500, desc: 'A solid block of pure SNT currency.', perk: 'None. Pure currency.' },
+            'cap': { icon: '🧢', name: 'Retro Cap', value: 1000, desc: 'A classic 8-bit baseball cap.', perk: 'None. Cosmetic flex.' },
+            'shield': { icon: '🛡️', name: 'Iron Shield', value: 2500, desc: 'Good for deflecting bad beats.', perk: 'Boosts Daily Loot by +500 CR.' },
+            'shades': { icon: '🕶️', name: 'Pixel Shades', value: 3000, desc: 'Cool pixelated sunglasses.', perk: 'None. Cosmetic flex.' },
+            'jacket': { icon: '🧥', name: 'Neon Jacket', value: 12000, desc: 'A glowing synthwave jacket.', perk: 'Reduces market tax by 2%.' },
+            'vip': { icon: '🎫', name: 'VIP Pass', value: 'PRICELESS', desc: 'Exclusive access to the SNT elite.', perk: 'Grants [VIP] Rank & Auction Access.', soulbound: true },
+            'orb': { icon: '🔮', name: 'Mystic Orb', value: 25000, desc: 'Pulsing with unstable arcade energy.', perk: '+5% payout bonus on Color Game.' },
+            'guitar': { icon: '🎸', name: 'Punk Guitar', value: 30000, desc: 'Slung across your Stickman\'s back.', perk: 'Unlocks Neon Red chat name.' },
+            'crown': { icon: '👑', name: 'Golden Crown', value: 50000, desc: 'The ultimate mark of a High Roller.', perk: 'Turns Blackjack/Baccarat seat GOLD.' },
+            'amulet': { icon: '🐉', name: 'Dragon Amulet', value: 60000, desc: 'An ancient, glowing charm.', perk: 'Refunds 5% of Dragon vs Tiger losses.' },
+            'staff': { icon: '💎', name: 'Diamond Staff', value: 80000, desc: 'The absolute peak of Stick N\' Trade wealth.', perk: 'Boosts Daily Loot by a massive +5,000 CR.' }
+        };
+
+        let myInventory = ['staff', 'crown', 'orb', 'vip', 'shield', 'token', 'token', 'token'];
+        let tradeOfferSlots = [null, null, null, null, null, null, null, null, null]; 
+        let pendingConversionIndex = null;
+        let equippedItem = null; 
+
+        // ==========================================
+        // GAME RULEBOOKS
+        // ==========================================
+        const GAME_RULES = {
+            'blackjack': "Beat the dealer's hand without going over 21.<br><br>• Face cards are worth 10.<br>• Aces are worth 1 or 11.<br>• Blackjack pays 2.5x.<br>• Dealer must draw to 16 and stand on all 17s.",
+            'baccarat': "Bet on which hand (Player or Banker) will score closest to 9.<br><br>• Face cards and 10s are worth 0.<br>• Player pays 1:1.<br>• Banker pays 0.95:1 (5% commission).<br>• Tie pays 8:1.",
+            'dvt': "Dragon vs Tiger is a simple high-card wins game.<br><br>• Aces are low.<br>• Kings are high.<br>• Winning hand pays 1:1.<br>• Tie pays 8:1.",
+            'dice': "Predict the total of two 6-sided dice.<br><br>• Under 7 pays 1:1<br>• Over 7 pays 1:1<br>• Exact 7 pays 4:1",
+            'derby': "Bet on which color horse will win the virtual sprint.<br><br>• The horses move using provably fair RNG.<br>• Payouts scale dynamically based on the winner.",
+            'color': "Bet on which colors will appear on the 3 dice rolled.<br><br>• 1 Match: Pays 1:1<br>• 2 Matches: Pays 2:1<br>• 3 Matches: Pays 3:1",
+            'cups': "Follow the ball. If you successfully pick the cup hiding the ball, you win 2.5x your bet.",
+            'pvp': "Challenge another player in the Arena.<br><br>• You must sit down to play.<br>• Winner takes the pot minus a small arena tax."
+        };
+
+        window.showRules = function(game) {
+            document.getElementById('rules-title').innerText = "HOW TO PLAY: " + game.toUpperCase();
+            document.getElementById('rules-content').innerHTML = GAME_RULES[game] || "Rules currently unavailable.";
+            showModal('rules-modal');
+        }
+
+        // ==========================================
+        // UTILITIES, CHAT, & AUTHENTICATION
+        // ==========================================
+        function formatNumber(num) { return num ? num.toLocaleString() : '0'; }
+        
+        function showToast(msg, type = 'error') { 
+            const c = document.getElementById('toast-container'); if(!c) return; 
+            const t = document.createElement('div'); t.className = `toast toast-${type}`; t.innerText = msg; c.appendChild(t); 
+            setTimeout(() => { t.classList.add('fade-out'); setTimeout(() => t.remove(), 300); }, 3000); 
+        }
+
+        function showModal(id) { 
+            menuHistory.push(id); // Add to history stack
+            document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden')); 
+            const el = document.getElementById(id); if (el) el.classList.remove('hidden'); 
+        }
+        
+        window.goBack = function() {
+            menuHistory.pop(); // Remove current
+            document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden'));
+            if(menuHistory.length > 0) {
+                const prev = menuHistory[menuHistory.length - 1];
+                const el = document.getElementById(prev); if (el) el.classList.remove('hidden');
+            }
+        }
+
+        function hideModal(id) { 
+            const el = document.getElementById(id); if (el) el.classList.add('hidden'); 
+            menuHistory = menuHistory.filter(item => item !== id); // Remove from stack
+        }
+
+        function playSfx(id) { if(audioNodes[id]) { audioNodes[id].currentTime = 0; audioNodes[id].play().catch(()=>{}); } }
+        
+        window.toggleChat = function() {
+            const chat = document.getElementById('chat-sidebar');
+            if(chat.classList.contains('open')) chat.classList.remove('open');
+            else chat.classList.add('open');
+        }
+
+        window.sendChat = function() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if(!msg || !currentUser) return;
+            
+            const chatBox = document.getElementById('chat-box-messages');
+            let nameColor = 'var(--blue)';
+            let nameTag = currentUser.username;
+            
+            if (myInventory.includes('guitar')) nameColor = 'var(--red)'; // Punk Guitar Perk
+            if (myInventory.includes('vip')) nameTag = '[VIP] ' + nameTag;
+            
+            chatBox.innerHTML += `<div class="msg"><span style="color:${nameColor}; font-weight:bold;">${nameTag}:</span> <span style="color:#fff;">${msg}</span></div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        window.logout = function() { try { localStorage.removeItem('cr_user'); localStorage.removeItem('cr_pass'); } catch(e){} location.reload(); }
+        window.promptLogout = function() { showModal('logout-modal'); document.getElementById('btn-confirm-yes').onclick = logout; }
+        
+        window.switchRealmTab = function(tab) {
+            ['cards', 'arena', 'arcade'].forEach(t => { const btn = document.getElementById(`tab-btn-${t}`); const r = document.getElementById(`realm-${t}`); if(btn) btn.classList.remove('active'); if(r) r.classList.add('hidden'); });
+            const actBtn = document.getElementById(`tab-btn-${tab}`); const actRealm = document.getElementById(`realm-${tab}`); if(actBtn) actBtn.classList.add('active'); if(actRealm) actRealm.classList.remove('hidden');
+        }
+
+        document.getElementById('login-pass').addEventListener('keypress', function (e) { if (e.key === 'Enter') { login(); } });
+        document.getElementById('chat-input').addEventListener('keypress', function (e) { if (e.key === 'Enter') { sendChat(); } });
+
+        window.login = async function() {
+            try {
+                if(!socket) return showToast("SERVER OFFLINE: Socket.io missing. Ensure Node server is running.");
+                const u = document.getElementById('login-user').value.trim(); const p = document.getElementById('login-pass').value.trim();
+                if(!u || !p) return showToast("Enter credentials."); 
+                
+                const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p}) });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    currentUser = data; 
+                    try { localStorage.setItem('cr_user', u); localStorage.setItem('cr_pass', p); } catch(e) {}
+                    document.getElementById('auth-view').classList.add('hidden'); document.getElementById('main-menu-view').classList.remove('hidden');
+                    updateAllCredits(); playSfx('deal'); renderInventory(); 
+                } else { showToast(data.error); }
+            } catch(e) { showToast("SERVER OFFLINE: Terminal link failure."); }
+        }
+
+        window.onload = () => { try { const savedU = localStorage.getItem('cr_user'); const savedP = localStorage.getItem('cr_pass'); if(savedU && savedP) { document.getElementById('login-user').value = savedU; document.getElementById('login-pass').value = savedP; login(); } } catch(e){} };
+        
+        if (socket) { 
+            socket.on('credit_update', (data) => { 
+                if(currentUser && currentUser.username.toLowerCase() === data.username.toLowerCase()) { 
+                    currentUser.credits = data.credits; updateAllCredits(); 
+                } 
+            }); 
+        }
+
+        function updateAllCredits() {
+            if(!currentUser) return; const creds = formatNumber(currentUser.credits);
+            ['bj-hud-credits', 'bac-hud-credits', 'dvt-hud-credits', 'dice-hud-credits', 'derby-hud-credits', 'col-hud-credits', 'cups-hud-credits', 'pvp-hud-credits', 'bank-bal', 'profile-bal'].forEach(id => { const el = document.getElementById(id); if(el) el.innerText = creds; });
+            const p2 = document.getElementById('profile-user'); if(p2) p2.innerText = currentUser.username;
+        }
+
+        // ==========================================
+        // DYNAMIC LEDGER & DAILY LOOT
+        // ==========================================
+        function addLedgerEntry(title, amount, isWin, newBalance) {
+            const ledger = document.getElementById('dossier-ledger'); if(!ledger) return;
+            const date = new Date(); const timeStr = `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+            const amountStr = isWin ? `+ 🪙 ${formatNumber(amount)}` : `- 🪙 ${formatNumber(amount)}`;
+            const bgClass = isWin ? 'win' : 'loss';
+            ledger.insertAdjacentHTML('afterbegin', `<div class="ledger-entry ${bgClass}"><div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="color:#94a3b8; font-size:16px;">${timeStr}</span><span style="font-size:16px; color:var(--gold);">BAL: ${formatNumber(newBalance)}</span></div><span style="font-size:20px; font-weight:bold;">${amountStr} (${title})</span></div>`);
+        }
+
+        window.showRewards = function() { showModal('rewards-modal'); checkRewardStatus(); }
+        
+        function checkRewardStatus() {
+            const lastClaim = localStorage.getItem('cr_last_reward'); const btn = document.getElementById('btn-claim-reward'); const timerBox = document.getElementById('reward-timer-box'); const statusTxt = document.getElementById('reward-status');
+            if (!lastClaim) { if(btn) btn.classList.remove('hidden'); if(timerBox) timerBox.classList.add('hidden'); if(statusTxt) statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR"; return; }
+            
+            const now = Date.now(); const timePassed = now - parseInt(lastClaim); const cooldown = 24 * 60 * 60 * 1000; 
+            if (timePassed >= cooldown) { if(btn) btn.classList.remove('hidden'); if(timerBox) timerBox.classList.add('hidden'); if(statusTxt) statusTxt.innerText = "CLAIM YOUR DAILY 🪙 10,000 CR"; } 
+            else { if(btn) btn.classList.add('hidden'); if(timerBox) timerBox.classList.remove('hidden'); if(statusTxt) statusTxt.innerText = "NEXT REWARD IN:"; startRewardCountdown(cooldown - timePassed); }
+        }
+
+        function startRewardCountdown(msLeft) {
+            clearInterval(dailyRewardTimerInt); const timerBox = document.getElementById('reward-timer-box'); let secondsLeft = Math.floor(msLeft / 1000);
+            function updateDisplay() { const h = Math.floor(secondsLeft / 3600).toString().padStart(2, '0'); const m = Math.floor((secondsLeft % 3600) / 60).toString().padStart(2, '0'); const s = (secondsLeft % 60).toString().padStart(2, '0'); if(timerBox) timerBox.innerText = `${h}:${m}:${s}`; }
+            updateDisplay(); dailyRewardTimerInt = setInterval(() => { secondsLeft--; if (secondsLeft <= 0) { clearInterval(dailyRewardTimerInt); checkRewardStatus(); } else { updateDisplay(); } }, 1000);
+        }
+
+        window.claimDailyReward = function() {
+            if (!currentUser) return showToast("You must log in to claim.");
+            const lastClaim = localStorage.getItem('cr_last_reward'); const now = Date.now(); const cooldown = 24 * 60 * 60 * 1000;
+            if (lastClaim && now - parseInt(lastClaim) < cooldown) return showToast("Reward is on cooldown.");
+            
+            let lootBonus = 0;
+            if (myInventory.includes('staff')) lootBonus = 5000;
+            else if (myInventory.includes('shield')) lootBonus = 500;
+            
+            let totalLoot = 10000 + lootBonus;
+            
+            currentUser.credits += totalLoot; updateAllCredits(); addLedgerEntry('DAILY REWARD', totalLoot, true, currentUser.credits);
+            localStorage.setItem('cr_last_reward', now.toString()); showToast(`YOU FOUND ${formatNumber(totalLoot)} CR!`, "success"); playSfx('win'); checkRewardStatus();
+        }
+
+        // ==========================================
+        // ECONOMY MENUS & INVENTORY
+        // ==========================================
+        window.showBank = function() { if(!currentUser) return; document.getElementById('bank-amt').value = ''; showModal('bank-modal'); }
+        window.showProfile = function() { showModal('profile-modal'); }
+        window.openMarket = function() { renderInventory(); showModal('market-modal'); }
+        window.openAuction = function() { renderInventory(); showModal('auction-modal'); }
+        window.openTradeHub = function() { renderInventory(); showModal('trade-hub-modal'); }
+        
+        window.submitBank = async function(type) {
+            const amtStr = document.getElementById('bank-amt').value; const amt = parseInt(amtStr);
+            if (isNaN(amt) || amt <= 0) return showToast("Invalid amount."); if (amt > 100000) return showToast("Limit exceeded. Maximum 100k.");
+            try {
+                const res = await fetch('/api/bank/request', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username: currentUser.username, type: type, amount: amt}) });
+                const data = await res.json();
+                if(res.ok) { showToast("Transaction successful.", "success"); if(data.newCredits !== undefined) { currentUser.credits = data.newCredits; updateAllCredits(); addLedgerEntry(`BANK ${type.toUpperCase()}`, amt, type==='deposit', currentUser.credits); } hideModal('bank-modal'); menuHistory = []; } else { showToast(data.error); }
+            } catch(e) { showToast("Bank system error."); }
+        }
+
+        function renderInventory() {
+            let html = '';
+            myInventory.forEach((itemKey, idx) => {
+                const item = SNT_ITEMS[itemKey];
+                let border = '#475569';
+                if(item.value === 'PRICELESS') border = 'var(--rarity-rare)';
+                else if(item.value >= 80000) border = 'var(--rarity-mythic)';
+                else if(item.value >= 50000) border = 'var(--rarity-legendary)';
+                else if(item.value >= 25000) border = 'var(--rarity-epic)';
+                else if(item.value >= 12000) border = 'var(--rarity-rare)';
+                else if(item.value >= 2500) border = 'var(--rarity-uncommon)';
+
+                html += `<div class="inv-slot" style="border-color:${border}; color:${border};" onclick="openItemInspector(${idx})" title="${item.name}">${item.icon}</div>`;
+            });
+            
+            const auctionGrid = document.getElementById('auction-inventory-grid');
+            const tradeGrid = document.getElementById('trade-inventory-grid');
+            const marketGrid = document.getElementById('market-inventory-grid');
+            if(auctionGrid) auctionGrid.innerHTML = html;
+            if(tradeGrid) tradeGrid.innerHTML = html;
+            if(marketGrid) marketGrid.innerHTML = html;
+        }
+
+        window.openItemInspector = function(idx) {
+            const itemKey = myInventory[idx];
+            const item = SNT_ITEMS[itemKey];
+
+            let color = '#f8fafc'; let rarityText = 'COMMON';
+            if(item.value === 'PRICELESS') { color = 'var(--rarity-rare)'; rarityText = 'RARE (SOULBOUND)'; }
+            else if(item.value >= 80000) { color = 'var(--rarity-mythic)'; rarityText = 'MYTHIC'; }
+            else if(item.value >= 50000) { color = 'var(--rarity-legendary)'; rarityText = 'LEGENDARY'; }
+            else if(item.value >= 25000) { color = 'var(--rarity-epic)'; rarityText = 'EPIC'; }
+            else if(item.value >= 12000) { color = 'var(--rarity-rare)'; rarityText = 'RARE'; }
+            else if(item.value >= 2500) { color = 'var(--rarity-uncommon)'; rarityText = 'UNCOMMON'; }
+
+            document.getElementById('inspector-name').innerText = item.name;
+            document.getElementById('inspector-name').style.color = color;
+            document.getElementById('inspector-rarity').innerText = rarityText;
+            document.getElementById('inspector-rarity').style.color = color;
+            
+            const iconEl = document.getElementById('inspector-icon');
+            iconEl.innerText = item.icon; iconEl.style.borderColor = color; iconEl.style.color = color;
+
+            document.getElementById('inspector-desc').innerText = item.desc;
+            document.getElementById('inspector-perk').innerText = "PERK: " + item.perk;
+            document.getElementById('inspector-value').innerText = item.value === 'PRICELESS' ? 'PRICELESS' : `🪙 ${formatNumber(item.value)} CR`;
+
+            const btnConvert = document.getElementById('btn-inspector-convert');
+            const btnEquip = document.getElementById('btn-inspector-equip');
+
+            if (item.soulbound) {
+                btnConvert.disabled = true; btnConvert.innerText = "NON-CONVERTIBLE";
+            } else {
+                btnConvert.disabled = false; btnConvert.innerText = "CONVERT TO CREDITS";
+                btnConvert.onclick = () => { pendingConversionIndex = idx; executeConversion(); };
+            }
+
+            const counterModal = document.getElementById('counter-offer-modal');
+            if (counterModal && !counterModal.classList.contains('hidden')) {
+                if (item.soulbound) { btnEquip.disabled = true; btnEquip.innerText = "UNTRADABLE ITEM"; } 
+                else { btnEquip.disabled = false; btnEquip.innerText = "ADD TO TRADE GRID"; btnEquip.onclick = () => { addToTradeGrid(idx); }; }
+            } else {
+                btnEquip.disabled = false;
+                btnEquip.innerText = equippedItem === itemKey ? "UNEQUIP ITEM" : "EQUIP ITEM";
+                btnEquip.onclick = () => { 
+                    if (equippedItem === itemKey) { equippedItem = null; showToast(`Unequipped ${item.name}.`, 'success'); }
+                    else { equippedItem = itemKey; showToast(`Equipped ${item.name}!`, 'success'); }
+                    goBack(); 
+                };
+            }
+            showModal('item-inspector-modal');
+        }
+
+        window.executeConversion = function() {
+            if (pendingConversionIndex === null || !currentUser) return;
+            const itemKey = myInventory[pendingConversionIndex]; const item = SNT_ITEMS[itemKey];
+
+            if (item.soulbound) return showToast("Cannot convert soulbound items.");
+            if (equippedItem === itemKey) equippedItem = null; 
+
+            myInventory.splice(pendingConversionIndex, 1);
+            currentUser.credits += item.value; updateAllCredits();
+            addLedgerEntry('ITEM CONVERSION', item.value, true, currentUser.credits);
+            
+            showToast(`${item.name} CONVERTED FOR ${formatNumber(item.value)} CR!`, 'success'); playSfx('win');
+            pendingConversionIndex = null; renderInventory(); goBack();
+        }
+
+        // --- TRADE HUB LOGIC ---
+        window.openCreateOfferModal = function() {
+            openCounterOfferModal('OPEN MARKET', '🌍', 'ANY OFFERS');
+        }
+
+        window.openCounterOfferModal = function(targetName, icon, itemName) {
+            document.getElementById('target-trade-name').innerText = targetName;
+            document.getElementById('target-trade-icon').innerText = icon;
+            document.getElementById('target-trade-item-name').innerText = itemName;
+            tradeOfferSlots = [null, null, null, null, null, null, null, null, null];
+            const creditInput = document.querySelector('#counter-offer-modal input[type="number"]'); if(creditInput) creditInput.value = '';
+            renderInventory(); renderTradeGrid(); showModal('counter-offer-modal');
+        }
+
+        function addToTradeGrid(inventoryIdx) {
+            const emptySlot = tradeOfferSlots.findIndex(s => s === null);
+            if (emptySlot !== -1) { tradeOfferSlots[emptySlot] = myInventory[inventoryIdx]; renderTradeGrid(); goBack(); } 
+            else { showToast("All 9 trade slots are full!"); }
+        }
+
+        function renderTradeGrid() {
+            const gridCells = document.querySelectorAll('.trade-grid-3x3 .trade-slot');
+            if (!gridCells.length) return;
+            tradeOfferSlots.forEach((itemKey, idx) => {
+                const cell = gridCells[idx];
+                if (itemKey) { const item = SNT_ITEMS[itemKey]; cell.innerText = item.icon; cell.style.borderColor = 'var(--gold)'; cell.onclick = () => { tradeOfferSlots[idx] = null; renderTradeGrid(); }; } 
+                else { cell.innerText = ''; cell.style.borderColor = '#334155'; cell.onclick = () => showToast("Select an item from your inventory.", "success"); }
+            });
+        }
+
+        window.openTradeConfirm = function() {
+            const creditInput = document.querySelector('#counter-offer-modal input[type="number"]');
+            const creditsOffered = parseInt(creditInput ? creditInput.value : 0) || 0;
+            if (creditsOffered > currentUser.credits) return showToast("Insufficient credits for this offer.");
+
+            let offeredIcons = tradeOfferSlots.filter(s => s !== null).map(k => SNT_ITEMS[k].icon).join(' ');
+            if (!offeredIcons) offeredIcons = '[ NO ITEMS ]';
+
+            document.getElementById('confirm-target-name').innerText = document.getElementById('target-trade-name').innerText;
+            document.getElementById('confirm-target-item').innerText = document.getElementById('target-trade-item-name').innerText;
+            
+            const myOfferDisplay = document.querySelector('#trade-confirm-modal .modal-box > div > div:nth-child(2)');
+            if(myOfferDisplay) myOfferDisplay.innerHTML = `<span style="color:var(--gold);">${offeredIcons}</span> + 🪙 ${formatNumber(creditsOffered)} CR`;
+
+            showModal('trade-confirm-modal');
+        }
+
+        window.finalizeTrade = function() { 
+            showToast("Trade offer submitted to the network!", "success"); 
+            playSfx('deal'); 
+            goBack(); // Back to Counter Offer
+            goBack(); // Back to Trade Hub
+        }
+
+
+        // ==========================================
+        // OPTIMISTIC BETTING DISPATCH
+        // ==========================================
+        function applyThrottle() { isBetting = true; clearTimeout(betThrottleTimeout); betThrottleTimeout = setTimeout(() => { isBetting = false; }, 250); }
+        
+        window.selectChip = function(val) { 
+            currentChipValue = val; 
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected')); 
+            const chipId = val >= 1000 ? (val/1000) + 'k' : val; 
+            const chipEl = document.getElementById(`chip-${chipId}`); 
+            if(chipEl) chipEl.classList.add('selected'); 
+            playSfx('bet'); 
+        }
+
+        window.placeBet = function(game, choice) {
+            if (isBetting || !socket) return;
+            const amt = currentChipValue; 
+            if (amt > currentUser.credits) return showToast("Insufficient credits!");
+
+            if (game === 'baccarat') { if (myBaccaratBets[choice] + amt > 50000) return showToast("Limit is 50k."); myBaccaratBets[choice] += amt; } 
+            else if (game === 'dvt') { if (myDvtBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDvtBets[choice] += amt; } 
+            else if (game === 'dice') { if (myDiceBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDiceBets[choice] += amt; } 
+            else if (game === 'derby') { if (myDerbyBets[choice] + amt > 50000) return showToast("Limit is 50k."); myDerbyBets[choice] += amt; } 
+            else if (game === 'color') { if (myColorBets[choice] + amt > 50000) return showToast("Limit is 50k."); myColorBets[choice] += amt; } 
+            else if (game === 'cups') { if (myCupsBets[choice] + amt > 50000) return showToast("Limit is 50k."); myCupsBets[choice] += amt; }
+            
+            // OPTIMISTIC UI UPDATE: Deduct immediately before server confirmation
+            currentUser.credits -= amt;
+            updateAllCredits();
+            addLedgerEntry(`${game.toUpperCase()} BET`, amt, false, currentUser.credits);
+            
+            applyThrottle(); 
+            socket.emit(`place_${game}_bet`, { username: currentUser.username, choice, amount: amt }); 
+            lastBetAction = { game, choice };
+        }
+
+        window.actRebet = function(gameOverride) {
+            if(!lastBetAction) return showToast("No previous bet.");
+            let targetGame = gameOverride || lastBetAction.game;
+            if(targetGame === 'baccarat') placeBet('baccarat', lastBetAction.choice); if(targetGame === 'dvt') placeBet('dvt', lastBetAction.choice); if(targetGame === 'dice') placeBet('dice', lastBetAction.choice); if(targetGame === 'derby') placeBet('derby', lastBetAction.choice); if(targetGame === 'color') placeBet('color', lastBetAction.choice); if(targetGame === 'cups') placeBet('cups', lastBetAction.choice);
+        }
+        window.actUndoBet = function(game) { if(socket) socket.emit('undo_bet', { username: currentUser.username, game: game }); }
+        
+        if(socket) { 
+            socket.on('arcade_bet_placed', (data) => { 
+                let badgeId = `badge-${data.game}-${data.choice}`; const badge = document.getElementById(badgeId); 
+                if(badge) { badge.innerText = formatNumber(data.totalChoiceBet); if(data.totalChoiceBet > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden'); } 
+            }); 
+        }
+
+        // ==========================================
+        // NAVIGATION (JOIN/LEAVE GAMES)
+        // ==========================================
+        window.joinGame = function(gameId) {
+            if(!socket) return showToast("SERVER OFFLINE");
+            currentRoomId = gameId; hideModal('play-category-modal'); document.getElementById('main-menu-view').classList.add('hidden'); 
+            
+            let interfaceId = '';
+            if (gameId === '5seat' || gameId === '3seat') interfaceId = 'bj-interface';
+            else if (gameId === 'baccarat') interfaceId = 'bac-interface';
+            else if (gameId === 'dvt') interfaceId = 'dvt-interface';
+            else if (gameId === 'dice') interfaceId = 'dice-interface';
+            else if (gameId === 'derby') interfaceId = 'derby-interface';
+            else if (gameId === 'color') interfaceId = 'color-interface';
+            else if (gameId === 'cups') interfaceId = 'cups-interface';
+            else if (gameId === 'pvp') interfaceId = 'pvp-interface';
+
+            const ui = document.getElementById(interfaceId); if (ui) ui.classList.remove('hidden');
+
+            if (gameId === '5seat' || gameId === '3seat') {
+                const title = document.getElementById('bj-hud-title'); if (title) title.innerHTML = (gameId === '5seat' ? "CLASSIC BLACKJACK" : "VIP BLACKJACK") + ` <button class="btn small btn-blue" style="display:inline-block; margin-left:10px;" onclick="showRules('blackjack')">?</button>`;
+                socket.emit('enter_room', { username: currentUser.username, roomId: currentRoomId });
+            } else { socket.emit('enter_arcade', { username: currentUser.username, game: currentRoomId }); socket.emit(`get_${currentRoomId}_state`); }
+            playSfx('deal');
+        }
+
+        window.exitGame = function(game) { 
+            let actualGame = game || currentRoomId;
+            if (actualGame === 'blackjack' || actualGame === '5seat' || actualGame === '3seat') { if (mySeatIndex !== -1 && currentGameState && currentGameState.seats[mySeatIndex] && currentGameState.seats[mySeatIndex].hands.some(h => h.bet > 0)) { return showToast("Active bets restrict leave."); } } 
+            else if (actualGame === 'bac' || actualGame === 'baccarat') { if (Object.values(myBaccaratBets).reduce((a,b)=>a+b, 0) > 0) return showToast("Active bets restrict leave."); actualGame = 'baccarat'; } 
+            else if (actualGame === 'dvt') { if (Object.values(myDvtBets).reduce((a,b)=>a+b, 0) > 0) return showToast("Active bets restrict leave."); } 
+            else if (actualGame === 'dice') { if (Object.values(myDiceBets).reduce((a,b)=>a+b, 0) > 0) return showToast("Active bets restrict leave."); } 
+            else if (actualGame === 'color') { if (Object.values(myColorBets).reduce((a,b)=>a+b, 0) > 0) return showToast("Active bets restrict leave."); } 
+
+            document.getElementById('main-menu-view').classList.remove('hidden'); document.querySelectorAll('.game-interface').forEach(el => el.classList.add('hidden'));
+            
+            if(socket) {
+                if(actualGame === 'blackjack' || actualGame === '5seat' || actualGame === '3seat') { 
+                    if (currentGameState) { const seatIdx = currentGameState.seats.findIndex(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if (seatIdx !== -1) window.actEjectSeat(seatIdx); } 
+                    socket.emit('leave_room', { username: currentUser.username, roomId: currentRoomId }); 
+                } else { socket.emit('leave_arcade', { username: currentUser.username, game: actualGame }); }
+            }
+            currentRoomId = null; 
+            
+            // Close chat if open
+            const chat = document.getElementById('chat-sidebar');
+            if(chat) chat.classList.remove('open');
+        }
+
+        function setStatus(game, text, isDanger = false) { const el = document.getElementById(`${game}-res`); if (el) { el.innerText = text; el.style.color = isDanger ? 'var(--red)' : '#fff'; } }
+        function setTimer(game, ms, prefix) {
+            const timerEl = document.getElementById(`${game}-timer`); if (!timerEl) return; clearInterval(globalTimerInt);
+            if(ms <= 0) { timerEl.classList.add('hidden'); return; }
+            timerEl.classList.remove('hidden'); let s = Math.ceil(ms / 1000); timerEl.innerText = `${prefix}: ${s}S`;
+            globalTimerInt = setInterval(() => { 
+                s--; 
+                if(s > 0) { timerEl.innerText = `${prefix}: ${s}S`; } 
+                else { clearInterval(globalTimerInt); timerEl.innerText = "PROCESSING..."; } 
+            }, 1000);
+        }
+
+        function formatCardHTML(c, isHidden) { 
+            if (!c) return ''; if (isHidden) return `<div class="card hidden-card"></div>`; 
+            const colorClass = ['Hearts', 'Diamonds'].includes(c.suit) ? 'red' : ''; const suitSym = {'Hearts':'♥', 'Diamonds':'♦', 'Clubs':'♣', 'Spades':'♠'}[c.suit]; 
+            return `<div class="card ${colorClass}"><div class="card-corner tl">${c.value}<br>${suitSym}</div><div class="card-center">${suitSym}</div><div class="card-corner br">${c.value}<br>${suitSym}</div></div>`; 
+        }
+
+        // ==========================================
+        // BLACKJACK ENGINE
+        // ==========================================
+        window.actSitDown = function(idx) { if(socket) socket.emit('join_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        
+        window.actPlaceBetDropdown = function(idx) { 
+            const selectEl = document.getElementById(`inseat-bet-${idx}`); const amt = selectEl ? parseInt(selectEl.value) : 0; 
+            if (isNaN(amt) || amt < 100) return showToast("Invalid amount."); if (amt > 50000) return showToast("Limit is 50k."); if (amt > currentUser.credits) return showToast("Insufficient credits!"); 
+            window.lastBetAmount = amt; 
+            
+            // Optimistic Update
+            currentUser.credits -= amt; updateAllCredits(); addLedgerEntry('BLACKJACK BET', amt, false, currentUser.credits);
+            
+            if(socket) socket.emit('place_bet', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx, betAmount: amt }); playSfx('bet'); 
+        }
+        
+        window.actEjectSeat = function(idx) { if(socket) socket.emit('leave_seat', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actHit = function(idx) { if(socket) socket.emit('player_action_hit', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actStand = function(idx) { if(socket) socket.emit('player_action_stand', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); }
+        window.actDouble = function(idx) { if(socket) socket.emit('player_action_double', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+        window.actSplit = function(idx) { if(socket) socket.emit('player_action_split', { roomId: currentRoomId, username: currentUser.username, seatIndex: idx }); playSfx('bet'); }
+
+        if(socket) {
+            socket.on('game_state_update', (state) => {
+                if(currentGameState && currentGameState.status === 'dealerTurn' && state.status === 'resolving') { 
+                    if(mySeatIndex !== -1 && state.seats[mySeatIndex]) { 
+                        let totalWinAmt = 0;
+                        state.seats[mySeatIndex].hands.forEach(h => {
+                            if (h.result === 'win') totalWinAmt += (h.bet * 2);
+                            else if (h.result === 'win-bj') totalWinAmt += (h.bet * 2.5);
+                            else if (h.result === 'push') totalWinAmt += h.bet;
+                        });
+                        let hasWin = state.seats[mySeatIndex].hands.some(h => h.result === 'win' || h.result === 'win-bj'); 
+                        let hasLose = state.seats[mySeatIndex].hands.some(h => h.result === 'lose' || h.result === 'bust'); 
+                        
+                        if(hasWin) { playSfx('win'); addLedgerEntry('BLACKJACK WIN', totalWinAmt, true, currentUser.credits + totalWinAmt); } 
+                        else if (hasLose) playSfx('lose'); 
+                    } 
+                }
+                if(currentGameState && currentGameState.status === 'betting' && state.status === 'playing') playSfx('deal');
+                currentGameState = state; 
+                if(currentUser && (currentRoomId === '5seat' || currentRoomId === '3seat')) renderTable(state); 
+            });
+        }
+
+        function calculateValue(cards) { let val = 0; let aces = 0; cards.forEach(c => { val += c.weight; if(c.value==='A') aces++; }); while(val > 21 && aces > 0) { val -= 10; aces--; } return val; }
+
+        function renderTable(state) {
+            if (!state) return; 
+            setStatus('bj', state.status === 'resolving' ? 'RESULTS' : state.status.toUpperCase());
+            if (state.status === 'betting') setTimer('bj', state.betTimeLeft, "BETS CLOSING");
+            else if (state.status === 'resolving') setTimer('bj', state.nextRoundTimeLeft, "NEXT ROUND");
+            else setTimer('bj', 0);
+
+            const dCards = document.getElementById('bj-dealer-cards'); const dBadge = document.getElementById('bj-dealer-val');
+            let dealerHtml = ''; state.dealerCards.forEach(c => { dealerHtml += formatCardHTML(c, c.hidden); });
+            
+            // TARGETED DOM UPDATE: Only change if HTML differs (Fixes Animations!)
+            if (dCards && dCards.innerHTML !== dealerHtml) dCards.innerHTML = dealerHtml;
+            
+            const visibleDealerCards = state.dealerCards.filter(c => !c.hidden);
+            if (visibleDealerCards.length > 0) { if (dBadge) { dBadge.innerText = calculateValue(visibleDealerCards); dBadge.classList.remove('hidden'); } } else { if (dBadge) dBadge.classList.add('hidden'); }
+
+            const seatsArea = document.getElementById('bj-seats-area'); let seatsHtml = '';
+            if(currentUser) { const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); if(mySeatData) { mySeatIndex = state.seats.indexOf(mySeatData);} else { mySeatIndex = -1; } }
+
+            let hasCrown = myInventory.includes('crown');
+
+            for(let index=0; index<state.seats.length; index++) {
+                let seatData = state.seats[index]; let isMySeat = currentUser && seatData && seatData.username.toLowerCase() === currentUser.username.toLowerCase(); let hasSeatAnywhere = state.seats.some(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase());
+                let seatClass = 'seat'; if(seatData && state.activeSeatIndex === index) seatClass += ' active-turn'; 
+
+                seatsHtml += `<div class="${seatClass}" id="seat-${index}">`;
+                if (!seatData) {
+                    if (state.status === 'waiting' || state.status === 'betting') {
+                        let sitBtn = !hasSeatAnywhere ? `<button class="btn btn-green small" onclick="actSitDown(${index})">SIT DOWN</button>` : '';
+                        seatsHtml += `<div style="height:110px; display:flex; flex-direction:column; justify-content:center; align-items:center; border: 2px dashed rgba(255,255,255,0.2); width:100%; border-radius:6px; margin-bottom:5px;">${sitBtn}</div>`;
+                    }
+                } else {
+                    seatsHtml += `<div class="hands-wrapper">`;
+                    seatData.hands.forEach((hand, hIdx) => {
+                        seatsHtml += `<div class="hand-container">`;
+                        let cardsHtml = `<div style="display:flex; flex-direction:row;">`;
+                        hand.cards.forEach(c => { cardsHtml += formatCardHTML(c, false); }); 
+                        cardsHtml += `</div>`;
+                        seatsHtml += cardsHtml;
+                        if (hand.cards.length > 0) seatsHtml += `<div class="hand-score">${hand.value || calculateValue(hand.cards)}</div>`;
+                        seatsHtml += `</div>`; 
+                    });
+                    seatsHtml += `</div>`;
+
+                    let handBet = seatData.hands[0].bet > 0 ? seatData.hands[0].bet : 0; 
+                    if (handBet > 0 || state.status === 'resolving') { 
+                        let betClass = 'bj-bet-line';
+                        if(state.status === 'resolving') {
+                            if(seatData.hands[0].result === 'win' || seatData.hands[0].result === 'win-bj') betClass += ' win';
+                            else if(seatData.hands[0].result === 'lose' || seatData.hands[0].status === 'bust') handBet = 0;
+                        }
+                        seatsHtml += `<div class="${betClass}">[ 🪙 ${formatNumber(handBet)} ]</div>`; 
+                    }
+                    
+                    let nameplateColor = isMySeat ? 'var(--green)' : '#f8fafc';
+                    if (isMySeat && hasCrown) nameplateColor = 'var(--gold)';
+                    
+                    seatsHtml += `<div class="nameplate" style="color:${nameplateColor};">${seatData.username}</div>`;
+
+                    if (isMySeat && (state.status === 'betting' || state.status === 'waiting')) {
+                        if (seatData.hands[0].bet === 0) {
+                            let startBet = window.lastBetAmount || 0; let opts = [100, 1000, 5000, 20000, 50000]; if(!opts.includes(startBet) && startBet !== 0) startBet = 1000;
+                            let optHTML = opts.map(val => `<option value="${val}" ${val === startBet ? 'selected' : ''}>${formatNumber(val)}</option>`).join('');
+                            seatsHtml += `<div style="display:flex; flex-direction:column; gap:4px; width:100%; margin-top:5px;"><select id="inseat-bet-${index}" style="padding:2px; font-size:18px;">${optHTML}</select><div style="display:flex; gap:4px; width:100%;"><button class="btn btn-green small" style="flex:1;" onclick="actPlaceBetDropdown(${index})">BET</button><button class="btn btn-red small" style="flex:1;" onclick="actEjectSeat(${index})">LEAVE</button></div></div>`;
+                        }
+                    } else if (isMySeat && state.status === 'waiting') { seatsHtml += `<button class="btn btn-red small" style="width:100%; margin-top:5px;" onclick="actEjectSeat(${index})">STAND UP</button>`; }
+
+                    if (isMySeat && state.status === 'playing' && state.activeSeatIndex === index) {
+                        const cHand = seatData.hands[seatData.currentHand];
+                        if (cHand && cHand.status === 'waiting') {
+                            seatsHtml += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; width:100%; margin-top:5px;"><button class="btn btn-green small" onclick="actHit(${index})">HIT</button><button class="btn btn-gold small" onclick="actStand(${index})">STAND</button>`;
+                            if (cHand.cards.length === 2 && seatData.credits >= cHand.bet) { seatsHtml += `<button class="btn btn-blue small" onclick="actDouble(${index})">2X</button>`; if (cHand.cards[0].weight === cHand.cards[1].weight && seatData.hands.length < 2) { seatsHtml += `<button class="btn small" style="background:var(--purple); border-color:#d8b4fe;" onclick="actSplit(${index})">SPLIT</button>`; } }
+                            seatsHtml += `</div>`;
+                        }
+                    }
+                }
+                seatsHtml += `</div>`;
+            }
+            if (seatsArea && seatsArea.innerHTML !== seatsHtml) seatsArea.innerHTML = seatsHtml; 
+        }
+
+        // ==========================================
+        // BACCARAT ENGINE
+        // ==========================================
+        if(socket) {
+            socket.on('baccarat_state_update', (data) => {
+                if (currentRoomId !== 'baccarat') return;
+                const pCardsUI = document.getElementById('bac-p-cards'); const bCardsUI = document.getElementById('bac-b-cards'); 
+                const pScoreUI = document.getElementById('bac-p-score'); const bScoreUI = document.getElementById('bac-b-score');
+                
+                if (data.status === 'betting') {
+                    setStatus('bac', "PLACE YOUR BETS"); myBaccaratBets = { player: 0, banker: 0, tie: 0 }; 
+                    pCardsUI.innerHTML = ''; bCardsUI.innerHTML = ''; pScoreUI.innerText = '0'; bScoreUI.innerText = '0'; pScoreUI.style.display = 'none'; bScoreUI.style.display = 'none';
+                    document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-baccarat')) b.classList.add('hidden'); });
+                    setTimer('bac', data.betEndTime - Date.now(), "BETS CLOSING");
+                } 
+                else if (data.status === 'drawing') { setStatus('bac', "DEALING..."); setTimer('bac', 0); } 
+                else if (data.status === 'resolving') {
+                    pScoreUI.style.display = 'block'; bScoreUI.style.display = 'block'; let pScore = 0, bScore = 0;
+                    setTimeout(() => { pCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.pCards[0], false)); pScore = (pScore + getBaccaratWeight(data.pCards[0])) % 10; pScoreUI.innerText = pScore; playSfx('deal'); }, 500);
+                    setTimeout(() => { bCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.bCards[0], false)); bScore = (bScore + getBaccaratWeight(data.bCards[0])) % 10; bScoreUI.innerText = bScore; playSfx('deal'); }, 1500);
+                    setTimeout(() => { pCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.pCards[1], false)); pScore = (pScore + getBaccaratWeight(data.pCards[1])) % 10; pScoreUI.innerText = pScore; playSfx('deal'); }, 2500);
+                    setTimeout(() => { bCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.bCards[1], false)); bScore = (bScore + getBaccaratWeight(data.bCards[1])) % 10; bScoreUI.innerText = bScore; playSfx('deal'); }, 3500);
+
+                    let delay = 4500;
+                    if (data.thirdCardTarget) {
+                        if (data.thirdCardTarget === 'player' || data.thirdCardTarget === 'both') {
+                            setTimeout(() => { setStatus('bac', "PLAYER DRAWS 3RD CARD"); }, delay); delay += 1000;
+                            setTimeout(() => { pCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.pCards[2], false)); pScore = (pScore + getBaccaratWeight(data.pCards[2])) % 10; pScoreUI.innerText = pScore; playSfx('deal'); }, delay); delay += 1500;
+                        }
+                        if(data.thirdCardTarget === 'banker' || data.thirdCardTarget === 'both') {
+                            let bDelay = data.thirdCardTarget === 'both' ? 4000 : 2500;
+                            setTimeout(() => { setStatus('bac', "BANKER DRAWS 3RD CARD"); }, delay + (data.thirdCardTarget === 'both'? 2500 : 0)); 
+                            setTimeout(() => { bCardsUI.insertAdjacentHTML('beforeend', formatCardHTML(data.bCards[2], false)); bScore = (bScore + getBaccaratWeight(data.bCards[2])) % 10; bScoreUI.innerText = bScore; playSfx('deal'); }, delay + (data.thirdCardTarget === 'both'? 3500 : 1000)); 
+                            delay += bDelay;
+                        }
+                    }
+
+                    setTimeout(() => {
+                        setStatus('bac', data.winner === 'tie' ? "TIE!" : `${data.winner.toUpperCase()} WINS!`);
+                        let totalBet = Object.values(myBaccaratBets).reduce((a,b)=>a+b, 0);
+                        if (totalBet > 0) {
+                            let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
+                            if (myWins.length > 0) { 
+                                let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); 
+                                setStatus('bac', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); 
+                                addLedgerEntry('BACCARAT WIN', totalWin, true, currentUser.credits + totalWin);
+                            } 
+                            else if (data.winner === 'tie' && (myBaccaratBets.player > 0 || myBaccaratBets.banker > 0)) { setStatus('bac', `PUSH!`); playSfx('win'); } 
+                            else { setStatus('bac', "HOUSE WINS", true); playSfx('lose'); }
+                        }
+                    }, delay);
+                }
+            });
+
+            socket.on('dvt_state_update', (data) => {
+                if (currentRoomId !== 'dvt') return;
+                const dCardUI = document.getElementById('dvt-d-cards'); const tCardUI = document.getElementById('dvt-t-cards');
+                
+                if (data.status === 'betting') {
+                    setStatus('dvt', "PLACE YOUR BETS"); myDvtBets = { dragon: 0, tiger: 0, tie: 0 }; dCardUI.innerHTML = ''; tCardUI.innerHTML = '';
+                    document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-dvt')) b.classList.add('hidden'); });
+                    setTimer('dvt', data.betEndTime - Date.now(), "BETS CLOSING");
+                } 
+                else if (data.status === 'drawing') { setTimer('dvt', 0); setStatus('dvt', "DRAWING..."); } 
+                else if (data.status === 'resolving') {
+                    setTimeout(() => { dCardUI.insertAdjacentHTML('beforeend', formatCardHTML(data.dragonCard, false)); playSfx('deal'); }, 500);
+                    setTimeout(() => { tCardUI.insertAdjacentHTML('beforeend', formatCardHTML(data.tigerCard, false)); playSfx('deal'); }, 1500);
+                    setTimeout(() => {
+                        setStatus('dvt', data.winner === 'tie' ? "TIE!" : `${data.winner.toUpperCase()} WINS!`);
+                        let totalBet = Object.values(myDvtBets).reduce((a,b)=>a+b, 0);
+                        if (totalBet > 0) {
+                            let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
+                            if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('dvt', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); addLedgerEntry('DRAGON VS TIGER WIN', totalWin, true, currentUser.credits + totalWin); } 
+                            else if (data.winner === 'tie' && (myDvtBets.dragon > 0 || myDvtBets.tiger > 0)) { setStatus('dvt', `PUSH (HALF WIN)`); playSfx('win'); } 
+                            else { 
+                                setStatus('dvt', "HOUSE WINS", true); playSfx('lose'); 
+                                if (myInventory.includes('amulet')) {
+                                    let refund = Math.floor(totalBet * 0.05);
+                                    currentUser.credits += refund; updateAllCredits();
+                                    addLedgerEntry('DRAGON AMULET REFUND', refund, true, currentUser.credits);
+                                    showToast(`Amulet refunded ${formatNumber(refund)} CR!`, 'success');
+                                }
+                            }
+                        }
+                    }, 2500);
+                }
+            });
+
+            // ==========================================
+            // ARCADE ENGINES (DICE, DERBY, COLOR, CUPS)
+            // ==========================================
+            socket.on('dice_state_update', (data) => {
+                if (currentRoomId !== 'dice') return;
+                const d1 = document.getElementById('die1'); const d2 = document.getElementById('die2');
+                if (data.status === 'betting') { 
+                    setStatus('dice', "PLACE YOUR BETS"); d1.style.color = '#f8fafc'; d2.style.color = '#f8fafc'; d1.classList.remove('shake'); d2.classList.remove('shake'); myDiceBets = { under: 0, seven: 0, over: 0 }; 
+                    document.querySelectorAll('.bet-badge').forEach(b => { if(b.id.includes('badge-dice')) b.classList.add('hidden'); }); 
+                    setTimer('dice', data.betEndTime - Date.now(), "BETS CLOSING");
+                } 
+                else if (data.status === 'rolling') { setTimer('dice', 0); setStatus('dice', "ROLLING..."); d1.style.color = 'var(--gold)'; d2.style.color = 'var(--gold)'; d1.classList.add('shake'); d2.classList.add('shake'); } 
+                else if (data.status === 'resolving') {
+                    d1.style.color = '#f8fafc'; d2.style.color = '#f8fafc'; d1.classList.remove('shake'); d2.classList.remove('shake'); d1.innerText = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][data.dice[0]-1]; d2.innerText = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][data.dice[1]-1]; 
+                    setStatus('dice', `RESULT: ${data.total}`);
+                    let totalBet = Object.values(myDiceBets).reduce((a,b)=>a+b, 0);
+                    if (totalBet > 0) {
+                        let myWins = data.winners ? data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase()) : [];
+                        if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('dice', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); addLedgerEntry('HIGH-LOW DICE WIN', totalWin, true, currentUser.credits + totalWin); } else { setStatus('dice', "HOUSE WINS", true); playSfx('lose'); }
+                    }
+                }
+            });
+
+            socket.on('derby_state_update', (data) => {
+                if (currentRoomId !== 'derby') return;
+                if(data.distances) { for(let i=0; i<6; i++) { const racer = document.getElementById(`racer-${i}`); if(racer) racer.style.left = `calc(${data.distances[i]}% - 20px)`; } }
+                if (data.status === 'betting') { 
+                    setStatus('derby', "PLACE YOUR BETS"); myDerbyBets = [0, 0, 0, 0, 0, 0]; 
+                    for(let i=0; i<6; i++) { const badge = document.getElementById(`badge-derby-${i}`); if(badge) badge.classList.add('hidden'); } 
+                    setTimer('derby', data.betEndTime - Date.now(), "BETS CLOSING");
+                }
+                else if (data.status === 'racing') { setTimer('derby', 0); setStatus('derby', "RACING..."); playSfx('deal'); }
+                else if (data.status === 'resolving') {
+                    const cNames = ['RED', 'BLUE', 'GREEN', 'PURPLE', 'PINK', 'GOLD']; setStatus('derby', `${cNames[data.winner]} WINS!`);
+                    let totalBet = myDerbyBets.reduce((a,b)=>a+b, 0);
+                    if (totalBet > 0) {
+                        let myWins = data.winners ? data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase()) : [];
+                        if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('derby', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); addLedgerEntry('8-BIT DERBY WIN', totalWin, true, currentUser.credits + totalWin); } else { setStatus('derby', "HOUSE WINS", true); playSfx('lose'); }
+                    }
+                }
+            });
+            socket.on('derby_race_tick', (data) => { if (currentRoomId !== 'derby') return; if(data.distances) { for(let i=0; i<6; i++) { const racer = document.getElementById(`racer-${i}`); if(racer) racer.style.left = `calc(${data.distances[i]}% - 20px)`; } } });
+
+            socket.on('color_state_update', (data) => {
+                if (currentRoomId !== 'color') return;
+                if (data.status === 'betting') { 
+                    setStatus('color', "PLACE YOUR BETS"); myColorBets = { red: 0, blue: 0, yellow: 0, green: 0, pink: 0, white: 0 };
+                    ['red', 'blue', 'yellow', 'green', 'pink', 'white'].forEach(c => document.getElementById(`badge-color-${c}`).classList.add('hidden')); 
+                    setTimer('color', data.betEndTime - Date.now(), "BETS CLOSING");
+                }
+                else if (data.status === 'rolling') { setTimer('color', 0); setStatus('color', "ROLLING..."); }
+                else if (data.status === 'resolving') {
+                    document.getElementById('col-d1').className = `color-die c-${data.dice[0]}`; document.getElementById('col-d2').className = `color-die c-${data.dice[1]}`; document.getElementById('col-d3').className = `color-die c-${data.dice[2]}`; 
+                    setStatus('color', "RESULT!");
+                    let totalBet = Object.values(myColorBets).reduce((a,b)=>a+b, 0);
+                    if (totalBet > 0) {
+                        let myWins = data.winners ? data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase()) : [];
+                        if (myWins.length > 0) { 
+                            let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); 
+                            if (myInventory.includes('orb')) {
+                                let bonus = Math.floor(totalWin * 0.05);
+                                totalWin += bonus; currentUser.credits += bonus; 
+                                showToast(`Orb activated! +${formatNumber(bonus)} CR Bonus!`, 'success');
+                            }
+                            setStatus('color', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win');
+                            addLedgerEntry('PERYA COLOR WIN', totalWin, true, currentUser.credits + totalWin);
+                        } else { setStatus('color', "HOUSE WINS", true); playSfx('lose'); }
+                    }
+                }
+            });
+
+            socket.on('cups_state_update', (data) => {
+                if (currentRoomId !== 'cups') return;
+                if (data.status === 'shuffling') { 
+                    setStatus('cups', "SHUFFLING..."); myCupsBets = [0,0,0]; document.querySelectorAll('.cup-wrapper').forEach(w => w.classList.remove('reveal')); 
+                    for(let i=0; i<3; i++) document.getElementById(`badge-cups-${i}`).classList.add('hidden'); 
+                }
+                else if (data.status === 'betting') { setStatus('cups', "FIND THE BALL"); setTimer('cups', data.betEndTime - Date.now(), "BETS CLOSING"); }
+                else if (data.status === 'resolving') {
+                    setTimer('cups', 0); const winCupWrap = document.getElementById(`cup-wrap-${data.winningCup}`); if(winCupWrap) winCupWrap.classList.add('reveal');
+                    setStatus('cups', `CUP ${data.winningCup + 1} REVEALED!`);
+                    let totalBet = myCupsBets.reduce((a,b)=>a+b, 0);
+                    if (totalBet > 0) {
+                        let myWins = data.winners ? data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase()) : [];
+                        if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('cups', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); addLedgerEntry('STREET HUSTLE WIN', totalWin, true, currentUser.credits + totalWin); } else { setStatus('cups', "HOUSE WINS", true); playSfx('lose'); }
+                    }
+                }
+            });
+
+            socket.on('pvp_duel_state_update', (state) => {
+                if (currentRoomId !== 'pvp') return;
+                currentPvpDuelState = state; setStatus('pvp', state.message);
+                const mySeatData = state.seats.find(s => s && s.username.toLowerCase() === currentUser.username.toLowerCase()); myDuelSeatIndex = mySeatData ? state.seats.indexOf(mySeatData) : -1;
+                if (state.type === 'rps' && state.status === 'waiting_picks' && myDuelSeatIndex !== -1 && !state.seats[myDuelSeatIndex].rpsChoice) { document.getElementById('pvp-rps-controls').classList.remove('hidden'); } else { document.getElementById('pvp-rps-controls').classList.add('hidden'); }
+
+                for(let i=0; i<2; i++) {
+                    const seat = state.seats[i]; const emptyUI = document.getElementById(`pvp-empty-${i}`); const occUI = document.getElementById(`pvp-occ-${i}`);
+                    if(seat) { emptyUI.classList.add('hidden'); occUI.classList.remove('hidden'); document.getElementById(`pvp-name-${i}`).innerText = seat.username; document.getElementById(`pvp-score-${i}`).innerText = seat.score; let displayChoice = seat.choice ? seat.choice : 'WAITING...'; if(state.type === 'rps') { if (seat.rpsChoice) displayChoice = myDuelSeatIndex === i ? seat.rpsChoice : 'LOCKED IN'; else displayChoice = 'THINKING...'; } document.getElementById(`pvp-choice-${i}`).innerText = displayChoice; } 
+                    else { emptyUI.classList.remove('hidden'); occUI.classList.add('hidden'); }
+                }
+                const matchVisual = document.getElementById('pvp-visual');
+                if(state.status === 'flipping' || state.status === 'spinning') { matchVisual.innerText = '⚅'; } 
+                else if (state.status === 'resolving' || state.status === 'finished') { matchVisual.innerText = state.result ? state.result.charAt(0) : '?'; if(state.status === 'finished') { if(mySeatData && mySeatData.score >= state.format) playSfx('win'); else if (mySeatData) playSfx('lose'); } } else { matchVisual.innerText = '?'; }
+            });
+        }
+
+        window.actPvpSit = function(index) { if(socket) socket.emit('join_pvp_seat', { username: currentUser.username, seatIndex: index }); };
+        window.actPvpLeave = function() { if(myDuelSeatIndex !== -1 && currentUser && socket) socket.emit('leave_pvp_seat', { username: currentUser.username, seatIndex: myDuelSeatIndex }); };
+        window.actPvpPick = function(pick) { if(socket) socket.emit('pvp_rps_pick', { username: currentUser.username, pick }); };
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) { if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; } });
+
+    </script>
+</body>
+</html>
