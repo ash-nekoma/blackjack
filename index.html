@@ -59,7 +59,7 @@
         .btn { background: #1e293b; border: 2px solid #475569; color: var(--text-main); padding: 12px 20px; font-size: 24px; cursor: pointer; transition: 0.1s; border-radius: 6px; font-weight: bold; text-shadow: 1px 1px 0 rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); width: 100%;}
         .btn:hover:not(:disabled) { background: #334155; border-color: #cbd5e1; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.4);}
         .btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 2px rgba(0,0,0,0.4);}
-        .btn.small { padding: 6px 12px; font-size: 18px; width: auto; }
+        .btn.small { padding: 6px 12px; font-size: 20px; width: auto; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; border-color: #334155; color: #64748b;}
         
         .btn-blue { background: #0284c7; border-color: var(--blue); } .btn-blue:hover:not(:disabled){ background: #0ea5e9; }
@@ -79,25 +79,29 @@
         .txt-gold { color: var(--gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
         .txt-plain { color: #f8fafc; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
 
+        /* MENU GRID (No wasted space) */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 500px; margin-top: 10px;}
+        .menu-grid .btn { padding: 20px; font-size: 26px; }
+        .menu-grid .btn.full-width { grid-column: span 2; }
+
         /* HOTBAR */
         .hotbar-container { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: center; z-index: 100; }
         .hotbar { display: flex; gap: 15px; background: rgba(15,23,42,0.95); padding: 12px 24px; border: 2px solid #334155; border-radius: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);}
-        .hotbar-btn { background: transparent; border: none; color: var(--text-muted); font-size: 20px; font-weight: bold; cursor: pointer; padding: 5px 15px; transition: 0.2s; border-radius: 20px;}
+        .hotbar-btn { background: transparent; border: none; color: var(--text-muted); font-size: 22px; font-weight: bold; cursor: pointer; padding: 5px 15px; transition: 0.2s; border-radius: 20px;}
         .hotbar-btn:hover { color: #fff; background: #334155; }
         .hotbar-btn.danger:hover { color: var(--red); background: rgba(248,113,113,0.1); }
 
         /* NAVIGATION & GRID */
         .category-nav { display: flex; justify-content: center; gap: 15px; margin: 25px 0 15px 0; width: 100%; }
-        .nav-tab { background: #0f172a; border: 2px solid #334155; color: var(--text-muted); font-size: 22px; padding: 10px 30px; cursor: pointer; border-radius: 8px; transition: 0.2s; font-weight:bold; width: 160px; text-align: center;}
+        .nav-tab { background: #0f172a; border: 2px solid #334155; color: var(--text-muted); font-size: 24px; padding: 10px 40px; cursor: pointer; border-radius: 8px; transition: 0.2s; font-weight:bold; text-align: center;}
         .nav-tab.active { background: var(--blue); color: #020617; border-color: #fff; text-shadow:none;}
 
         .realm-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 1100px; padding: 10px;}
         .realm-card { background: #1e293b; border: 2px solid #334155; border-radius: 12px; padding: 25px 15px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; text-align: center; height: 180px; justify-content:space-between; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
         .realm-card:hover { transform: translateY(-4px); border-color: var(--blue); background: #27364f; box-shadow: 0 10px 20px rgba(0,0,0,0.5);}
-        .realm-title { font-size: 24px; color: #fff; font-weight: bold; line-height: 1.2; text-shadow: 1px 1px 0 rgba(0,0,0,0.5); }
-        .realm-desc { font-size: 16px; color: var(--text-muted); }
+        .realm-title { font-size: 26px; color: #fff; font-weight: bold; line-height: 1.2; text-shadow: 1px 1px 0 rgba(0,0,0,0.5); }
+        .realm-desc { font-size: 18px; color: var(--text-muted); }
         .realm-status { font-size: 16px; background: rgba(0,0,0,0.6); padding: 4px 15px; border-radius: 20px; color: var(--green); font-weight: bold; border: 1px solid #334155;}
-        .realm-status.offline { color: var(--red); }
 
         /* GAME FRAMEWORK */
         .game-interface { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; z-index: 100; background: radial-gradient(circle at center, var(--table-green) 0%, var(--table-dark) 100%);}
@@ -109,8 +113,8 @@
         .wallet-display { font-size: 24px; color: var(--gold); background: #020617; padding: 6px 15px; border: 2px solid #334155; border-radius: 6px; font-weight:bold; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);}
 
         .status-bar { width: 100%; padding: 8px 25px; background: rgba(0,0,0,0.6); border-bottom: 1px solid #1e293b; display: flex; justify-content: center; align-items: center; gap: 20px; min-height: 50px; flex-shrink: 0;}
-        .timer-display { font-size: 22px; color: var(--gold); font-weight: bold; border: 2px solid var(--gold); padding: 4px 15px; background: rgba(0,0,0,0.8); border-radius: 6px;}
-        .result-display { font-size: 26px; color: #fff; font-weight: bold; text-shadow: 1px 1px 0 rgba(0,0,0,0.8); }
+        .timer-display { font-size: 24px; color: var(--gold); font-weight: bold; border: 2px solid var(--gold); padding: 4px 20px; background: rgba(0,0,0,0.8); border-radius: 6px;}
+        .result-display { font-size: 28px; color: #fff; font-weight: bold; text-shadow: 1px 1px 0 rgba(0,0,0,0.8); }
 
         .game-surface { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; padding: 20px; overflow: hidden; }
 
@@ -119,24 +123,24 @@
         .chip-rack { display: flex; gap: 15px; margin-bottom: 20px; align-items: center;}
         
         .chip { 
-            width: 45px; height: 45px; border-radius: 50%; 
-            border: 3px dashed rgba(0,0,0,0.3); 
+            width: 48px; height: 48px; border-radius: 50%; 
+            border: 3px dashed rgba(0,0,0,0.5); 
             display: flex; justify-content: center; align-items: center; 
-            font-size: 15px; cursor: pointer; color: #0f172a; font-weight: 900; 
-            background: #e2e8f0; transition: 0.1s; font-family: Arial; 
-            box-shadow: inset 0 2px 4px rgba(255,255,255,0.6), 0 4px 6px rgba(0,0,0,0.4);
+            font-size: 20px; cursor: pointer; color: #0f172a; font-weight: bold; 
+            background: #e2e8f0; transition: 0.1s; font-family: 'VT323', monospace; 
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 4px 6px rgba(0,0,0,0.5);
         }
         .chip:hover { filter:brightness(1.1); transform: translateY(-2px); }
-        .chip.selected { border: 3px solid #fff; transform: translateY(-6px); box-shadow: 0 8px 12px rgba(0,0,0,0.5); }
+        .chip.selected { border: 3px solid #fff; transform: translateY(-6px); box-shadow: 0 8px 12px rgba(0,0,0,0.6); }
         .chip-1k { background: #cbd5e1; } .chip-5k { background: #fca5a5; } .chip-20k { background: #6ee7b7; } .chip-50k { background: #93c5fd; }
 
         .bet-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
         .bet-tile { background: #1e293b; border: 2px solid #475569; border-radius: 8px; width: 180px; height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; position: relative; transition: 0.1s; box-shadow: 0 4px 6px rgba(0,0,0,0.2);}
         .bet-tile:hover { background: #334155; border-color: var(--blue); transform: translateY(-2px);}
         .bet-tile:active { transform: translateY(2px); box-shadow: 0 1px 2px rgba(0,0,0,0.3);}
-        .bet-tile-title { font-size: 22px; font-weight: bold; line-height: 1; margin-bottom: 5px; color:#f8fafc;}
-        .bet-tile-payout { font-size: 16px; color: var(--text-muted); font-weight: bold; }
-        .bet-badge { position: absolute; top: -10px; right: -10px; background: var(--blue); color: #fff; padding: 2px 8px; border: 2px solid #0f172a; font-size: 16px; font-weight: bold; z-index: 10; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.4);}
+        .bet-tile-title { font-size: 24px; font-weight: bold; line-height: 1; margin-bottom: 5px; color:#f8fafc;}
+        .bet-tile-payout { font-size: 18px; color: var(--text-muted); font-weight: bold; }
+        .bet-badge { position: absolute; top: -10px; right: -10px; background: var(--blue); color: #fff; padding: 2px 8px; border: 2px solid #0f172a; font-size: 18px; font-weight: bold; z-index: 10; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.4);}
 
         /* CARDS */
         .hands-wrapper { display: flex; gap: 6px; justify-content: center; min-height: 110px; align-items: center;}
@@ -154,53 +158,53 @@
         .seat.active-turn { transform: translateY(-10px); }
         .seat.active-turn .nameplate { border-color: var(--gold); color: var(--gold); }
         
-        .nameplate { background: rgba(15,23,42,0.9); border: 2px solid #475569; padding: 4px 10px; border-radius: 6px; font-size: 18px; font-weight: bold; width: 100%; text-align: center; margin-top: 5px; color:#f8fafc; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
-        .bj-bet-line { font-size: 16px; color: var(--gold); font-weight: bold; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid #334155;}
+        .nameplate { background: rgba(15,23,42,0.9); border: 2px solid #475569; padding: 4px 10px; border-radius: 6px; font-size: 20px; font-weight: bold; width: 100%; text-align: center; margin-top: 5px; color:#f8fafc; box-shadow: 0 4px 6px rgba(0,0,0,0.4);}
+        .bj-bet-line { font-size: 18px; color: var(--gold); font-weight: bold; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid #334155;}
         .bj-bet-line.win { color: var(--green); border-color: var(--green);}
         
         .hand-container { position: relative; display: flex; flex-direction: column; align-items: center; min-height: 110px; margin-bottom: 5px;}
-        .hand-score { position: absolute; top: -12px; left: -12px; background: #0f172a; border: 2px solid #e2e8f0; border-radius: 50%; width: 26px; height: 26px; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; z-index: 10; color: #f8fafc;}
+        .hand-score { position: absolute; top: -12px; left: -12px; background: #0f172a; border: 2px solid #e2e8f0; border-radius: 50%; width: 26px; height: 26px; display: flex; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; z-index: 10; color: #f8fafc;}
 
         /* BACCARAT / DVT */
         .card-zone-split { display: flex; gap: 60px; justify-content: center; align-items: center; width: 100%; }
         .baccarat-zone { border: 2px solid #334155; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; width: 300px; display: flex; flex-direction: column; align-items: center; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.3);}
-        .zone-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; letter-spacing: 1px; }
-        .zone-score { position: absolute; bottom: -15px; background: #0f172a; border: 2px solid #fff; padding: 2px 15px; font-size: 24px; font-weight: bold; border-radius: 6px; z-index: 20; color: #fff;}
+        .zone-title { font-size: 28px; font-weight: bold; margin-bottom: 15px; letter-spacing: 1px; }
+        .zone-score { position: absolute; bottom: -15px; background: #0f172a; border: 2px solid #fff; padding: 2px 15px; font-size: 26px; font-weight: bold; border-radius: 6px; z-index: 20; color: #fff;}
 
         /* ECONOMY MODALS */
         .modal-split { display:flex; gap:20px; height: 400px; text-align:left; width: 100%;}
-        .modal-col { flex:1; background:#0f172a; border:2px solid #334155; padding:20px; border-radius: 8px; overflow-y:auto;}
-        .inv-slot { width: 60px; height: 60px; border: 2px solid #475569; display:flex; justify-content:center; align-items:center; background:#1e293b; font-size:28px; cursor:pointer; transition:0.1s; border-radius:6px;}
+        .modal-col { flex:1; background:#0f172a; border:2px solid #334155; padding:20px; border-radius: 8px; overflow-y:auto; position: relative;}
+        .inv-slot { width: 60px; height: 60px; border: 2px solid #475569; display:flex; justify-content:center; align-items:center; background:#1e293b; font-size:32px; cursor:pointer; border-radius: 6px; transition:0.1s;}
         .inv-slot:hover { border-color: #fff; transform: translateY(-2px); background:#334155;}
         
-        .market-item { border:2px solid #475569; background:#1e293b; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border-radius: 6px;}
+        .market-item { border:2px solid #475569; background:#1e293b; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
         
         /* CHAT SIDEBAR */
-        .chat-sidebar { position: absolute; right: -320px; top: 0; width: 320px; height: 100%; background: rgba(15,23,42,0.95); border-left: 2px solid #334155; display: flex; flex-direction: column; transition: 0.3s; z-index: 150; box-shadow: -5px 0 20px rgba(0,0,0,0.5);}
+        .chat-sidebar { position: absolute; right: -350px; top: 0; width: 350px; height: 100%; background: rgba(15,23,42,0.95); border-left: 2px solid #334155; display: flex; flex-direction: column; transition: 0.3s; z-index: 150; box-shadow: -5px 0 20px rgba(0,0,0,0.5);}
         .chat-sidebar.open { right: 0; }
-        .chat-header { padding: 15px; background: #0f172a; border-bottom: 2px solid #334155; font-size: 24px; font-weight: bold; color: var(--blue); display: flex; justify-content: space-between; align-items: center;}
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 18px; }
+        .chat-header { padding: 15px; background: #0f172a; border-bottom: 2px solid #334155; font-size: 26px; font-weight: bold; color: var(--blue); display: flex; justify-content: space-between; align-items: center;}
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 20px; }
         .chat-messages .msg { line-height: 1.3; word-wrap: break-word;}
         .chat-messages .sys { color: var(--text-muted); font-style: italic; }
         .chat-input-box { padding: 15px; border-top: 2px solid #334155; background: #0f172a; display: flex; gap: 10px;}
-        .chat-input-box input { flex: 1; padding: 8px; font-size: 18px; text-align: left; }
+        .chat-input-box input { flex: 1; padding: 8px; font-size: 20px; text-align: left; }
 
         /* LEDGER */
         .ledger-entry { border-left: 4px solid #475569; padding: 10px 12px; background: #1e293b; margin-bottom: 8px; border-radius: 4px;}
         .ledger-entry.win { border-color: var(--green); } .ledger-entry.loss { border-color: var(--red); }
-        .ledger-running-bal { font-size: 16px; color: var(--gold); background: #0f172a; padding: 2px 8px; border-radius: 4px; display: inline-block; width: max-content;}
+        .ledger-running-bal { font-size: 18px; color: var(--gold); background: #0f172a; padding: 2px 8px; border-radius: 4px; display: inline-block; width: max-content;}
 
         /* ARCADE MINIFIED */
-        .dice-display { font-size: 100px; font-family: Arial; display:flex; gap: 20px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);}
+        .dice-display { font-size: 120px; font-family: Arial; display:flex; gap: 20px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);}
         .derby-track { width: 800px; height: 220px; background: rgba(0,0,0,0.3); border: 2px solid #334155; display: flex; flex-direction: column; position: relative; border-radius:8px;} 
         .derby-lane { flex: 1; border-bottom: 2px dashed #334155; position: relative; display: flex; align-items: center; padding: 0 10px; } 
-        .horse { height: 80%; width: 40px; background: #e2e8f0; position: absolute; bottom: 10%; transition: left 0.1s linear; border-radius:4px;}
+        .horse { height: 80%; width: 40px; background: #e2e8f0; position: absolute; bottom: 10%; transition: left 0.1s linear; border-radius:4px; box-shadow: 2px 2px 5px rgba(0,0,0,0.5);}
         .color-rack { display: flex; gap: 20px; } 
-        .color-die { width: 90px; height: 90px; border: 4px solid #fff; border-radius: 12px; transition: 0.1s; box-shadow: inset 0 0 10px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.3);} 
+        .color-die { width: 100px; height: 100px; border: 4px solid #fff; border-radius: 12px; transition: 0.1s; box-shadow: inset 0 0 10px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.3);} 
         .c-red{background:var(--red);} .c-blue{background:var(--blue);} .c-yellow{background:var(--gold);} .c-green{background:var(--green);} .c-pink{background:var(--pink);} .c-white{background:#f8fafc;}
         .cups-rack { display: flex; gap: 40px; height: 120px; align-items: flex-end; } 
         .cup-wrapper { position: relative; width: 80px; display:flex; justify-content:center;} 
-        .cup-shape { width: 70px; height: 90px; background: var(--red); border-radius: 30px 30px 4px 4px; z-index: 10; transition: 0.2s;} 
+        .cup-shape { width: 70px; height: 90px; background: var(--red); border-radius: 30px 30px 4px 4px; z-index: 10; transition: 0.2s; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.3);} 
         .cup-ball { font-size: 30px; position: absolute; bottom: -5px; z-index: 5; opacity: 0; } 
         .cup-wrapper.reveal .cup-shape { transform: translateY(-50px); } .cup-wrapper.reveal .cup-ball { opacity: 1; }
         .pvp-arena { display: flex; justify-content: center; align-items: center; gap: 20px; } 
@@ -221,12 +225,12 @@
 
             <!-- CHAT SIDEBAR -->
             <div id="chat-sidebar" class="chat-sidebar">
-                <div class="chat-header"><span>ROOM CHAT</span><button class="btn small" onclick="toggleChat()">X</button></div>
+                <div class="chat-header"><span>ROOM CHAT</span><button class="btn small" onclick="toggleChat()">✖</button></div>
                 <div class="chat-messages custom-scroll" id="chat-box-messages">
-                    <div class="msg sys">SYSTEM: Welcome to the Arcade!</div>
+                    <div class="msg sys">SYSTEM: Welcome to Stick N' Trade Arcade!</div>
                 </div>
                 <div class="chat-input-box">
-                    <input type="text" id="chat-input" placeholder="Type message..." maxlength="60">
+                    <input type="text" id="chat-input" placeholder="Type..." maxlength="60">
                     <button class="btn btn-blue small" onclick="sendChat()">►</button>
                 </div>
             </div>
@@ -236,25 +240,25 @@
                 <div class="panel-content">
                     <div class="main-header"><span class="txt-gold">STICK N'</span> <span class="txt-plain">TRADE</span></div>
                     <div class="panel" style="width: 450px;">
-                        <h2 style="color: var(--blue); font-size: 32px; margin-bottom: 20px;">SYSTEM LOGIN</h2>
+                        <h2 style="color: var(--blue); font-size: 36px; margin-bottom: 20px;">SYSTEM LOGIN</h2>
                         <input type="text" id="login-user" placeholder="USERNAME" style="margin-bottom:15px;">
-                        <input type="password" id="login-pass" placeholder="PASSWORD" style="margin-bottom:20px;">
+                        <input type="password" id="login-pass" placeholder="PASSWORD" style="margin-bottom:25px;">
                         <button class="btn btn-blue" onclick="login()">PRESS START</button>
                     </div>
                 </div>
             </div>
 
-            <!-- MAIN HUB MENU -->
+            <!-- MAIN HUB MENU (GRID LAYOUT - NO WASTED SPACE) -->
             <div id="main-menu-view" class="full-menu hidden">
                 <div class="panel-content">
                     <div class="main-header"><span class="txt-gold">STICK N'</span> <span class="txt-plain">TRADE</span></div>
                     
-                    <div style="display: flex; flex-direction: column; gap: 15px; width: 350px;">
-                        <button class="btn btn-blue" onclick="openCasinoHub()" style="justify-content:space-between;"><span>ENTER ARCADE</span> <span>►</span></button>
-                        <button class="btn btn-green" onclick="openMarketHub()" style="justify-content:space-between;"><span>THE EXCHANGE</span> <span>⟷</span></button>
-                        <button class="btn btn-gold" onclick="showBank()" style="justify-content:space-between;"><span>SYSTEM BANK</span> <span>$</span></button>
-                        <button class="btn" onclick="showProfile()" style="justify-content:space-between;"><span>AGENT DOSSIER</span> <span>≡</span></button>
-                        <button class="btn btn-red" onclick="promptLogout()" style="justify-content:space-between;"><span>DISCONNECT</span> <span>X</span></button>
+                    <div class="menu-grid">
+                        <button class="btn btn-blue full-width" onclick="openCasinoHub()">ENTER ARCADE ►</button>
+                        <button class="btn btn-green" onclick="openMarketHub()">THE EXCHANGE</button>
+                        <button class="btn btn-gold" onclick="showBank()">SYSTEM BANK</button>
+                        <button class="btn" onclick="showProfile()">AGENT DOSSIER</button>
+                        <button class="btn btn-red" onclick="promptLogout()">DISCONNECT</button>
                     </div>
                 </div>
             </div>
@@ -267,29 +271,25 @@
                 </div>
 
                 <div class="category-nav">
-                    <div class="nav-tab active" id="tab-btn-cards" onclick="switchRealmTab('cards')">♠ CARDS</div>
+                    <div class="nav-tab active" id="tab-btn-casino" onclick="switchRealmTab('casino')">🎰 CASINO</div>
                     <div class="nav-tab" id="tab-btn-arena" onclick="switchRealmTab('arena')">⚔ ARENA</div>
-                    <div class="nav-tab" id="tab-btn-arcade" onclick="switchRealmTab('arcade')">● ARCADE</div>
                 </div>
 
                 <div class="realm-viewport custom-scroll" style="z-index: 10;">
-                    <!-- CARDS -->
-                    <div id="realm-cards" class="realm-grid">
+                    <!-- MERGED CASINO GAMES -->
+                    <div id="realm-casino" class="realm-grid">
                         <div class="realm-card" onclick="joinGame('5seat')"><div class="realm-title" style="color:var(--green);">CLASSIC BLACKJACK</div><div class="realm-desc">5-Seat Table</div><div class="realm-status" id="status-5seat">● ONLINE</div></div>
                         <div class="realm-card" onclick="joinGame('3seat')"><div class="realm-title" style="color:var(--blue);">VIP BLACKJACK</div><div class="realm-desc">3-Seat Fast Paced</div><div class="realm-status" id="status-3seat">● ONLINE</div></div>
                         <div class="realm-card" onclick="joinGame('baccarat')"><div class="realm-title" style="color:var(--red);">PUNTO BANCO</div><div class="realm-desc">True Baccarat</div><div class="realm-status" id="status-bac">● ONLINE</div></div>
                         <div class="realm-card" onclick="joinGame('dvt')"><div class="realm-title" style="color:var(--gold);">DRAGON VS TIGER</div><div class="realm-desc">High Card Wins</div><div class="realm-status" id="status-dvt">● ONLINE</div></div>
-                    </div>
-                    <!-- ARENA -->
-                    <div id="realm-arena" class="realm-grid hidden">
-                        <div class="realm-card" onclick="joinGame('pvp')"><div class="realm-title" style="color:var(--red);">CUSTOM DUELS</div><div class="realm-desc">1v1 Wagering</div><div class="realm-status" id="status-pvp">● ONLINE</div></div>
-                    </div>
-                    <!-- ARCADE -->
-                    <div id="realm-arcade" class="realm-grid hidden">
                         <div class="realm-card" onclick="joinGame('dice')"><div class="realm-title" style="color:var(--blue);">HIGH-LOW DICE</div><div class="realm-desc">Jackpot 7s</div><div class="realm-status" id="status-dice">● ONLINE</div></div>
                         <div class="realm-card" onclick="joinGame('derby')"><div class="realm-title" style="color:var(--gold);">8-BIT DERBY</div><div class="realm-desc">Virtual Sprint</div><div class="realm-status" id="status-derby">● ONLINE</div></div>
                         <div class="realm-card" onclick="joinGame('color')"><div class="realm-title" style="color:var(--green);">PERYA COLOR</div><div class="realm-desc">3 Color Dice</div><div class="realm-status" id="status-color">● ONLINE</div></div>
                         <div class="realm-card" onclick="joinGame('cups')"><div class="realm-title" style="color:var(--purple);">STREET HUSTLE</div><div class="realm-desc">3 Cups 1 Ball</div><div class="realm-status" id="status-cups">● ONLINE</div></div>
+                    </div>
+                    <!-- ARENA -->
+                    <div id="realm-arena" class="realm-grid hidden">
+                        <div class="realm-card" onclick="joinGame('pvp')"><div class="realm-title" style="color:var(--red);">CUSTOM DUELS</div><div class="realm-desc">1v1 Wagering</div><div class="realm-status" id="status-pvp">● ONLINE</div></div>
                     </div>
                 </div>
             </div>
@@ -303,8 +303,8 @@
                 <div class="panel-content" style="margin-top: 50px;">
                     <h2 style="color:var(--green); font-size:50px; margin-bottom:30px;">THE EXCHANGE</h2>
                     <div style="display: flex; flex-direction: column; gap: 15px; width: 400px;">
-                        <button class="btn btn-green" onclick="openMarket()" style="justify-content:space-between;"><span>SNT RETAIL</span> <span>[+]</span></button>
-                        <button class="btn btn-gold" onclick="openAuction()" style="justify-content:space-between;"><span>AUCTION HOUSE</span> <span>[::]</span></button>
+                        <button class="btn btn-green" onclick="openMarket()" style="justify-content:space-between;"><span>SNT RETAIL</span> <span>🛒</span></button>
+                        <button class="btn btn-gold" onclick="openAuction()" style="justify-content:space-between;"><span>AUCTION HOUSE</span> <span>⚖️</span></button>
                         <button class="btn btn-blue" onclick="openTradeHub()" style="justify-content:space-between;"><span>P2P TRADE HUB</span> <span>⟷</span></button>
                     </div>
                 </div>
@@ -313,8 +313,8 @@
             <!-- SYSTEM MODALS -->
             <div id="rewards-modal" class="overlay-menu hidden">
                 <div class="panel" style="width: 500px;">
-                    <h2 style="color: var(--purple); font-size: 36px; margin-bottom: 20px;">DAILY REWARDS</h2>
-                    <div id="reward-status" style="font-size: 22px; margin-bottom: 20px;">CLAIM YOUR DAILY 🪙 10,000 CR</div>
+                    <h2 style="color: var(--purple); font-size: 40px; margin-bottom: 20px;">DAILY REWARDS</h2>
+                    <div id="reward-status" style="font-size: 24px; margin-bottom: 20px;">CLAIM YOUR DAILY 🪙 10,000 CR</div>
                     <div id="reward-timer-box" class="hidden" style="font-size: 40px; background:#0f172a; padding:10px; border:2px solid #334155; color:var(--gold); margin-bottom:20px; border-radius:6px;">00:00:00</div>
                     <button id="btn-claim-reward" class="btn btn-green" style="margin-bottom:10px;" onclick="claimDailyReward()">CLAIM LOOT</button>
                     <button class="btn btn-red" onclick="goBack()">CLOSE</button>
@@ -323,13 +323,13 @@
 
             <div id="bank-modal" class="overlay-menu hidden">
                 <div class="panel" style="width: 500px;">
-                    <h2 style="color: var(--gold); font-size: 36px; margin-bottom: 20px;">SYSTEM BANK</h2>
+                    <h2 style="color: var(--gold); font-size: 40px; margin-bottom: 20px;">SYSTEM BANK</h2>
                     <div style="font-size: 28px; background:#0f172a; padding:10px; border:2px solid #334155; margin-bottom: 10px; border-radius:6px;">BALANCE: <span style="color:var(--gold);">🪙 <span id="bank-bal">0</span></span></div>
                     <div style="color:var(--text-muted); font-size: 16px; margin-bottom: 20px;">MAX TRANSACTION LIMIT: 100,000 CR</div>
                     <input type="number" id="bank-amt" placeholder="AMOUNT" max="100000" style="margin-bottom: 20px;">
                     <div style="display:flex; gap:10px; margin-bottom: 10px; width:100%;">
-                        <button class="btn btn-blue" onclick="submitBank('deposit')">DEPOSIT</button>
-                        <button class="btn btn-gold" onclick="submitBank('withdrawal')">WITHDRAW</button>
+                        <button class="btn btn-blue" style="flex:1;" onclick="submitBank('deposit')">DEPOSIT</button>
+                        <button class="btn btn-gold" style="flex:1;" onclick="submitBank('withdrawal')">WITHDRAW</button>
                     </div>
                     <button class="btn btn-red" onclick="goBack()">CLOSE</button>
                 </div>
@@ -338,7 +338,7 @@
             <div id="profile-modal" class="overlay-menu hidden">
                 <div class="panel" style="width: 800px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; width:100%;">
-                        <h2 style="color: var(--blue); font-size: 36px; margin:0;">AGENT DOSSIER</h2>
+                        <h2 style="color: var(--blue); font-size: 40px; margin:0;">AGENT DOSSIER</h2>
                         <button class="btn btn-red small" onclick="goBack()">CLOSE</button>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom: 2px solid #334155; padding-bottom: 15px; margin-bottom:20px; width:100%;">
@@ -354,10 +354,10 @@
             <div id="rules-modal" class="overlay-menu hidden">
                 <div class="panel" style="width: 700px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; width:100%;">
-                        <h2 id="rules-title" style="color: var(--blue); font-size: 36px; margin:0;">HOW TO PLAY</h2>
+                        <h2 id="rules-title" style="color: var(--blue); font-size: 40px; margin:0;">HOW TO PLAY</h2>
                         <button class="btn btn-red small" onclick="goBack()">CLOSE</button>
                     </div>
-                    <div id="rules-content" class="custom-scroll" style="height: 300px; background:#0f172a; border:2px solid #334155; border-radius:6px; overflow-y:auto; padding:20px; text-align:left; font-size:20px; line-height:1.4; width:100%;">
+                    <div id="rules-content" class="custom-scroll" style="height: 300px; background:#0f172a; border:2px solid #334155; border-radius:6px; overflow-y:auto; padding:20px; text-align:left; font-size:22px; line-height:1.4; width:100%;">
                         <!-- Auto populated -->
                     </div>
                 </div>
@@ -367,13 +367,13 @@
             <div id="market-modal" class="overlay-menu hidden">
                 <div class="panel" style="width: 1000px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; width:100%;">
-                        <h2 style="color: var(--green); font-size: 36px; margin:0;">SNT RETAIL MARKET</h2>
+                        <h2 style="color: var(--green); font-size: 40px; margin:0;">SNT RETAIL MARKET</h2>
                         <button class="btn btn-red small" onclick="goBack()">CLOSE</button>
                     </div>
                     <div class="modal-split">
                         <div class="modal-col custom-scroll">
                             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #334155; padding-bottom:10px; margin-bottom:15px;">
-                                <h3 style="font-size:24px; margin:0;">STORE LISTINGS</h3>
+                                <h3 style="font-size:26px; margin:0;">STORE LISTINGS</h3>
                                 <button class="btn btn-green small" onclick="showToast('STAFF RANK REQUIRED TO CREATE RETAIL LISTINGS.', 'error')">ADD (STAFF)</button>
                             </div>
                             <div id="market-listings-area">
@@ -381,8 +381,8 @@
                                     <div style="display:flex; align-items:center; gap:15px;">
                                         <div class="inv-slot" style="border-color:var(--rarity-common); color:var(--rarity-common); cursor:default;">🪙</div>
                                         <div>
-                                            <div style="font-size:22px; color:var(--rarity-common); font-weight:bold;">SNT TOKEN</div>
-                                            <div style="color:var(--text-muted); font-size:16px;">SELLER: SYSTEM<br>PRICE: 🪙 500</div>
+                                            <div style="font-size:24px; color:var(--rarity-common); font-weight:bold;">SNT TOKEN</div>
+                                            <div style="color:var(--text-muted); font-size:18px;">SELLER: SYSTEM<br>PRICE: 🪙 500</div>
                                         </div>
                                     </div>
                                     <button class="btn btn-blue small">BUY</button>
@@ -390,7 +390,7 @@
                             </div>
                         </div>
                         <div class="modal-col custom-scroll">
-                            <h3 style="font-size:24px; margin-bottom:15px; border-bottom:2px solid #334155; padding-bottom:10px;">YOUR INVENTORY</h3>
+                            <h3 style="font-size:26px; margin-bottom:15px; border-bottom:2px solid #334155; padding-bottom:10px;">YOUR INVENTORY</h3>
                             <div id="market-inventory-grid" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
                         </div>
                     </div>
@@ -400,13 +400,13 @@
             <div id="auction-modal" class="overlay-menu hidden">
                 <div class="panel" style="width: 1000px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; width:100%;">
-                        <h2 style="color: var(--gold); font-size: 36px; margin:0;">AUCTION HOUSE</h2>
+                        <h2 style="color: var(--gold); font-size: 40px; margin:0;">AUCTION HOUSE</h2>
                         <button class="btn btn-red small" onclick="goBack()">CLOSE</button>
                     </div>
                     <div class="modal-split">
                         <div class="modal-col custom-scroll">
                             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #334155; padding-bottom:10px; margin-bottom:15px;">
-                                <h3 style="font-size:24px; margin:0;">LIVE AUCTIONS</h3>
+                                <h3 style="font-size:26px; margin:0;">LIVE AUCTIONS</h3>
                                 <button class="btn btn-gold small" onclick="showToast('VIP/STAFF RANK REQUIRED TO AUCTION ITEMS.', 'error')">CREATE AUCTION</button>
                             </div>
                             <div id="auction-listings-area">
@@ -414,8 +414,8 @@
                                     <div style="display:flex; align-items:center; gap:15px;">
                                         <div class="inv-slot" style="border-color:var(--rarity-legendary); color:var(--rarity-legendary); cursor:default;">👑</div>
                                         <div>
-                                            <div style="font-size:22px; color:var(--rarity-legendary); font-weight:bold;">GOLDEN CROWN</div>
-                                            <div style="color:var(--text-muted); font-size:16px;">SELLER: ADMIN<br>BID: 🪙 50,000</div>
+                                            <div style="font-size:24px; color:var(--rarity-legendary); font-weight:bold;">GOLDEN CROWN</div>
+                                            <div style="color:var(--text-muted); font-size:18px;">SELLER: ADMIN<br>BID: 🪙 50,000</div>
                                         </div>
                                     </div>
                                     <button class="btn btn-blue small">BID</button>
@@ -423,7 +423,7 @@
                             </div>
                         </div>
                         <div class="modal-col custom-scroll">
-                            <h3 style="font-size:24px; margin-bottom:15px; border-bottom:2px solid #334155; padding-bottom:10px;">YOUR INVENTORY</h3>
+                            <h3 style="font-size:26px; margin-bottom:15px; border-bottom:2px solid #334155; padding-bottom:10px;">YOUR INVENTORY</h3>
                             <div id="auction-inventory-grid" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
                         </div>
                     </div>
@@ -431,15 +431,15 @@
             </div>
 
             <div id="trade-hub-modal" class="overlay-menu hidden">
-                <div class="panel" style="width: 1000px;">
+                <div class="panel" style="width: 1100px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; width:100%;">
-                        <h2 style="color: var(--blue); font-size: 36px; margin:0;">P2P TRADE HUB</h2>
+                        <h2 style="color: var(--blue); font-size: 40px; margin:0;">P2P TRADE HUB</h2>
                         <button class="btn btn-red small" onclick="goBack()">CLOSE</button>
                     </div>
                     <div class="modal-split">
                         <div class="modal-col custom-scroll">
                             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #334155; padding-bottom:10px; margin-bottom:15px;">
-                                <h3 style="font-size:24px; margin:0;">PLAYER OFFERS</h3>
+                                <h3 style="font-size:26px; margin:0;">PLAYER OFFERS</h3>
                                 <button class="btn btn-blue small" onclick="openCreateOfferModal()">CREATE OFFER</button>
                             </div>
                             <div id="trade-listings-area">
@@ -447,8 +447,8 @@
                                     <div style="display:flex; align-items:center; gap:15px;">
                                         <div class="inv-slot" style="border-color:var(--rarity-epic); color:var(--rarity-epic); cursor:default;">🔮</div>
                                         <div>
-                                            <div style="font-size:22px; color:var(--blue); font-weight:bold;">PLAYER_99</div>
-                                            <div style="color:var(--text-muted); font-size:16px;">OFFER: MYSTIC ORB<br>WANTS: OPEN OFFERS</div>
+                                            <div style="font-size:24px; color:var(--blue); font-weight:bold;">PLAYER_99</div>
+                                            <div style="color:var(--text-muted); font-size:18px;">OFFER: MYSTIC ORB<br>WANTS: OPEN OFFERS</div>
                                         </div>
                                     </div>
                                     <button class="btn btn-green small" onclick="openCounterOfferModal('PLAYER_99', '🔮', 'MYSTIC ORB')">OFFER</button>
@@ -456,54 +456,58 @@
                             </div>
                         </div>
                         <div class="modal-col custom-scroll">
-                            <h3 style="font-size:24px; margin-bottom:15px; border-bottom:2px solid #334155; padding-bottom:10px;">YOUR INVENTORY</h3>
+                            <h3 style="font-size:26px; margin-bottom:15px; border-bottom:2px solid #334155; padding-bottom:10px;">YOUR INVENTORY</h3>
                             <div id="trade-inventory-grid" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ITEM INSPECTOR -->
-            <div id="item-inspector-modal" class="overlay-menu hidden">
-                <div class="panel" id="inspector-panel" style="width: 450px;">
-                    <h2 id="inspector-name" style="font-size: 32px; margin-bottom: 5px;">ITEM NAME</h2>
-                    <div id="inspector-rarity" style="font-size: 18px; margin-bottom: 15px; font-weight:bold;">RARITY</div>
-                    <div class="inv-slot" id="inspector-icon" style="width:90px; height:90px; font-size:45px; margin: 0 auto 15px auto; pointer-events:none;">?</div>
-                    <div id="inspector-desc" style="font-size:18px; color:var(--text-muted); margin-bottom:15px; line-height:1.2;">Description goes here.</div>
-                    <div id="inspector-perk" style="font-size:18px; color:var(--gold); margin-bottom:15px; background:#0f172a; border: 1px solid #334155; padding:8px; border-radius:6px;">Perk goes here.</div>
-                    <div id="inspector-value" style="font-size:26px; font-weight:bold; margin-bottom:20px; color:var(--green);">🪙 0 CR</div>
-                    <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
-                        <button id="btn-inspector-equip" class="btn btn-blue">EQUIP ITEM</button>
-                        <button id="btn-inspector-convert" class="btn btn-green" onclick="executeConversion()">CONVERT TO CREDITS</button>
-                        <button class="btn btn-red" onclick="goBack()">CLOSE</button>
+            <!-- CREATE OFFER (INVENTORY SELECTOR) MODAL -->
+            <div id="create-offer-modal" class="overlay-menu hidden">
+                <div class="panel" style="width: 600px; border-color:var(--blue);">
+                    <h2 style="color: var(--blue); font-size: 36px; margin-bottom: 15px;">CREATE NEW OFFER</h2>
+                    <p style="font-size: 22px; color:var(--text-muted); margin-bottom:20px;">Select an item from your inventory to list on the Trade Hub.</p>
+                    <div id="create-offer-inventory" style="display:flex; gap:10px; flex-wrap:wrap; background:#0f172a; padding:15px; border:2px solid #334155; border-radius:8px; margin-bottom:20px; justify-content:center;">
+                        <!-- Cloned from renderInventory -->
                     </div>
+                    <button class="btn btn-red" onclick="goBack()">CANCEL</button>
                 </div>
             </div>
 
             <!-- COUNTER OFFER MODAL -->
             <div id="counter-offer-modal" class="overlay-menu hidden">
-                <div class="panel" style="width: 800px;">
+                <div class="panel" style="width: 900px;">
                     <h2 style="color: var(--blue); font-size: 36px; margin-bottom: 20px;">PLACE COUNTER OFFER</h2>
                     
                     <div style="display:flex; justify-content:space-between; gap:20px; margin-bottom:20px; width:100%;">
                         <div style="flex:1; background:#0f172a; border:2px solid #334155; border-radius:8px; padding:15px; display:flex; flex-direction:column; align-items:center;">
-                            <h3 style="color:var(--text-muted); font-size:20px; margin-bottom:10px;">THEIR OFFER (<span id="target-trade-name">PLAYER</span>)</h3>
+                            <h3 style="color:var(--text-muted); font-size:22px; margin-bottom:10px;">THEIR OFFER (<span id="target-trade-name">PLAYER</span>)</h3>
                             <div class="inv-slot" id="target-trade-icon" style="width:80px; height:80px; font-size:40px; margin-bottom:10px; pointer-events:none;">?</div>
-                            <div id="target-trade-item-name" style="font-size:20px; font-weight:bold; color:var(--blue);">ITEM NAME</div>
+                            <div id="target-trade-item-name" style="font-size:22px; font-weight:bold; color:var(--blue);">ITEM NAME</div>
                         </div>
                         
-                        <div style="font-size:36px; color:var(--text-muted); display:flex; align-items:center;">VS</div>
+                        <div style="font-size:40px; color:var(--text-muted); display:flex; align-items:center;">VS</div>
 
                         <div style="flex:1; background:#0f172a; border:2px solid var(--green); border-radius:8px; padding:15px; display:flex; flex-direction:column; align-items:center;">
-                            <h3 style="color:var(--green); font-size:20px; margin-bottom:10px;">YOUR OFFER</h3>
-                            <div class="bet-grid" style="gap:5px; margin-bottom:15px;">
-                                <div class="inv-slot trade-slot" onclick="showToast('Select an item from inventory.', 'success')"></div>
-                                <div class="inv-slot trade-slot" onclick="showToast('Select an item from inventory.', 'success')"></div>
-                                <div class="inv-slot trade-slot" onclick="showToast('Select an item from inventory.', 'success')"></div>
+                            <h3 style="color:var(--green); font-size:22px; margin-bottom:10px;">YOUR OFFER</h3>
+                            <div class="bet-grid trade-grid-3x3" style="gap:5px; margin-bottom:15px; display:grid; grid-template-columns: repeat(3, 1fr);">
+                                <div class="inv-slot trade-slot" onclick="showToast('Select an item from below.', 'success')"></div>
+                                <div class="inv-slot trade-slot" onclick="showToast('Select an item from below.', 'success')"></div>
+                                <div class="inv-slot trade-slot" onclick="showToast('Select an item from below.', 'success')"></div>
                             </div>
-                            <input type="number" placeholder="+ ADD CREDITS" style="font-size:18px;">
+                            <input type="number" placeholder="+ ADD CREDITS" style="font-size:20px; width:100%;">
                         </div>
                     </div>
+
+                    <!-- Bottom Inventory for quick adding -->
+                    <div style="width:100%; text-align: left; margin-bottom: 20px;">
+                        <h3 style="color:var(--text-main); font-size:22px; margin-bottom:10px;">SELECT FROM INVENTORY:</h3>
+                        <div id="counter-offer-inventory" style="display:flex; gap:10px; flex-wrap:wrap; background:#0f172a; padding:15px; border:2px solid #334155; border-radius:8px; justify-content:flex-start;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
                     <div style="display:flex; gap:10px; width:100%;">
                         <button class="btn btn-green" style="flex:1;" onclick="openTradeConfirm()">REVIEW TRADE</button>
                         <button class="btn btn-red" style="flex:1;" onclick="goBack()">CANCEL</button>
@@ -515,7 +519,7 @@
             <div id="trade-confirm-modal" class="overlay-menu hidden">
                 <div class="panel" style="width: 600px; border-color:var(--gold);">
                     <h2 style="color: var(--gold); font-size: 36px; margin-bottom: 20px;">CONFIRM TRANSACTION</h2>
-                    <div style="background:#0f172a; border:2px dashed #475569; border-radius:8px; padding:20px; margin-bottom:20px; font-size:22px;">
+                    <div style="background:#0f172a; border:2px dashed #475569; border-radius:8px; padding:20px; margin-bottom:20px; font-size:24px;">
                         <div style="color:var(--blue); margin-bottom:5px;">YOU ARE TRADING:</div>
                         <div style="color:#fff; font-weight:bold; margin-bottom:15px;" id="confirm-my-offer">[ NO ITEMS ] + 🪙 0 CR</div>
                         <div style="color:var(--green); margin-bottom:5px;">TO RECEIVE FROM <span id="confirm-target-name">PLAYER</span>:</div>
@@ -528,10 +532,27 @@
                 </div>
             </div>
 
+            <!-- ITEM INSPECTOR -->
+            <div id="item-inspector-modal" class="overlay-menu hidden">
+                <div class="panel" id="inspector-panel" style="width: 450px;">
+                    <h2 id="inspector-name" style="font-size: 36px; margin-bottom: 5px;">ITEM NAME</h2>
+                    <div id="inspector-rarity" style="font-size: 20px; margin-bottom: 15px; font-weight:bold;">RARITY</div>
+                    <div class="inv-slot" id="inspector-icon" style="width:90px; height:90px; font-size:45px; margin: 0 auto 15px auto; pointer-events:none;">?</div>
+                    <div id="inspector-desc" style="font-size:20px; color:var(--text-muted); margin-bottom:15px; line-height:1.2;">Description goes here.</div>
+                    <div id="inspector-perk" style="font-size:20px; color:var(--gold); margin-bottom:15px; background:#0f172a; border: 1px solid #334155; padding:8px; border-radius:6px;">Perk goes here.</div>
+                    <div id="inspector-value" style="font-size:28px; font-weight:bold; margin-bottom:20px; color:var(--green);">🪙 0 CR</div>
+                    <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+                        <button id="btn-inspector-equip" class="btn btn-blue">EQUIP ITEM</button>
+                        <button id="btn-inspector-convert" class="btn btn-green" onclick="executeConversion()">CONVERT TO CREDITS</button>
+                        <button class="btn btn-red" onclick="goBack()">CLOSE</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="logout-modal" class="overlay-menu hidden">
                 <div class="panel" style="width:400px; border-color:var(--red);">
                     <h2 style="color: var(--red); font-size: 36px; margin-bottom:15px;">DISCONNECT</h2>
-                    <p id="confirm-action-msg" style="font-size: 20px; margin-bottom: 20px; color:var(--text-muted);">LEAVE LOBBY?</p>
+                    <p id="confirm-action-msg" style="font-size: 22px; margin-bottom: 20px; color:var(--text-muted);">LEAVE LOBBY?</p>
                     <div style="display: flex; gap: 10px; width:100%;">
                         <button id="btn-confirm-yes" class="btn btn-red" style="flex: 1;">YES</button>
                         <button class="btn" style="flex: 1;" onclick="goBack()">NO</button>
@@ -711,12 +732,12 @@
                 <div class="arcade-bet-area">
                     <div class="chip-rack"><button class="btn small" onclick="actUndoBet('color')">UNDO</button><div class="chip selected" onclick="selectChip(100)">100</div><div class="chip chip-1k" onclick="selectChip(1000)">1K</div><div class="chip chip-5k" onclick="selectChip(5000)">5K</div><div class="chip chip-20k" onclick="selectChip(20000)">20K</div><div class="chip chip-50k" onclick="selectChip(50000)">50K</div><button class="btn small" onclick="actRebet('color')">REBET</button></div>
                     <div class="bet-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); max-width:600px;">
-                        <div class="bet-tile" style="border-color:var(--red);" onclick="placeBet('color', 'red')"><div class="bet-badge hidden" id="badge-color-red">0</div><div class="bet-tile-title">RED</div></div>
-                        <div class="bet-tile" style="border-color:var(--blue);" onclick="placeBet('color', 'blue')"><div class="bet-badge hidden" id="badge-color-blue">0</div><div class="bet-tile-title">BLUE</div></div>
-                        <div class="bet-tile" style="border-color:var(--gold);" onclick="placeBet('color', 'yellow')"><div class="bet-badge hidden" id="badge-color-yellow">0</div><div class="bet-tile-title text-black">YELLOW</div></div>
-                        <div class="bet-tile" style="border-color:var(--green);" onclick="placeBet('color', 'green')"><div class="bet-badge hidden" id="badge-color-green">0</div><div class="bet-tile-title">GREEN</div></div>
-                        <div class="bet-tile" style="border-color:var(--pink);" onclick="placeBet('color', 'pink')"><div class="bet-badge hidden" id="badge-color-pink">0</div><div class="bet-tile-title">PINK</div></div>
-                        <div class="bet-tile" style="border-color:#fff;" onclick="placeBet('color', 'white')"><div class="bet-badge hidden" id="badge-color-white">0</div><div class="bet-tile-title text-black">WHITE</div></div>
+                        <div class="bet-tile" style="border-color:var(--red);" onclick="placeBet('color', 'red')"><div class="bet-badge hidden" id="badge-color-red">0</div><div class="bet-tile-title" style="color:var(--red);">RED</div></div>
+                        <div class="bet-tile" style="border-color:var(--blue);" onclick="placeBet('color', 'blue')"><div class="bet-badge hidden" id="badge-color-blue">0</div><div class="bet-tile-title" style="color:var(--blue);">BLUE</div></div>
+                        <div class="bet-tile" style="border-color:var(--gold);" onclick="placeBet('color', 'yellow')"><div class="bet-badge hidden" id="badge-color-yellow">0</div><div class="bet-tile-title" style="color:var(--gold);">YELLOW</div></div>
+                        <div class="bet-tile" style="border-color:var(--green);" onclick="placeBet('color', 'green')"><div class="bet-badge hidden" id="badge-color-green">0</div><div class="bet-tile-title" style="color:var(--green);">GREEN</div></div>
+                        <div class="bet-tile" style="border-color:var(--pink);" onclick="placeBet('color', 'pink')"><div class="bet-badge hidden" id="badge-color-pink">0</div><div class="bet-tile-title" style="color:var(--pink);">PINK</div></div>
+                        <div class="bet-tile" style="border-color:#fff;" onclick="placeBet('color', 'white')"><div class="bet-badge hidden" id="badge-color-white">0</div><div class="bet-tile-title" style="color:#fff;">WHITE</div></div>
                     </div>
                 </div>
             </div>
@@ -733,9 +754,9 @@
                 <div class="arcade-bet-area">
                     <div class="chip-rack"><button class="btn small" onclick="actUndoBet('cups')">UNDO</button><div class="chip selected" onclick="selectChip(100)">100</div><div class="chip chip-1k" onclick="selectChip(1000)">1K</div><div class="chip chip-5k" onclick="selectChip(5000)">5K</div><div class="chip chip-20k" onclick="selectChip(20000)">20K</div><div class="chip chip-50k" onclick="selectChip(50000)">50K</div><button class="btn small" onclick="actRebet('cups')">REBET</button></div>
                     <div class="bet-grid">
-                        <div class="bet-tile" style="border-color:var(--red);" onclick="placeBet('cups', 0)"><div class="bet-badge hidden" id="badge-cups-0">0</div><div class="bet-tile-title">CUP 1</div></div>
-                        <div class="bet-tile" style="border-color:var(--red);" onclick="placeBet('cups', 1)"><div class="bet-badge hidden" id="badge-cups-1">0</div><div class="bet-tile-title">CUP 2</div></div>
-                        <div class="bet-tile" style="border-color:var(--red);" onclick="placeBet('cups', 2)"><div class="bet-badge hidden" id="badge-cups-2">0</div><div class="bet-tile-title">CUP 3</div></div>
+                        <div class="bet-tile" style="border-color:var(--red);" onclick="placeBet('cups', 0)"><div class="bet-badge hidden" id="badge-cups-0">0</div><div class="bet-tile-title" style="color:var(--red);">CUP 1</div></div>
+                        <div class="bet-tile" style="border-color:var(--red);" onclick="placeBet('cups', 1)"><div class="bet-badge hidden" id="badge-cups-1">0</div><div class="bet-tile-title" style="color:var(--red);">CUP 2</div></div>
+                        <div class="bet-tile" style="border-color:var(--red);" onclick="placeBet('cups', 2)"><div class="bet-badge hidden" id="badge-cups-2">0</div><div class="bet-tile-title" style="color:var(--red);">CUP 3</div></div>
                     </div>
                 </div>
             </div>
@@ -879,21 +900,31 @@
         }
 
         function showModal(id) { 
-            menuHistory.push(id);
             document.querySelectorAll('.overlay-menu').forEach(m => m.classList.add('hidden')); 
-            const el = document.getElementById(id); if (el) el.classList.remove('hidden'); 
+            const el = document.getElementById(id); 
+            if (el) {
+                el.classList.remove('hidden'); 
+                if (menuHistory[menuHistory.length - 1] !== id) {
+                    menuHistory.push(id);
+                }
+            }
         }
         
         window.goBack = function() {
             const modals = document.querySelectorAll('.overlay-menu:not(.hidden)');
             if (modals.length > 0) {
-                modals.forEach(m => m.classList.add('hidden'));
-                menuHistory.pop();
-                if(menuHistory.length > 0) {
+                // Close the top-most modal
+                const lastModal = menuHistory.pop();
+                if (lastModal) document.getElementById(lastModal).classList.add('hidden');
+                else modals.forEach(m => m.classList.add('hidden')); // Failsafe
+                
+                // If there's another modal underneath, show it
+                if (menuHistory.length > 0) {
                     const prev = menuHistory[menuHistory.length - 1];
                     const el = document.getElementById(prev); if (el) el.classList.remove('hidden');
                 }
             } else {
+                // Return to Main Menu from Hubs
                 document.getElementById('casino-hub-view').classList.add('hidden');
                 document.getElementById('exchange-hub-view').classList.add('hidden');
                 document.getElementById('main-menu-view').classList.remove('hidden');
@@ -937,7 +968,7 @@
         window.openCasinoHub = function() {
             document.getElementById('main-menu-view').classList.add('hidden');
             document.getElementById('casino-hub-view').classList.remove('hidden');
-            switchRealmTab('cards');
+            switchRealmTab('casino');
         }
 
         window.openMarketHub = function() {
@@ -946,7 +977,7 @@
         }
 
         window.switchRealmTab = function(tab) {
-            ['cards', 'arena', 'arcade'].forEach(t => { 
+            ['casino', 'arena'].forEach(t => { 
                 const btn = document.getElementById(`tab-btn-${t}`); 
                 const r = document.getElementById(`realm-${t}`); 
                 if(btn) btn.classList.remove('active'); 
@@ -1063,6 +1094,8 @@
 
         function renderInventory() {
             let html = '';
+            let counterHtml = ''; // For bottom tray in Trade Hub
+            
             myInventory.forEach((itemKey, idx) => {
                 const item = SNT_ITEMS[itemKey];
                 let border = '#334155';
@@ -1074,6 +1107,10 @@
                 else if(item.value >= 2500) border = 'var(--rarity-uncommon)';
 
                 html += `<div class="inv-slot" style="border-color:${border}; color:${border};" onclick="openItemInspector(${idx})" title="${item.name}">${item.icon}</div>`;
+                
+                if(!item.soulbound) {
+                    counterHtml += `<div class="inv-slot" style="border-color:${border}; color:${border}; width:50px; height:50px; font-size:24px;" onclick="addToTradeGrid(${idx})" title="Add ${item.name}">${item.icon}</div>`;
+                }
             });
             
             const auctionGrid = document.getElementById('auction-inventory-grid');
@@ -1082,6 +1119,9 @@
             if(auctionGrid) auctionGrid.innerHTML = html;
             if(tradeGrid) tradeGrid.innerHTML = html;
             if(marketGrid) marketGrid.innerHTML = html;
+            
+            const counterInv = document.getElementById('counter-offer-inventory');
+            if(counterInv) counterInv.innerHTML = counterHtml;
         }
 
         window.openItemInspector = function(idx) {
@@ -1118,19 +1158,14 @@
                 btnConvert.onclick = () => { pendingConversionIndex = idx; executeConversion(); };
             }
 
-            const counterModal = document.getElementById('counter-offer-modal');
-            if (counterModal && !counterModal.classList.contains('hidden')) {
-                if (item.soulbound) { btnEquip.disabled = true; btnEquip.innerText = "UNTRADABLE ITEM"; } 
-                else { btnEquip.disabled = false; btnEquip.innerText = "ADD TO TRADE GRID"; btnEquip.onclick = () => { addToTradeGrid(idx); }; }
-            } else {
-                btnEquip.disabled = false;
-                btnEquip.innerText = equippedItem === itemKey ? "UNEQUIP ITEM" : "EQUIP ITEM";
-                btnEquip.onclick = () => { 
-                    if (equippedItem === itemKey) { equippedItem = null; showToast(`Unequipped ${item.name}.`, 'success'); }
-                    else { equippedItem = itemKey; showToast(`Equipped ${item.name}!`, 'success'); }
-                    goBack(); 
-                };
-            }
+            btnEquip.disabled = false;
+            btnEquip.innerText = equippedItem === itemKey ? "UNEQUIP ITEM" : "EQUIP ITEM";
+            btnEquip.onclick = () => { 
+                if (equippedItem === itemKey) { equippedItem = null; showToast(`Unequipped ${item.name}.`, 'success'); }
+                else { equippedItem = itemKey; showToast(`Equipped ${item.name}!`, 'success'); }
+                goBack(); 
+            };
+            
             showModal('item-inspector-modal');
         }
 
@@ -1163,19 +1198,29 @@
             renderInventory(); renderTradeGrid(); showModal('counter-offer-modal');
         }
 
-        function addToTradeGrid(inventoryIdx) {
+        window.addToTradeGrid = function(inventoryIdx) {
+            if (tradeOfferSlots.includes(inventoryIdx)) return showToast("Item already in trade offer!");
             const emptySlot = tradeOfferSlots.findIndex(s => s === null);
-            if (emptySlot !== -1) { tradeOfferSlots[emptySlot] = myInventory[inventoryIdx]; renderTradeGrid(); goBack(); } 
+            if (emptySlot !== -1) { tradeOfferSlots[emptySlot] = inventoryIdx; renderTradeGrid(); } 
             else { showToast("All 9 trade slots are full!"); }
         }
 
         function renderTradeGrid() {
             const gridCells = document.querySelectorAll('.trade-grid-3x3 .trade-slot');
             if (!gridCells.length) return;
-            tradeOfferSlots.forEach((itemKey, idx) => {
-                const cell = gridCells[idx];
-                if (itemKey) { const item = SNT_ITEMS[itemKey]; cell.innerText = item.icon; cell.style.borderColor = 'var(--gold)'; cell.onclick = () => { tradeOfferSlots[idx] = null; renderTradeGrid(); }; } 
-                else { cell.innerText = ''; cell.style.borderColor = '#334155'; cell.onclick = () => showToast("Select an item from your inventory.", "success"); }
+            tradeOfferSlots.forEach((invIdx, gridIdx) => {
+                const cell = gridCells[gridIdx];
+                if (invIdx !== null) { 
+                    const itemKey = myInventory[invIdx];
+                    const item = SNT_ITEMS[itemKey]; 
+                    cell.innerText = item.icon; 
+                    cell.style.borderColor = 'var(--gold)'; 
+                    cell.onclick = () => { tradeOfferSlots[gridIdx] = null; renderTradeGrid(); }; 
+                } else { 
+                    cell.innerText = ''; 
+                    cell.style.borderColor = '#334155'; 
+                    cell.onclick = () => showToast("Select an item from below.", "success"); 
+                }
             });
         }
 
@@ -1184,7 +1229,7 @@
             const creditsOffered = parseInt(creditInput ? creditInput.value : 0) || 0;
             if (creditsOffered > currentUser.credits) return showToast("Insufficient credits for this offer.");
 
-            let offeredIcons = tradeOfferSlots.filter(s => s !== null).map(k => SNT_ITEMS[k].icon).join(' ');
+            let offeredIcons = tradeOfferSlots.filter(s => s !== null).map(idx => SNT_ITEMS[myInventory[idx]].icon).join(' ');
             if (!offeredIcons) offeredIcons = '[ NO ITEMS ]';
 
             document.getElementById('confirm-target-name').innerText = document.getElementById('target-trade-name').innerText;
@@ -1524,11 +1569,7 @@
                         let totalBet = Object.values(myDvtBets).reduce((a,b)=>a+b, 0);
                         if (totalBet > 0) {
                             let myWins = data.winners.filter(w => w.username.toLowerCase() === currentUser.username.toLowerCase());
-                            if (myWins.length > 0) { 
-                                let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); 
-                                setStatus('dvt', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); 
-                                addLedgerEntry('DRAGON VS TIGER WIN', totalWin, true, currentUser.credits + totalWin); 
-                            } 
+                            if (myWins.length > 0) { let totalWin = myWins.reduce((sum, w)=>sum+w.amount, 0); setStatus('dvt', `YOU WON ${formatNumber(totalWin)}!`); playSfx('win'); addLedgerEntry('DRAGON VS TIGER WIN', totalWin, true, currentUser.credits + totalWin); } 
                             else if (data.winner === 'tie' && (myDvtBets.dragon > 0 || myDvtBets.tiger > 0)) { setStatus('dvt', `PUSH (HALF WIN)`); playSfx('win'); } 
                             else { 
                                 setStatus('dvt', "HOUSE WINS", true); playSfx('lose'); 
